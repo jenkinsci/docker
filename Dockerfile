@@ -12,4 +12,5 @@ USER jenkins
 
 VOLUME /var/jenkins_home
 ENV JENKINS_HOME /var/jenkins_home
+EXPOSE 8080
 CMD java -jar /usr/share/jenkins/jenkins.war
