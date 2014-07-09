@@ -11,7 +11,7 @@ docker run -it -p 8080:8080 jenkins
 To use a persistent volume
 
 ```
-docker run -it -p 8080:8080 -v /your/home:/var/lib/jenkins/home jenkins
+docker run -it -p 8080:8080 -v /your/home:/var/jenkins_home
 ```
 
 You can also specify that it will run under the jenkins user: 

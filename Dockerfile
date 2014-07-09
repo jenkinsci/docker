@@ -7,6 +7,6 @@ RUN wget -q -O - http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key | sudo apt-
 RUN echo deb http://pkg.jenkins-ci.org/debian binary/ >> /etc/apt/sources.list
 RUN apt-get update
 RUN apt-get install -y jenkins
-VOLUME /var/lib/jenkins/home
-ENV JENKINS_HOME /var/lib/jenkins/home
+VOLUME /var/jenkins_home
+ENV JENKINS_HOME /var/jenkins_home
 CMD java -jar /usr/share/jenkins/jenkins.war
