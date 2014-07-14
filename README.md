@@ -5,19 +5,25 @@ Will likely form the basis of the official jenkins-ci image. Still working on it
 To run: 
 
 ```
-docker run -it -p 8080:8080 jenkins
+docker run -p 8080:8080 jenkins
 ```
 
 To use a persistent volume
 
 ```
-docker run -it -p 8080:8080 -v /your/home:/var/jenkins_home
+docker run --name myjenkins -p 8080:8080 -v /var/jenkins_home jenkins
 ```
 
-You can also specify that it will run under the jenkins user: 
+The volume for the "myjenkins" named container will then be persistent.
+
+You can also bind mount in a volume from the host: 
+
+
+First, ensure that /your/home is accessible by the jenkins user in container (jenkins user - uid 102 normally - or use -u root), then: 
 
 ```
-docker run -it -u jenkins -p 8080:8080 -v /your/home:/var/lib/jenkins/home jenkins
+docker run -p 8080:8080 -v /your/home:/var/jenkins_home jenkins
 ```
 
-Ensure that /your/home is accessible by the jenkins user in container (jenkins user - uid 102 normally)
+
+
