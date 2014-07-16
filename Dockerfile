@@ -11,9 +11,8 @@ ADD init.groovy /tmp/WEB-INF/init.groovy
 RUN apt-get install -y zip && cd /tmp && zip -g /usr/share/jenkins/jenkins.war WEB-INF/init.groovy
 USER jenkins
 
-
-
 # VOLUME /var/jenkins_home
 ENV JENKINS_HOME /var/jenkins_home
 EXPOSE 8080
+EXPOSE 50000
 CMD ["/usr/bin/java",  "-jar",  "/usr/share/jenkins/jenkins.war"]
