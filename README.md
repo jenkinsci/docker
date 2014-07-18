@@ -6,6 +6,8 @@ This is a fully functional Jenkins server, based on the Long Term Support releas
 http://jenkins-ci.org/
 
 
+<img src="http://jenkins-ci.org/sites/default/files/jenkins_logo.png"/>
+
 
 # Usage
 
