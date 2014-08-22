@@ -1,10 +1,10 @@
 FROM ubuntu:14.04
 
-RUN echo "1.574" > .lts-version-number
+RUN echo "1.576" > .lts-version-number
 
 RUN apt-get update && apt-get install -y wget git curl zip
 RUN apt-get update && apt-get install -y --no-install-recommends openjdk-7-jdk
-RUN apt-get update && apt-get install -y maven=3.0.5-1 ant=1.9.3-2build1 ruby rbenv make
+RUN apt-get update && apt-get install -y maven ant ruby rbenv make
 
 RUN wget -q -O - http://pkg.jenkins-ci.org/debian-stable/jenkins-ci.org.key | sudo apt-key add -
 RUN echo deb http://pkg.jenkins-ci.org/debian-stable binary/ >> /etc/apt/sources.list
