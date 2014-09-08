@@ -15,7 +15,7 @@ http://jenkins-ci.org/
 docker run -p 8080:8080 jenkins
 ```
 
-This will store the workspace in /var/jenkins_home. All Jenkins data lives in there - including plugins and configuration. You will probably want to make that a persistent volume:
+This will store the workspace in /var/jenkins_home. All Jenkins data lives in there - including plugins and configuration. You will probably want to make that a persistent volume (recommended):
 
 ```
 docker run --name myjenkins -p 8080:8080 -v /var/jenkins_home jenkins
@@ -33,7 +33,7 @@ docker run -p 8080:8080 -v /your/home:/var/jenkins_home jenkins
 
 ## Backing up data
 
-If you bind mount in a volume - you can simply back up that directory (which is jenkins_home) at any time. 
+If you bind mount in a volume - you can simply back up that directory (which is jenkins_home) at any time. This is highly recommended. Treat the jenkins_home directory as you would a database - in Docker you would generally put a database on a volume.
 
 If your volume is inside a container - you can use ```docker cp $ID:/var/jenkins_home``` command to extract the data. 
 
