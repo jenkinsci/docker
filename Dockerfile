@@ -1,6 +1,6 @@
 FROM ubuntu:14.04
 
-RUN echo "1.565.1" > .lts-version-number
+RUN echo "1.565.2" > .lts-version-number
 
 RUN apt-get update && apt-get install -y wget git curl zip
 RUN apt-get update && apt-get install -y --no-install-recommends openjdk-7-jdk
