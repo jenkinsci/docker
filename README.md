@@ -50,6 +50,9 @@ You can run builds on the master (out of the box) buf if you want to attach buil
 
 <a href="https://registry.hub.docker.com/u/maestrodev/build-agent/">Here</a> is an example docker container you can use as a build server with lots of good tools installed - which is well worth trying.
 
+# Installing more tools
+
+You can run your container as root - and unstall via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile that has ```FROM jenkins``` at the top and add in any dependencies you may need. 
 
 # Upgrading
 
