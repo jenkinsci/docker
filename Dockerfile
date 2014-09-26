@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y maven ant ruby rbenv make && apt-get cl
 RUN wget -q -O - http://pkg.jenkins-ci.org/debian-stable/jenkins-ci.org.key | sudo apt-key add -
 RUN echo deb http://pkg.jenkins-ci.org/debian-stable binary/ >> /etc/apt/sources.list
 RUN apt-get update && apt-get install -y jenkins
+RUN usermod -m -d /var/jenkins_home jenkins
 RUN mkdir -p /var/jenkins_home && chown -R jenkins /var/jenkins_home
 ADD init.groovy /tmp/WEB-INF/init.groovy
 RUN cd /tmp && zip -g /usr/share/jenkins/jenkins.war WEB-INF/init.groovy && rm -rf /tmp/WEB-INF
