@@ -52,8 +52,15 @@ You can run builds on the master (out of the box) buf if you want to attach buil
 
 # Installing more tools
 
-You can run your container as root - and unstall via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile that has ```FROM jenkins``` at the top and add in any dependencies you may need. 
+You can run your container as root - and unstall via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile to customise, for example: 
 
+```
+FROM jenkins
+USER root # if we want to install via apt
+RUN apt-get install -y ruby make more-thing-here
+USER jenkins # drop back to the regular jenkins user - good practice
+
+```
 # Upgrading
 
 All the data needed is in the /var/jenkins_home directory - so depending on how you manage that - depends on how you upgrade. Generally - you can copy it out - and then "docker pull" the image again - and you will have the latest LTS - you can then start up with -v pointing to that data (/var/jenkins_home) and everything will be as you left it.
