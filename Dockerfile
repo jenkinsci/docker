@@ -15,10 +15,10 @@ ADD init.groovy /tmp/WEB-INF/init.groovy
 RUN cd /tmp && zip -g /usr/share/jenkins/jenkins.war WEB-INF/init.groovy && rm -rf /tmp/WEB-INF
 ADD ./jenkins.sh /usr/local/bin/jenkins.sh
 RUN chmod +x /usr/local/bin/jenkins.sh
-USER jenkins
 
 VOLUME /var/jenkins_home
 ENV JENKINS_HOME /var/jenkins_home
+ENV JENKINS_USER jenkins
 
 # define url prefix for running jenkins behind Apache (https://wiki.jenkins-ci.org/display/JENKINS/Running+Jenkins+behind+Apache)
 ENV JENKINS_PREFIX /
