@@ -50,9 +50,18 @@ You can run builds on the master (out of the box) buf if you want to attach buil
 
 <a href="https://registry.hub.docker.com/u/maestrodev/build-agent/">Here</a> is an example docker container you can use as a build server with lots of good tools installed - which is well worth trying.
 
+# Overriding environment variables
+
+You might need to customize the running Jenkins container by overriding some of the default environment variables.
+
+```
+docker run --name myjenkins -p 8080:8080 -env TZ=America/Los_Angeles jenkins
+```
+
+
 # Installing more tools
 
-You can run your container as root - and unstall via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile to customise, for example: 
+You can run your container as root - and unstall via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile to customise, for example:
 
 ```
 FROM jenkins
