@@ -24,12 +24,15 @@ RUN cd /tmp && zip -g /usr/share/jenkins/jenkins.war WEB-INF/init.groovy && rm -
 # define url prefix for running jenkins behind Apache (https://wiki.jenkins-ci.org/display/JENKINS/Running+Jenkins+behind+Apache)
 ENV JENKINS_PREFIX /
 
+# override JAVA_OPTS using `docker run --env` to pass custom JVM parameters, typically `-D...` system properties 
+ENV JAVA_OPTS ""
+
 # for main web interface:
 EXPOSE 8080
 
 # will be used by attached slave agents:
 EXPOSE 50000
 
-COPY ./jenkins.sh /usr/local/bin/jenkins.sh
 USER jenkins
-CMD ["/usr/local/bin/jenkins.sh"]
+
+ENTRYPOINT java $JAVA_OPTS -jar /usr/share/jenkins/jenkins.war --prefix=$JENKINS_PREFIX
