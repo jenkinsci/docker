@@ -1,7 +1,7 @@
-FROM ubuntu:14.04
+#FROM java:openjdk-7u65-jdk
+FROM java:7u65
 
 RUN apt-get update && apt-get install -y wget git curl zip && rm -rf /var/lib/apt/lists/*
-RUN apt-get update && apt-get install -y --no-install-recommends openjdk-7-jdk && rm -rf /var/lib/apt/lists/*
 
 # gpg: key D50582E6: public key "Kohsuke Kawaguchi <kk@kohsuke.org>" imported
 # see also http://pkg.jenkins-ci.org/debian-stable/jenkins-ci.org.key
