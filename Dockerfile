@@ -3,16 +3,10 @@ FROM java:7u65
 
 RUN apt-get update && apt-get install -y wget git curl zip && rm -rf /var/lib/apt/lists/*
 
-# gpg: key D50582E6: public key "Kohsuke Kawaguchi <kk@kohsuke.org>" imported
-# see also http://pkg.jenkins-ci.org/debian-stable/jenkins-ci.org.key
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 150FDE3F7787E7D11EF4E12A9B7D32F2D50582E6
-# from: curl -sSL 'http://pkg.jenkins-ci.org/debian-stable/jenkins-ci.org.key' | docker run -i --rm debian bash -c 'gpg --import && gpg --fingerprint'
-
-RUN echo deb http://pkg.jenkins-ci.org/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list
-
 ENV JENKINS_VERSION 1.565.2
-
-RUN apt-get update && apt-get install -y jenkins="${JENKINS_VERSION}" && rm -rf /var/lib/apt/lists/*
+RUN mkdir /usr/share/jenkins/
+RUN useradd -d /home/jenkins -m -s /bin/bash jenkins
+RUN curl -L http://mirrors.jenkins-ci.org/war-stable/$JENKINS_VERSION/jenkins.war -o /usr/share/jenkins/jenkins.war
 
 ENV JENKINS_HOME /var/jenkins_home
 RUN usermod -m -d "$JENKINS_HOME" jenkins && chown -R jenkins "$JENKINS_HOME"
