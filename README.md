@@ -61,15 +61,31 @@ docker run --name myjenkins -p 8080:8080 -env JAVA_OPTS=-Dhudson.footerURL=http:
 
 # Installing more tools
 
-You can run your container as root - and unstall via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile to customise, for example: 
+You can run your container as root - and install via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile to customise, for example:
 
 ```
 FROM jenkins
 USER root # if we want to install via apt
 RUN apt-get install -y ruby make more-thing-here
 USER jenkins # drop back to the regular jenkins user - good practice
+```
+
+Plugins and Groovy init scripts can be dropped into `/usr/share/jenkins/init.groovy.d/` and `/usr/share/jenkins/plugins/`
+in order to build a new customized image.
+At runtime these files are copied to `$JENKINS_HOME` and used from there.
+They can't be copied directly to `$JENKINS_HOME` at build time as it is configured as a volume.
 
 ```
+FROM jenkins
+
+# a groovy script to customize something
+COPY ./my-script.groovy /usr/share/jenkins/init.groovy.d/
+
+# install the swarm plugin
+RUN curl -sSL -o /usr/share/jenkins/plugins/swarm.hpi https://updates.jenkins-ci.org/latest/swarm.hpi
+```
+
+
 # Upgrading
 
 All the data needed is in the /var/jenkins_home directory - so depending on how you manage that - depends on how you upgrade. Generally - you can copy it out - and then "docker pull" the image again - and you will have the latest LTS - you can then start up with -v pointing to that data (/var/jenkins_home) and everything will be as you left it.
