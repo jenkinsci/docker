@@ -50,9 +50,52 @@ You can run builds on the master (out of the box) buf if you want to attach buil
 
 <a href="https://registry.hub.docker.com/u/maestrodev/build-agent/">Here</a> is an example docker container you can use as a build server with lots of good tools installed - which is well worth trying.
 
+# Overriding environment variables
+
+You might need to customize the running Jenkins container by overriding some of the default environment variables.
+
+```
+docker run --name myjenkins -p 8080:8080 -env TZ=America/Los_Angeles jenkins
+```
+
+# Using it as a base image
+
+You can always use this as a base image to build more customized version Jenkins image for your need. Simply just create a new `Dockerfile` :
+
+```
+FROM jenkins:latest
+
+MAINTAINER Leeroy Jenkins "leeroy.jenkins@gmail.com"
+
+ENV JAVA_ARGS -Djava.awt.headless=true -Xms512m -Xmx1g -XX:PermSize=768m -XX:MaxPermSize=1024m
+
+```
+
+## Adding plugins
+
+When using it as a base image, you can also provide a set of plugins to be installed.  We do not want to add this as part of this base image, but you just add a simple `plugins.txt` in the same location as your `Dockerfile` .
+
+```
+.
+├── Dockerfile
+└── plugins.txt
+```
+
+```
+# plugins.txt
+http://updates.jenkins-ci.org/download/plugins/scm-api/0.2/scm-api.hpi
+http://updates.jenkins-ci.org/download/plugins/ssh-agent/1.5/ssh-agent.hpi
+http://updates.jenkins-ci.org/download/plugins/git/2.2.6/git.hpi
+http://updates.jenkins-ci.org/download/plugins/git-client/1.10.2/git-client.hpi
+http://updates.jenkins-ci.org/download/plugins/github/1.9.1/github.hpi
+http://updates.jenkins-ci.org/download/plugins/github-api/1.58/github-api.hpi
+http://updates.jenkins-ci.org/download/plugins/monitoring/1.52.1/monitoring.hpi
+```
+
+
 # Installing more tools
 
-You can run your container as root - and unstall via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile to customise, for example: 
+You can run your container as root - and unstall via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile to customise, for example:
 
 ```
 FROM jenkins
