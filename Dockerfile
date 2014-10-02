@@ -3,7 +3,7 @@ FROM java:7u65
 
 RUN apt-get update && apt-get install -y wget git curl zip && rm -rf /var/lib/apt/lists/*
 
-ENV JENKINS_VERSION 1.565.2
+ENV JENKINS_VERSION 1.565.3
 RUN mkdir /usr/share/jenkins/
 RUN useradd -d /home/jenkins -m -s /bin/bash jenkins
 RUN curl -L http://mirrors.jenkins-ci.org/war-stable/$JENKINS_VERSION/jenkins.war -o /usr/share/jenkins/jenkins.war
