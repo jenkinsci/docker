@@ -7,13 +7,16 @@ ENV JENKINS_VERSION 1.565.3
 RUN mkdir /usr/share/jenkins/
 RUN useradd -d /home/jenkins -m -s /bin/bash jenkins
 
-COPY init.groovy /tmp/WEB-INF/init.groovy
-RUN curl -L http://mirrors.jenkins-ci.org/war-stable/$JENKINS_VERSION/jenkins.war -o /usr/share/jenkins/jenkins.war \
-  && cd /tmp && zip -g /usr/share/jenkins/jenkins.war WEB-INF/init.groovy && rm -rf /tmp/WEB-INF
+RUN curl -L http://mirrors.jenkins-ci.org/war-stable/$JENKINS_VERSION/jenkins.war -o /usr/share/jenkins/jenkins.war
 
 ENV JENKINS_HOME /var/jenkins_home
 RUN usermod -m -d "$JENKINS_HOME" jenkins && chown -R jenkins "$JENKINS_HOME"
 VOLUME /var/jenkins_home
+
+COPY ./jenkins.sh /usr/local/bin/jenkins.sh
+
+COPY ./jnlp.groovy /usr/share/jenkins/init.groovy.d/
+RUN mkdir -p /usr/share/jenkins/plugins && chown -R jenkins /usr/share/jenkins/plugins /usr/share/jenkins/init.groovy.d
 
 # define url prefix for running jenkins behind Apache (https://wiki.jenkins-ci.org/display/JENKINS/Running+Jenkins+behind+Apache)
 ENV JENKINS_PREFIX /
@@ -26,4 +29,4 @@ EXPOSE 50000
 
 USER jenkins
 
-ENTRYPOINT java $JAVA_OPTS -jar /usr/share/jenkins/jenkins.war --prefix=$JENKINS_PREFIX
+ENTRYPOINT /usr/local/bin/jenkins.sh
