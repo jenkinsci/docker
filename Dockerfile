@@ -26,4 +26,5 @@ EXPOSE 50000
 
 USER jenkins
 
-ENTRYPOINT java $JAVA_OPTS -jar /usr/share/jenkins/jenkins.war --prefix=$JENKINS_PREFIX
+COPY jenkins.sh /usr/local/bin/jenkins.sh
+ENTRYPOINT ["/usr/local/bin/jenkins.sh"]
