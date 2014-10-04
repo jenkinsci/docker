@@ -68,8 +68,21 @@ FROM jenkins
 USER root # if we want to install via apt
 RUN apt-get install -y ruby make more-thing-here
 USER jenkins # drop back to the regular jenkins user - good practice
+```
+
+In such a derived image, you can customize your jenkins instance with hook scripts or additional plugins. 
+Those need to be packaged inside the executed jenkins.war, so use :
 
 ```
+RUM mkdir /tmp/WEB-INF/plugins
+RUN curl -L https://updates.jenkins-ci.org/latest/git.hpi -o /tmp/WEB-INF/plugins/git.hpi
+RUN curl -L https://updates.jenkins-ci.org/latest/git-client.hpi -o /tmp/WEB-INF/plugins/git-client.hpi
+RUN cd /tmp; zip --grow /usr/share/jenkins/jenkins.war WEB-INF/* 
+```
+
+Also see [JENKINS-24986](https://issues.jenkins-ci.org/browse/JENKINS-24986)
+
+
 # Upgrading
 
 All the data needed is in the /var/jenkins_home directory - so depending on how you manage that - depends on how you upgrade. Generally - you can copy it out - and then "docker pull" the image again - and you will have the latest LTS - you can then start up with -v pointing to that data (/var/jenkins_home) and everything will be as you left it.
