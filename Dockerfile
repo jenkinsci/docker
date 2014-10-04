@@ -7,9 +7,9 @@ ENV JENKINS_VERSION 1.565.3
 RUN mkdir /usr/share/jenkins/
 RUN useradd -d /home/jenkins -m -s /bin/bash jenkins
 
-COPY init.groovy /tmp/WEB-INF/init.groovy
+COPY init.groovy /tmp/WEB-INF/init.groovy.d/tcp-slave-angent-port.groovy
 RUN curl -L http://mirrors.jenkins-ci.org/war-stable/$JENKINS_VERSION/jenkins.war -o /usr/share/jenkins/jenkins.war \
-  && cd /tmp && zip -g /usr/share/jenkins/jenkins.war WEB-INF/init.groovy && rm -rf /tmp/WEB-INF
+  && cd /tmp && zip -g /usr/share/jenkins/jenkins.war WEB-INF/init.groovy.d/tcp-slave-angent-port.groovy && rm -rf /tmp/WEB-INF
 
 ENV JENKINS_HOME /var/jenkins_home
 RUN usermod -m -d "$JENKINS_HOME" jenkins && chown -R jenkins "$JENKINS_HOME"
