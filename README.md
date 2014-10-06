@@ -59,6 +59,27 @@ variable for this purpose :
 docker run --name myjenkins -p 8080:8080 -env JAVA_OPTS=-Dhudson.footerURL=http://mycompany.com jenkins
 ```
 
+# Passing Jenkins launcher parameters
+
+Argument you pass to docker running the jenkins image are passed to jenkins launcher, so you can run for sample :
+```
+docker run jenkins --version
+```
+This will dump Jenkins version, just like when you run jenkins as an executable war.
+
+You also can define jenkins arguments as `JENKINS_OPTS`. This is usefull to define a set of arguments to pass to jenkins launcher as you
+define a derived jenkins image based on the official one with some customized settings. The following sample Dockerfile uses this option
+to force use of HTTPS with a certificate included in the image
+
+```
+FROM jenkins:1.565.3
+
+COPY https.pem /var/lib/jenkins/cert
+COPY https.key /var/lib/jenkins/pk
+ENV JENKINS_OPTS --httpPort=-1 --httpsPort=8083 --httpsCertificate=/var/lib/jenkins/cert --httpsPrivateKey=/var/lib/jenkins/pk
+EXPOSE 8083
+```
+
 # Installing more tools
 
 You can run your container as root - and unstall via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile to customise, for example: 
