@@ -96,10 +96,16 @@ Those need to be packaged inside the executed jenkins.war, so use :
 
 ```
 RUM mkdir /tmp/WEB-INF/plugins
+RUN curl -L https://updates.jenkins-ci.org/latest/scm-api.hpi -o /tmp/WEB-INF/plugins/scm-api.hpi
 RUN curl -L https://updates.jenkins-ci.org/latest/git.hpi -o /tmp/WEB-INF/plugins/git.hpi
 RUN curl -L https://updates.jenkins-ci.org/latest/git-client.hpi -o /tmp/WEB-INF/plugins/git-client.hpi
-RUN cd /tmp; zip --grow /usr/share/jenkins/jenkins.war WEB-INF/* 
+RUN cd /tmp; \
+  zip --grow /usr/share/jenkins/jenkins.war WEB-INF/plugins/scm-api.hpi \
+  zip --grow /usr/share/jenkins/jenkins.war WEB-INF/plugins/git.hpi \
+  zip --grow /usr/share/jenkins/jenkins.war WEB-INF/plugins/git-client.hpi \
 ```
+
+Note that the git plugin depends on scm-api, which means it must preceed git in the jenkins.war file.
 
 Also see [JENKINS-24986](https://issues.jenkins-ci.org/browse/JENKINS-24986)
 
