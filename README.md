@@ -92,16 +92,30 @@ USER jenkins # drop back to the regular jenkins user - good practice
 ```
 
 In such a derived image, you can customize your jenkins instance with hook scripts or additional plugins. 
-Those need to be packaged inside the executed jenkins.war, so use :
+For this purpose, use `/usr/share/jenkins/ref` as a place to define the default JENKINS_HOME content you
+wish the target installation to look like :
 
 ```
-RUN mkdir -p /tmp/WEB-INF/plugins
-RUN curl -L https://updates.jenkins-ci.org/latest/git.hpi -o /tmp/WEB-INF/plugins/git.hpi
-RUN curl -L https://updates.jenkins-ci.org/latest/git-client.hpi -o /tmp/WEB-INF/plugins/git-client.hpi
-RUN cd /tmp; zip --grow /usr/share/jenkins/jenkins.war WEB-INF/* 
+FROM jenkins
+COPY plugins /usr/share/jenkins/ref/plugins
+COPY custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
 ```
+
+When jenkins container starts, it will check JENKINS_HOME has this reference content, and copy them there if required. It will not override such files, so if you upgraded some plugins from UI they won't be reverted on next start.
 
 Also see [JENKINS-24986](https://issues.jenkins-ci.org/browse/JENKINS-24986)
+
+For your convenience, you also can use a plain text file to define plugins to be installed (using core-support plugin format)
+```
+pluginID:version
+anotherPluginID:version
+```
+And in derived Dockerfile just invoke the utility plugin.sh script
+```
+FROM jenkins
+COPY plugins.txt /usr/share/jenkins/plugins.txt
+RUN /usr/local/bin/plugins.sh /usr/share/jenkins/plugins.txt
+```
 
 
 # Upgrading
