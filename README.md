@@ -92,14 +92,16 @@ USER jenkins # drop back to the regular jenkins user - good practice
 ```
 
 In such a derived image, you can customize your jenkins instance with hook scripts or additional plugins. 
-Those need to be packaged inside the executed jenkins.war, so use :
+For this purpose, use `/usr/share/jenkins/ref` as a place to define the default JENKINS_HOME content you
+wish the target installation to look like :
 
 ```
-RUM mkdir /tmp/WEB-INF/plugins
-RUN curl -L https://updates.jenkins-ci.org/latest/git.hpi -o /tmp/WEB-INF/plugins/git.hpi
-RUN curl -L https://updates.jenkins-ci.org/latest/git-client.hpi -o /tmp/WEB-INF/plugins/git-client.hpi
-RUN cd /tmp; zip --grow /usr/share/jenkins/jenkins.war WEB-INF/* 
+FROM jenkins
+COPY plugins /usr/share/jenkins/ref/plugins
+COPY custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
 ```
+
+When jenkins container starts, it will check JENKINS_HOME has this reference content, and copy them there if required
 
 Also see [JENKINS-24986](https://issues.jenkins-ci.org/browse/JENKINS-24986)
 

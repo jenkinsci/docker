@@ -1,5 +1,20 @@
 #! /bin/bash
 
+copy_reference_file() {
+	f=${1%/} 
+	echo "$f"
+    rel=${f:23}
+    echo " $f -> $rel"    
+	if [[ ! -e /var/jenkins_home/${rel} ]] 
+	then
+		echo "copy $rel to JENKINS_HOME"
+		mkdir -p /var/jenkins_home/$rel/..
+		cp -r /usr/share/jenkins/ref/${rel} /var/jenkins_home/${rel}; 
+	fi; 
+}
+export -f copy_reference_file
+find /usr/share/jenkins/ref/ -type f -exec bash -c 'copy_reference_file {}' \;
+
 # if `docker run` first argument start with `--` the user is passing jenkins launcher arguments
 if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
    exec java $JAVA_OPTS -jar /usr/share/jenkins/jenkins.war $JENKINS_OPTS "$@"
