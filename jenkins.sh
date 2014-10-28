@@ -1,14 +1,17 @@
 #! /bin/bash
 
+/usr/local/bin/plugins.sh
+
 copy_reference_file() {
 	f=${1%/} 
 	echo "$f"
     rel=${f:23}
+    dir=$(dirname ${f})
     echo " $f -> $rel"    
 	if [[ ! -e /var/jenkins_home/${rel} ]] 
 	then
 		echo "copy $rel to JENKINS_HOME"
-		mkdir -p /var/jenkins_home/$rel/..
+		mkdir -p /var/jenkins_home/${dir:23}
 		cp -r /usr/share/jenkins/ref/${rel} /var/jenkins_home/${rel}; 
 	fi; 
 }

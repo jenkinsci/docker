@@ -29,3 +29,6 @@ USER jenkins
 
 COPY jenkins.sh /usr/local/bin/jenkins.sh
 ENTRYPOINT ["/usr/local/bin/jenkins.sh"]
+
+COPY active.txt /usr/share/jenkins/active.txt
+COPY plugins.sh /usr/local/bin/plugins.sh
