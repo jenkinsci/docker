@@ -114,7 +114,7 @@ And in derived Dockerfile just invoke the utility plugin.sh script
 ```
 FROM jenkins
 COPY plugins.txt /usr/share/jenkins/plugins.txt
-RUN /usr/share/jenkins/plugins.sh
+RUN /usr/local/bin/plugins.sh /usr/share/jenkins/plugins.txt
 ```
 
 
