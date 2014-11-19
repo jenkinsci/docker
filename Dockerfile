@@ -17,7 +17,7 @@ RUN curl -L http://mirrors.jenkins-ci.org/war-stable/$JENKINS_VERSION/jenkins.wa
 
 ENV JENKINS_HOME /var/jenkins_home
 ENV JENKINS_UC https://updates.jenkins-ci.org
-RUN usermod -m -d "$JENKINS_HOME" jenkins && chown -R jenkins "$JENKINS_HOME"
+RUN usermod -m -d "$JENKINS_HOME" jenkins && chown -R jenkins "$JENKINS_HOME" /usr/share/jenkins/ref
 VOLUME /var/jenkins_home
 
 # for main web interface:
