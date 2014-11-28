@@ -23,7 +23,7 @@ docker run -p 8080:8080 -v /your/home:/var/jenkins_home jenkins
 ```
 
 This will store the jenkins data in /your/home on the host.
-Ensure that /your/home is accessible by the jenkins user in container (jenkins user - uid 102 normally - or use -u root).
+Ensure that /your/home is accessible by the jenkins user in container (jenkins user - uid 1000).
 
 
 You can also use a volume container:

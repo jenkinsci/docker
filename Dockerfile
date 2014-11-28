@@ -8,7 +8,10 @@ ENV JENKINS_VERSION 1.565.3
 # use it to bundle additional plugins or config file with your custom jenkins Docker image.
 RUN mkdir -p /usr/share/jenkins/ref/init.groovy.d
 
-RUN useradd -d /home/jenkins -m -s /bin/bash jenkins
+# Jenkins is ran with user `jenkins`, uid = 1000
+# If you bind mount a volume from host/vloume from a data container, 
+# ensure you use same uid
+RUN useradd -d /home/jenkins -m -u 1000 -s /bin/bash jenkins
 
 COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-angent-port.groovy
 
