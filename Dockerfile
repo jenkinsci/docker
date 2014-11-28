@@ -2,7 +2,6 @@ FROM java:openjdk-7u65-jdk
 
 RUN apt-get update && apt-get install -y wget git curl zip && rm -rf /var/lib/apt/lists/*
 
-ENV JENKINS_VERSION 1.565.3
 ENV JENKINS_HOME /var/jenkins_home
 
 # Jenkins is ran with user `jenkins`, uid = 1000
@@ -21,6 +20,8 @@ RUN mkdir -p /usr/share/jenkins/ref/init.groovy.d
 
 
 COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-angent-port.groovy
+
+ENV JENKINS_VERSION 1.565.3
 
 # could use ADD but this one does not check Last-Modified header 
 # see https://github.com/docker/docker/issues/8331
