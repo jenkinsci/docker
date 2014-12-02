@@ -11,13 +11,14 @@ versions=( */ )
 versions=( "${versions[@]%/}" )
 url='git://github.com/cloudbees/jenkins-ci.org-docker'
 
-echo '# maintainer: Nicolas De Loof <nicolas.deloof@gmail.com> (@ndeloo)'
+echo '# maintainer: Nicolas De Loof <nicolas.deloof@gmail.com> (@ndeloof)'
+echo '# maintainer: Michael Neale <mneale@cloudbees.com> (@michaelneale)'
 
+echo
 for version in "${versions[@]}"; do
 	commit="$(git log -1 --format='format:%H' -- "$version")"
 	versionAliases=( $version ${aliases[$version]} )
 	
-	echo
 	for va in "${versionAliases[@]}"; do
 		echo "$va: ${url}@${commit} $version"
 	done
