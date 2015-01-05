@@ -3,8 +3,8 @@ set -e
 
 declare -A aliases
 aliases=(
-	[1.592]='weekly'
-	[1.580.1]='latest'
+	[1.596]='weekly'
+	[1.580.2]='latest'
 )
 
 versions=( */ )
