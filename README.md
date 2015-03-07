@@ -86,7 +86,8 @@ You can run your container as root - and unstall via apt-get, install as part of
 
 ```
 FROM jenkins
-USER root # if we want to install via apt
+# if we want to install via apt
+USER root
 RUN apt-get install -y ruby make more-thing-here
 USER jenkins # drop back to the regular jenkins user - good practice
 ```
