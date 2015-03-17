@@ -24,9 +24,9 @@ echo '# maintainer: Michael Neale <mneale@cloudbees.com> (@michaelneale)'
 
 echo
 echo "# group: Current Releases"
-for current in $(IFS=$'\n'; sort -V <<< "${!aliases[*]}"); do
-	commit="$(git log -1 --format='format:%H' -- "$current")"
-	for va in "$current" ${aliases[$current]}; do
+for version in $(IFS=$'\n'; sort -V <<< "${!aliases[*]}"); do
+	commit="$(git log -1 --format='format:%H' -- "$version")"
+	for va in "$version" ${aliases[$version]}; do
 		echo "$va: ${url}@${commit} $version"
 	done
 	echo
