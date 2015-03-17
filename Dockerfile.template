@@ -33,6 +33,9 @@ RUN chown -R jenkins "$JENKINS_HOME" /usr/share/jenkins/ref
 # for main web interface:
 EXPOSE 8080
 
+# for ajp interface:
+EXPOSE 8009
+
 # will be used by attached slave agents:
 EXPOSE 50000
 
