@@ -1,6 +1,7 @@
 FROM java:openjdk-7u65-jdk
 
 RUN apt-get update && apt-get install -y wget git curl zip && rm -rf /var/lib/apt/lists/*
+RUN curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && python get-pip.py && pip install awscli
 
 ENV JENKINS_HOME /var/jenkins_home
 
