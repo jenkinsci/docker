@@ -6,10 +6,13 @@
 # can then change this, upgrade plugins, etc.
 copy_reference_file() {
 	f=${1%/} 
+	echo "$f" >> /tmp/copy_reference_file.log
     rel=${f:23}
-    dir=$(dirname ${f})
+    dir=$(dirname ${f}) >> /tmp/copy_reference_file.log
+    echo " $f -> $rel"
 	if [[ ! -e /var/jenkins_home/${rel} ]] 
 	then
+		echo "copy $rel to JENKINS_HOME" >> /tmp/copy_reference_file.log
 		mkdir -p /var/jenkins_home/${dir:23}
 		cp -r /usr/share/jenkins/ref/${rel} /var/jenkins_home/${rel}; 
 	fi; 
