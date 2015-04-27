@@ -8,8 +8,8 @@ copy_reference_file() {
 	f=${1%/} 
 	echo "$f" >> /tmp/copy_reference_file.log
     rel=${f:23}
-    dir=$(dirname ${f}) >> /tmp/copy_reference_file.log
-    echo " $f -> $rel"
+    dir=$(dirname ${f})
+    echo " $f -> $rel" >> /tmp/copy_reference_file.log
 	if [[ ! -e /var/jenkins_home/${rel} ]] 
 	then
 		echo "copy $rel to JENKINS_HOME" >> /tmp/copy_reference_file.log
