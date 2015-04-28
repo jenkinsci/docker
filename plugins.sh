@@ -12,6 +12,8 @@ REF=/usr/share/jenkins/ref/plugins
 mkdir -p $REF
 
 while read spec; do
+# Skip the comments starting with #
+    [[ ${spec:0:1} == '#' ]] && continue
     plugin=(${spec//:/ }); 
     [[ ${plugin[0]} =~ ^# ]] && continue
     [[ ${plugin[0]} =~ ^\s*$ ]] && continue
