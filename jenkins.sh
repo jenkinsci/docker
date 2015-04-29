@@ -6,18 +6,19 @@
 # can then change this, upgrade plugins, etc.
 copy_reference_file() {
 	f=${1%/} 
-	echo "$f"
+	echo "$f" >> $COPY_REFERENCE_FILE_LOG
     rel=${f:23}
     dir=$(dirname ${f})
-    echo " $f -> $rel"    
+    echo " $f -> $rel" >> $COPY_REFERENCE_FILE_LOG
 	if [[ ! -e /var/jenkins_home/${rel} ]] 
 	then
-		echo "copy $rel to JENKINS_HOME"
+		echo "copy $rel to JENKINS_HOME" >> $COPY_REFERENCE_FILE_LOG
 		mkdir -p /var/jenkins_home/${dir:23}
 		cp -r /usr/share/jenkins/ref/${rel} /var/jenkins_home/${rel}; 
 	fi; 
 }
 export -f copy_reference_file
+echo "--- Copying files at $(date)" >> $COPY_REFERENCE_FILE_LOG
 find /usr/share/jenkins/ref/ -type f -exec bash -c 'copy_reference_file {}' \;
 
 # if `docker run` first argument start with `--` the user is passing jenkins launcher arguments
