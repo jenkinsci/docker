@@ -11,7 +11,7 @@
 REF=/usr/share/jenkins/ref/plugins
 mkdir -p $REF
 
-while read spec; do
+while read spec || [ -n "$spec" ]; do
     plugin=(${spec//:/ });
     [[ ${plugin[0]} =~ ^# ]] && continue
     [[ ${plugin[0]} =~ ^\s*$ ]] && continue
