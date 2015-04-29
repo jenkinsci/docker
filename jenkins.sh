@@ -14,12 +14,25 @@ copy_reference_file() {
 	then
 		echo "copy $rel to JENKINS_HOME" >> $COPY_REFERENCE_FILE_LOG
 		mkdir -p /var/jenkins_home/${dir:23}
-		cp -r /usr/share/jenkins/ref/${rel} /var/jenkins_home/${rel}; 
+		cp -r /usr/share/jenkins/ref/${rel} /var/jenkins_home/${rel};
 	fi; 
 }
 export -f copy_reference_file
 echo "--- Copying files at $(date)" >> $COPY_REFERENCE_FILE_LOG
 find /usr/share/jenkins/ref/ -type f -exec bash -c 'copy_reference_file {}' \;
+
+if [[ -d /var/jenkins_home/plugins ]] 
+then
+	# Rename and pin any .hpi files copied from /usr/share/jenkins/ref/plugins.
+	pushd /var/jenkins_home/plugins
+	for hpiFile in *.hpi
+	do
+	  prefix=$(echo $hpiFile | sed 's/\(.*\)\.hpi/\1/')
+	  mv $hpiFile $prefix.jpi
+	  touch $prefix.jpi.pinned
+	done
+	popd 
+fi; 
 
 # if `docker run` first argument start with `--` the user is passing jenkins launcher arguments
 if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
