@@ -43,6 +43,9 @@ RUN touch $COPY_REFERENCE_FILE_LOG && chown jenkins.jenkins $COPY_REFERENCE_FILE
 
 USER jenkins
 
+# Whether we want reference files in `/usr/share/jenkins/ref/` to overwrite those in JENKINS_HOME
+ENV JENKINS_OVERWRITE=false
+
 COPY jenkins.sh /usr/local/bin/jenkins.sh
 ENTRYPOINT ["/usr/local/bin/jenkins.sh"]
 

@@ -103,7 +103,11 @@ COPY custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
 RUN /usr/local/bin/plugins.sh /usr/share/jenkins/ref/plugins.txt
 ```
 
-When jenkins container starts, it will check JENKINS_HOME has this reference content, and copy them there if required. It will not override such files, so if you upgraded some plugins from UI they won't be reverted on next start.
+When Jenkins container starts, it will check `JENKINS_HOME` has this reference content, and copy it there if required.
+It will not override such files by default, so if you upgraded some plugins from UI they won't be reverted on next start.
+You can change this behaviour by setting `JENKINS_OVERWRITE` environment variable to true.
+This is useful for upgrading from Docker images but can cause Jenkins customizations to be lost on upgrade. Note that `JENKINS_OVERWRITE` will not affect resources and plugins included in the war file as they are extracted by Jenkins server on startup.
+
 
 Also see [JENKINS-24986](https://issues.jenkins-ci.org/browse/JENKINS-24986)
 
@@ -123,6 +127,8 @@ RUN /usr/local/bin/plugins.sh /usr/share/jenkins/plugins.txt
 # Upgrading
 
 All the data needed is in the /var/jenkins_home directory - so depending on how you manage that - depends on how you upgrade. Generally - you can copy it out - and then "docker pull" the image again - and you will have the latest LTS - you can then start up with -v pointing to that data (/var/jenkins_home) and everything will be as you left it.
+
+See note above about `JENKINS_OVERWRITE` to upgrade your existing Jenkins home with content from the Docker image.
 
 As always - please ensure that you know how to drive docker - especially volume handling!
 
