@@ -1,4 +1,4 @@
-FROM java:openjdk-7u65-jdk
+FROM java:8u45-jdk
 
 RUN apt-get update && apt-get install -y wget git curl zip && rm -rf /var/lib/apt/lists/*
 
@@ -19,13 +19,15 @@ VOLUME /var/jenkins_home
 RUN mkdir -p /usr/share/jenkins/ref/init.groovy.d
 
 
-COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-angent-port.groovy
+COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy
 
-ENV JENKINS_VERSION 1.605
+ENV JENKINS_VERSION 1.615
+ENV JENKINS_SHA 835a1345bdcb01eba9399caca17520b7f08b8fb4
 
 # could use ADD but this one does not check Last-Modified header 
 # see https://github.com/docker/docker/issues/8331
-RUN curl -L http://mirrors.jenkins-ci.org/war/1.605/jenkins.war -o /usr/share/jenkins/jenkins.war
+RUN curl -fL http://mirrors.jenkins-ci.org/war/$JENKINS_VERSION/jenkins.war -o /usr/share/jenkins/jenkins.war \
+  && echo "$JENKINS_SHA /usr/share/jenkins/jenkins.war" | sha1sum -c -
 
 ENV JENKINS_UC https://updates.jenkins-ci.org
 RUN chown -R jenkins "$JENKINS_HOME" /usr/share/jenkins/ref
@@ -35,6 +37,9 @@ EXPOSE 8080
 
 # will be used by attached slave agents:
 EXPOSE 50000
+
+ENV COPY_REFERENCE_FILE_LOG /var/log/copy_reference_file.log
+RUN touch $COPY_REFERENCE_FILE_LOG && chown jenkins.jenkins $COPY_REFERENCE_FILE_LOG
 
 USER jenkins
 
