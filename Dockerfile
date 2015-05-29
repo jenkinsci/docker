@@ -21,8 +21,8 @@ RUN mkdir -p /usr/share/jenkins/ref/init.groovy.d
 
 COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy
 
-ENV JENKINS_VERSION 1.596.2
-ENV JENKINS_SHA 96ee85602a41d68c164fb54d4796be5d1d9cc5d0
+ENV JENKINS_VERSION 1.596.3
+ENV JENKINS_SHA bbfe03f35aad4e76ab744543587a04de0c7fe766
 
 # could use ADD but this one does not check Last-Modified header 
 # see https://github.com/docker/docker/issues/8331
