@@ -2,7 +2,7 @@
 
 The Jenkins Continuous Integration and Delivery server.
 
-This is a fully functional Jenkins server, based on the Long Term Support release
+This is a fully functional Jenkins server, based on the weekly release
 http://jenkins-ci.org/
 
 
