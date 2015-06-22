@@ -44,6 +44,14 @@ This is highly recommended. Treat the jenkins_home directory as you would a data
 If your volume is inside a container - you can use ```docker cp $ID:/var/jenkins_home``` command to extract the data.
 Note that some symlinks on some OSes may be converted to copies (this can confuse jenkins with lastStableBuild links etc)
 
+# Setting the number of executors 
+
+You can specify and set the number of executors of your Jenkins instance via the `init.groovy` file. By default its set to 2 executors, but you can add the following line to change it to your desired number of executors :
+
+```
+Jenkins.instance.setNumExecutors(5)
+```
+
 # Attaching build executors
 
 You can run builds on the master (out of the box) but if you want to attach build slave servers: make sure you map the port: ```-p 50000:50000``` - which will be used when you connect a slave agent.
