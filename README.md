@@ -46,7 +46,7 @@ Note that some symlinks on some OSes may be converted to copies (this can confus
 
 # Attaching build executors
 
-You can run builds on the master (out of the box) buf if you want to attach build slave servers: make sure you map the port: ```-p 50000:50000``` - which will be used when you connect a slave agent.
+You can run builds on the master (out of the box) but if you want to attach build slave servers: make sure you map the port: ```-p 50000:50000``` - which will be used when you connect a slave agent.
 
 <a href="https://registry.hub.docker.com/u/maestrodev/build-agent/">Here</a> is an example docker container you can use as a build server with lots of good tools installed - which is well worth trying.
 
@@ -88,7 +88,7 @@ You can run your container as root - and install via apt-get, install as part of
 FROM jenkins
 # if we want to install via apt
 USER root
-RUN apt-get install -y ruby make more-thing-here
+RUN apt-get update && apt-get install -y ruby make more-thing-here
 USER jenkins # drop back to the regular jenkins user - good practice
 ```
 
@@ -98,8 +98,9 @@ wish the target installation to look like :
 
 ```
 FROM jenkins
-COPY plugins /usr/share/jenkins/ref/plugins
+COPY plugins.txt /usr/share/jenkins/ref/
 COPY custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
+RUN /usr/local/bin/plugins.sh /usr/share/jenkins/ref/plugins.txt
 ```
 
 When jenkins container starts, it will check JENKINS_HOME has this reference content, and copy them there if required. It will not override such files, so if you upgraded some plugins from UI they won't be reverted on next start.
