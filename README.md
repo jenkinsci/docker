@@ -22,8 +22,8 @@ You will probably want to make that a persistent volume (recommended):
 docker run -p 8080:8080 -p 50000:50000 -v /your/home:/var/jenkins_home jenkins
 ```
 
-This will store the jenkins data in /your/home on the host.
-Ensure that /your/home is accessible by the jenkins user in container (jenkins user - uid 1000).
+This will store the jenkins data in `/your/home` on the host.
+Ensure that `/your/home` is accessible by the jenkins user in container (jenkins user - uid 1000) or use `-u some_other_user` parameter with `docker run`.
 
 
 You can also use a volume container:

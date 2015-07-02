@@ -39,8 +39,7 @@ EXPOSE 8080
 # will be used by attached slave agents:
 EXPOSE 50000
 
-ENV COPY_REFERENCE_FILE_LOG /var/log/copy_reference_file.log
-RUN touch $COPY_REFERENCE_FILE_LOG && chown jenkins.jenkins $COPY_REFERENCE_FILE_LOG
+ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 
 USER jenkins
 
