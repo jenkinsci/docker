@@ -12,24 +12,24 @@ http://jenkins-ci.org/
 # Usage
 
 ```
-docker run -p 8080:8080 jenkins
+docker run -p 8080:8080 -p 50000:50000 jenkins
 ```
 
 This will store the workspace in /var/jenkins_home. All Jenkins data lives in there - including plugins and configuration.
 You will probably want to make that a persistent volume (recommended):
 
 ```
-docker run -p 8080:8080 -v /your/home:/var/jenkins_home jenkins
+docker run -p 8080:8080 -p 50000:50000 -v /your/home:/var/jenkins_home jenkins
 ```
 
-This will store the jenkins data in /your/home on the host.
-Ensure that /your/home is accessible by the jenkins user in container (jenkins user - uid 1000).
+This will store the jenkins data in `/your/home` on the host.
+Ensure that `/your/home` is accessible by the jenkins user in container (jenkins user - uid 1000) or use `-u some_other_user` parameter with `docker run`.
 
 
 You can also use a volume container:
 
 ```
-docker run --name myjenkins -p 8080:8080 -v /var/jenkins_home jenkins
+docker run --name myjenkins -p 8080:8080 -p 50000:50000 -v /var/jenkins_home jenkins
 ```
 
 Then myjenkins container has the volume (please do read about docker volume handling to find out more).
@@ -44,6 +44,23 @@ This is highly recommended. Treat the jenkins_home directory as you would a data
 If your volume is inside a container - you can use ```docker cp $ID:/var/jenkins_home``` command to extract the data.
 Note that some symlinks on some OSes may be converted to copies (this can confuse jenkins with lastStableBuild links etc)
 
+# Setting the number of executors
+
+You can specify and set the number of executors of your Jenkins master instance using a groovy script. By default its set to 2 executors, but you can extend the image and change it to your desired number of executors :
+
+```
+# executors.groovy
+Jenkins.instance.setNumExecutors(5)
+```
+
+and `Dockerfile`
+
+```
+FROM jenkins
+COPY executors.groovy /usr/share/jenkins/ref/init.groovy.d/executors.groovy
+```
+
+
 # Attaching build executors
 
 You can run builds on the master (out of the box) but if you want to attach build slave servers: make sure you map the port: ```-p 50000:50000``` - which will be used when you connect a slave agent.
@@ -56,7 +73,7 @@ You might need to customize the JVM running Jenkins, typically to pass system pr
 variable for this purpose :
 
 ```
-docker run --name myjenkins -p 8080:8080 --env JAVA_OPTS=-Dhudson.footerURL=http://mycompany.com jenkins
+docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS=-Dhudson.footerURL=http://mycompany.com jenkins
 ```
 
 # Passing Jenkins launcher parameters

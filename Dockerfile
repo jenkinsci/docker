@@ -30,7 +30,6 @@ RUN curl -fL http://mirrors.jenkins-ci.org/war/$JENKINS_VERSION/jenkins.war -o /
   && echo "$JENKINS_SHA /usr/share/jenkins/jenkins.war" | sha1sum -c -
 
 ENV JENKINS_UC https://updates.jenkins-ci.org
-ENV JENKINS_UC_DOWNLOAD $JENKINS_UC/download
 RUN chown -R jenkins "$JENKINS_HOME" /usr/share/jenkins/ref
 
 # for main web interface:
@@ -39,8 +38,7 @@ EXPOSE 8080
 # will be used by attached slave agents:
 EXPOSE 50000
 
-ENV COPY_REFERENCE_FILE_LOG /var/log/copy_reference_file.log
-RUN touch $COPY_REFERENCE_FILE_LOG && chown jenkins.jenkins $COPY_REFERENCE_FILE_LOG
+ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 
 USER jenkins
 
