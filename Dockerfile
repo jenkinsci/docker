@@ -21,8 +21,6 @@ RUN mkdir -p /usr/share/jenkins/ref/init.groovy.d
 # Use tini as subreaper in Docker container to adopt zombie processes 
 RUN curl -fL https://github.com/krallin/tini/releases/download/v0.5.0/tini-static -o /bin/tini && chmod +x /bin/tini
 
-COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy
-
 ENV JENKINS_VERSION 1.596.3
 ENV JENKINS_SHA bbfe03f35aad4e76ab744543587a04de0c7fe766
 
@@ -49,3 +47,17 @@ ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
 # from a derived Dockerfile, can use `RUN plugin.sh active.txt` to setup /usr/share/jenkins/ref/plugins from a support bundle
 COPY plugins.sh /usr/local/bin/plugins.sh
+
+# install dotci plugins
+COPY plugins.dotci $JENKINS_HOME/plugins.dotci
+RUN /usr/local/bin/plugins.sh $JENKINS_HOME/plugins.dotci
+
+# uncomment to provide list of additional jenkins plugins to download/install
+#COPY plugins.download $JENKINS_HOME/plugins.download
+#RUN /usr/local/bin/plugins.sh $JENKINS_HOME/plugins.download
+
+# uncomment to install additional jenkins plugins locally avaiable in repo
+#COPY plugins.local /usr/share/jenkins/ref/plugins
+
+# modify these scripts to configure your jenkins/DotCi
+COPY init.groovy.d /usr/share/jenkins/ref/init.groovy.d

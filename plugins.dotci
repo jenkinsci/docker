@@ -1,0 +1,7 @@
+DotCi:2.9.2
+github-oauth:0.20
+github-api:1.68
+git:2.3.5
+git-client:1.17.1
+scm-api:0.2
+rebuild:1.25
