@@ -1,6 +1,14 @@
-FROM java:8u45-jdk
+FROM centos:centos7
+# description: https://github.com/jenkinsci/docker modified for centos7, oracle jdk-8u45
 
-RUN apt-get update && apt-get install -y wget git curl zip && rm -rf /var/lib/apt/lists/*
+RUN yum install -y wget git curl tar createrepo && yum clean all
+
+RUN cd /var/tmp \
+  && curl --fail --location --retry 3 -O \
+  --header "Cookie: oraclelicense=accept-securebackup-cookie; " \
+  http://download.oracle.com/otn-pub/java/jdk/8u45-b14/jdk-8u45-linux-x64.rpm \
+  && rpm -Ui jdk-8u45-linux-x64.rpm \
+  && rm -rf jdk-8u45-linux-x64.rpm
 
 ENV JENKINS_HOME /var/jenkins_home
 
