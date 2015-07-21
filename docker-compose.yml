@@ -7,3 +7,12 @@ jenkins:
     - "8080"
   volumes:
     - /var/jenkins_home
+
+client1:
+  extends:
+    file: jnlp-slave/docker-compose.yml
+    service: slave
+  environment:
+    slave: "myjnlpclient1"
+  links:
+    - jenkins
