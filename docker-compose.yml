@@ -1,3 +1,11 @@
+mongodb:
+  image: mongo:3
+  command: --smallfiles
+  ports:
+    - "27017"
+  volumes:
+    - /data/db
+
 jenkins:
   build: .
   environment:
@@ -7,6 +15,8 @@ jenkins:
     - "8080"
   volumes:
     - /var/jenkins_home
+  links:
+    - mongodb
 
 client1:
   extends:

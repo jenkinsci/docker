@@ -1,7 +1,8 @@
 FROM centos:centos7
 # description: https://github.com/jenkinsci/docker modified for centos7, oracle jdk-8u45
 
-RUN yum install -y wget git curl tar createrepo && yum clean all
+COPY mongodb.repo /etc/yum.repos.d/mongodb.repo
+RUN yum install -y wget git curl tar createrepo mongodb-org-shell && yum clean all
 
 RUN cd /var/tmp \
   && curl --fail --location --retry 3 -O \
