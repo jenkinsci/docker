@@ -1,6 +1,15 @@
-FROM java:8u45-jdk
+FROM centos:centos7
+# description: https://github.com/jenkinsci/docker modified for centos7, oracle jdk-8u45
 
-RUN apt-get update && apt-get install -y wget git curl zip && rm -rf /var/lib/apt/lists/*
+COPY mongodb.repo /etc/yum.repos.d/mongodb.repo
+RUN yum install -y wget git curl tar createrepo mongodb-org-shell && yum clean all
+
+RUN cd /var/tmp \
+  && curl --fail --location --retry 3 -O \
+  --header "Cookie: oraclelicense=accept-securebackup-cookie; " \
+  http://download.oracle.com/otn-pub/java/jdk/8u45-b14/jdk-8u45-linux-x64.rpm \
+  && rpm -Ui jdk-8u45-linux-x64.rpm \
+  && rm -rf jdk-8u45-linux-x64.rpm
 
 ENV JENKINS_HOME /var/jenkins_home
 
@@ -21,10 +30,8 @@ RUN mkdir -p /usr/share/jenkins/ref/init.groovy.d
 # Use tini as subreaper in Docker container to adopt zombie processes 
 RUN curl -fL https://github.com/krallin/tini/releases/download/v0.5.0/tini-static -o /bin/tini && chmod +x /bin/tini
 
-COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy
-
-ENV JENKINS_VERSION 1.609.1
-ENV JENKINS_SHA 698284ad950bd663c783e99bc8045ca1c9f92159
+ENV JENKINS_VERSION 1.596.3
+ENV JENKINS_SHA bbfe03f35aad4e76ab744543587a04de0c7fe766
 
 # could use ADD but this one does not check Last-Modified header 
 # see https://github.com/docker/docker/issues/8331
@@ -49,3 +56,17 @@ ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
 # from a derived Dockerfile, can use `RUN plugin.sh active.txt` to setup /usr/share/jenkins/ref/plugins from a support bundle
 COPY plugins.sh /usr/local/bin/plugins.sh
+
+# install dotci plugins
+COPY plugins.dotci $JENKINS_HOME/plugins.dotci
+RUN /usr/local/bin/plugins.sh $JENKINS_HOME/plugins.dotci
+
+# uncomment to provide list of additional jenkins plugins to download/install
+#COPY plugins.download $JENKINS_HOME/plugins.download
+#RUN /usr/local/bin/plugins.sh $JENKINS_HOME/plugins.download
+
+# uncomment to install additional jenkins plugins locally avaiable in repo
+#COPY plugins.local /usr/share/jenkins/ref/plugins
+
+# modify these scripts to configure your jenkins/DotCi
+COPY init.groovy.d /usr/share/jenkins/ref/init.groovy.d

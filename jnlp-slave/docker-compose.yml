@@ -1,0 +1,12 @@
+slave:
+  build: .
+
+  environment:
+    # externally the jenkins master is accessible via port 80, but internally the JNLP client uses port 8080 based on original Dockerfile
+    master: "http://jenkins:8080"
+
+    # avoid https://registry.hub.docker.com/u/library/docker-dev via http://stackoverflow.com/questions/26239116/run-docker-inside-a-docker-container per mstandley
+    DOCKER_HOST: "unix:///docker.sock"
+  volumes:
+    - /var/run/docker.sock:/docker.sock
+    - /usr/local/bin/docker:/usr/local/bin/docker
