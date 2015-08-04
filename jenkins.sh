@@ -23,7 +23,7 @@ copy_reference_file() {
 }
 export -f copy_reference_file
 echo "--- Copying files at $(date)" >> $COPY_REFERENCE_FILE_LOG
-find /usr/share/jenkins/ref/ -type f -exec bash -c 'copy_reference_file {}' \;
+find /usr/share/jenkins/ref/ -type f -exec bash -c "copy_reference_file '{}'" \;
 
 # if `docker run` first argument start with `--` the user is passing jenkins launcher arguments
 if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
