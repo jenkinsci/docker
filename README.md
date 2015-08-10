@@ -99,6 +99,17 @@ ENV JENKINS_OPTS --httpPort=-1 --httpsPort=8083 --httpsCertificate=/var/lib/jenk
 EXPOSE 8083
 ```
 
+You can also change the default slave agent port for jenkins by defining `JENKINS_SLAVE_AGENT_PORT` in a sample Dockerfile.
+
+```
+FROM jenkins:1.565.3
+ENV JENKINS_SLAVE_AGENT_PORT 50001
+```
+or as a parameter to docker,
+```
+docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGENT_PORT=50001 jenkins
+```
+
 # Installing more tools
 
 You can run your container as root - and install via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile to customise, for example: 
