@@ -6,4 +6,5 @@ Thread.start {
       sleep 10000
       println "--> setting agent port for jnlp"
       Jenkins.instance.setSlaveAgentPort(50000)
+      println "--> setting agent port for jnlp... done"
 }
