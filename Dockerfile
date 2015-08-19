@@ -3,9 +3,10 @@ FROM java:8u45-jdk
 RUN apt-get update && apt-get install -y wget git curl zip && rm -rf /var/lib/apt/lists/*
 
 ENV JENKINS_HOME /var/jenkins_home
+ENV JENKINS_SLAVE_AGENT_PORT 50000
 
 # Jenkins is ran with user `jenkins`, uid = 1000
-# If you bind mount a volume from host/vloume from a data container, 
+# If you bind mount a volume from host/volume from a data container, 
 # ensure you use same uid
 RUN useradd -d "$JENKINS_HOME" -u 1000 -m -s /bin/bash jenkins
 
@@ -18,8 +19,11 @@ VOLUME /var/jenkins_home
 # or config file with your custom jenkins Docker image.
 RUN mkdir -p /usr/share/jenkins/ref/init.groovy.d
 
+ENV TINI_SHA 066ad710107dc7ee05d3aa6e4974f01dc98f3888
+
 # Use tini as subreaper in Docker container to adopt zombie processes 
-RUN curl -fL https://github.com/krallin/tini/releases/download/v0.5.0/tini-static -o /bin/tini && chmod +x /bin/tini
+RUN curl -fL https://github.com/krallin/tini/releases/download/v0.5.0/tini-static -o /bin/tini && chmod +x /bin/tini \
+  && echo "$TINI_SHA /bin/tini" | sha1sum -c -
 
 COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy
 
