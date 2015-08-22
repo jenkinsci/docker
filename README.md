@@ -78,6 +78,22 @@ variable for this purpose :
 docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS=-Dhudson.footerURL=http://mycompany.com jenkins
 ```
 
+# Configuring logging
+
+Jenkins logging can be configured through a properties file and `java.util.logging.config.file` Java property.
+For example:
+
+```
+mkdir data
+cat > data/log.properties <<EOF
+handlers=java.util.logging.ConsoleHandler
+jenkins.level=FINEST
+java.util.logging.ConsoleHandler.level=FINEST
+EOF
+docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS="-Djava.util.logging.config.file=/var/jenkins_home/log.properties" -v `pwd`/data:/var/jenkins_home jenkins
+```
+
+
 # Passing Jenkins launcher parameters
 
 Argument you pass to docker running the jenkins image are passed to jenkins launcher, so you can run for sample :
