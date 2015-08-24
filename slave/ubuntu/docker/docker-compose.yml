@@ -1,0 +1,24 @@
+master:
+  image: jenkins:1.609.3
+  environment:
+    JAVA_OPTS: "-Djava.awt.headless=true"
+  ports:
+    - "50000:50000"
+    - "8080:8080"
+  volumes:
+    - /var/jenkins_home
+    - ./init.groovy:/usr/share/jenkins/ref/init.groovy.d/jnlp-slave.groovy
+
+slave:
+  build: .
+  environment:
+    master: "http://master:8080"
+    slave: "slave1"
+    # Docker does not support multiple inheritance. The environment and volume flags below install /usr/local/bin/docker on top of java:8u45-jdk
+    # without having to rewrite Dockerfile to append https://registry.hub.docker.com/u/library/docker-dev
+    DOCKER_HOST: "unix:///docker.sock"
+  volumes:
+    - /var/run/docker.sock:/docker.sock
+    - /usr/local/bin/docker:/usr/local/bin/docker
+  links:
+    - master
