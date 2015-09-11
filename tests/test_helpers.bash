@@ -37,7 +37,12 @@ function retry {
 }
 
 function get_jenkins_url {
-    echo "http://localhost:$(docker port $SUT_CONTAINER 8080 | cut -d: -f2)"
+    if [ -z $DOCKER_HOST]; then
+        DOCKER_IP=localhost
+    else
+        DOCKER_IP=$(echo $DOCKER_HOST | sed -e 's|tcp://\(.*\):[0-9]*|\1|')
+    fi
+    echo "http://$DOCKER_IP:$(docker port $SUT_CONTAINER 8080 | cut -d: -f2)"
 }
 
 function test_url {
