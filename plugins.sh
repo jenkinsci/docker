@@ -25,4 +25,9 @@ while read spec || [ -n "$spec" ]; do
     fi
     curl -sSL -f ${JENKINS_UC_DOWNLOAD}/plugins/${plugin[0]}/${plugin[1]}/${plugin[0]}.hpi -o $REF/${plugin[0]}.jpi
     unzip -qqt $REF/${plugin[0]}.jpi
+
+    # checksum check
+    if [ -n "${plugin[2]}" ]; then
+      echo "${plugin[2]} $REF/${plugin[0]}.jpi" | sha1sum -c -
+    fi
 done  < $1
