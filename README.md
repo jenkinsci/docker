@@ -154,9 +154,11 @@ When jenkins container starts, it will check JENKINS_HOME has this reference con
 Also see [JENKINS-24986](https://issues.jenkins-ci.org/browse/JENKINS-24986)
 
 For your convenience, you also can use a plain text file to define plugins to be installed (using core-support plugin format)
+If the sha is present in the plugin list, the download will be validated against it.
+
 ```
-pluginID:version
-anotherPluginID:version
+pluginID:version[:sha]
+anotherPluginID:version[:sha]
 ```
 And in derived Dockerfile just invoke the utility plugin.sh script
 ```
