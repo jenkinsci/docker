@@ -24,4 +24,11 @@ while read spec || [ -n "$spec" ]; do
       JENKINS_UC_DOWNLOAD=$JENKINS_UC/download
     fi
     curl -sSL -f ${JENKINS_UC_DOWNLOAD}/plugins/${plugin[0]}/${plugin[1]}/${plugin[0]}.hpi -o $REF/${plugin[0]}.jpi
+    if ls -l $REF/${plugin[0]}.jpi && file $REF/${plugin[0]}.jpi | grep 'Zip archive'
+    then
+      echo Download okay. ${plugin[0]}.jpi seems to be a Zip archive
+    else
+      echo "Downloading via '${cmd}' failed"
+      exit 3
+    fi
 done  < $1
