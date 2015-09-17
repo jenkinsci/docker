@@ -149,16 +149,25 @@ COPY custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
 RUN /usr/local/bin/plugins.sh /usr/share/jenkins/ref/plugins.txt
 ```
 
-When jenkins container starts, it will check JENKINS_HOME has this reference content, and copy them there if required. It will not override such files, so if you upgraded some plugins from UI they won't be reverted on next start.
+When jenkins container starts, it will check JENKINS_HOME has this reference content, and copy them
+there if required. It will not override such files, so if you upgraded some plugins from UI they won't
+be reverted on next start.
 
 Also see [JENKINS-24986](https://issues.jenkins-ci.org/browse/JENKINS-24986)
 
-For your convenience, you also can use a plain text file to define plugins to be installed (using core-support plugin format)
+For your convenience, you also can use a plain text file to define plugins to be installed
+(using core-support plugin format).
+All plugins need to be listed as there is no transitive dependency resolution.
+
 ```
 pluginID:version
-anotherPluginID:version
+credentials:1.18
+maven-plugin:2.7.1
+...
 ```
+
 And in derived Dockerfile just invoke the utility plugin.sh script
+
 ```
 FROM jenkins
 COPY plugins.txt /usr/share/jenkins/plugins.txt
