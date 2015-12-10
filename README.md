@@ -15,6 +15,8 @@ http://jenkins-ci.org/
 docker run -p 8080:8080 -p 50000:50000 jenkins
 ```
 
+NOTE: read below the _build executors_ part for the role of the `50000` port mapping.
+
 This will store the workspace in /var/jenkins_home. All Jenkins data lives in there - including plugins and configuration.
 You will probably want to make that a persistent volume (recommended):
 
@@ -66,7 +68,11 @@ COPY executors.groovy /usr/share/jenkins/ref/init.groovy.d/executors.groovy
 
 # Attaching build executors
 
-You can run builds on the master (out of the box) but if you want to attach build slave servers: make sure you map the port: ```-p 50000:50000``` - which will be used when you connect a slave agent.
+You can run builds on the master out of the box.
+
+But if you want to attach build slave servers **through JNLP (Java Web Start)**: make sure you map the port: ```-p 50000:50000``` - which will be used when you connect a slave agent.
+
+If you are only using [SSH slaves](https://wiki.jenkins-ci.org/display/JENKINS/SSH+Slaves+plugin), then you do **NOT** need to put that port mapping.
 
 # Passing JVM parameters
 
