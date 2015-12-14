@@ -58,6 +58,7 @@ ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 USER ${user}
 
 COPY jenkins.sh /usr/local/bin/jenkins.sh
+COPY docker-jvm-opts.sh /usr/local/bin/docker-jvm-opts.sh
 ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
 # from a derived Dockerfile, can use `RUN plugins.sh active.txt` to setup /usr/share/jenkins/ref/plugins from a support bundle

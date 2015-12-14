@@ -30,6 +30,23 @@ load test_helpers
   assert "${version}" echo "${actual_version::-1}"
 }
 
+@test "test Xmx with unlimited memory" {
+  local total_memory=$(docker run --rm -ti --name $SUT_CONTAINER -P $SUT_IMAGE awk '/MemTotal/ {printf("%d\n", $2/1024)}' /proc/meminfo)
+  local actual_java_options=$(docker run --rm -ti --name $SUT_CONTAINER -P $SUT_IMAGE bash -c 'echo ${_JAVA_OPTIONS}')
+  local expected_memory=$(awk '{printf("%d",$1/2)}' <<<" ${total_memory} ")
+  assert "-Xmx${expected_memory}m" echo "${actual_java_options::-1}"
+}
+
+@test "test Xmx with memory limit" {
+  local actual_java_options=$(docker run --rm -ti -m 256m --name $SUT_CONTAINER -P $SUT_IMAGE bash -c 'echo ${_JAVA_OPTIONS}')
+  assert "-Xmx128m" echo "${actual_java_options::-1}"
+}
+
+@test "test Xmx with memory limit and custom JVM_HEAP_RATIO" {
+  local actual_java_options=$(docker run --rm -ti -e JVM_HEAP_RATIO=0.75 -m 256m --name $SUT_CONTAINER -P $SUT_IMAGE bash -c 'echo ${_JAVA_OPTIONS}')
+  assert "-Xmx192m" echo "${actual_java_options::-1}"
+}
+
 @test "create test container" {
     docker run -d -e JAVA_OPTS="-Duser.timezone=Europe/Madrid -Dhudson.model.DirectoryBrowserSupport.CSP=\"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';\"" --name $SUT_CONTAINER -P $SUT_IMAGE
 }
