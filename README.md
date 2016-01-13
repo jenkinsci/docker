@@ -76,7 +76,7 @@ If you are only using [SSH slaves](https://wiki.jenkins-ci.org/display/JENKINS/S
 
 # Passing JVM parameters
 
-You might need to customize the JVM running Jenkins, typically to pass system properties or tweak heap memory settings. Use JAVA_OPTS environment 
+You might need to customize the JVM running Jenkins, typically to pass system properties or tweak heap memory settings. Use JAVA_OPTS environment
 variable for this purpose :
 
 ```
@@ -133,7 +133,7 @@ docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGEN
 
 # Installing more tools
 
-You can run your container as root - and install via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile to customise, for example: 
+You can run your container as root - and install via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile to customise, for example:
 
 ```
 FROM jenkins
@@ -143,7 +143,7 @@ RUN apt-get update && apt-get install -y ruby make more-thing-here
 USER jenkins # drop back to the regular jenkins user - good practice
 ```
 
-In such a derived image, you can customize your jenkins instance with hook scripts or additional plugins. 
+In such a derived image, you can customize your jenkins instance with hook scripts or additional plugins.
 For this purpose, use `/usr/share/jenkins/ref` as a place to define the default JENKINS_HOME content you
 wish the target installation to look like :
 
@@ -157,6 +157,9 @@ RUN /usr/local/bin/plugins.sh /usr/share/jenkins/ref/plugins.txt
 When jenkins container starts, it will check JENKINS_HOME has this reference content, and copy them
 there if required. It will not override such files, so if you upgraded some plugins from UI they won't
 be reverted on next start.
+
+In case you *do* want to override, append '.override' to the name of the reference file. E.g. a file named
+`/usr/share/jenkins/ref/config.xml.override` will overwrite an existing `config.xml` file in JENKINS_HOME.
 
 Also see [JENKINS-24986](https://issues.jenkins-ci.org/browse/JENKINS-24986)
 
