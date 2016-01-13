@@ -10,7 +10,7 @@ copy_reference_file() {
 	f="${1%/}"
 	echo "$f" >> "$COPY_REFERENCE_FILE_LOG"
     rel="${f:23}"
-    dir="$(dirname ${f})"
+    dir=$(dirname "${f}")
     echo " $f -> $rel" >> "$COPY_REFERENCE_FILE_LOG"
 	if [[ ! -e /var/jenkins_home/${rel} ]] 
 	then
