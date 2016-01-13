@@ -5,10 +5,16 @@ RUN apt-get update && apt-get install -y wget git curl zip && rm -rf /var/lib/ap
 ENV JENKINS_HOME /srv/jenkins_home
 ENV JENKINS_SLAVE_AGENT_PORT 50000
 
-# Jenkins is run with user `jenkins`, uid = 1000
+#
+# XXX: 
+# Jenkins is assumed to run on 251 just to have the
+# same UID outside/inside the container when mapping the volume
+#
+#
+# Jenkins is run with user `jenkins`, uid = 251
 # If you bind mount a volume from the host or a data container, 
 # ensure you use the same uid
-RUN useradd -d "$JENKINS_HOME" -u 1000 -m -s /bin/bash jenkins
+RUN useradd -d "$JENKINS_HOME" -u 251 -m -s /bin/bash jenkins
 
 
 # `/usr/share/jenkins/ref/` contains all reference configuration we want 
