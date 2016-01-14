@@ -23,7 +23,7 @@ copy_reference_file() {
 	fi;
 }
 export -f copy_reference_file
-touch "${COPY_REFERENCE_FILE_LOG}" || echo "Can not write to ${COPY_REFERENCE_FILE_LOG}. Wrong volume permissions?"
+touch "${COPY_REFERENCE_FILE_LOG}" || (echo "Can not write to ${COPY_REFERENCE_FILE_LOG}. Wrong volume permissions?" && exit 1)
 echo "--- Copying files at $(date)" >> "$COPY_REFERENCE_FILE_LOG"
 find /usr/share/jenkins/ref/ -type f -exec bash -c "copy_reference_file '{}'" \;
 
