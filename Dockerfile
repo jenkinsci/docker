@@ -2,7 +2,7 @@ FROM java:8-jdk
 
 RUN apt-get update && apt-get install -y wget git curl zip && rm -rf /var/lib/apt/lists/*
 
-ENV JENKINS_HOME /srv/jenkins_home
+ENV JENKINS_HOME /srv/jenkins
 ENV JENKINS_SLAVE_AGENT_PORT 50000
 
 #
@@ -60,7 +60,7 @@ RUN plugins.sh /plugins.txt
 
 # Jenkins home directory is a volume, so configuration and build history 
 # can be persisted and survive image upgrades
-VOLUME /srv/jenkins_home
-WORKDIR /srv/jenkins_home
+VOLUME $JENKINS_HOME
+WORKDIR $JENKINS_HOME
 ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
