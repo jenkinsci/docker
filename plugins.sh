@@ -8,9 +8,9 @@
 # RUN /usr/local/bin/plugins.sh /plugins.txt
 #
 
-set -e
+set -ex
 
-REF=/usr/share/jenkins/ref/plugins
+REF=$JENKINS_HOME
 mkdir -p $REF
 
 while read spec || [ -n "$spec" ]; do
@@ -26,3 +26,5 @@ while read spec || [ -n "$spec" ]; do
     curl -sSL -f ${JENKINS_UC_DOWNLOAD}/plugins/${plugin[0]}/${plugin[1]}/${plugin[0]}.hpi -o $REF/${plugin[0]}.jpi
     unzip -qqt $REF/${plugin[0]}.jpi
 done  < $1
+
+ls -alh $REF

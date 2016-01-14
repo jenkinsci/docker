@@ -2,17 +2,20 @@ FROM java:8-jdk
 
 RUN apt-get update && apt-get install -y wget git curl zip && rm -rf /var/lib/apt/lists/*
 
-ENV JENKINS_HOME /srv/jenkins_home
+ENV JENKINS_HOME /srv/jenkins
 ENV JENKINS_SLAVE_AGENT_PORT 50000
 
-# Jenkins is run with user `jenkins`, uid = 1000
+#
+# XXX: 
+# Jenkins is assumed to run on 251 just to have the
+# same UID outside/inside the container when mapping the volume
+#
+#
+# Jenkins is run with user `jenkins`, uid = 251
 # If you bind mount a volume from the host or a data container, 
 # ensure you use the same uid
-RUN useradd -d "$JENKINS_HOME" -u 1000 -m -s /bin/bash jenkins
+RUN useradd -d "$JENKINS_HOME" -u 251 -m -s /bin/bash jenkins
 
-# Jenkins home directory is a volume, so configuration and build history 
-# can be persisted and survive image upgrades
-VOLUME /srv/jenkins_home
 
 # `/usr/share/jenkins/ref/` contains all reference configuration we want 
 # to set on a fresh new installation. Use it to bundle additional plugins 
@@ -49,9 +52,15 @@ ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 USER jenkins
 
 COPY jenkins.sh /usr/local/bin/jenkins.sh
-ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
 # from a derived Dockerfile, can use `RUN plugins.sh active.txt` to setup /usr/share/jenkins/ref/plugins from a support bundle
 COPY plugins.sh /usr/local/bin/plugins.sh
 COPY plugins.txt /plugins.txt
 RUN plugins.sh /plugins.txt
+
+# Jenkins home directory is a volume, so configuration and build history 
+# can be persisted and survive image upgrades
+VOLUME $JENKINS_HOME
+WORKDIR $JENKINS_HOME
+ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
+
