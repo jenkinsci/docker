@@ -1,13 +1,9 @@
-# Official Jenkins Docker image
+# ~~Official~~ MOJDS Jenkins Docker image
 
 The Jenkins Continuous Integration and Delivery server.
 
-This is a fully functional Jenkins server, based on the Long Term Support release
+This is a fully functional Jenkins server, based on the latest *(not LTS)* releases
 [http://jenkins-ci.org/](http://jenkins-ci.org/).
-
-
-<img src="http://jenkins-ci.org/sites/default/files/jenkins_logo.png"/>
-
 
 # Usage
 
@@ -187,5 +183,3 @@ All the data needed is in the /var/jenkins_home directory - so depending on how 
 As always - please ensure that you know how to drive docker - especially volume handling!
 
 # Questions?
-
-Jump on irc.freenode.net and the #jenkins room. Ask!
