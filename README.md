@@ -165,10 +165,9 @@ Also see [JENKINS-24986](https://issues.jenkins-ci.org/browse/JENKINS-24986)
 
 For your convenience, you also can use a plain text file to define plugins to be installed
 (using core-support plugin format).
-All plugins need to be listed as there is no transitive dependency resolution.
+All plugins need to be listed in the form `pluginID:version` as there is no transitive dependency resolution.
 
 ```
-pluginID:version
 credentials:1.18
 maven-plugin:2.7.1
 ...
