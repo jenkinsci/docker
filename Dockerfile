@@ -47,6 +47,9 @@ EXPOSE 8080
 # will be used by attached slave agents:
 EXPOSE 50000
 
+# expose the JMX port
+EXPOSE 39999
+
 ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 
 USER jenkins
