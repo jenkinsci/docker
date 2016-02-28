@@ -9,7 +9,7 @@
 function assert {
     local expected_output=$1
     shift
-    actual_output=$("$@")
+    local actual_output=$("$@")
     if ! [ "$actual_output" = "$expected_output" ]; then
         echo "expected: \"$expected_output\", actual: \"$actual_output\""
         false
@@ -54,4 +54,9 @@ function test_url {
         echo "output: $output" >&2
         false
     fi
+}
+
+function cleanup {
+    docker kill $1 &>/dev/null ||:
+    docker rm -fv $1 &>/dev/null ||:
 }
