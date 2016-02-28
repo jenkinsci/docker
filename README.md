@@ -181,6 +181,25 @@ COPY plugins.txt /usr/share/jenkins/plugins.txt
 RUN /usr/local/bin/plugins.sh /usr/share/jenkins/plugins.txt
 ```
 
+Here is an example to get the list of plugins from an exising server you can use the following curl command:
+
+```
+JENKINS_HOST=myhost.com:port
+curl -L "http://$JENKINS_HOST/pluginManager/api/xml?depth=1&xpath=///shortName|///version&wrapper=plugins"| perl -pe 's/.?([\w-]+).?([^<]+)()(<\/\w+>)+/\1 \2\n/g'
+```
+
+Example Output:
+
+```
+% Total % Received % Xferd Average Speed Time Time Time Current
+Dload Upload Total Spent Left Speed
+100 1330 0 1330 0 0 799 0 --:--:-- 0:00:01 --:--:-- 799
+cucumber-testresult-plugin 0.8.2
+pam-auth 1.1
+matrix-project 1.4.1
+script-security 1.13
+...
+```
 
 # Upgrading
 
