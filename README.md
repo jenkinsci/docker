@@ -188,6 +188,18 @@ All the data needed is in the /var/jenkins_home directory - so depending on how 
 
 As always - please ensure that you know how to drive docker - especially volume handling!
 
+# Building
+
+Build with the usual
+
+    docker build -t jenkins .
+
+Tests are written using [bats](https://github.com/sstephenson/bats) under the `tests` dir
+
+    bats tests
+
+Bats can be easily installed with `brew install bats` on OS X
+
 # Questions?
 
 Jump on irc.freenode.net and the #jenkins room. Ask!
