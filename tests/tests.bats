@@ -50,3 +50,7 @@ load test_helpers
     assert 'Europe/Madrid' \
       bash -c "curl -fsSL $(get_jenkins_url)/systemInfo | sed 's/<\/tr>/<\/tr>\'$'\n/g' | grep '<td class=\"pane\">user.timezone</td>' | sed -e '${sed_expr}'"
 }
+
+@test "clean test containers" {
+    cleanup $SUT_CONTAINER
+}
