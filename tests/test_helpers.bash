@@ -11,7 +11,8 @@ function assert {
     shift
     local actual_output=$("$@")
     if ! [ "$actual_output" = "$expected_output" ]; then
-        echo "expected: \"$expected_output\", actual: \"$actual_output\""
+        echo "expected: \"$expected_output\""
+        echo "actual:   \"$actual_output\""
         false
     fi
 }
@@ -37,7 +38,7 @@ function retry {
 }
 
 function get_jenkins_url {
-    if [ -z $DOCKER_HOST]; then
+    if [ -z "${DOCKER_HOST}" ]; then
         DOCKER_IP=localhost
     else
         DOCKER_IP=$(echo $DOCKER_HOST | sed -e 's|tcp://\(.*\):[0-9]*|\1|')

@@ -19,7 +19,7 @@ load test_helpers
   local version=$(grep 'ENV JENKINS_VERSION' Dockerfile | sed -e 's/ENV JENKINS_VERSION //')
   # need the last line of output, removing the last char
   local actual_version=$(docker run --rm -ti -e JENKINS_OPTS="--help --version" --name $SUT_CONTAINER -P $SUT_IMAGE | tail -n 1)
-  assert "${version}" echo ${actual_version::-1}
+  assert "${version}" echo "${actual_version::-1}"
 }
 
 @test "test jenkins arguments" {
@@ -27,11 +27,11 @@ load test_helpers
   local version=$(grep 'ENV JENKINS_VERSION' Dockerfile | sed -e 's/ENV JENKINS_VERSION //')
   # need the last line of output, removing the last char
   local actual_version=$(docker run --rm -ti --name $SUT_CONTAINER -P $SUT_IMAGE --help --version | tail -n 1)
-  assert "${version}" echo ${actual_version::-1}
+  assert "${version}" echo "${actual_version::-1}"
 }
 
 @test "create test container" {
-    docker run -d --name $SUT_CONTAINER -P $SUT_IMAGE
+    docker run -d -e JAVA_OPTS="-Duser.timezone=Europe/Madrid -Dhudson.model.DirectoryBrowserSupport.CSP=\"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';\"" --name $SUT_CONTAINER -P $SUT_IMAGE
 }
 
 @test "test container is running" {
@@ -43,6 +43,10 @@ load test_helpers
     retry 30 5 test_url /api/json
 }
 
-@test "clean test containers" {
-    cleanup $SUT_CONTAINER
+@test "JAVA_OPTS are set" {
+    local sed_expr='s/<wbr>//g;s/<td class="pane">.*<\/td><td class.*normal">//g;s/<t.>//g;s/<\/t.>//g'
+    assert 'default-src &#039;self&#039;; script-src &#039;self&#039; &#039;unsafe-inline&#039; &#039;unsafe-eval&#039;; style-src &#039;self&#039; &#039;unsafe-inline&#039;;' \
+      bash -c "curl -fsSL $(get_jenkins_url)/systemInfo | sed 's/<\/tr>/<\/tr>\'$'\n/g' | grep '<td class=\"pane\">hudson.model.DirectoryBrowserSupport.CSP</td>' | sed -e '${sed_expr}'"
+    assert 'Europe/Madrid' \
+      bash -c "curl -fsSL $(get_jenkins_url)/systemInfo | sed 's/<\/tr>/<\/tr>\'$'\n/g' | grep '<td class=\"pane\">user.timezone</td>' | sed -e '${sed_expr}'"
 }
