@@ -10,6 +10,12 @@
 # Note: Plugins already installed are skipped
 #
 
+set -e
+
+if [ "$1" = "" ]; then
+    echo "Usage: $0 filename"
+    exit 1
+fi
 
 REF=/usr/share/jenkins/ref/plugins
 mkdir -p $REF
@@ -17,9 +23,11 @@ mkdir -p $REF
 TEMP_ALREADY_INSTALLED=/var/jenkins_home/preinstalled.plugins.txt
 for i in `ls -pd1 /var/jenkins_home/plugins/*|egrep '\/$'`
 do 
-	PLUGIN=`basename $i`
-	VER=`egrep -i Plugin-Version "$i/META-INF/MANIFEST.MF"|cut -d\: -f2|sed 's/ //'`
-	echo "$PLUGIN:$VER"
+    PLUGIN=`basename $i`
+    if egrep -i Plugin-Version "$i/META-INF/MANIFEST.MF"; then
+        VER=`egrep -i Plugin-Version "$i/META-INF/MANIFEST.MF"|cut -d\: -f2|sed 's/ //'`
+        echo "$PLUGIN:$VER"
+    fi
 done > $TEMP_ALREADY_INSTALLED
 
 while read spec || [ -n "$spec" ]; do
@@ -32,14 +40,12 @@ while read spec || [ -n "$spec" ]; do
       JENKINS_UC_DOWNLOAD=$JENKINS_UC/download
     fi
 
-    egrep "${plugin[0]}:${plugin[1]}" $TEMP_ALREADY_INSTALLED >/dev/null 2>&1
-    if [ $? -ne 0 ]
-    then
+    if egrep "${plugin[0]}:${plugin[1]}" $TEMP_ALREADY_INSTALLED >/dev/null 2>&1; then
+        echo "  ... skipping already installed:  ${plugin[0]}:${plugin[1]}"
+    else
     	echo "Downloading ${plugin[0]}:${plugin[1]}"
         curl -sSL -f ${JENKINS_UC_DOWNLOAD}/plugins/${plugin[0]}/${plugin[1]}/${plugin[0]}.hpi -o $REF/${plugin[0]}.jpi
         unzip -qqt $REF/${plugin[0]}.jpi
-    else
-    	echo "  ... skipping already installed:  ${plugin[0]}:${plugin[1]}"
     fi
 done  < $1
 
@@ -47,3 +53,5 @@ done  < $1
 rm $TEMP_ALREADY_INSTALLED
 
 exit 0
+
+# EOF
