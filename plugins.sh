@@ -10,6 +10,7 @@
 # Note: Plugins already installed are skipped
 #
 
+set -e
 
 REF=/usr/share/jenkins/ref/plugins
 mkdir -p $REF
@@ -32,8 +33,7 @@ while read spec || [ -n "$spec" ]; do
       JENKINS_UC_DOWNLOAD=$JENKINS_UC/download
     fi
 
-    egrep "${plugin[0]}:${plugin[1]}" $TEMP_ALREADY_INSTALLED >/dev/null 2>&1
-    if [ $? -ne 0 ]
+    if ! grep -q "${plugin[0]}:${plugin[1]}" $TEMP_ALREADY_INSTALLED 
     then
     	echo "Downloading ${plugin[0]}:${plugin[1]}"
         curl -sSL -f ${JENKINS_UC_DOWNLOAD}/plugins/${plugin[0]}/${plugin[1]}/${plugin[0]}.hpi -o $REF/${plugin[0]}.jpi
