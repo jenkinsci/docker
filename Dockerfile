@@ -1,9 +1,32 @@
 FROM java:8-jdk
 
-RUN apt-get update && apt-get install -y wget git curl zip && rm -rf /var/lib/apt/lists/*
+#
+# This line was inherited from the original repo. It has been left
+# here for merge/pull purposes
+#
+RUN apt-get update && apt-get install -y wget git curl zip apt-utils sudo
+#
+# Installing compilers, headers libraries
+#
+RUN apt-get install -y build-essential zlib1g zlib1g-dev libxml2 libxml2-dev \
+    libffi-dev libssl-dev
+#
+# Python dependencies
+#
+RUN apt-get install -y python-dev python-pip python-virtualenv
+#
+# Ruby dependencies
+#
+RUN apt-get install -y ruby ruby-dev gem debhelper devscripts dh-apparmor \
+    gem2deb gettext intltool-debian libcroco3 libjs-jquery libunistring0 \
+    po-debconf ruby-minitest rubygems-integration
+
+RUN pip install virtualenv
+RUN gem install bundler thor json hipchat excon httparty nokogiri
 
 ENV JENKINS_HOME /srv/jenkins
 ENV JENKINS_SLAVE_AGENT_PORT 50000
+COPY sudoers/jenkins /etc/sudoers.d/jenkins
 
 #
 # XXX: 
@@ -14,7 +37,7 @@ ENV JENKINS_SLAVE_AGENT_PORT 50000
 # Jenkins is run with user `jenkins`, uid = 251
 # If you bind mount a volume from the host or a data container, 
 # ensure you use the same uid
-RUN useradd -d "$JENKINS_HOME" -u 251 -m -s /bin/bash jenkins
+RUN useradd -d "$JENKINS_HOME" -u 251 --groups sudo -m -s /bin/bash jenkins
 
 
 # `/usr/share/jenkins/ref/` contains all reference configuration we want 
