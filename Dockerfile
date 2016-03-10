@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y wget git curl zip apt-utils sudo
 # Installing compilers, headers libraries
 #
 RUN apt-get install -y build-essential zlib1g zlib1g-dev libxml2 libxml2-dev \
-    libffi-dev libssl-dev
+    libffi-dev libssl-dev swig
 #
 # Python dependencies
 #
@@ -22,7 +22,8 @@ RUN apt-get install -y ruby ruby-dev gem debhelper devscripts dh-apparmor \
     po-debconf ruby-minitest rubygems-integration
 
 RUN pip install virtualenv
-RUN gem install bundler thor json hipchat excon httparty nokogiri
+RUN gem install bundler thor json hipchat excon httparty nokogiri \
+    jenkins_api_client
 
 ENV JENKINS_HOME /srv/jenkins
 ENV JENKINS_SLAVE_AGENT_PORT 50000
