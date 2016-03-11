@@ -27,8 +27,8 @@ RUN curl -fL https://github.com/krallin/tini/releases/download/v0.5.0/tini-stati
 
 COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy
 
-ENV JENKINS_VERSION 2.0-alpha-2
-ENV JENKINS_SHA 605c7ebc6e8caf8b833034462860965dc42a2160
+ENV JENKINS_VERSION 2.0-alpha-3
+ENV JENKINS_SHA 9a536c140fb34ad7214829c81cffb54108344b2d
 
 
 # could use ADD but this one does not check Last-Modified header 
