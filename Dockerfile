@@ -25,6 +25,14 @@ ENV TINI_SHA 066ad710107dc7ee05d3aa6e4974f01dc98f3888
 RUN curl -fL https://github.com/krallin/tini/releases/download/v0.5.0/tini-static -o /bin/tini && chmod +x /bin/tini \
   && echo "$TINI_SHA /bin/tini" | sha1sum -c -
 
+# Install gosu to switch to jenkins user
+RUN gpg --keyserver pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 \
+  && curl -sSL -o /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/1.2/gosu-$(dpkg --print-architecture)" \
+  && curl -sSL -o /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/1.2/gosu-$(dpkg --print-architecture).asc" \
+  && gpg --verify /usr/local/bin/gosu.asc \
+  && rm /usr/local/bin/gosu.asc \
+  && chmod +x /usr/local/bin/gosu
+
 COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy
 
 ENV JENKINS_VERSION 1.642.2
@@ -47,10 +55,14 @@ EXPOSE 50000
 
 ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 
-USER jenkins
-
 COPY jenkins.sh /usr/local/bin/jenkins.sh
 ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
 # from a derived Dockerfile, can use `RUN plugins.sh active.txt` to setup /usr/share/jenkins/ref/plugins from a support bundle
 COPY plugins.sh /usr/local/bin/plugins.sh
+
+
+
+COPY volume-permissions.sh /usr/local/bin/volume-permissions.sh
+
+ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/volume-permissions.sh"]

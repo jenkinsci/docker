@@ -22,14 +22,37 @@ copy_reference_file() {
 		[[ ${rel} == plugins/*.jpi ]] && touch "/var/jenkins_home/${rel}.pinned"
 	fi;
 }
+
+# Handle Jenkins home volume permissions
+set_volume_permissions() {
+	if [ "$(whoami)" == "root" ]; then
+		# if root owns the jenkins home, change it to the jenkins user
+		if [ "$(stat -c '%U' $JENKINS_HOME)" == "root" ]; then
+			echo "Setting Jenkins home ownership to jenkins user"
+			chown jenkins:jenkins $JENKINS_HOME
+		fi
+	fi
+}
+
+
 export -f copy_reference_file
 touch "${COPY_REFERENCE_FILE_LOG}" || (echo "Can not write to ${COPY_REFERENCE_FILE_LOG}. Wrong volume permissions?" && exit 1)
 echo "--- Copying files at $(date)" >> "$COPY_REFERENCE_FILE_LOG"
 find /usr/share/jenkins/ref/ -type f -exec bash -c "copy_reference_file '{}'" \;
 
+set_volume_permissions
+
+if [ "$(whoami)" == "root" ]; then
+	# run main program as jenkins user
+	gosu_string="gosu jenkins "
+else
+	# running as a unprivileged user already
+	gosu_string=""
+fi
+
 # if `docker run` first argument start with `--` the user is passing jenkins launcher arguments
 if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
-  eval "exec java $JAVA_OPTS -jar /usr/share/jenkins/jenkins.war $JENKINS_OPTS \"\$@\""
+	eval "exec ${gosu_string}java $JAVA_OPTS -jar /usr/share/jenkins/jenkins.war $JENKINS_OPTS \"\$@\""
 fi
 
 # As argument is not jenkins, assume user want to run his own process, for sample a `bash` shell to explore this image
