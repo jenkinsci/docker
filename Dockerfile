@@ -13,7 +13,7 @@ RUN apt-get install -y build-essential zlib1g zlib1g-dev libxml2 libxml2-dev \
 #
 # Python dependencies
 #
-RUN apt-get install -y python-dev python-pip python-virtualenv
+RUN apt-get install -y python-dev python-pip
 #
 # Ruby dependencies
 #
@@ -21,7 +21,7 @@ RUN apt-get install -y ruby ruby-dev gem debhelper devscripts dh-apparmor \
     gem2deb gettext intltool-debian libcroco3 libjs-jquery libunistring0 \
     po-debconf ruby-minitest rubygems-integration
 
-RUN pip install virtualenv virtualenvwrapper
+RUN pip install --upgrade virtualenv virtualenvwrapper
 RUN gem install bundler thor json hipchat excon httparty nokogiri \
     jenkins_api_client
 
