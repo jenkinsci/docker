@@ -21,7 +21,7 @@ RUN apt-get install -y ruby ruby-dev gem debhelper devscripts dh-apparmor \
     gem2deb gettext intltool-debian libcroco3 libjs-jquery libunistring0 \
     po-debconf ruby-minitest rubygems-integration
 
-RUN pip install --upgrade virtualenv virtualenvwrapper
+RUN pip install --upgrade pip virtualenv virtualenvwrapper
 RUN gem install bundler thor json hipchat excon httparty nokogiri \
     jenkins_api_client
 
