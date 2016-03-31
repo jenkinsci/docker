@@ -1,6 +1,6 @@
 # The supercharged Jenking Docker v2 image (not official - based on alpine)
 
-<img src="https://wiki.jenkins-ci.org/download/attachments/2916393/superhero.svg"/>
+(https://wiki.jenkins-ci.org/download/attachments/2916393/superhero.svg)
 
 This is the supercharged Jenkins Continuous Integration and Delivery server based up on the official release. [http://jenkins-ci.org/](http://jenkins-ci.org/).
 
@@ -72,7 +72,7 @@ The sample docker compose excerpt above shows how to bind those volumes. A defau
 Refer to the Docker docs section on [Managing data in containers](https://docs.docker.com/userguide/dockervolumes/)
 
 
-# Upgrading
+### Upgrading
 
 As all the data needed is in the /var/jenkins_home directory - so depending on how you manage that - depends on how you upgrade. If you bind external host volumes for builds and workspaces, your jobs will be updated with jenkins. 
 
@@ -122,7 +122,7 @@ groovy:latest
 ```
 
 ## Todo's
-*[x] JenkinsCI official refactoring
-*[ ] DSL plugin bootstrap setup 
-*[ ] DSL sample jobs
+- [x] JenkinsCI official refactoring
+- [ ] DSL plugin bootstrap setup 
+- [ ] DSL sample jobs
 
