@@ -1,6 +1,6 @@
 # The supercharged Jenking Docker v2 image (not official - based on alpine)
 
-(https://wiki.jenkins-ci.org/download/attachments/2916393/superhero.svg)
+![Supercharged Jenkins](https://github.com/flavioaiello/jenkins/blob/master/superhero.png)
 
 This is the supercharged Jenkins Continuous Integration and Delivery server based up on the official release. [http://jenkins-ci.org/](http://jenkins-ci.org/).
 
