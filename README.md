@@ -1,4 +1,4 @@
-# The supercharged Jenking Docker v2 image (not official - based on alpine)
+# The supercharged Jenking v2 Docker image (not official - based on alpine)
 
 ![Supercharged Jenkins](https://github.com/flavioaiello/jenkins/blob/master/superhero.png)
 
