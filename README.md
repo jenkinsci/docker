@@ -10,7 +10,14 @@ This is the supercharged Jenkins Continuous Integration and Delivery server base
 ```
 docker run -p 8080:8080 serverking/jenkins
 ```
-### Docker Compose (http)
+### Docker Compose
+
+To start jenkins using docker compose simply emit the following command:
+```
+docker-compose up -d
+```
+
+#### Docker compose sample recipe (http)
 
 ```
 version: '2'
@@ -23,6 +30,7 @@ services:
     network_mode: "bridge"
     environment:
       - JAVA_OPTS=-Duser.timezone=Europe/Zurich
+      - JENKINS_OPTS=''
       - EXECUTORS=7
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -32,7 +40,7 @@ services:
         - "8080:8080"
     restart: always
 ```
-### Docker Compose (https)
+#### Docker Compose sample recipe(https)
 
 ```
 version: '2'
@@ -45,6 +53,7 @@ services:
     network_mode: "bridge"
     environment:
       - JAVA_OPTS=-Duser.timezone=Europe/Zurich
+      - JENKINS_OPTS=''
       - EXECUTORS=7
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -64,8 +73,8 @@ This Jenkins Docker image  will store job workspaces, builds and plugins interna
 ### Persistance and Backup
 
 Persistance of workspaces and builds is accomplished by binding volumes to the host - you can simply back up this directory. The default configuration comes with a slightly modified directory structure to better comply with persistance:
-*/var/jenkins_home/builds
-*/var/jenkins_home/workspaces
+* /var/jenkins_home/builds
+* /var/jenkins_home/workspaces
 
 The sample docker compose excerpt above shows how to bind those volumes. A default groovy init script will seamless rebuild the nextbuild number symlinks.
 
@@ -96,7 +105,7 @@ You might need to customize the JVM running Jenkins, typically to pass system pr
 variable for this purpose :
 
 ```
-docker run --name myjenkins -p 8080:8080 -e JAVA_OPTS=-Dhudson.footerURL=http://mycompany.com serverking/jenkins
+docker run --name myjenkins -p 8080:8080 -e JAVA_OPTS='-Duser.timezone=Europe/Zurich -Dhudson.footerURL=http://mycompany.com' serverking/jenkins
 ```
 
 ### Certificates

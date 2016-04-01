@@ -1,2 +1,3 @@
 import jenkins.model.*
-Jenkins.instance.setNumExecutors(System.getenv('EXECUTORS').toInteger())
+int executors = System.getenv('EXECUTORS') ? System.getenv('EXECUTORS').toInteger() : 2
+Jenkins.instance.setNumExecutors(executors)

@@ -8,6 +8,7 @@ services:
     network_mode: "bridge"
     environment:
       - JAVA_OPTS=-Duser.timezone=Europe/Zurich
+      - JENKINS_OPTS=''
       - EXECUTORS=7
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
