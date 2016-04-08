@@ -9,7 +9,7 @@ services:
     environment:
       - JAVA_OPTS=-Duser.timezone=Europe/Zurich
       - JENKINS_OPTS=''
-      - EXECUTORS=7
+      - JENKINS_EXECUTORS=7
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /data/jenkins/builds:/var/jenkins_home/builds
