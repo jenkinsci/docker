@@ -65,4 +65,3 @@ ENTRYPOINT usermod -u $(stat -c "%u" /var/jenkins_home) jenkins && \
 # from a derived Dockerfile, can use `RUN plugins.sh active.txt` to setup /usr/share/jenkins/ref/plugins from a support bundle
 COPY plugins.sh /usr/local/bin/plugins.sh
 
-USER ${user}
