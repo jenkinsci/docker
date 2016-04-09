@@ -1,4 +1,4 @@
-FROM frolvlad/alpine-oraclejdk8:cleaned
+FROM java:openjdk-8-jdk-alpine
 
 RUN apk --update add --no-cache curl zip bash && \
     rm -rf /var/cache/apk/*
