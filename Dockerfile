@@ -6,15 +6,11 @@ ENV JENKINS_HOME /var/jenkins_home
 ENV JENKINS_SLAVE_AGENT_PORT 50000
 
 ARG user=jenkins
-ARG group=jenkins
-ARG uid=1000
-ARG gid=1000
 
-# Jenkins is run with user `jenkins`, uid = 1000
-# If you bind mount a volume from the host or a data container, 
-# ensure you use the same uid
-RUN groupadd -g ${gid} ${group} \
-    && useradd -d "$JENKINS_HOME" -u ${uid} -g ${gid} -m -s /bin/bash ${user}
+# Jenkins is run with user `jenkins`
+# Set the group of the jenkins user to root, because that group has no 
+# special rights on most host systems.
+RUN useradd -d "$JENKINS_HOME" -g root -m -s /bin/bash ${user}
 
 # Jenkins home directory is a volume, so configuration and build history 
 # can be persisted and survive image upgrades
@@ -55,10 +51,17 @@ EXPOSE 50000
 
 ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 
-USER ${user}
-
 COPY jenkins.sh /usr/local/bin/jenkins.sh
-ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
+
+# See https://github.com/bdruemen/jenkins-docker-uid-from-volume/blob/master/Dockerfile
+
+# Grab gosu for easy step-down from root.
+ADD https://github.com/tianon/gosu/releases/download/1.5/gosu-amd64 /usr/local/bin/gosu
+RUN chmod 755 /usr/local/bin/gosu
+# Modify the UID of the jenkins user to match that of the mounted volume.
+ENTRYPOINT usermod -u $(stat -c "%u" /var/jenkins_home) jenkins && \
+        gosu jenkins /bin/tini -- /usr/local/bin/jenkins.sh
 
 # from a derived Dockerfile, can use `RUN plugins.sh active.txt` to setup /usr/share/jenkins/ref/plugins from a support bundle
 COPY plugins.sh /usr/local/bin/plugins.sh
+
