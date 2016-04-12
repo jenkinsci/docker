@@ -1,6 +1,6 @@
 FROM java:openjdk-8-jdk-alpine
 
-RUN apk --update add --no-cache curl zip bash && \
+RUN apk --update add --no-cache curl zip bash ttf-dejavu && \
     rm -rf /var/cache/apk/*
 
 ENV JENKINS_HOME /var/jenkins_home
