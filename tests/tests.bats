@@ -17,17 +17,15 @@ load test_helpers
 @test "test multiple JENKINS_OPTS" {
   # running --help --version should return the version, not the help
   local version=$(grep 'ENV JENKINS_VERSION' Dockerfile | sed -e 's/.*:-\(.*\)}/\1/')
-  # need the last line of output, removing the last char
-  local actual_version=$(docker run --rm -ti -e JENKINS_OPTS="--help --version" --name $SUT_CONTAINER -P $SUT_IMAGE | tail -n 1)
-  assert "${version}" echo "${actual_version::-1}"
+  # need the last line of output
+  assert "${version}" docker run --rm -ti -e JENKINS_OPTS="--help --version" --name $SUT_CONTAINER -P $SUT_IMAGE | tail -n 1
 }
 
 @test "test jenkins arguments" {
   # running --help --version should return the version, not the help
   local version=$(grep 'ENV JENKINS_VERSION' Dockerfile | sed -e 's/.*:-\(.*\)}/\1/')
-  # need the last line of output, removing the last char
-  local actual_version=$(docker run --rm -ti --name $SUT_CONTAINER -P $SUT_IMAGE --help --version | tail -n 1)
-  assert "${version}" echo "${actual_version::-1}"
+  # need the last line of output
+  assert "${version}" docker run --rm -ti --name $SUT_CONTAINER -P $SUT_IMAGE --help --version | tail -n 1
 }
 
 @test "create test container" {
@@ -49,6 +47,11 @@ load test_helpers
       bash -c "curl -fsSL $(get_jenkins_url)/systemInfo | sed 's/<\/tr>/<\/tr>\'$'\n/g' | grep '<td class=\"pane\">hudson.model.DirectoryBrowserSupport.CSP</td>' | sed -e '${sed_expr}'"
     assert 'Europe/Madrid' \
       bash -c "curl -fsSL $(get_jenkins_url)/systemInfo | sed 's/<\/tr>/<\/tr>\'$'\n/g' | grep '<td class=\"pane\">user.timezone</td>' | sed -e '${sed_expr}'"
+}
+
+@test "plugins are installed" {
+  docker build -t $SUT_IMAGE-plugins $BATS_TEST_DIRNAME/plugins
+  assert "maven-plugin.jpi maven-plugin.jpi.pinned" docker run -ti --rm $SUT_IMAGE-plugins ls /var/jenkins_home/plugins | sed -e 's/  / /'
 }
 
 @test "clean test containers" {
