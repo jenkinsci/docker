@@ -51,6 +51,10 @@ load test_helpers
       bash -c "curl -fsSL $(get_jenkins_url)/systemInfo | sed 's/<\/tr>/<\/tr>\'$'\n/g' | grep '<td class=\"pane\">user.timezone</td>' | sed -e '${sed_expr}'"
 }
 
+@test "Derived image with plugins.txt" {
+  docker build -t $SUT_IMAGE-plugins $BATS_TEST_DIRNAME/plugins
+}
+
 @test "clean test containers" {
     cleanup $SUT_CONTAINER
 }
