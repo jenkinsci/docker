@@ -49,8 +49,9 @@ load test_helpers
       bash -c "curl -fsSL $(get_jenkins_url)/systemInfo | sed 's/<\/tr>/<\/tr>\'$'\n/g' | grep '<td class=\"pane\">user.timezone</td>' | sed -e '${sed_expr}'"
 }
 
-@test "Derived image with plugins.txt" {
+@test "plugins are installed" {
   docker build -t $SUT_IMAGE-plugins $BATS_TEST_DIRNAME/plugins
+  assert "maven-plugin.jpi maven-plugin.jpi.pinned" docker run -ti --rm $SUT_IMAGE-plugins ls /var/jenkins_home/plugins | sed -e 's/  / /'
 }
 
 @test "clean test containers" {
