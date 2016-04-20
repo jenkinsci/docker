@@ -10,6 +10,7 @@ function assert {
     local expected_output=$1
     shift
     local actual_output=$("$@")
+    actual_output="${actual_output//[$'\t\r\n']}" # remove newlines
     if ! [ "$actual_output" = "$expected_output" ]; then
         echo "expected: \"$expected_output\""
         echo "actual:   \"$actual_output\""
