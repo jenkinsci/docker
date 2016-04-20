@@ -1,3 +1,4 @@
+#!/bin/bash
 
 # check dependencies
 (
@@ -9,7 +10,8 @@
 function assert {
     local expected_output=$1
     shift
-    local actual_output=$("$@")
+    local actual_output
+    actual_output=$("$@")
     actual_output="${actual_output//[$'\t\r\n']}" # remove newlines
     if ! [ "$actual_output" = "$expected_output" ]; then
         echo "expected: \"$expected_output\""
@@ -34,7 +36,7 @@ function retry {
         sleep $delay
     done
 
-    echo "Command \"$@\" failed $attempts times. Status: $status. Output: $output" >&2
+    echo "Command \"$*\" failed $attempts times. Status: $status. Output: $output" >&2
     false
 }
 
@@ -42,13 +44,13 @@ function get_jenkins_url {
     if [ -z "${DOCKER_HOST}" ]; then
         DOCKER_IP=localhost
     else
-        DOCKER_IP=$(echo $DOCKER_HOST | sed -e 's|tcp://\(.*\):[0-9]*|\1|')
+        DOCKER_IP=$(echo "$DOCKER_HOST" | sed -e 's|tcp://\(.*\):[0-9]*|\1|')
     fi
-    echo "http://$DOCKER_IP:$(docker port $SUT_CONTAINER 8080 | cut -d: -f2)"
+    echo "http://$DOCKER_IP:$(docker port "$SUT_CONTAINER" 8080 | cut -d: -f2)"
 }
 
 function test_url {
-    run curl --output /dev/null --silent --head --fail --connect-timeout 30 --max-time 60 $(get_jenkins_url)$1
+    run curl --output /dev/null --silent --head --fail --connect-timeout 30 --max-time 60 "$(get_jenkins_url)$1"
     if [ "$status" -eq 0 ]; then
         true
     else
@@ -59,6 +61,6 @@ function test_url {
 }
 
 function cleanup {
-    docker kill $1 &>/dev/null ||:
-    docker rm -fv $1 &>/dev/null ||:
+    docker kill "$1" &>/dev/null ||:
+    docker rm -fv "$1" &>/dev/null ||:
 }
