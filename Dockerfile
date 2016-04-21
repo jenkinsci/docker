@@ -5,10 +5,11 @@ ADD src /
 ENV JAVA_HOME /usr/lib/jvm/java-1.7-openjdk/jre
 ENV JENKINS_HOME /var/jenkins_home
 ENV JENKINS_SLAVE_AGENT_PORT 50000
-ENV JENKINS_VERSION 2.0-beta-1
+ENV JENKINS_VERSION 2.0-beta-2
 
 # Packages
-RUN echo http://dl-4.alpinelinux.org/alpine/edge/community >> /etc/apk/repositories && \
+RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main && \
+    apk add --no-cache --repository  http://dl-cdn.alpinelinux.org/alpine/edge/community && \
     apk update && \
     apk upgrade && \
     apk add ca-certificates supervisor openjdk7-jre-base java-common bash git curl zip wget docker ttf-dejavu && \
