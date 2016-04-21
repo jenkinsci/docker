@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -e
+set -x
+
 JENKINS_VERSION=`curl -q https://api.github.com/repos/jenkinsci/jenkins/tags | grep '"name":' | grep -o '[0-9]\.[0-9]+'  | uniq | sort | tail -1`
 echo $JENKINS_VERSION
 
