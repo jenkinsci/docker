@@ -34,9 +34,9 @@ RUN curl -fsSL https://github.com/krallin/tini/releases/download/v0.5.0/tini-sta
 COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy
 
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION ${JENKINS_VERSION:-1.651.1}
+ENV JENKINS_VERSION ${JENKINS_VERSION:-2.0}
 ARG JENKINS_SHA
-ENV JENKINS_SHA ${JENKINS_SHA:-31fcae60edba2ecb6c380c59f374761723981283}
+ENV JENKINS_SHA ${JENKINS_SHA:-da06f963edb627f0ced2fce612f9985d1928f79b}
 
 
 # could use ADD but this one does not check Last-Modified header 
