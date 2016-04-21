@@ -44,7 +44,7 @@ ENV JENKINS_SHA ${JENKINS_SHA:-da06f963edb627f0ced2fce612f9985d1928f79b}
 RUN curl -fsSL http://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war -o /usr/share/jenkins/jenkins.war \
   && echo "$JENKINS_SHA  /usr/share/jenkins/jenkins.war" | sha1sum -c -
 
-ENV JENKINS_UC https://updates.jenkins-ci.org
+ENV JENKINS_UC https://updates.jenkins.io
 RUN chown -R ${user} "$JENKINS_HOME" /usr/share/jenkins/ref
 
 # for main web interface:
