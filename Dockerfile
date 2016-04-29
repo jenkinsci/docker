@@ -5,7 +5,7 @@ ADD src /
 ENV JAVA_HOME /usr/lib/jvm/java-1.7-openjdk/jre
 ENV JENKINS_HOME /var/jenkins_home
 ENV JENKINS_SLAVE_AGENT_PORT 50000
-ENV JENKINS_VERSION 2.0-beta-2
+ENV JENKINS_VERSION 2.0
 
 # Packages
 RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main && \
