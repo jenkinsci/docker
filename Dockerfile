@@ -1,6 +1,6 @@
 FROM java:openjdk-8-jdk-alpine
 
-RUN apk --update add --no-cache git openssh-client curl zip unzip bash ttf-dejavu && rm -rf /var/cache/apk/*
+RUN apk add --no-cache git openssh-client curl zip unzip bash ttf-dejavu
 
 ENV JENKINS_HOME /var/jenkins_home
 ENV JENKINS_SLAVE_AGENT_PORT 50000
