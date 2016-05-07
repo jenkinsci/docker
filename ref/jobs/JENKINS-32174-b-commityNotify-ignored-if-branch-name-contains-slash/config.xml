@@ -8,7 +8,7 @@
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
-        <url>git://mark-pc1/git/mwaite/bugs/JENKINS-32174-b.git</url>
+        <url>git://mark-pc1.markwaite.net/git/mwaite/bugs/JENKINS-32174-b.git</url>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>
@@ -19,7 +19,7 @@
     <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
     <gitTool>Default</gitTool>
     <browser class="hudson.plugins.git.browser.GitWeb">
-      <url>http://mark-pc1/gitweb?p=mwaite/bugs/JENKINS-32174-b.git</url>
+      <url>http://mark-pc1.markwaite.net/gitweb?p=mwaite/bugs/JENKINS-32174-b.git</url>
     </browser>
     <submoduleCfg class="list"/>
     <extensions>
