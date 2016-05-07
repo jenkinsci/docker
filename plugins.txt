@@ -15,7 +15,9 @@ elastic-axis:latest
 findbugs:latest
 git-client:latest
 github-api:latest
+github-branch-source:latest
 github:latest
+github-organization-folder:latest
 git:latest
 git-parameter:latest
 git-server:latest
