@@ -30,7 +30,7 @@ jquery-detached:latest
 jquery:latest
 jquery-ui:latest
 junit
-ldap:latest
+ldap
 leastload:latest
 log-parser:latest
 mailer
