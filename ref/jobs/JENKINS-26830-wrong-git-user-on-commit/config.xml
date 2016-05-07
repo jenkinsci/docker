@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<matrix-project plugin="matrix-project@1.6">
+  <actions/>
+  <description>See [JENKINS-26830](https://issues.jenkins-ci.org/browse/JENKINS-26830). &#xd;
+Console output for each job should contain &quot;`user.name=Mark Waite`&quot; and &quot;`user.email=mark.earl.waite@gmail.com`&quot;.</description>
+  <logRotator class="hudson.tasks.LogRotator">
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>15</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.2">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>git://github.com/MarkEWaite/git-client-plugin.git</url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>*/proto-jdk8</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <gitTool>jgit</gitTool>
+    <browser class="hudson.plugins.git.browser.GithubWeb">
+      <url>https://github.com/MarkEWaite/git-client-plugin</url>
+    </browser>
+    <submoduleCfg class="list"/>
+    <extensions>
+      <hudson.plugins.git.extensions.impl.CleanCheckout/>
+    </extensions>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers>
+    <hudson.triggers.SCMTrigger>
+      <spec>@daily</spec>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <axes>
+    <org.jenkinsci.plugins.elasticaxisplugin.ElasticAxis plugin="elastic-axis@1.2">
+      <name>label</name>
+      <values>
+        <string>master</string>
+      </values>
+      <label>windows , linux </label>
+      <ignoreOffline>true</ignoreOffline>
+    </org.jenkinsci.plugins.elasticaxisplugin.ElasticAxis>
+    <hudson.matrix.JDKAxis>
+      <name>jdk</name>
+      <values>
+        <string>java-8</string>
+        <string>java-7</string>
+      </values>
+    </hudson.matrix.JDKAxis>
+  </axes>
+  <builders>
+    <hudson.plugins.xshell.XShellBuilder plugin="xshell@0.10">
+      <commandLine>git config --list</commandLine>
+      <executeFromWorkingDir>false</executeFromWorkingDir>
+      <regexToKill></regexToKill>
+      <timeAllocated></timeAllocated>
+    </hudson.plugins.xshell.XShellBuilder>
+  </builders>
+  <publishers>
+    <hudson.plugins.textfinder.TextFinderPublisher plugin="text-finder@1.10">
+      <regexp>user\.name.*Mark.Waite</regexp>
+      <succeedIfFound>true</succeedIfFound>
+      <unstableIfFound>false</unstableIfFound>
+      <alsoCheckConsoleOutput>true</alsoCheckConsoleOutput>
+    </hudson.plugins.textfinder.TextFinderPublisher>
+  </publishers>
+  <buildWrappers/>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+  </executionStrategy>
+</matrix-project>

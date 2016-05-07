@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>COMMIT_MSG</name>
+          <description>Commit message for this set of changes</description>
+          <defaultValue>Committed at $(date)</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <assignedNode>master</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>workspace_dir=$(pwd)
+
+# Remove stored copies of repo so it is not included in the files added to repo
+rm -f repo.bundle
+
+cd $JENKINS_HOME/. || exit 1
+
+if [ ! -d $JENKINS_HOME/.git ]; then
+    git config --global user.name &quot;Jenkins User&quot; &amp;&amp; \
+    git config --global user.email mark.earl.waite@gmail.com &amp;&amp; \
+    git init &amp;&amp; \
+    echo .cache/ >> .gitignore &amp;&amp; \
+    echo .config/ >> .gitignore &amp;&amp; \
+    echo .dbus/ >> .gitignore &amp;&amp; \
+    echo .java/ >> .gitignore &amp;&amp; \
+    echo .jenkins/ >> .gitignore &amp;&amp; \
+    echo .m2/ >> .gitignore &amp;&amp; \
+    echo tools/ >> .gitignore &amp;&amp; \
+    echo userContent/ >> .gitignore &amp;&amp; \
+    echo war/ >> .gitignore &amp;&amp; \
+    git add .gitignore
+fi
+
+git add .
+git commit -m &quot;$COMMIT_MSG&quot;
+
+# Store git history bundle for import elsewhere
+git bundle create $workspace_dir/repo.bundle HEAD</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

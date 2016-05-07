@@ -5,14 +5,13 @@ The Jenkins Continuous Integration and Delivery server.
 This is a fully functional Jenkins server, based on the Long Term Support release
 [http://jenkins-ci.org/](http://jenkins-ci.org/).
 
-
 <img src="http://jenkins-ci.org/sites/default/files/jenkins_logo.png"/>
-
 
 # Usage
 
 ```
-docker run -p 8080:8080 -p 50000:50000 jenkins
+docker build -t markewaite/master-with-plugins:latest .
+docker run -i --rm -p 8080:8080 -p 50000:50000 -v ~/.m2/:/var/jenkins_home/.m2/ -v ~/public_html/:/var/jenkins_home/userContent/ -t markewaite/master-with-plugins:latest
 ```
 
 NOTE: read below the _build executors_ part for the role of the `50000` port mapping.
@@ -26,7 +25,6 @@ docker run -p 8080:8080 -p 50000:50000 -v /your/home:/var/jenkins_home jenkins
 
 This will store the jenkins data in `/your/home` on the host.
 Ensure that `/your/home` is accessible by the jenkins user in container (jenkins user - uid 1000) or use `-u some_other_user` parameter with `docker run`.
-
 
 You can also use a volume container:
 
@@ -65,7 +63,6 @@ FROM jenkins
 COPY executors.groovy /usr/share/jenkins/ref/init.groovy.d/executors.groovy
 ```
 
-
 # Attaching build executors
 
 You can run builds on the master out of the box.
@@ -97,7 +94,6 @@ java.util.logging.ConsoleHandler.level=FINEST
 EOF
 docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS="-Djava.util.logging.config.file=/var/jenkins_home/log.properties" -v `pwd`/data:/var/jenkins_home jenkins
 ```
-
 
 # Passing Jenkins launcher parameters
 
@@ -163,6 +159,8 @@ In case you *do* want to override, append '.override' to the name of the referen
 
 Also see [JENKINS-24986](https://issues.jenkins-ci.org/browse/JENKINS-24986)
 
+## Preinstalling plugins
+
 For your convenience, you also can use a plain text file to define plugins to be installed
 (using core-support plugin format).
 All plugins need to be listed in the form `pluginID:version` as there is no transitive dependency resolution.
@@ -197,6 +195,14 @@ matrix-project:1.4.1
 script-security:1.13
 ...
 ```
+
+For 2.x-derived images, you may also want to
+
+    RUN echo 2.0 > /usr/share/jenkins/ref/jenkins.install.UpgradeWizard.state
+
+to indicate that this Jenkins installation is fully configured.
+Otherwise a banner will appear prompting the user to install additional plugins,
+which may be inappropriate.
 
 # Upgrading
 

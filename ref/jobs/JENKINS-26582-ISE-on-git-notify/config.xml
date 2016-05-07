@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<matrix-project plugin="matrix-project@1.6">
+  <actions/>
+  <description>Started by the [JENKINS-26582-launcher](http://mark-pc1.markwaite.net:8080/view/bugs-pass/job/JENKINS-26582-launcher/) job</description>
+  <logRotator class="hudson.tasks.LogRotator">
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>17</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.14.2">
+      <projectUrl>https://github.com/allegro/axion-release-plugin.git/</projectUrl>
+      <displayName></displayName>
+    </com.coravy.hudson.plugins.github.GithubProjectProperty>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.1-SNAPSHOT">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>https://github.com/allegro/axion-release-plugin.git</url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>*/master</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <gitTool>Default</gitTool>
+    <browser class="hudson.plugins.git.browser.GithubWeb">
+      <url>https://github.com/allegro/axion-release-plugin.git</url>
+    </browser>
+    <submoduleCfg class="list"/>
+    <extensions>
+      <hudson.plugins.git.extensions.impl.AuthorInChangelog/>
+      <hudson.plugins.git.extensions.impl.CloneOption>
+        <shallow>false</shallow>
+        <noTags>false</noTags>
+        <reference></reference>
+        <timeout>1</timeout>
+      </hudson.plugins.git.extensions.impl.CloneOption>
+      <hudson.plugins.git.extensions.impl.SubmoduleOption>
+        <disableSubmodules>true</disableSubmodules>
+        <recursiveSubmodules>false</recursiveSubmodules>
+        <trackingSubmodules>false</trackingSubmodules>
+      </hudson.plugins.git.extensions.impl.SubmoduleOption>
+      <hudson.plugins.git.extensions.impl.BuildChooserSetting>
+        <buildChooser class="hudson.plugins.git.util.DefaultBuildChooser"/>
+      </hudson.plugins.git.extensions.impl.BuildChooserSetting>
+      <hudson.plugins.git.extensions.impl.LocalBranch>
+        <localBranch>master</localBranch>
+      </hudson.plugins.git.extensions.impl.LocalBranch>
+    </extensions>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers>
+    <hudson.triggers.SCMTrigger>
+      <spec></spec>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <axes>
+    <org.jenkinsci.plugins.elasticaxisplugin.ElasticAxis plugin="elastic-axis@1.2">
+      <name>label</name>
+      <values>
+        <string>coleen-pc3</string>
+        <string>waite2011</string>
+        <string>centos67a</string>
+        <string>tropicana</string>
+        <string>win7x64a</string>
+        <string>win7x86a</string>
+        <string>wheezy64b</string>
+        <string>debian8x86a</string>
+        <string>mark-pc1-ubuntu12</string>
+        <string>ubuntu14b</string>
+        <string>ubuntu14c</string>
+        <string>ubuntu14c-ubuntu12</string>
+        <string>debian8-debian8</string>
+        <string>debian8-debian7</string>
+        <string>debian8-ubuntu12</string>
+        <string>centos67a-git-2.6.0</string>
+        <string>debian8-debian6</string>
+        <string>mark-pc1-debian6</string>
+        <string>mark-pc1-debian7</string>
+        <string>alanmwaite-pc</string>
+        <string>master</string>
+        <string>mark-pc1-debian8</string>
+        <string>win10x64b</string>
+        <string>win10x64a</string>
+        <string>centos7x64</string>
+        <string>centos7x64b</string>
+        <string>debian8</string>
+      </values>
+      <label>linux || windows </label>
+      <ignoreOffline>true</ignoreOffline>
+    </org.jenkinsci.plugins.elasticaxisplugin.ElasticAxis>
+  </axes>
+  <builders>
+    <hudson.plugins.xshell.XShellBuilder plugin="xshell@0.10">
+      <commandLine>echo $label</commandLine>
+      <executeFromWorkingDir>false</executeFromWorkingDir>
+      <regexToKill></regexToKill>
+      <timeAllocated></timeAllocated>
+    </hudson.plugins.xshell.XShellBuilder>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+  </executionStrategy>
+</matrix-project>

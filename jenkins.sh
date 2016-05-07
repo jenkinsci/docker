@@ -19,7 +19,7 @@ copy_reference_file() {
 		mkdir -p "$JENKINS_HOME/${dir:23}"
 		cp -r "${f}" "$JENKINS_HOME/${rel}";
 		# pin plugins on initial copy
-		[[ ${rel} == plugins/*.jpi ]] && touch "$JENKINS_HOME/${rel}.pinned"
+		# [[ ${rel} == plugins/*.jpi ]] && touch "$JENKINS_HOME/${rel}.pinned"
 	fi;
 }
 : ${JENKINS_HOME:="/var/jenkins_home"}
