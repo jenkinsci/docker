@@ -5,7 +5,7 @@ The Jenkins Continuous Integration and Delivery server.
 This is a fully functional Jenkins server, based on the Long Term Support release.
 [http://jenkins.io/](http://jenkins.io/).
 
-For weekly builds check out [`jenkinsci/jenkins`](https://hub.docker.com/r/jenkinsci/jenkins/)
+For weekly releases check out [`jenkinsci/jenkins`](https://hub.docker.com/r/jenkinsci/jenkins/)
 
 
 <img src="http://jenkins-ci.org/sites/default/files/jenkins_logo.png"/>
