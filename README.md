@@ -2,8 +2,10 @@
 
 The Jenkins Continuous Integration and Delivery server.
 
-This is a fully functional Jenkins server, based on the Long Term Support release
-[http://jenkins-ci.org/](http://jenkins-ci.org/).
+This is a fully functional Jenkins server, based on the Long Term Support release.
+[http://jenkins.io/](http://jenkins.io/).
+
+For weekly releases check out [`jenkinsci/jenkins`](https://hub.docker.com/r/jenkinsci/jenkins/)
 
 
 <img src="http://jenkins-ci.org/sites/default/files/jenkins_logo.png"/>
@@ -163,6 +165,8 @@ In case you *do* want to override, append '.override' to the name of the referen
 
 Also see [JENKINS-24986](https://issues.jenkins-ci.org/browse/JENKINS-24986)
 
+## Preinstalling plugins
+
 For your convenience, you also can use a plain text file to define plugins to be installed
 (using core-support plugin format).
 All plugins need to be listed in the form `pluginID:version` as there is no transitive dependency resolution.
@@ -197,6 +201,14 @@ matrix-project:1.4.1
 script-security:1.13
 ...
 ```
+
+For 2.x-derived images, you may also want to
+
+    RUN echo 2.0 > /usr/share/jenkins/ref/jenkins.install.UpgradeWizard.state
+
+to indicate that this Jenkins installation is fully configured.
+Otherwise a banner will appear prompting the user to install additional plugins,
+which may be inappropriate.
 
 # Upgrading
 
