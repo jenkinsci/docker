@@ -1,7 +1,7 @@
 ace-editor:latest
 analysis-core:latest
 antisamy-markup-formatter
-ant:latest
+ant
 bitbucket:latest
 branch-api:latest
 cloudbees-folder:latest
