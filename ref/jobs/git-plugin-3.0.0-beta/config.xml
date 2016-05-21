@@ -5,14 +5,14 @@
   <keepDependencies>false</keepDependencies>
   <properties>
     <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.14.0">
-      <projectUrl>https://github.com/jenkinsci/git-plugin/</projectUrl>
+      <projectUrl>https://github.com/MarkEWaite/git-plugin/</projectUrl>
     </com.coravy.hudson.plugins.github.GithubProjectProperty>
   </properties>
   <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.0">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
-        <url>git://github.com/jenkinsci/git-plugin.git</url>
+        <url>git://github.com/MarkEWaite/git-plugin.git</url>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>
@@ -23,7 +23,7 @@
     <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
     <gitTool>Default</gitTool>
     <browser class="hudson.plugins.git.browser.GithubWeb">
-      <url>https://github.com/jenkinsci/git-plugin</url>
+      <url>https://github.com/MarkEWaite/git-plugin</url>
     </browser>
     <submoduleCfg class="list"/>
     <extensions>
