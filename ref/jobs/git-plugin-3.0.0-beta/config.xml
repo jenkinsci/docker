@@ -46,9 +46,10 @@
   <builders>
     <hudson.tasks.Maven>
       <targets>clean install</targets>
-      <mavenName>maven-latest-java6</mavenName>
+      <mavenName>maven-latest</mavenName>
       <properties>maven.test.failure.ignore=true
-maven.findbugs.failure.strict=false</properties>
+maven.findbugs.failure.strict=false
+concurrency=1</properties>
       <usePrivateRepository>false</usePrivateRepository>
       <settings class="jenkins.mvn.DefaultSettingsProvider"/>
       <globalSettings class="jenkins.mvn.DefaultGlobalSettingsProvider"/>
