@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 function download() {
 	plugin=$1
@@ -23,9 +23,16 @@ function download() {
 function resolveDependencies() {	
 	plugin=$1
 
-	dependencies=`jrunscript -e 'java.lang.System.out.println(new java.util.jar.JarFile("'${plugin}.hpi'").getManifest().getMainAttributes().getValue("Plugin-Dependencies"));'`
+	dependencies=`jrunscript -e '\
+	java.lang.System.out.println(\
+		new java.util.jar.JarFile("'${plugin}.hpi'")\
+			.getManifest()\
+			.getMainAttributes()\
+			.getValue("Plugin-Dependencies")\
+	);'`
 
 	if [[ "$dependencies" == "null" ]]; then
+		echo " > plugin has no dependencies"
 		return
 	fi
 
@@ -46,4 +53,8 @@ function resolveDependencies() {
 }
 
 
-download $1           
+shift
+for plugin in "$@"
+do
+    download $plugin
+done
