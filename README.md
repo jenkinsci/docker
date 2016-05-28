@@ -2,8 +2,10 @@
 
 The Jenkins Continuous Integration and Delivery server.
 
-This is a fully functional Jenkins server, based on the Long Term Support release
-http://jenkins-ci.org/
+This is a fully functional Jenkins server, based on the Long Term Support release.
+[http://jenkins.io/](http://jenkins.io/).
+
+For weekly releases check out [`jenkinsci/jenkins`](https://hub.docker.com/r/jenkinsci/jenkins/)
 
 
 <img src="http://jenkins-ci.org/sites/default/files/jenkins_logo.png"/>
@@ -14,6 +16,8 @@ http://jenkins-ci.org/
 ```
 docker run -p 8080:8080 -p 50000:50000 jenkins
 ```
+
+NOTE: read below the _build executors_ part for the role of the `50000` port mapping.
 
 This will store the workspace in /var/jenkins_home. All Jenkins data lives in there - including plugins and configuration.
 You will probably want to make that a persistent volume (recommended):
@@ -50,8 +54,9 @@ For more info check Docker docs section on [Managing data in containers](https:/
 
 You can specify and set the number of executors of your Jenkins master instance using a groovy script. By default its set to 2 executors, but you can extend the image and change it to your desired number of executors :
 
+`executors.groovy`
 ```
-# executors.groovy
+import jenkins.model.*
 Jenkins.instance.setNumExecutors(5)
 ```
 
@@ -65,18 +70,36 @@ COPY executors.groovy /usr/share/jenkins/ref/init.groovy.d/executors.groovy
 
 # Attaching build executors
 
-You can run builds on the master (out of the box) but if you want to attach build slave servers: make sure you map the port: ```-p 50000:50000``` - which will be used when you connect a slave agent.
+You can run builds on the master out of the box.
 
-<a href="https://registry.hub.docker.com/u/maestrodev/build-agent/">Here</a> is an example docker container you can use as a build server with lots of good tools installed - which is well worth trying.
+But if you want to attach build slave servers **through JNLP (Java Web Start)**: make sure you map the port: ```-p 50000:50000``` - which will be used when you connect a slave agent.
+
+If you are only using [SSH slaves](https://wiki.jenkins-ci.org/display/JENKINS/SSH+Slaves+plugin), then you do **NOT** need to put that port mapping.
 
 # Passing JVM parameters
 
-You might need to customize the JVM running Jenkins, typically to pass system properties or tweak heap memory settings. Use JAVA_OPTS environment 
+You might need to customize the JVM running Jenkins, typically to pass system properties or tweak heap memory settings. Use JAVA_OPTS environment
 variable for this purpose :
 
 ```
 docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS=-Dhudson.footerURL=http://mycompany.com jenkins
 ```
+
+# Configuring logging
+
+Jenkins logging can be configured through a properties file and `java.util.logging.config.file` Java property.
+For example:
+
+```
+mkdir data
+cat > data/log.properties <<EOF
+handlers=java.util.logging.ConsoleHandler
+jenkins.level=FINEST
+java.util.logging.ConsoleHandler.level=FINEST
+EOF
+docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS="-Djava.util.logging.config.file=/var/jenkins_home/log.properties" -v `pwd`/data:/var/jenkins_home jenkins
+```
+
 
 # Passing Jenkins launcher parameters
 
@@ -112,7 +135,7 @@ docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGEN
 
 # Installing more tools
 
-You can run your container as root - and install via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile to customise, for example: 
+You can run your container as root - and install via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile to customise, for example:
 
 ```
 FROM jenkins
@@ -122,7 +145,7 @@ RUN apt-get update && apt-get install -y ruby make more-thing-here
 USER jenkins # drop back to the regular jenkins user - good practice
 ```
 
-In such a derived image, you can customize your jenkins instance with hook scripts or additional plugins. 
+In such a derived image, you can customize your jenkins instance with hook scripts or additional plugins.
 For this purpose, use `/usr/share/jenkins/ref` as a place to define the default JENKINS_HOME content you
 wish the target installation to look like :
 
@@ -133,28 +156,77 @@ COPY custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
 RUN /usr/local/bin/plugins.sh /usr/share/jenkins/ref/plugins.txt
 ```
 
-When jenkins container starts, it will check JENKINS_HOME has this reference content, and copy them there if required. It will not override such files, so if you upgraded some plugins from UI they won't be reverted on next start.
+When jenkins container starts, it will check JENKINS_HOME has this reference content, and copy them
+there if required. It will not override such files, so if you upgraded some plugins from UI they won't
+be reverted on next start.
+
+In case you *do* want to override, append '.override' to the name of the reference file. E.g. a file named
+`/usr/share/jenkins/ref/config.xml.override` will overwrite an existing `config.xml` file in JENKINS_HOME.
 
 Also see [JENKINS-24986](https://issues.jenkins-ci.org/browse/JENKINS-24986)
 
-For your convenience, you also can use a plain text file to define plugins to be installed (using core-support plugin format)
+## Preinstalling plugins
+
+For your convenience, you also can use a plain text file to define plugins to be installed
+(using core-support plugin format).
+All plugins need to be listed in the form `pluginID:version` as there is no transitive dependency resolution.
+
 ```
-pluginID:version
-anotherPluginID:version
+credentials:1.18
+maven-plugin:2.7.1
+...
 ```
-And in derived Dockerfile just invoke the utility plugin.sh script
+
+And in derived Dockerfile just invoke the utility `plugins.sh` script
+
 ```
 FROM jenkins
 COPY plugins.txt /usr/share/jenkins/plugins.txt
 RUN /usr/local/bin/plugins.sh /usr/share/jenkins/plugins.txt
 ```
 
+Here is an example to get the list of plugins from an existing server you can use the following curl command:
+
+```
+JENKINS_HOST=username:password@myhost.com:port
+curl -sSL "http://$JENKINS_HOST/pluginManager/api/xml?depth=1&xpath=/*/*/shortName|/*/*/version&wrapper=plugins" | perl -pe 's/.*?<shortName>([\w-]+).*?<version>([^<]+)()(<\/\w+>)+/\1 \2\n/g'|sed 's/ /:/'
+```
+
+Example Output:
+
+```
+cucumber-testresult-plugin:0.8.2
+pam-auth:1.1
+matrix-project:1.4.1
+script-security:1.13
+...
+```
+
+For 2.x-derived images, you may also want to
+
+    RUN echo 2.0 > /usr/share/jenkins/ref/jenkins.install.UpgradeWizard.state
+
+to indicate that this Jenkins installation is fully configured.
+Otherwise a banner will appear prompting the user to install additional plugins,
+which may be inappropriate.
 
 # Upgrading
 
 All the data needed is in the /var/jenkins_home directory - so depending on how you manage that - depends on how you upgrade. Generally - you can copy it out - and then "docker pull" the image again - and you will have the latest LTS - you can then start up with -v pointing to that data (/var/jenkins_home) and everything will be as you left it.
 
 As always - please ensure that you know how to drive docker - especially volume handling!
+
+# Building
+
+Build with the usual
+
+    docker build -t jenkins .
+
+Tests are written using [bats](https://github.com/sstephenson/bats) under the `tests` dir
+
+    bats tests
+
+Bats can be easily installed with `brew install bats` on OS X
 
 # Questions?
 

@@ -24,4 +24,5 @@ while read spec || [ -n "$spec" ]; do
       JENKINS_UC_DOWNLOAD=$JENKINS_UC/download
     fi
     curl -sSL -f ${JENKINS_UC_DOWNLOAD}/plugins/${plugin[0]}/${plugin[1]}/${plugin[0]}.hpi -o $REF/${plugin[0]}.jpi
+    unzip -qqt $REF/${plugin[0]}.jpi
 done  < $1
