@@ -13,7 +13,7 @@ docker build --build-arg JENKINS_VERSION=$JENKINS_VERSION \
              --build-arg JENKINS_SHA=$JENKINS_SHA \
              --tag jenkinsci/jenkins:$JENKINS_VERSION .
 
-docker tag jenkinsci/jenkins:$JENKINS_VERSION jenkinsci/jenkins:latest
+docker tag -f jenkinsci/jenkins:$JENKINS_VERSION jenkinsci/jenkins:latest
 
 docker push jenkinsci/jenkins:$JENKINS_VERSION
 docker push jenkinsci/jenkins:latest
