@@ -15,7 +15,7 @@ function download() {
 			exit -1
 		fi
 	else
-		echo "$plugin is allready downloaded."
+		echo "$plugin is already downloaded."
 	fi	
 	resolveDependencies $1
 }
