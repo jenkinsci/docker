@@ -10,7 +10,7 @@
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <hudson.model.BooleanParameterDefinition>
-          <name>TRY_ALL_CREDENTIALS</name>
+          <name>TEST_ALL_CREDENTIALS</name>
           <description>Test all credentials or only a randomly selected subset</description>
           <defaultValue>true</defaultValue>
         </hudson.model.BooleanParameterDefinition>
@@ -57,8 +57,7 @@
       <targets>clean install</targets>
       <mavenName>maven-latest-java6</mavenName>
       <properties>maven.test.failure.ignore=true
-maven.findbugs.failure.strict=false
-TEST_ALL_CREDENTIALS=$TRY_ALL_CREDENTIALS</properties>
+maven.findbugs.failure.strict=false</properties>
       <usePrivateRepository>false</usePrivateRepository>
       <settings class="jenkins.mvn.DefaultSettingsProvider"/>
       <globalSettings class="jenkins.mvn.DefaultGlobalSettingsProvider"/>
