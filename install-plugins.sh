@@ -17,7 +17,10 @@ function download() {
 	else
 		echo "$plugin is already downloaded."
 	fi	
-	resolveDependencies $1
+
+	if [[ ! -f ${plugin}.resolved ]]; then
+		resolveDependencies $1
+	fi
 }
 
 function resolveDependencies() {	
@@ -50,6 +53,7 @@ function resolveDependencies() {
     		download $plugin
 		fi
 	done
+	touch ${plugin}.resolved
 }
 
 
@@ -58,3 +62,6 @@ for plugin in "$@"
 do
     download $plugin
 done
+
+# cleanup 'resolved' flag files
+rm *.resolved
