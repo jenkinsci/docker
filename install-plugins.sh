@@ -1,18 +1,24 @@
 #! /bin/bash
 
 function download() {
-	plugin=$1
+	local plugin=$1; shift
 
 	if [[ ! -f ${plugin}.hpi ]]; then
 
-		url=http://updates.jenkins-ci.org/latest/${plugin}.hpi
+		url=${JENKINS_UC}/latest/${plugin}.hpi
 		echo "download plugin : $plugin from $url"
 
 		curl -s -f -L $url -o ${plugin}.hpi
 		if [[ $? -ne 0 ]]
 		then
-			>&2 echo "failed to download plugin ${plugin}"
-			exit -1
+			# some plugin don't follow the rules about artifact ID
+			# typically: docker-plugin
+			curl -s -f -L $url -o ${plugin}-plugin.hpi
+			if [[ $? -ne 0 ]]
+			then
+				>&2 echo "failed to download plugin ${plugin}"
+				exit -1
+			fi
 		fi
 	else
 		echo "$plugin is already downloaded."
@@ -24,7 +30,7 @@ function download() {
 }
 
 function resolveDependencies() {	
-	plugin=$1
+	local plugin=$1; shift
 
 	dependencies=`jrunscript -e '\
 	java.lang.System.out.println(\
@@ -56,8 +62,6 @@ function resolveDependencies() {
 	touch ${plugin}.resolved
 }
 
-
-shift
 for plugin in "$@"
 do
     download $plugin
