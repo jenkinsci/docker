@@ -11,19 +11,19 @@ REF=/usr/share/jenkins/ref/plugins
 mkdir -p "$REF"
 
 function download() {
-	local plugin=$1; shift
+	local plugin="$1"; shift
 
-	if [[ ! -f ${plugin}.hpi ]]; then
+	if [[ ! -f "${plugin}.hpi" ]]; then
 
-		url=${JENKINS_UC}/latest/${plugin}.hpi
+		url="${JENKINS_UC}/latest/${plugin}.hpi"
 		echo "download plugin : $plugin from $url"
 
-		curl -s -f -L $url -o ${plugin}.hpi
+		curl -s -f -L "$url" -o "${plugin}.hpi"
 		if [[ $? -ne 0 ]]
 		then
 			# some plugin don't follow the rules about artifact ID
 			# typically: docker-plugin
-			curl -s -f -L $url -o ${plugin}-plugin.hpi
+			curl -s -f -L "$url" -o "${plugin}-plugin.hpi"
 			if [[ $? -ne 0 ]]
 			then
 				>&2 echo "failed to download plugin ${plugin}"
@@ -35,12 +35,12 @@ function download() {
 	fi	
 
 	if [[ ! -f ${plugin}.resolved ]]; then
-		resolveDependencies $plugin
+		resolveDependencies "$plugin"
 	fi
 }
 
 function resolveDependencies() {	
-	local plugin=$1; shift
+	local plugin="$1"; shift
 
 	dependencies=`jrunscript -e '\
 	java.lang.System.out.println(\
@@ -66,17 +66,17 @@ function resolveDependencies() {
 		then	
 			echo "skipping optional dependency $plugin"
 		else
-    		download $plugin
+			download "$plugin"
 		fi
 	done
-	touch ${plugin}.resolved
+	touch "${plugin}.resolved"
 }
 
 cd "$REF"
 
 for plugin in "$@"
 do
-    download $plugin
+    download "$plugin"
 done
 
 # cleanup 'resolved' flag files
