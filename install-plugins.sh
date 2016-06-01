@@ -1,5 +1,15 @@
 #! /bin/bash
 
+# Resolve dependencies and download plugins given on the command line
+#
+# FROM jenkins
+# RUN install-plugins.sh docker-slaves github-branch-source
+
+set -e
+
+REF=/usr/share/jenkins/ref/plugins
+mkdir -p "$REF"
+
 function download() {
 	local plugin=$1; shift
 
@@ -61,6 +71,8 @@ function resolveDependencies() {
 	done
 	touch ${plugin}.resolved
 }
+
+cd "$REF"
 
 for plugin in "$@"
 do
