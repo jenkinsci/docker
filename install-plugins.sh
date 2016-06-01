@@ -25,7 +25,7 @@ function download() {
 	fi	
 
 	if [[ ! -f ${plugin}.resolved ]]; then
-		resolveDependencies $1
+		resolveDependencies $plugin
 	fi
 }
 
