@@ -5,6 +5,7 @@
 # FROM jenkins
 # RUN install-plugins.sh docker-slaves github-branch-source
 
+set -e
 
 REF=${REF:-/usr/share/jenkins/ref/plugins}
 mkdir -p "$REF"
@@ -17,15 +18,15 @@ function download() {
 		local url="${JENKINS_UC}/latest/${plugin}.hpi"
 		echo "download plugin : $plugin from $url"
 
-		curl -s -f -L "$url" -o "${plugin}.hpi"
-		if [[ $? -ne 0 ]]
+		if ! curl -s -f -L "$url" -o "${plugin}.hpi" 
 		then
 			# some plugin don't follow the rules about artifact ID
 			# typically: docker-plugin
-			local url="${JENKINS_UC}/latest/${plugin}-plugin.hpi"
+			plugin=${plugin}-plugin
+
+			local url="${JENKINS_UC}/latest/${plugin}.hpi"
 			echo "download plugin : $plugin from $url"
-			curl -s -f -L "${url}" -o "${plugin}.hpi"
-			if [[ $? -ne 0 ]]
+			if ! curl -s -f -L "${url}" -o "${plugin}.hpi"
 			then
 				>&2 echo "failed to download plugin ${plugin}"
 				exit -1
