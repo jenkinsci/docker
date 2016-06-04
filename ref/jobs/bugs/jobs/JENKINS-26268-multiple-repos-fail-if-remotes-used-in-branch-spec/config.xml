@@ -20,7 +20,7 @@
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
-        <name>upstream</name>
+        <name>origin</name>
         <url>git://github.com/jenkinsci/git-plugin.git</url>
       </hudson.plugins.git.UserRemoteConfig>
       <hudson.plugins.git.UserRemoteConfig>
@@ -50,9 +50,6 @@
       <hudson.plugins.git.extensions.impl.CleanBeforeCheckout/>
       <hudson.plugins.git.extensions.impl.AuthorInChangelog/>
       <hudson.plugins.git.extensions.impl.PruneStaleBranch/>
-      <hudson.plugins.git.extensions.impl.LocalBranch>
-        <localBranch>**</localBranch>
-      </hudson.plugins.git.extensions.impl.LocalBranch>
     </extensions>
   </scm>
   <quietPeriod>0</quietPeriod>
