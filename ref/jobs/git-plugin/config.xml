@@ -4,8 +4,9 @@
   <description>Jenkins git plugin</description>
   <keepDependencies>false</keepDependencies>
   <properties>
-    <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.14.0">
+    <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.16.0">
       <projectUrl>https://github.com/jenkinsci/git-plugin/</projectUrl>
+      <displayName>Git plugin</displayName>
     </com.coravy.hudson.plugins.github.GithubProjectProperty>
     <org.bstick12.jenkinsci.plugins.leastload.LeastLoadDisabledProperty plugin="leastload@1.0.3">
       <leastLoadDisabled>false</leastLoadDisabled>
@@ -51,7 +52,7 @@
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
   </properties>
-  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.0">
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.1">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
@@ -100,7 +101,7 @@ maven.findbugs.failure.strict=false</properties>
     </hudson.tasks.Maven>
   </builders>
   <publishers>
-    <hudson.plugins.findbugs.FindBugsPublisher plugin="findbugs@4.62">
+    <hudson.plugins.findbugs.FindBugsPublisher plugin="findbugs@4.63">
       <healthy></healthy>
       <unHealthy></unHealthy>
       <thresholdLimit>low</thresholdLimit>
@@ -110,7 +111,7 @@ maven.findbugs.failure.strict=false</properties>
       <usePreviousBuildAsReference>false</usePreviousBuildAsReference>
       <useStableBuildAsReference>false</useStableBuildAsReference>
       <useDeltaValues>false</useDeltaValues>
-      <thresholds plugin="analysis-core@1.74">
+      <thresholds plugin="analysis-core@1.75">
         <unstableTotalAll></unstableTotalAll>
         <unstableTotalHigh></unstableTotalHigh>
         <unstableTotalNormal></unstableTotalNormal>
@@ -136,7 +137,7 @@ maven.findbugs.failure.strict=false</properties>
       <excludePattern></excludePattern>
       <includePattern></includePattern>
     </hudson.plugins.findbugs.FindBugsPublisher>
-    <hudson.tasks.junit.JUnitResultArchiver plugin="junit@1.9">
+    <hudson.tasks.junit.JUnitResultArchiver plugin="junit@1.10">
       <testResults>target/surefire-reports/TEST-*.xml</testResults>
       <keepLongStdio>false</keepLongStdio>
       <healthScaleFactor>1.0</healthScaleFactor>
