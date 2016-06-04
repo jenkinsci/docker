@@ -7,9 +7,9 @@
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <hudson.model.StringParameterDefinition>
-          <name>COMMIT_MSG</name>
+          <name>COMMIT_MESSAGE</name>
           <description>Commit message for this set of changes</description>
-          <defaultValue>Committed at $(date)</defaultValue>
+          <defaultValue>Your message</defaultValue>
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
@@ -48,7 +48,7 @@ if [ ! -d $JENKINS_HOME/.git ]; then
 fi
 
 git add .
-git commit -m &quot;$COMMIT_MSG&quot;
+git commit -m &quot;$COMMIT_MESSAGE&quot;
 
 # Store git history bundle for import elsewhere
 git bundle create $workspace_dir/repo.bundle HEAD</command>
