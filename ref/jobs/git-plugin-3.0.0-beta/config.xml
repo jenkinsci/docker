@@ -81,7 +81,7 @@
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
-  <jdk>jdk8</jdk>
+  <jdk>jdk7</jdk>
   <triggers>
     <hudson.triggers.SCMTrigger>
       <spec></spec>
@@ -94,8 +94,7 @@
       <targets>clean install</targets>
       <mavenName>maven-latest</mavenName>
       <properties>maven.test.failure.ignore=true
-maven.findbugs.failure.strict=false
-concurrency=1</properties>
+maven.findbugs.failure.strict=false</properties>
       <usePrivateRepository>false</usePrivateRepository>
       <settings class="jenkins.mvn.DefaultSettingsProvider"/>
       <globalSettings class="jenkins.mvn.DefaultGlobalSettingsProvider"/>
