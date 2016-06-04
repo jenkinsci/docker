@@ -7,6 +7,49 @@
     <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.14.0">
       <projectUrl>https://github.com/jenkinsci/git-plugin/</projectUrl>
     </com.coravy.hudson.plugins.github.GithubProjectProperty>
+    <org.bstick12.jenkinsci.plugins.leastload.LeastLoadDisabledProperty plugin="leastload@1.0.3">
+      <leastLoadDisabled>false</leastLoadDisabled>
+    </org.bstick12.jenkinsci.plugins.leastload.LeastLoadDisabledProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>test</name>
+          <description>Java test classes to execute</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>GitStatusTest</string>
+              <string>*</string>
+              <string>AbstractGitSCMSourceTest</string>
+              <string>AncestryBuildChooserTest</string>
+              <string>BuildDataTest</string>
+              <string>CandidateRevisionsTest</string>
+              <string>CliGitSCMTriggerLocalPollTest</string>
+              <string>CliGitSCMTriggerRemotePollTest</string>
+              <string>DefaultBuildChooserTest</string>
+              <string>GitChangeLogParserTest</string>
+              <string>GitChangeSetSimpleTest</string>
+              <string>GitChangeSetTest</string>
+              <string>GitPublisherTest</string>
+              <string>GitRepositoryBrowserTest</string>
+              <string>GitStatusMultipleSCMTest</string>
+              <string>GitStatusTest</string>
+              <string>JGitSCMTriggerLocalPollTest</string>
+              <string>JGitSCMTriggerLocalPollTest</string>
+              <string>JGitSCMTriggerRemotePollTest</string>
+              <string>MultipleSCMTest</string>
+              <string>PathRestrictionTest</string>
+              <string>PreBuildMergeOptionsTest</string>
+              <string>RevisionParameterActionRemoteUrlTest</string>
+              <string>RevisionParameterActionTest</string>
+              <string>SCMTriggerTest</string>
+              <string>SubmoduleCombinatorTest</string>
+              <string>UserExclusionTest</string>
+              <string>UserMergeOptionsTest</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
   </properties>
   <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.0">
     <configVersion>2</configVersion>
@@ -32,10 +75,12 @@
     </extensions>
   </scm>
   <quietPeriod>0</quietPeriod>
-  <canRoam>true</canRoam>
+  <assignedNode>!slow</assignedNode>
+  <canRoam>false</canRoam>
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <jdk>jdk7</jdk>
   <triggers>
     <hudson.triggers.SCMTrigger>
       <spec></spec>
@@ -46,7 +91,7 @@
   <builders>
     <hudson.tasks.Maven>
       <targets>clean install</targets>
-      <mavenName>maven-latest-java6</mavenName>
+      <mavenName>maven-latest</mavenName>
       <properties>maven.test.failure.ignore=true
 maven.findbugs.failure.strict=false</properties>
       <usePrivateRepository>false</usePrivateRepository>
@@ -95,6 +140,7 @@ maven.findbugs.failure.strict=false</properties>
       <testResults>target/surefire-reports/TEST-*.xml</testResults>
       <keepLongStdio>false</keepLongStdio>
       <healthScaleFactor>1.0</healthScaleFactor>
+      <allowEmptyResults>false</allowEmptyResults>
     </hudson.tasks.junit.JUnitResultArchiver>
     <hudson.plugins.jacoco.JacocoPublisher plugin="jacoco@1.0.19">
       <execPattern>**/**.exec</execPattern>
