@@ -156,6 +156,13 @@ COPY custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
 RUN /usr/local/bin/plugins.sh /usr/share/jenkins/ref/plugins.txt
 ```
 
+As an alternative, you can rely on the `install-plugins.sh` script to pass a set of plugins to download with their dependencies. Use plugin artifact ID, whithout `-plugin` extension.
+
+```
+FROM jenkins
+RUN install-plugins.sh docker-slaves github-branch-source 
+```
+
 When jenkins container starts, it will check JENKINS_HOME has this reference content, and copy them
 there if required. It will not override such files, so if you upgraded some plugins from UI they won't
 be reverted on next start.
@@ -188,7 +195,7 @@ RUN /usr/local/bin/plugins.sh /usr/share/jenkins/plugins.txt
 Here is an example to get the list of plugins from an existing server you can use the following curl command:
 
 ```
-JENKINS_HOST=myhost.com:port
+JENKINS_HOST=username:password@myhost.com:port
 curl -sSL "http://$JENKINS_HOST/pluginManager/api/xml?depth=1&xpath=/*/*/shortName|/*/*/version&wrapper=plugins" | perl -pe 's/.*?<shortName>([\w-]+).*?<version>([^<]+)()(<\/\w+>)+/\1 \2\n/g'|sed 's/ /:/'
 ```
 
