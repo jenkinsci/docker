@@ -3,6 +3,7 @@ FROM java:8-jdk
 RUN apt-get update && apt-get install -y git curl zip && rm -rf /var/lib/apt/lists/*
 
 ENV JENKINS_HOME /var/jenkins_home
+ENV JENKINS_REF /usr/share/jenkins/ref
 ENV JENKINS_SLAVE_AGENT_PORT 50000
 
 ARG user=jenkins
@@ -23,7 +24,8 @@ VOLUME /var/jenkins_home
 # `/usr/share/jenkins/ref/` contains all reference configuration we want 
 # to set on a fresh new installation. Use it to bundle additional plugins 
 # or config file with your custom jenkins Docker image.
-RUN mkdir -p /usr/share/jenkins/ref/init.groovy.d
+RUN mkdir -p ${JENKINS_REF}/init.groovy.d
+COPY init.groovy ${JENKINS_REF}/init.groovy.d/tcp-slave-agent-port.groovy
 
 ENV TINI_VERSION 0.9.0
 ENV TINI_SHA fa23d1e20732501c3bb8eeeca423c89ac80ed452
@@ -31,8 +33,6 @@ ENV TINI_SHA fa23d1e20732501c3bb8eeeca423c89ac80ed452
 # Use tini as subreaper in Docker container to adopt zombie processes 
 RUN curl -fsSL https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini-static -o /bin/tini && chmod +x /bin/tini \
   && echo "$TINI_SHA  /bin/tini" | sha1sum -c -
-
-COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy
 
 ARG JENKINS_VERSION
 ENV JENKINS_VERSION ${JENKINS_VERSION:-1.651.3}
