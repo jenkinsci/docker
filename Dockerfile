@@ -1,4 +1,4 @@
-FROM java:openjdk-8-jdk-alpine
+FROM java:8-jdk-alpine
 
 ENV JENKINS_UC "https://updates.jenkins.io"
 ENV JENKINS_HOME "/var/jenkins_home"
@@ -16,16 +16,15 @@ ARG group=jenkins
 ARG uid=1000
 ARG gid=1000
 
-RUN apt-get update \
-    && apt-get install -y git curl zip \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk update \
+    && apk add --no-cache git openssh-client curl zip unzip bash ttf-dejavu
 
 # Jenkins is started by $user:$group with $uid:$gid which defaults 
 # respectively to 'jenkins:jenkins' and '1000:1000' (see above)
 # If you bind mount a volume from the host or a data container, ensure 
 # you use the same uid
-RUN groupadd -g ${gid} ${group} \
-    && useradd -d "$JENKINS_HOME" -u ${uid} -g ${gid} -m -s /bin/bash ${user}
+RUN addgroup -g ${gid} ${group} \
+    && adduser -h "$JENKINS_HOME" -u ${uid} -G ${group} -s /bin/sh ${user} ; true
 
 # $JENKINS_REF contains all reference configuration we want 
 # to set on a fresh new installation. Use it to bundle additional plugins 
@@ -68,4 +67,3 @@ COPY install-plugins.sh /usr/local/bin/install-plugins.sh
 
 COPY jenkins.sh /usr/local/bin/jenkins.sh
 ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
-
