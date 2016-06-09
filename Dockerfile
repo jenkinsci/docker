@@ -55,12 +55,11 @@ RUN curl -fsSL "http://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-wa
 # fix perms
 RUN chown -R ${user}:${group} "$JENKINS_HOME" "$JENKINS_REF"
 
-# for main web interface:
+# expose webui and slave ports
 EXPOSE 8080
-
-# will be used by attached slave agents:
 EXPOSE ${JENKINS_SLAVE_AGENT_PORT}
 
+# switch to non-root
 USER ${user}
 
 # from a derived Dockerfile, can use `RUN plugins.sh active.txt` to setup /usr/share/jenkins/ref/plugins from a support bundle
