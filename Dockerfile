@@ -47,7 +47,8 @@ RUN curl -fsSL "https://github.com/krallin/tini/releases/download/v${TINI_VERSIO
 RUN curl -fsSL "http://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war" -o /usr/share/jenkins/jenkins.war \
     && echo "$JENKINS_SHA  /usr/share/jenkins/jenkins.war" | sha1sum -c -
 
-RUN chown -R ${user} "$JENKINS_HOME" "$JENKINS_REF"
+# fix perms
+RUN chown -R ${user}:${group} "$JENKINS_HOME" "$JENKINS_REF"
 
 # for main web interface:
 EXPOSE 8080
