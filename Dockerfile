@@ -34,8 +34,7 @@ RUN groupadd -g ${gid} ${group} \
 # $JENKINS_REF contains all reference configuration we want 
 # to set on a fresh new installation. Use it to bundle additional plugins 
 # or config file with your custom derived jenkins Dockerfile
-RUN mkdir -p ${JENKINS_REF}/init.groovy.d
-COPY init.groovy ${JENKINS_REF}/init.groovy.d/tcp-slave-agent-port.groovy
+RUN mkdir -p ${JENKINS_REF}
 
 # Use tini as subreaper in Docker container to adopt zombie processes 
 RUN curl -fsSL "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini-static" -o /bin/tini \
@@ -57,6 +56,12 @@ EXPOSE ${JENKINS_SLAVE_AGENT_PORT}
 # switch to non-root
 USER ${user}
 
+# Minimal configuration setup:
+# Groovy script to set the slave agent port to $JENKINS_SLAVE_AGENT_PORT
+RUN mkdir -p ${JENKINS_REF}/init.groovy.d
+COPY init.groovy ${JENKINS_REF}/init.groovy.d/tcp-slave-agent-port.groovy
+
+# Include script helpers to install plugins:
 # from a derived Dockerfile, can use `RUN plugins.sh active.txt` to setup /usr/share/jenkins/ref/plugins from a support bundle
 COPY plugins.sh /usr/local/bin/plugins.sh
 COPY install-plugins.sh /usr/local/bin/install-plugins.sh
