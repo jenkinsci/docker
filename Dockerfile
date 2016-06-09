@@ -27,10 +27,11 @@ VOLUME /var/jenkins_home
 RUN mkdir -p ${JENKINS_REF}/init.groovy.d
 COPY init.groovy ${JENKINS_REF}/init.groovy.d/tcp-slave-agent-port.groovy
 
-ENV TINI_SHA 066ad710107dc7ee05d3aa6e4974f01dc98f3888
+ARG TINI_SHA
+ENV TINI_SHA ${TINI_SHA:-fa23d1e20732501c3bb8eeeca423c89ac80ed452}
 
 # Use tini as subreaper in Docker container to adopt zombie processes 
-RUN curl -fsSL https://github.com/krallin/tini/releases/download/v0.5.0/tini-static -o /bin/tini && chmod +x /bin/tini \
+RUN curl -fsSL https://github.com/krallin/tini/releases/download/v0.9.0/tini-static -o /bin/tini && chmod +x /bin/tini \
   && echo "$TINI_SHA  /bin/tini" | sha1sum -c -
 
 ARG JENKINS_VERSION
