@@ -52,7 +52,7 @@ RUN chown -R ${user} "$JENKINS_HOME" /usr/share/jenkins/ref
 EXPOSE 8080
 
 # will be used by attached slave agents:
-EXPOSE 50000
+EXPOSE ${JENKINS_SLAVE_AGENT_PORT}
 
 ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 
