@@ -16,10 +16,6 @@ ARG group=jenkins
 ARG uid=1000
 ARG gid=1000
 
-# $JENKINS_HOME is a volume, so configuration and build history 
-# can be persisted and survive image upgrades
-VOLUME $JENKINS_HOME
-
 RUN apt-get update \
     && apt-get install -y git curl zip \
     && rm -rf /var/lib/apt/lists/*
@@ -48,6 +44,10 @@ RUN curl -fsSL "http://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-wa
 
 # fix perms
 RUN chown -R ${user}:${group} "$JENKINS_HOME" "$JENKINS_REF"
+
+# $JENKINS_HOME is a volume, so configuration and build history 
+# can be persisted and survive image upgrades
+VOLUME $JENKINS_HOME
 
 # expose webui and slave ports
 EXPOSE 8080
