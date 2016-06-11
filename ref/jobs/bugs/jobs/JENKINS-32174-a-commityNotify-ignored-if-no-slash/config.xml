@@ -1,10 +1,19 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <project>
   <actions/>
   <description>[JENKINS-32174](https://issues.jenkins-ci.org/browse/JENKINS-32174) No arguments to notifyCommit.</description>
   <keepDependencies>false</keepDependencies>
-  <properties/>
-  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.1-SNAPSHOT">
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>7</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.4">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
@@ -34,7 +43,7 @@
   <jdk>(Default)</jdk>
   <triggers>
     <hudson.triggers.SCMTrigger>
-      <spec/>
+      <spec></spec>
       <ignorePostCommitHooks>false</ignorePostCommitHooks>
     </hudson.triggers.SCMTrigger>
   </triggers>
@@ -43,8 +52,8 @@
     <hudson.plugins.xshell.XShellBuilder plugin="xshell@0.10">
       <commandLine>git log -n 1</commandLine>
       <executeFromWorkingDir>false</executeFromWorkingDir>
-      <regexToKill/>
-      <timeAllocated/>
+      <regexToKill></regexToKill>
+      <timeAllocated></timeAllocated>
     </hudson.plugins.xshell.XShellBuilder>
   </builders>
   <publishers/>

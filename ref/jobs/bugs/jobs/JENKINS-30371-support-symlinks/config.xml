@@ -12,15 +12,23 @@ Requires a file system and operating system configured to support symoblic links
   </logRotator>
   <keepDependencies>false</keepDependencies>
   <properties>
-    <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.14.2">
+    <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.19.1">
       <projectUrl>https://github.com/MarkEWaite/JENKINS-26197/</projectUrl>
       <displayName></displayName>
     </com.coravy.hudson.plugins.github.GithubProjectProperty>
     <org.bstick12.jenkinsci.plugins.leastload.LeastLoadDisabledProperty plugin="leastload@1.0.3">
       <leastLoadDisabled>false</leastLoadDisabled>
     </org.bstick12.jenkinsci.plugins.leastload.LeastLoadDisabledProperty>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>7</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
   </properties>
-  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.1-SNAPSHOT">
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.4">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
@@ -43,6 +51,8 @@ Requires a file system and operating system configured to support symoblic links
     </extensions>
   </scm>
   <quietPeriod>0</quietPeriod>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
   <jdk>(Default)</jdk>

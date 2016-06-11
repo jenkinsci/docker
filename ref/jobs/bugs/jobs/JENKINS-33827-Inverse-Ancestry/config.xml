@@ -4,18 +4,18 @@
   <description>Check [JENKINS-33827](https://issues.jenkins-ci.org/browse/JENKINS-33827) - inverse + ancestry build chooser</description>
   <keepDependencies>false</keepDependencies>
   <properties>
+    <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.19.1">
+      <projectUrl>https://github.com/MarkEWaite/jenkins-bugs/</projectUrl>
+      <displayName></displayName>
+    </com.coravy.hudson.plugins.github.GithubProjectProperty>
     <jenkins.model.BuildDiscarderProperty>
       <strategy class="hudson.tasks.LogRotator">
         <daysToKeep>-1</daysToKeep>
-        <numToKeep>14</numToKeep>
+        <numToKeep>7</numToKeep>
         <artifactDaysToKeep>-1</artifactDaysToKeep>
         <artifactNumToKeep>-1</artifactNumToKeep>
       </strategy>
     </jenkins.model.BuildDiscarderProperty>
-    <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.18.1">
-      <projectUrl>https://github.com/MarkEWaite/jenkins-bugs/</projectUrl>
-      <displayName></displayName>
-    </com.coravy.hudson.plugins.github.GithubProjectProperty>
   </properties>
   <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.4">
     <configVersion>2</configVersion>

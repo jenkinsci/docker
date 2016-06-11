@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<matrix-project plugin="matrix-project@1.6">
+<matrix-project plugin="matrix-project@1.7">
   <actions/>
   <description></description>
   <logRotator class="hudson.tasks.LogRotator">
@@ -9,8 +9,17 @@
     <artifactNumToKeep>-1</artifactNumToKeep>
   </logRotator>
   <keepDependencies>false</keepDependencies>
-  <properties/>
-  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.0">
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>7</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.4">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
@@ -36,7 +45,9 @@
       </hudson.plugins.git.extensions.impl.SubmoduleOption>
       <hudson.plugins.git.extensions.impl.CloneOption>
         <shallow>false</shallow>
+        <noTags>false</noTags>
         <reference>/var/lib/git/mwaite/jenkins/git-client-plugin.git</reference>
+        <depth>0</depth>
       </hudson.plugins.git.extensions.impl.CloneOption>
     </extensions>
   </scm>

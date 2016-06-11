@@ -13,6 +13,14 @@
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>7</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
   </properties>
   <scm class="hudson.scm.NullSCM"/>
   <assignedNode>master</assignedNode>
@@ -35,15 +43,15 @@ if [ ! -d $JENKINS_HOME/.git ]; then
     git config --global user.name &quot;Jenkins User&quot; &amp;&amp; \
     git config --global user.email mark.earl.waite@gmail.com &amp;&amp; \
     git init &amp;&amp; \
-    echo .cache/ >> .gitignore &amp;&amp; \
-    echo .config/ >> .gitignore &amp;&amp; \
-    echo .dbus/ >> .gitignore &amp;&amp; \
-    echo .java/ >> .gitignore &amp;&amp; \
-    echo .jenkins/ >> .gitignore &amp;&amp; \
-    echo .m2/ >> .gitignore &amp;&amp; \
-    echo tools/ >> .gitignore &amp;&amp; \
-    echo userContent/ >> .gitignore &amp;&amp; \
-    echo war/ >> .gitignore &amp;&amp; \
+    echo .cache/ &gt;&gt; .gitignore &amp;&amp; \
+    echo .config/ &gt;&gt; .gitignore &amp;&amp; \
+    echo .dbus/ &gt;&gt; .gitignore &amp;&amp; \
+    echo .java/ &gt;&gt; .gitignore &amp;&amp; \
+    echo .jenkins/ &gt;&gt; .gitignore &amp;&amp; \
+    echo .m2/ &gt;&gt; .gitignore &amp;&amp; \
+    echo tools/ &gt;&gt; .gitignore &amp;&amp; \
+    echo userContent/ &gt;&gt; .gitignore &amp;&amp; \
+    echo war/ &gt;&gt; .gitignore &amp;&amp; \
     git add .gitignore
 fi
 
