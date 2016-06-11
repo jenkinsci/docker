@@ -3,6 +3,7 @@ analysis-core:latest
 antisamy-markup-formatter
 ant
 bitbucket:latest
+bouncycastle-api:latest
 branch-api:latest
 cloudbees-folder:latest
 config-file-provider:latest
