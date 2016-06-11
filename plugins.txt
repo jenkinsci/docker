@@ -7,6 +7,7 @@ bouncycastle-api:latest
 branch-api:latest
 cloudbees-folder:latest
 config-file-provider:latest
+configurationslicing:latest
 credentials
 cvs
 depgraph-view:latest
