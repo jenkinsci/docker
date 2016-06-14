@@ -11,6 +11,7 @@ echo $JENKINS_SHA
 
 docker build --build-arg JENKINS_VERSION=$JENKINS_VERSION \
              --build-arg JENKINS_SHA=$JENKINS_SHA \
+             --no-cache --pull \
              --tag jenkinsci/jenkins:$JENKINS_VERSION .
 
 docker tag -f jenkinsci/jenkins:$JENKINS_VERSION jenkinsci/jenkins:latest
