@@ -65,6 +65,7 @@ sidebar-link:latest
 ssh-agent:latest
 ssh-credentials
 ssh-slaves
+structs:latest
 subversion
 support-core:latest
 swarm:latest
