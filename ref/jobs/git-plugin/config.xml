@@ -100,7 +100,7 @@
   <builders>
     <hudson.tasks.Maven>
       <targets>clean install</targets>
-      <mavenName>maven-latest</mavenName>
+      <mavenName>mvn</mavenName>
       <properties>maven.test.failure.ignore=true
 maven.findbugs.failure.strict=false</properties>
       <usePrivateRepository>false</usePrivateRepository>

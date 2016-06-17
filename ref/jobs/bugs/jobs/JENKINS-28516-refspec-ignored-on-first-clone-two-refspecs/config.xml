@@ -62,7 +62,7 @@
   <builders>
     <hudson.tasks.Maven>
       <targets>clean validate</targets>
-      <mavenName>maven-latest-java6</mavenName>
+      <mavenName>mvn</mavenName>
       <usePrivateRepository>false</usePrivateRepository>
       <settings class="jenkins.mvn.DefaultSettingsProvider"/>
       <globalSettings class="jenkins.mvn.DefaultGlobalSettingsProvider"/>
