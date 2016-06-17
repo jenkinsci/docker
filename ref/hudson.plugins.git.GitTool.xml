@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<hudson.plugins.git.GitTool_-DescriptorImpl plugin="git-client@1.19.0">
+<hudson.plugins.git.GitTool_-DescriptorImpl plugin="git-client@1.19.6">
   <installations class="hudson.plugins.git.GitTool-array">
     <hudson.plugins.git.GitTool>
       <name>Default</name>
