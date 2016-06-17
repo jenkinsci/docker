@@ -58,23 +58,14 @@
   <triggers>
     <hudson.triggers.SCMTrigger>
       <spec>@daily</spec>
-      <ignorePostCommitHooks>true</ignorePostCommitHooks>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
     </hudson.triggers.SCMTrigger>
   </triggers>
   <concurrentBuild>false</concurrentBuild>
   <axes>
     <org.jenkinsci.plugins.elasticaxisplugin.ElasticAxis plugin="elastic-axis@1.2">
       <name>label</name>
-      <values>
-        <string>coleen-pc2</string>
-        <string>waite2011</string>
-        <string>alan-pc</string>
-        <string>family-win7-a</string>
-        <string>jessie64a</string>
-        <string>master</string>
-        <string>markwaite</string>
-      </values>
-      <label>windows , linux</label>
+      <label>!slow</label>
       <ignoreOffline>true</ignoreOffline>
     </org.jenkinsci.plugins.elasticaxisplugin.ElasticAxis>
   </axes>
