@@ -2,7 +2,7 @@
 <matrix-project plugin="matrix-project@1.7">
   <actions/>
   <description>See [JENKINS-26830](https://issues.jenkins-ci.org/browse/JENKINS-26830). &#xd;
-Console output for each job should contain &quot;`user.name=Mark Waite`&quot; and &quot;`user.email=mark.earl.waite@gmail.com`&quot;.</description>
+Console output for each job should contain &quot;`user.name`&quot; and &quot;`user.email`&quot;.</description>
   <logRotator class="hudson.tasks.LogRotator">
     <daysToKeep>-1</daysToKeep>
     <numToKeep>15</numToKeep>
@@ -56,17 +56,14 @@ Console output for each job should contain &quot;`user.name=Mark Waite`&quot; an
   <axes>
     <org.jenkinsci.plugins.elasticaxisplugin.ElasticAxis plugin="elastic-axis@1.2">
       <name>label</name>
-      <values>
-        <string>master</string>
-      </values>
-      <label>windows , linux </label>
+      <label>!slow</label>
       <ignoreOffline>true</ignoreOffline>
     </org.jenkinsci.plugins.elasticaxisplugin.ElasticAxis>
     <hudson.matrix.JDKAxis>
       <name>jdk</name>
       <values>
-        <string>java-8</string>
-        <string>java-7</string>
+        <string>jdk8</string>
+        <string>jdk7</string>
       </values>
     </hudson.matrix.JDKAxis>
   </axes>
@@ -78,16 +75,16 @@ Console output for each job should contain &quot;`user.name=Mark Waite`&quot; an
       <timeAllocated></timeAllocated>
     </hudson.plugins.xshell.XShellBuilder>
   </builders>
+  <buildWrappers/>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+  </executionStrategy>
   <publishers>
     <hudson.plugins.textfinder.TextFinderPublisher plugin="text-finder@1.10">
-      <regexp>user\.name.*Mark.Waite</regexp>
+      <regexp>user\.name</regexp>
       <succeedIfFound>true</succeedIfFound>
       <unstableIfFound>false</unstableIfFound>
       <alsoCheckConsoleOutput>true</alsoCheckConsoleOutput>
     </hudson.plugins.textfinder.TextFinderPublisher>
   </publishers>
-  <buildWrappers/>
-  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
-    <runSequentially>false</runSequentially>
-  </executionStrategy>
 </matrix-project>
