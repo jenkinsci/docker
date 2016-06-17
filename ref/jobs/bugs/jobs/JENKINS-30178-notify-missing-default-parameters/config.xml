@@ -2,14 +2,11 @@
 <project>
   <actions/>
   <description>[JENKINS-30178](https://issues.jenkins-ci.org/browse/JENKINS-30178) a job which runs from a commit notification is missing the default parameters</description>
-  <logRotator class="hudson.tasks.LogRotator">
-    <daysToKeep>-1</daysToKeep>
-    <numToKeep>15</numToKeep>
-    <artifactDaysToKeep>-1</artifactDaysToKeep>
-    <artifactNumToKeep>-1</artifactNumToKeep>
-  </logRotator>
   <keepDependencies>false</keepDependencies>
   <properties>
+    <org.bstick12.jenkinsci.plugins.leastload.LeastLoadDisabledProperty plugin="leastload@1.0.3">
+      <leastLoadDisabled>false</leastLoadDisabled>
+    </org.bstick12.jenkinsci.plugins.leastload.LeastLoadDisabledProperty>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <hudson.model.BooleanParameterDefinition>
@@ -43,32 +40,41 @@
         <artifactNumToKeep>-1</artifactNumToKeep>
       </strategy>
     </jenkins.model.BuildDiscarderProperty>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>7</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
   </properties>
   <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.4">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
-        <url>git://mark-pc1.markwaite.net/git/mwaite/bugs/JENKINS-30178.git</url>
+        <url>git://github.com/MarkEWaite/JENKINS-26197.git</url>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>
       <hudson.plugins.git.BranchSpec>
-        <name>*/master</name>
+        <name>*/JENKINS-29482</name>
       </hudson.plugins.git.BranchSpec>
     </branches>
     <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
     <gitTool>Default</gitTool>
     <browser class="hudson.plugins.git.browser.GitWeb">
-      <url>http://mark-pc1.markwaite.net/gitweb?p=mwaite/bugs/JENKINS-30178.git</url>
+      <url>https://github.com/MarkEWaite/JENKINS-26197.git</url>
     </browser>
     <submoduleCfg class="list"/>
     <extensions/>
   </scm>
   <quietPeriod>0</quietPeriod>
-  <canRoam>false</canRoam>
+  <canRoam>true</canRoam>
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <jdk>(System)</jdk>
   <triggers>
     <hudson.triggers.SCMTrigger>
       <spec></spec>
@@ -103,6 +109,13 @@ else
 fi</command>
     </hudson.tasks.Shell>
   </builders>
-  <publishers/>
+  <publishers>
+    <hudson.plugins.textfinder.TextFinderPublisher plugin="text-finder@1.10">
+      <regexp>^true First DEF$</regexp>
+      <succeedIfFound>true</succeedIfFound>
+      <unstableIfFound>false</unstableIfFound>
+      <alsoCheckConsoleOutput>true</alsoCheckConsoleOutput>
+    </hudson.plugins.textfinder.TextFinderPublisher>
+  </publishers>
   <buildWrappers/>
 </project>
