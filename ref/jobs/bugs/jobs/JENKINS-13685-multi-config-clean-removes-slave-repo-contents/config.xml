@@ -2,12 +2,6 @@
 <matrix-project plugin="matrix-project@1.7">
   <actions/>
   <description></description>
-  <logRotator class="hudson.tasks.LogRotator">
-    <daysToKeep>-1</daysToKeep>
-    <numToKeep>15</numToKeep>
-    <artifactDaysToKeep>-1</artifactDaysToKeep>
-    <artifactNumToKeep>-1</artifactNumToKeep>
-  </logRotator>
   <keepDependencies>false</keepDependencies>
   <properties>
     <jenkins.model.BuildDiscarderProperty>
@@ -23,12 +17,12 @@
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
-        <url>git://mark-pc1.markwaite.net/git/mwaite/jenkins/git-client-plugin.git</url>
+        <url>git://github.com/MarkEWaite/git-client-plugin.git</url>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>
       <hudson.plugins.git.BranchSpec>
-        <name>*/proto-jdk8</name>
+        <name>*/master</name>
       </hudson.plugins.git.BranchSpec>
     </branches>
     <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
@@ -55,35 +49,21 @@
   <axes>
     <org.jenkinsci.plugins.elasticaxisplugin.ElasticAxis plugin="elastic-axis@1.2">
       <name>label</name>
-      <values>
-        <string>waite2011</string>
-        <string>alan-pc</string>
-        <string>tropicana</string>
-        <string>family-win7-a</string>
-        <string>jessie64a</string>
-        <string>wheezy64b</string>
-        <string>centos7x64</string>
-        <string>master</string>
-        <string>centos66</string>
-        <string>debian6x86</string>
-        <string>debian8</string>
-        <string>markwaite</string>
-      </values>
-      <label>windows , linux </label>
+      <label>!slow</label>
       <ignoreOffline>true</ignoreOffline>
     </org.jenkinsci.plugins.elasticaxisplugin.ElasticAxis>
     <hudson.matrix.JDKAxis>
       <name>jdk</name>
       <values>
-        <string>java-8</string>
-        <string>java-7</string>
+        <string>jdk8</string>
+        <string>jdk7</string>
       </values>
     </hudson.matrix.JDKAxis>
   </axes>
   <builders>
     <hudson.tasks.Maven>
       <targets>compile</targets>
-      <mavenName>maven-3.1.1</mavenName>
+      <mavenName>mvn</mavenName>
       <properties>skipTests=true</properties>
       <usePrivateRepository>false</usePrivateRepository>
       <settings class="jenkins.mvn.DefaultSettingsProvider"/>
