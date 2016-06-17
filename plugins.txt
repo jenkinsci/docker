@@ -6,6 +6,7 @@ bitbucket:latest
 bouncycastle-api:latest
 branch-api:latest
 cloudbees-folder:latest
+conditional-buildstep:latest
 config-file-provider:latest
 configurationslicing:latest
 credentials
@@ -59,6 +60,7 @@ plain-credentials:latest
 platformlabeler:latest
 pollscm:latest
 preSCMbuildstep:latest
+run-condition:latest
 scm-api:latest
 script-security
 sidebar-link:latest
