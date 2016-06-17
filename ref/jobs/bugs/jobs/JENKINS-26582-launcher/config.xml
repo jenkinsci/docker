@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <project>
   <actions/>
-  <description>Starts the [JENKINS-26582](http://mark-pc1.markwaite.net:8080/view/bugs-pass/job/JENKINS-26582-ISE-on-git-notify/) job through a wget call with a specific SHA1</description>
+  <description>Starts the [JENKINS-26582](http://debian8.markwaite.net:8080/view/bugs-pass/job/JENKINS-26582-ISE-on-git-notify/) job through a wget call with a specific SHA1</description>
   <logRotator class="hudson.tasks.LogRotator">
     <daysToKeep>-1</daysToKeep>
     <numToKeep>-1</numToKeep>
     <artifactDaysToKeep>-1</artifactDaysToKeep>
-    <artifactNumToKeep>-1</artifactNumToKeep>
+    <artifactNumToKeep>15</artifactNumToKeep>
   </logRotator>
   <keepDependencies>false</keepDependencies>
   <properties>
@@ -23,7 +23,8 @@
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
-        <url>git://mark-pc1/git/mwaite/bin.git</url>
+        <url>git@github.com:MarkEWaite/bin.git</url>
+        <credentialsId>MarkEWaite-github-rsa-private-key</credentialsId>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>
@@ -34,7 +35,7 @@
     <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
     <gitTool>Default</gitTool>
     <browser class="hudson.plugins.git.browser.GitWeb">
-      <url>http://mark-pc1/gitweb/?p=mwaite/bin.git</url>
+      <url>https://github.com/MarkEWaite/bin</url>
     </browser>
     <submoduleCfg class="list"/>
     <extensions>
@@ -47,7 +48,7 @@
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
-  <jdk>(Default)</jdk>
+  <jdk>(System)</jdk>
   <triggers>
     <hudson.triggers.SCMTrigger>
       <spec></spec>
