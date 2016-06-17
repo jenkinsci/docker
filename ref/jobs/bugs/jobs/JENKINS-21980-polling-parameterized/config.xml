@@ -20,20 +20,15 @@
           <description>Branch to build</description>
           <choices class="java.util.Arrays$ArrayList">
             <a class="string-array">
+              <string>1.4.x</string>
+              <string>1.17.x</string>
               <string>master</string>
               <string>master-add-file-perm-test</string>
               <string>master-add-submodule-test</string>
               <string>master-add-submodule-test-a</string>
-              <string>master-jdk7-jgit-4.0.0</string>
-              <string>master-jdk7-try-with-resources</string>
               <string>master-octopus-merge</string>
-              <string>master-suppress-IOExceptions</string>
-              <string>master-use-explicit-encoding</string>
               <string>origin/ongoing/latest-jenkins-lts</string>
               <string>origin/ongoing/latest-jenkins-release</string>
-              <string>origin/ongoing/minimal-jdk8</string>
-              <string>proto-jdk8</string>
-              <string>proto-submodule-tests</string>
             </a>
           </choices>
         </hudson.model.ChoiceParameterDefinition>
@@ -52,7 +47,7 @@
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
-        <url>git://mark-pc1.markwaite.net/git/mwaite/jenkins/git-client-plugin.git/</url>
+        <url>git://github.com/jenkinsci/git-client-plugin.git/</url>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>
@@ -69,7 +64,7 @@
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
-  <jdk>java-7</jdk>
+  <jdk>jdk7</jdk>
   <triggers>
     <hudson.triggers.SCMTrigger>
       <spec>@daily</spec>
