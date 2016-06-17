@@ -24,6 +24,7 @@ github-organization-folder:latest
 git:latest
 git-parameter:latest
 git-server:latest
+groovy-postbuild:latest
 handlebars:latest
 htmlpublisher:latest
 icon-shim:latest
