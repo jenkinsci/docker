@@ -62,7 +62,7 @@ function resolveDependencies() {
 	dependencies="$(unzip -p "$hpi" META-INF/MANIFEST.MF | sed -e 's###g' | tr '\n' '|' | sed -e 's#| ##g' | tr '|' '\n' | grep "^Plugin-Dependencies: " | sed -e 's#^Plugin-Dependencies: ##')"
 
 	if [[ ! $dependencies ]]; then
-		echo " > '$plugin' has no dependencies"
+		echo " > $plugin has no dependencies"
 		return
 	fi
 
