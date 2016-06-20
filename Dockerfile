@@ -35,10 +35,16 @@ RUN groupadd -g ${gid} ${group} \
 # can be persisted and survive image upgrades
 VOLUME /var/jenkins_home
 
-ENV TINI_SHA 066ad710107dc7ee05d3aa6e4974f01dc98f3888
+# `/usr/share/jenkins/ref/` contains all reference configuration we want 
+# to set on a fresh new installation. Use it to bundle additional plugins 
+# or config file with your custom jenkins Docker image.
+RUN mkdir -p /usr/share/jenkins/ref/init.groovy.d
+
+ENV TINI_VERSION 0.9.0
+ENV TINI_SHA fa23d1e20732501c3bb8eeeca423c89ac80ed452
 
 # Use tini as subreaper in Docker container to adopt zombie processes 
-RUN curl -fsSL https://github.com/krallin/tini/releases/download/v0.5.0/tini-static -o /bin/tini && chmod +x /bin/tini \
+RUN curl -fsSL https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini-static -o /bin/tini && chmod +x /bin/tini \
   && echo "$TINI_SHA  /bin/tini" | sha1sum -c -
 
 COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy

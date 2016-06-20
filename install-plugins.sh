@@ -81,4 +81,4 @@ do
 done
 
 # cleanup 'resolved' flag files
-rm *.resolved
+rm -f *.resolved
