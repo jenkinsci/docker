@@ -42,6 +42,11 @@ function doDownload() {
 	version="$2"
 	hpi="$REF_DIR/${plugin}.hpi"
 
+	if [[ -f $hpi ]]; then
+		echo "Using provided plugin: $plugin"
+		return 0
+	fi
+
 	if [[ $version ]]; then
 		url="$JENKINS_UC/download/plugins/$plugin/$version/${plugin}.hpi"
 	else
