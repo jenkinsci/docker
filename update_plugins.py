@@ -47,9 +47,15 @@ def update_plugins(args):
             destination_file = os.path.join("ref", "plugins", name + ".jpi")
             print("Downloading " + name + ":" + plugin_version)
             plugin_request = urllib2.Request(plugin_url)
-            with open(destination_file, "w") as dest:
-                dest.write(urllib2.urlopen(plugin_request).read())
-                files_written.append(destination_file)
+            tmp_file = destination_file + ".tmp"
+            try:
+		with open(tmp_file, "w") as dest:
+		    dest.write(urllib2.urlopen(plugin_request).read())
+		os.rename(tmp_file, destination_file)
+		files_written.append(destination_file)
+            except:
+                os.remove(tmp_file)
+                print("Did not download " + destination_file)
             if version == None:
                 pin_file = destination_file + ".pinned"
                 with open(pin_file, "w") as pin:
