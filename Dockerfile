@@ -6,12 +6,10 @@ ENV JENKINS_REF "/usr/share/jenkins/ref"
 ENV JENKINS_SLAVE_AGENT_PORT 50000
 ENV COPY_REFERENCE_FILE_LOG "$JENKINS_HOME/copy_reference_file.log"
 
-ARG JENKINS_VERSION
-ENV JENKINS_VERSION ${JENKINS_VERSION:-2.8}
-ARG JENKINS_SHA
-ENV JENKINS_SHA ${JENKINS_SHA:-fda2f13e16b81e1d295696eaf838d60f54f9395c}
-ARG TINI_SHA
-ENV TINI_SHA ${TINI_SHA:-fa23d1e20732501c3bb8eeeca423c89ac80ed452}
+ARG JENKINS_VERSION=1.651.3
+ARG JENKINS_SHA=564e49fbd180d077a22a8c7bb5b8d4d58d2a18ce
+ARG TINI_VERSION=0.9.0
+ARG TINI_SHA=fa23d1e20732501c3bb8eeeca423c89ac80ed452
 
 ARG user=jenkins
 ARG group=jenkins
@@ -33,9 +31,6 @@ RUN groupadd -g ${gid} ${group} \
 # to set on a fresh new installation. Use it to bundle additional plugins 
 # or config file with your custom derived jenkins Dockerfile
 RUN mkdir -p ${JENKINS_REF}
-
-ENV TINI_VERSION 0.9.0
-ENV TINI_SHA fa23d1e20732501c3bb8eeeca423c89ac80ed452
 
 # Use tini as subreaper in Docker container to adopt zombie processes 
 RUN curl -fsSL "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini-static" -o /bin/tini \
