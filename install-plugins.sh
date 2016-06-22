@@ -99,6 +99,7 @@ function resolveDependencies() {
 			download "$plugin" &
 		fi
 	done
+	wait
 }
 
 main() {
