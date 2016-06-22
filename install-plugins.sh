@@ -19,7 +19,7 @@ function getHpiFilename() {
 function download() {
 	local plugin originalPlugin version lock ignoreLockFile
 	plugin="$1"
-	version="$2"
+	version="${2:-latest}"
 	ignoreLockFile="$3"
 	lock="$(getLockFile "$plugin")"
 
@@ -57,11 +57,7 @@ function doDownload() {
 		return 0
 	fi
 
-	if [[ $version ]]; then
-		url="$JENKINS_UC/download/plugins/$plugin/$version/${plugin}.hpi"
-	else
-		url="$JENKINS_UC/latest/${plugin}.hpi"
-	fi
+	url="$JENKINS_UC/download/plugins/$plugin/$version/${plugin}.hpi"
 
 	echo "Downloading plugin: $plugin from $url"
 	curl -s -f -L "$url" -o "$hpi"
