@@ -9,7 +9,11 @@ REF_DIR=${REF:-/usr/share/jenkins/ref/plugins}
 FAILED="$REF_DIR/failed-plugins.txt"
 
 function getLockFile() {
-	echo "$REF_DIR/${1}.lock"
+	echo -n "$REF_DIR/${1}.lock"
+}
+
+function getHpiFilename() {
+	echo -n "$REF_DIR/${1}.hpi"
 }
 
 function download() {
@@ -27,9 +31,15 @@ function download() {
 			plugin="${plugin}-plugin"
 			if ! doDownload "$plugin" "$version"; then
 				echo "Failed to download plugin: $originalPlugin or $plugin" >&2
-				echo "${originalPlugin}" >> "$FAILED"
+				echo "Not downloaded: ${originalPlugin}" >> "$FAILED"
 				return 1
 			fi
+		fi
+
+		if ! checkIntegrity "$plugin"; then
+			echo "Downloaded file is not a valid ZIP: $(getHpiFilename "$plugin")" >&2
+			echo "Download integrity: ${plugin}" >> "$FAILED"
+			return 1
 		fi
 
 		resolveDependencies "$plugin"
@@ -40,7 +50,7 @@ function doDownload() {
 	local plugin version url hpi
 	plugin="$1"
 	version="$2"
-	hpi="$REF_DIR/${plugin}.hpi"
+	hpi="$(getHpiFilename "$plugin")"
 
 	if [[ -f $hpi ]]; then
 		echo "Using provided plugin: $plugin"
@@ -58,10 +68,19 @@ function doDownload() {
 	return $?
 }
 
+function checkIntegrity() {
+	local plugin hpi
+	plugin="$1"
+	hpi="$(getHpiFilename "$plugin")"
+
+	zip -T "$hpi" >/dev/null
+	return $?
+}
+
 function resolveDependencies() {	
 	local plugin hpi dependencies
 	plugin="$1"
-	hpi="$REF_DIR/${plugin}.hpi"
+	hpi="$(getHpiFilename "$plugin")"
 
 	# ^M below is a control character, inserted by typing ctrl+v ctrl+m
 	dependencies="$(unzip -p "$hpi" META-INF/MANIFEST.MF | sed -e 's###g' | tr '\n' '|' | sed -e 's#| ##g' | tr '|' '\n' | grep "^Plugin-Dependencies: " | sed -e 's#^Plugin-Dependencies: ##')"
@@ -94,16 +113,16 @@ main() {
 	# Create lockfile manually before first run to make sure any explicit version set is used.
 	echo "Creating initial locks..."
 	for plugin in "$@"; do
-		mkdir "$(getLockFile "${plugin%%@*}")"
+		mkdir "$(getLockFile "${plugin%%:*}")"
 	done
 
 	echo -e "\nDownloading plugins..."
 	for plugin in "$@"; do
 		version=""
 
-		if [[ $plugin =~ .*@.* ]]; then
-			version="${plugin##*@}"
-			plugin="${plugin%%@*}"
+		if [[ $plugin =~ .*:.* ]]; then
+			version="${plugin##*:}"
+			plugin="${plugin%%:*}"
 		fi
 
 		download "$plugin" "$version" "true" &
