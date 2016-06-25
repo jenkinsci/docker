@@ -1,9 +1,20 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <freestyle-multi-branch-project plugin="multi-branch-project-plugin@0.4.2">
   <actions/>
-  <description>Freestyle multi-branch project to evaluate the git client plugin</description>
-  <displayName>Git Client Plugin Freestyle Multi-branch</displayName>
-  <properties/>
+  <description>[My Jenkins git client plugin](https://github.com/MarkEWaite/git-client-plugin) pull requests being evaluated</description>
+  <displayName>Git Client Plugin Branches - Maven</displayName>
+  <properties>
+    <com.cloudbees.hudson.plugins.folder.properties.FolderCredentialsProvider_-FolderCredentialsProperty plugin="cloudbees-folder@5.12">
+      <domainCredentialsMap class="hudson.util.CopyOnWriteMap$Hash">
+        <entry>
+          <com.cloudbees.plugins.credentials.domains.Domain plugin="credentials@2.1.3">
+            <specifications/>
+          </com.cloudbees.plugins.credentials.domains.Domain>
+          <java.util.concurrent.CopyOnWriteArrayList/>
+        </entry>
+      </domainCredentialsMap>
+    </com.cloudbees.hudson.plugins.folder.properties.FolderCredentialsProvider_-FolderCredentialsProperty>
+  </properties>
   <views>
     <branch-list-view>
       <owner class="freestyle-multi-branch-project" reference="../../.."/>
@@ -32,8 +43,8 @@
   <healthMetrics>
     <com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric plugin="cloudbees-folder@5.12"/>
   </healthMetrics>
-  <icon class="com.github.mjdetullio.jenkins.plugins.multibranch.BallColorFolderIcon">
-    <owner class="freestyle-multi-branch-project" reference="../.."/>
+  <icon class="org.jenkinsci.plugins.orgfolder.github.GitHubOrgIcon" plugin="github-organization-folder@1.3">
+    <folder class="freestyle-multi-branch-project" reference="../.."/>
   </icon>
   <orphanedItemStrategy class="com.cloudbees.hudson.plugins.folder.computed.DefaultOrphanedItemStrategy" plugin="cloudbees-folder@5.12">
     <pruneDeadBranches>true</pruneDeadBranches>
@@ -45,31 +56,11 @@
   <disabledSubProjects/>
   <allowAnonymousSync>false</allowAnonymousSync>
   <suppressTriggerNewBranchBuild>false</suppressTriggerNewBranchBuild>
-  <scmSource class="jenkins.plugins.git.GitSCMSource" plugin="git@2.5.1-SNAPSHOT">
-    <id>d63bb3d1-15c4-43ba-b32d-17dcec4c9d26</id>
+  <scmSource class="jenkins.plugins.git.GitSCMSource" plugin="git@2.5.0">
+    <id>b7205f38-9abe-472c-923c-6a839b7ec90d</id>
     <remote>git://github.com/MarkEWaite/git-client-plugin.git</remote>
-    <credentialsId></credentialsId>
     <includes>master-PR*</includes>
-    <excludes></excludes>
+    <excludes/>
     <ignoreOnPushNotifications>false</ignoreOnPushNotifications>
-    <browser class="hudson.plugins.git.browser.GithubWeb">
-      <url>https://github.com/MarkEWaite/git-client-plugin</url>
-    </browser>
-    <gitTool>jgit</gitTool>
-    <extensions>
-      <hudson.plugins.git.extensions.impl.CloneOption>
-        <shallow>false</shallow>
-        <noTags>true</noTags>
-        <reference>/var/lib/git/mwaite/jenkins/git-client-plugin.git</reference>
-        <timeout>1</timeout>
-        <depth>0</depth>
-      </hudson.plugins.git.extensions.impl.CloneOption>
-      <hudson.plugins.git.extensions.impl.AuthorInChangelog/>
-      <hudson.plugins.git.extensions.impl.CleanBeforeCheckout/>
-      <hudson.plugins.git.extensions.impl.PruneStaleBranch/>
-      <hudson.plugins.git.extensions.impl.LocalBranch>
-        <localBranch>**</localBranch>
-      </hudson.plugins.git.extensions.impl.LocalBranch>
-    </extensions>
   </scmSource>
 </freestyle-multi-branch-project>
