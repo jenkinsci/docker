@@ -3,6 +3,8 @@
 SUT_IMAGE=bats-jenkins
 SUT_CONTAINER=bats-jenkins
 
+load 'test_helper/bats-support/load'
+load 'test_helper/bats-assert/load'
 load test_helpers
 
 @test "build image" {
@@ -49,9 +51,24 @@ load test_helpers
       bash -c "curl -fsSL --user \"admin:$(get_jenkins_password)\" $(get_jenkins_url)/systemInfo | sed 's/<\/tr>/<\/tr>\'$'\n/g' | grep '<td class=\"pane\">user.timezone</td>' | sed -e '${sed_expr}'"
 }
 
-@test "plugins are installed" {
+@test "plugins are installed with plugins.sh" {
   docker build -t $SUT_IMAGE-plugins $BATS_TEST_DIRNAME/plugins
-  assert "maven-plugin.jpi maven-plugin.jpi.pinned" docker run -ti --rm $SUT_IMAGE-plugins ls /var/jenkins_home/plugins | sed -e 's/  / /'
+  assert_success
+  # replace DOS line endings \r\n
+  run bash -c "docker run -ti --rm $SUT_IMAGE-plugins ls -1 /var/jenkins_home/plugins | tr -d '\r'"
+  assert_success
+  assert_line 'maven-plugin.jpi'
+  assert_line 'maven-plugin.jpi.pinned'
+}
+
+@test "plugins are installed with install-plugins.sh" {
+  run docker build -t $SUT_IMAGE-install-plugins $BATS_TEST_DIRNAME/install-plugins
+  assert_success
+  # replace DOS line endings \r\n
+  run bash -c "docker run -ti --rm $SUT_IMAGE-plugins ls -1 /var/jenkins_home/plugins | tr -d '\r'"
+  assert_success
+  assert_line 'maven-plugin.jpi'
+  assert_line 'maven-plugin.jpi.pinned'
 }
 
 @test "clean test containers" {
