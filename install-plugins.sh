@@ -12,8 +12,8 @@ function getLockFile() {
 	echo -n "$REF_DIR/${1}.lock"
 }
 
-function getHpiFilename() {
-	echo -n "$REF_DIR/${1}.hpi"
+function getArchiveFilename() {
+	echo -n "$REF_DIR/${1}.jpi"
 }
 
 function download() {
@@ -37,7 +37,7 @@ function download() {
 		fi
 
 		if ! checkIntegrity "$plugin"; then
-			echo "Downloaded file is not a valid ZIP: $(getHpiFilename "$plugin")" >&2
+			echo "Downloaded file is not a valid ZIP: $(getArchiveFilename "$plugin")" >&2
 			echo "Download integrity: ${plugin}" >> "$FAILED"
 			return 1
 		fi
@@ -47,12 +47,12 @@ function download() {
 }
 
 function doDownload() {
-	local plugin version url hpi
+	local plugin version url jpi
 	plugin="$1"
 	version="$2"
-	hpi="$(getHpiFilename "$plugin")"
+	jpi="$(getArchiveFilename "$plugin")"
 
-	if [[ -f $hpi ]]; then
+	if [[ -f $jpi ]]; then
 		echo "Using provided plugin: $plugin"
 		return 0
 	fi
@@ -60,23 +60,23 @@ function doDownload() {
 	url="$JENKINS_UC/download/plugins/$plugin/$version/${plugin}.hpi"
 
 	echo "Downloading plugin: $plugin from $url"
-	curl --connect-timeout 5 --max-time 10 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L "$url" -o "$hpi"
+	curl --connect-timeout 5 --max-time 10 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L "$url" -o "$jpi"
 	return $?
 }
 
 function checkIntegrity() {
-	local plugin hpi
+	local plugin jpi
 	plugin="$1"
-	hpi="$(getHpiFilename "$plugin")"
+	jpi="$(getArchiveFilename "$plugin")"
 
-	zip -T "$hpi" >/dev/null
+	zip -T "$jpi" >/dev/null
 	return $?
 }
 
 function resolveDependencies() {	
-	local plugin hpi dependencies
+	local plugin jpi dependencies
 	plugin="$1"
-	hpi="$(getHpiFilename "$plugin")"
+	jpi="$(getArchiveFilename "$plugin")"
 
 	# ^M below is a control character, inserted by typing ctrl+v ctrl+m
 	dependencies="$(unzip -p "$hpi" META-INF/MANIFEST.MF | sed -e 's###g' | tr '\n' '|' | sed -e 's#| ##g' | tr '|' '\n' | grep "^Plugin-Dependencies: " | sed -e 's#^Plugin-Dependencies: ##')"
