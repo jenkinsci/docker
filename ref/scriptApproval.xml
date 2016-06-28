@@ -1,10 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <scriptApproval plugin="script-security@1.20">
   <approvedScriptHashes>
-    <!-- JENKINS-31393 log contains script -->
     <string>0edc88d7916c37cd4b3d61df55cfc3359f63ea44</string>
   </approvedScriptHashes>
-  <approvedSignatures/>
+  <approvedSignatures>
+    <string>method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder$BadgeManager createSummary java.lang.String</string>
+    <string>method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildSummaryAction appendText java.lang.String boolean boolean boolean java.lang.String</string>
+  </approvedSignatures>
   <aclApprovedSignatures/>
   <approvedClasspathEntries/>
   <pendingScripts/>
