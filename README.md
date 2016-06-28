@@ -151,16 +151,8 @@ wish the target installation to look like :
 
 ```
 FROM jenkins
-COPY plugins.txt /usr/share/jenkins/ref/
-COPY custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
-RUN /usr/local/bin/plugins.sh /usr/share/jenkins/ref/plugins.txt
-```
-
-As an alternative, you can rely on the `install-plugins.sh` script to pass a set of plugins to download with their dependencies. Use plugin artifact ID, whithout `-plugin` extension.
-
-```
-FROM jenkins
-RUN install-plugins.sh docker-slaves github-branch-source 
+COPY myPlugin.hpi /usr/share/jenkins/ref/plugins/
+COPY custom.groovy /usr/share/jenkins/ref/init.groovy.d/
 ```
 
 When jenkins container starts, it will check JENKINS_HOME has this reference content, and copy them
@@ -172,10 +164,21 @@ In case you *do* want to override, append '.override' to the name of the referen
 
 Also see [JENKINS-24986](https://issues.jenkins-ci.org/browse/JENKINS-24986)
 
-## Preinstalling plugins
+## Installing plugins
 
-For your convenience, you also can use a plain text file to define plugins to be installed
-(using core-support plugin format).
+There are two scripts provided for downloading Jenkins plugins during the build: `plugins.sh` and `install-plugins.sh`.  Both scripts are documented in detail below.
+
+For 2.x-derived images, you may also want to
+
+    RUN echo 2.0 > /usr/share/jenkins/ref/jenkins.install.UpgradeWizard.state
+
+to indicate that this Jenkins installation is fully configured.
+Otherwise a banner will appear prompting the user to install additional plugins,
+which may be inappropriate.
+
+### plugins.sh
+
+`plugins.sh` allows you to use a plain text file to define plugins to be installed (using core-support plugin format).
 All plugins need to be listed in the form `pluginID:version` as there is no transitive dependency resolution.
 
 ```
@@ -209,13 +212,21 @@ script-security:1.13
 ...
 ```
 
-For 2.x-derived images, you may also want to
+### install-plugins.sh
 
-    RUN echo 2.0 > /usr/share/jenkins/ref/jenkins.install.UpgradeWizard.state
+`install-plugins.sh` takes a set of plugins to download with their dependencies. Use plugin artifact ID, without `-plugin` extension.  You may also specify a plugin with a specific version in core-support plugin format, otherwise the latest version will be used (latest is always used for transitive dependencies).  All plugins and dependencies are downloaded in parallel, and any plugin files already added to the docker container will be used instead of downloaded.
 
-to indicate that this Jenkins installation is fully configured.
-Otherwise a banner will appear prompting the user to install additional plugins,
-which may be inappropriate.
+```
+FROM jenkins
+RUN install-plugins.sh credentials:2.1.4 \
+                       docker-slaves \
+                       github-branch-source 
+```
+
+`install-plugins.sh` can be configured based on environment variables:
+* `REF`: Jenkins "ref" directory.  Defaults to `/usr/share/jenkins/ref/plugins`
+* `JENKINS_UC`: Base url for the Jenkins update center.  Defaults to `http://updates.jenkins.io`.
+* `JENKINS_MIRROR`: Base url used for downloading plugins, allows using a different mirror than `updates.jenkins.io`.  Defaults to `$JENKINS_UC/download`
 
 # Upgrading
 

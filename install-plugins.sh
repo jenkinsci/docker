@@ -7,6 +7,7 @@
 
 REF_DIR=${REF:-/usr/share/jenkins/ref/plugins}
 FAILED="$REF_DIR/failed-plugins.txt"
+JENKINS_MIRROR="${JENKINS_MIRROR:-$JENKINS_UC/download}"
 
 function getLockFile() {
 	echo -n "$REF_DIR/${1}.lock"
@@ -57,7 +58,7 @@ function doDownload() {
 		return 0
 	fi
 
-	url="$JENKINS_UC/download/plugins/$plugin/$version/${plugin}.hpi"
+	url="$JENKINS_MIRROR/plugins/$plugin/$version/${plugin}.hpi"
 
 	echo "Downloading plugin: $plugin from $url"
 	curl --connect-timeout 5 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L "$url" -o "$jpi"
@@ -79,6 +80,7 @@ function resolveDependencies() {
 	jpi="$(getArchiveFilename "$plugin")"
 
 	# ^M below is a control character, inserted by typing ctrl+v ctrl+m
+	# ^M should be right after this character ----------------------v
 	dependencies="$(unzip -p "$hpi" META-INF/MANIFEST.MF | sed -e 's###g' | tr '\n' '|' | sed -e 's#| ##g' | tr '|' '\n' | grep "^Plugin-Dependencies: " | sed -e 's#^Plugin-Dependencies: ##')"
 
 	if [[ ! $dependencies ]]; then
@@ -93,7 +95,7 @@ function resolveDependencies() {
 	for d in "${array[@]}"
 	do
 		plugin="$(cut -d':' -f1 - <<< "$d")"
-		if [[ $d == *"resolution:=optional"* ]]; then	
+		if [[ $d == *"resolution:=optional"* ]]; then
 			echo "Skipping optional dependency $plugin"
 		else
 			download "$plugin" &
@@ -123,7 +125,7 @@ main() {
 		fi
 
 		download "$plugin" "$version" "true" &
-	done				  
+	done
 	wait
 
 	if [[ -f $FAILED ]]; then
