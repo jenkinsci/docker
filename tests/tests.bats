@@ -52,13 +52,15 @@ load test_helpers
 }
 
 @test "plugins are installed with plugins.sh" {
-  docker build -t $SUT_IMAGE-plugins $BATS_TEST_DIRNAME/plugins
+  run docker build -t $SUT_IMAGE-plugins $BATS_TEST_DIRNAME/plugins
   assert_success
   # replace DOS line endings \r\n
   run bash -c "docker run -ti --rm $SUT_IMAGE-plugins ls -1 /var/jenkins_home/plugins | tr -d '\r'"
   assert_success
   assert_line 'maven-plugin.jpi'
   assert_line 'maven-plugin.jpi.pinned'
+  assert_line 'ant.jpi'
+  assert_line 'ant.jpi.pinned'
 }
 
 @test "plugins are installed with install-plugins.sh" {
@@ -69,6 +71,8 @@ load test_helpers
   assert_success
   assert_line 'maven-plugin.jpi'
   assert_line 'maven-plugin.jpi.pinned'
+  assert_line 'ant.jpi'
+  assert_line 'ant.jpi.pinned'
 }
 
 @test "clean test containers" {
