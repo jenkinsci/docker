@@ -2,7 +2,7 @@
 <freestyle-multi-branch-project plugin="multi-branch-project-plugin@0.4.2">
   <actions/>
   <description>[My Jenkins git plugin](https://github.com/MarkEWaite/git-plugin) pull requests being evaluated</description>
-  <displayName>Git Plugin Branches - Maven</displayName>
+  <displayName>Git Branches - Maven</displayName>
   <properties>
     <com.cloudbees.hudson.plugins.folder.properties.FolderCredentialsProvider_-FolderCredentialsProperty plugin="cloudbees-folder@5.12">
       <domainCredentialsMap class="hudson.util.CopyOnWriteMap$Hash">
