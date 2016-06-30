@@ -51,6 +51,7 @@ Requires a file system and operating system configured to support symoblic links
     </extensions>
   </scm>
   <quietPeriod>0</quietPeriod>
+  <assignedNode>master || linux</assignedNode>
   <canRoam>false</canRoam>
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>

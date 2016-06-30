@@ -70,6 +70,7 @@
     <extensions/>
   </scm>
   <quietPeriod>0</quietPeriod>
+  <assignedNode>master || linux</assignedNode>
   <canRoam>true</canRoam>
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
