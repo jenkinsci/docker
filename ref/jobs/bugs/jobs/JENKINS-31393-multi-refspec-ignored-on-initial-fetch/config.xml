@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <project>
   <actions/>
-  <description>[JENKINS-31393](https://issues.jenkins-ci.org/browse/JENKINS-31393) refspec ignored on first clone</description>
+  <description>[JENKINS-31393](https://issues.jenkins-ci.org/browse/JENKINS-31393) multiple refspec ignored on first clone</description>
   <keepDependencies>false</keepDependencies>
   <properties>
     <jenkins.model.BuildDiscarderProperty>
@@ -24,14 +24,17 @@
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
-        <name>origin-only-JENKINS-31393</name>
-        <refspec>+refs/heads/JENKINS-31393:refs/remotes/origin-only-JENKINS-31393/JENKINS-31393</refspec>
+        <name>origin-JENKINS-31393</name>
+        <refspec>+refs/heads/JENKINS-31393:refs/remotes/origin-JENKINS-31393/JENKINS-31393 +refs/heads/develop/JENKINS-29796:refs/remotes/origin-JENKINS-31393/develop/JENKINS-29796</refspec>
         <url>https://github.com/MarkEWaite/jenkins-bugs/</url>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>
       <hudson.plugins.git.BranchSpec>
         <name>*/JENKINS-31393</name>
+      </hudson.plugins.git.BranchSpec>
+      <hudson.plugins.git.BranchSpec>
+        <name>*/develop/JENKINS-29796</name>
       </hudson.plugins.git.BranchSpec>
     </branches>
     <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
@@ -71,9 +74,12 @@
     <org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder plugin="groovy-postbuild@2.3.1">
       <script plugin="script-security@1.19">
         <script>// Log should only contain branch name of JENKINS-31393, not any other branch name
-if (manager.logContains(&quot;.*remotes/origin-only-JENKINS-31393/JENKINS-14798.*&quot;)) {
-    manager.addWarningBadge(&quot;More than given refspec branches cloned&quot;)
-    manager.createSummary(&quot;warning.gif&quot;).appendText(&quot;&lt;h1&gt;More than given refspec branches cloned!&lt;/h1&gt;&quot;, false, false, false, &quot;red&quot;)
+if ( manager.logContains(&quot;.*remotes/origin-JENKINS-31393/JENKINS-14798.*&quot;) ||
+    !manager.logContains(&quot;.*remotes/origin-JENKINS-31393/JENKINS-31393.*&quot;) ||
+    !manager.logContains(&quot;.*remotes/origin-JENKINS-31393/develop/JENKINS-29796.*&quot;)
+   ) {
+    manager.addWarningBadge(&quot;Wrong refspecs cloned&quot;)
+    manager.createSummary(&quot;warning.gif&quot;).appendText(&quot;&lt;h1&gt;Wrong refspecs cloned!&lt;/h1&gt;&quot;, false, false, false, &quot;red&quot;)
     manager.buildUnstable()
 }</script>
         <sandbox>false</sandbox>
