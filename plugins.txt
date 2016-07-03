@@ -30,7 +30,7 @@ htmlpublisher:latest
 icon-shim:latest
 implied-labels:latest
 jackson2-api:latest
-jacoco:1.0.19
+jacoco:latest
 javadoc
 jquery-detached:latest
 jquery:latest
