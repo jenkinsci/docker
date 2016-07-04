@@ -77,9 +77,6 @@ EXPOSE 50000
 
 ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 
-# Provide a logging location
-RUN mkdir /var/log/jenkins && chown ${user}:${group} /var/log/jenkins
-
 USER ${user}
 
 ENV LOGNAME ${user}
