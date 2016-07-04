@@ -6,8 +6,13 @@
     <string>6b34c6ae9713a8b2944c27b19253cf62b198d23f</string>
   </approvedScriptHashes>
   <approvedSignatures>
+    <string>method groovy.lang.MetaObjectProtocol getMethods</string>
+    <string>method java.lang.Class getName</string>
     <string>method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder$BadgeManager createSummary java.lang.String</string>
+    <string>method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder$BadgeManager getBuild</string>
     <string>method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildSummaryAction appendText java.lang.String boolean boolean boolean java.lang.String</string>
+    <string>staticMethod org.codehaus.groovy.runtime.DefaultGroovyMethods getMetaClass java.lang.Object</string>
+    <string>staticMethod org.codehaus.groovy.runtime.DefaultGroovyMethods sort java.util.Collection</string>
   </approvedSignatures>
   <aclApprovedSignatures/>
   <approvedClasspathEntries/>
