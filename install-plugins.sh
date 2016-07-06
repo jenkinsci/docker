@@ -73,6 +73,11 @@ function checkIntegrity() {
 	return $?
 }
 
+# compare if version1 < version2
+versionLT() {
+	[ "$1" = "$2" ] && return 1 || [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]
+}
+
 function resolveDependencies() {	
 	local plugin jpi dependencies
 	plugin="$1"
@@ -96,10 +101,55 @@ function resolveDependencies() {
 		if [[ $d == *"resolution:=optional"* ]]; then	
 			echo "Skipping optional dependency $plugin"
 		else
-			download "$plugin" &
+			pluginInstalled="$(echo "${bundledPlugins}" | grep "^${plugin}:")"
+			pluginInstalled="${pluginInstalled//[$'\r']}"
+			if ! [ -z "${pluginInstalled}" ]; then
+				versionInstalled=$(versionFromPlugin "${pluginInstalled}")
+				versionToInstall=$(versionFromPlugin "${d}")
+				if versionLT "${versionInstalled}" "${versionToInstall}"; then
+					echo "Upgrading bundled dependency $d ($versionToInstall > $versionInstalled)"
+					download "$plugin" "$versionToInstall" &
+				else
+					echo "Skipping already bundled dependency $d ($versionToInstall <= $versionInstalled)"
+				fi
+			else
+				download "$plugin" "$(versionFromPlugin "${d}")" &
+			fi
 		fi
 	done
 	wait
+}
+
+function bundledPlugins() {
+  local JENKINS_WAR=/usr/share/jenkins/jenkins.war
+  if [ -f $JENKINS_WAR ]
+  then
+      TEMP_PLUGIN_DIR=/tmp/plugintemp.$$
+      for i in `jar tf $JENKINS_WAR|egrep 'plugins.*\..pi'|egrep -v '\/$'|sort`
+      do
+          rm -fr $TEMP_PLUGIN_DIR
+          mkdir -p $TEMP_PLUGIN_DIR
+          PLUGIN=`basename $i|cut -f1 -d'.'`
+          (cd $TEMP_PLUGIN_DIR;jar xf $JENKINS_WAR "$i";jar xvf $TEMP_PLUGIN_DIR/$i META-INF/MANIFEST.MF >/dev/null 2>&1)
+          VER=`egrep -i Plugin-Version "$TEMP_PLUGIN_DIR/META-INF/MANIFEST.MF"|cut -d\: -f2|sed 's/ //'`
+          echo "$PLUGIN:$VER"
+      done
+      rm -fr $TEMP_PLUGIN_DIR
+  else
+      rm -f $TEMP_ALREADY_INSTALLED
+      echo "ERROR file not found: $JENKINS_WAR"
+      exit 1
+  fi
+}
+
+function versionFromPlugin() {
+	local plugin=$1
+	if [[ $plugin =~ .*:.* ]]; then
+		echo "${plugin##*:}"
+	else
+		echo "latest"
+	fi
+
 }
 
 main() {
@@ -113,12 +163,15 @@ main() {
 		mkdir "$(getLockFile "${plugin%%:*}")"
 	done
 
+	echo -e "\nAnalyzing war..."
+	bundledPlugins="$(bundledPlugins)"
+
 	echo -e "\nDownloading plugins..."
 	for plugin in "$@"; do
 		version=""
 
 		if [[ $plugin =~ .*:.* ]]; then
-			version="${plugin##*:}"
+			version=$(versionFromPlugin "${plugin}")
 			plugin="${plugin%%:*}"
 		fi
 
@@ -131,8 +184,8 @@ main() {
 		exit 1
 	fi
 
-	echo -e "\nCleaning up locks..."
-	rm -rv "$REF_DIR"/*.lock
+	echo -e "\nCleaning up locks"
+	rm -r "$REF_DIR"/*.lock
 }
 
 main "$@"
