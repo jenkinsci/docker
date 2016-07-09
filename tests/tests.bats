@@ -40,7 +40,7 @@ load test_helpers
 }
 
 @test "Jenkins is initialized" {
-    retry 30 5 test_url /api/json
+    retry 50 5 test_url /api/json
 }
 
 @test "JAVA_OPTS are set" {
