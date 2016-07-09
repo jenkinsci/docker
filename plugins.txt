@@ -33,6 +33,7 @@ ivy:latest
 jackson2-api:latest
 jacoco:latest
 javadoc
+jira:latest
 jquery-detached:latest
 jquery:latest
 jquery-ui:latest
