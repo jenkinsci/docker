@@ -49,7 +49,7 @@
         <reference>/var/lib/git/mwaite/bugs/jenkins-bugs.git</reference>
         <timeout>1</timeout>
         <depth>1</depth>
-        <honorRefspec>true</honorRefspec>
+        <honorRefspec>false</honorRefspec>
       </hudson.plugins.git.extensions.impl.CloneOption>
     </extensions>
   </scm>
