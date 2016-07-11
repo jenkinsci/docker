@@ -151,16 +151,16 @@ wish the target installation to look like :
 
 ```
 FROM jenkins
-COPY plugins.txt /usr/share/jenkins/ref/
 COPY custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
-RUN /usr/local/bin/plugins.sh /usr/share/jenkins/ref/plugins.txt
 ```
 
-As an alternative, you can rely on the `install-plugins.sh` script to pass a set of plugins to download with their dependencies. Use plugin artifact ID, whithout `-plugin` extension.
+You can rely on the `install-plugins.sh` script to pass a set of plugins to download with their dependencies.
+Use plugin artifact ID, whithout `-plugin` extension, and append the version if needed separated by `:`.
+Dependencies that are already included in the Jenkins war will only be downloaded if their required version is newer than the one included.
 
 ```
 FROM jenkins
-RUN install-plugins.sh docker-slaves github-branch-source 
+RUN /usr/local/bin/install-plugins.sh docker-slaves github-branch-source:1.8
 ```
 
 When jenkins container starts, it will check JENKINS_HOME has this reference content, and copy them
