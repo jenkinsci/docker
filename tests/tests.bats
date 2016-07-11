@@ -55,7 +55,7 @@ load test_helpers
   run docker build -t $SUT_IMAGE-plugins $BATS_TEST_DIRNAME/plugins
   assert_success
   # replace DOS line endings \r\n
-  run bash -c "docker run -ti --rm $SUT_IMAGE-plugins ls -1 /var/jenkins_home/plugins | tr -d '\r'"
+  run bash -c "docker run -ti --rm $SUT_IMAGE-plugins ls --color=never -1 /var/jenkins_home/plugins | tr -d '\r'"
   assert_success
   refute_line 'maven-plugin.jpi'
   refute_line 'maven-plugin.jpi.pinned'
@@ -67,7 +67,7 @@ load test_helpers
   run docker build -t $SUT_IMAGE-install-plugins $BATS_TEST_DIRNAME/install-plugins
   assert_success
   # replace DOS line endings \r\n
-  run bash -c "docker run -ti --rm $SUT_IMAGE-install-plugins ls -1 /var/jenkins_home/plugins | tr -d '\r'"
+  run bash -c "docker run -ti --rm $SUT_IMAGE-install-plugins ls --color=never -1 /var/jenkins_home/plugins | tr -d '\r'"
   assert_success
   assert_line 'maven-plugin.jpi'
   assert_line 'maven-plugin.jpi.pinned'
