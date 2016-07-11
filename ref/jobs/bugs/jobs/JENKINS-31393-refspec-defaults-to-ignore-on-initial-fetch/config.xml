@@ -44,11 +44,9 @@
       <hudson.plugins.git.extensions.impl.WipeWorkspace/>
       <hudson.plugins.git.extensions.impl.AuthorInChangelog/>
       <hudson.plugins.git.extensions.impl.CloneOption>
-        <shallow>true</shallow>
         <noTags>true</noTags>
         <reference>/var/lib/git/mwaite/bugs/jenkins-bugs.git</reference>
         <timeout>1</timeout>
-        <depth>1</depth>
         <honorRefspec>false</honorRefspec>
       </hudson.plugins.git.extensions.impl.CloneOption>
     </extensions>

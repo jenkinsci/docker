@@ -51,7 +51,7 @@
         <noTags>true</noTags>
         <reference>/var/lib/git/mwaite/bugs/jenkins-bugs.git</reference>
         <timeout>1</timeout>
-        <depth>1</depth>
+        <depth>3</depth>
         <honorRefspec>true</honorRefspec>
       </hudson.plugins.git.extensions.impl.CloneOption>
     </extensions>
