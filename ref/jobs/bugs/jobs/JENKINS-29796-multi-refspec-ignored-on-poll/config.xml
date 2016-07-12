@@ -12,7 +12,7 @@
         <artifactNumToKeep>-1</artifactNumToKeep>
       </strategy>
     </jenkins.model.BuildDiscarderProperty>
-    <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.19.1">
+    <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.19.2">
       <projectUrl>https://github.com/MarkEWaite/jenkins-bugs/</projectUrl>
       <displayName></displayName>
     </com.coravy.hudson.plugins.github.GithubProjectProperty>
@@ -20,7 +20,7 @@
       <leastLoadDisabled>false</leastLoadDisabled>
     </org.bstick12.jenkinsci.plugins.leastload.LeastLoadDisabledProperty>
   </properties>
-  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.5.0">
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.5.2">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
@@ -46,6 +46,13 @@
       </hudson.plugins.git.extensions.impl.LocalBranch>
       <hudson.plugins.git.extensions.impl.WipeWorkspace/>
       <hudson.plugins.git.extensions.impl.AuthorInChangelog/>
+      <hudson.plugins.git.extensions.impl.CloneOption>
+        <shallow>false</shallow>
+        <noTags>false</noTags>
+        <reference></reference>
+        <depth>0</depth>
+        <honorRefspec>true</honorRefspec>
+      </hudson.plugins.git.extensions.impl.CloneOption>
     </extensions>
   </scm>
   <quietPeriod>0</quietPeriod>
@@ -70,7 +77,7 @@
   </builders>
   <publishers>
     <org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder plugin="groovy-postbuild@2.3.1">
-      <script plugin="script-security@1.19">
+      <script plugin="script-security@1.20">
         <script>// Log should only contain branch name of JENKINS-29796, not any other branch name
 if ( manager.logContains(&quot;.*remotes/origin-JENKINS-29796/JENKINS-14798.*&quot;) ||
     !manager.logContains(&quot;.*remotes/origin-JENKINS-29796/develop/JENKINS-29796.*&quot;) ||
