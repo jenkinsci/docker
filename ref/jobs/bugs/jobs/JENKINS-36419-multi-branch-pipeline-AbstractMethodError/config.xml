@@ -17,7 +17,7 @@
   <healthMetrics>
     <com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric plugin="cloudbees-folder@5.12"/>
   </healthMetrics>
-  <icon class="com.github.mjdetullio.jenkins.plugins.multibranch.BallColorFolderIcon" plugin="multi-branch-project-plugin@0.5">
+  <icon class="com.github.mjdetullio.jenkins.plugins.multibranch.BallColorFolderIcon" plugin="multi-branch-project-plugin@0.5.1">
     <owner class="org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject" reference="../.."/>
   </icon>
   <orphanedItemStrategy class="com.cloudbees.hudson.plugins.folder.computed.DefaultOrphanedItemStrategy" plugin="cloudbees-folder@5.12">
@@ -29,7 +29,7 @@
   <sources class="jenkins.branch.MultiBranchProject$BranchSourceList" plugin="branch-api@1.10">
     <data>
       <jenkins.branch.BranchSource>
-        <source class="jenkins.plugins.git.GitSCMSource" plugin="git@2.5.1">
+        <source class="jenkins.plugins.git.GitSCMSource" plugin="git@2.5.3-SNAPSHOT">
           <id>6742324b-391e-4e67-b2b8-d64c09b4b229</id>
           <remote>https://github.com/MarkEWaite/jenkins-bugs</remote>
           <credentialsId></credentialsId>
@@ -41,11 +41,12 @@
             <hudson.plugins.git.extensions.impl.CleanBeforeCheckout/>
             <hudson.plugins.git.extensions.impl.AuthorInChangelog/>
             <hudson.plugins.git.extensions.impl.CloneOption>
-              <shallow>true</shallow>
+              <shallow>false</shallow>
               <noTags>true</noTags>
               <reference>/var/lib/git/mwaite/bugs/jenkins-bugs.git</reference>
               <timeout>1</timeout>
-              <depth>1</depth>
+              <depth>0</depth>
+              <honorRefspec>false</honorRefspec>
             </hudson.plugins.git.extensions.impl.CloneOption>
             <hudson.plugins.git.extensions.impl.LocalBranch>
               <localBranch>**</localBranch>
