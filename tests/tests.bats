@@ -78,3 +78,56 @@ load test_helpers
 @test "clean test containers" {
     cleanup $SUT_CONTAINER
 }
+
+@test "plugins are getting upgraded but not downgraded" {
+  run docker build -t $SUT_IMAGE-install-plugins $BATS_TEST_DIRNAME/install-plugins
+  assert_success
+  local work; work="$BATS_TEST_DIRNAME/upgrade-plugins/work"
+  # Image contains maven-plugin 2.7.1 and ant-plugin 1.3
+  run bash -c "docker run -ti -v $work:/var/jenkins_home --rm $SUT_IMAGE-install-plugins true"
+  assert_success
+  run bash -c "unzip -p $work/plugins/maven-plugin.jpi META-INF/MANIFEST.MF | tr -d '\r'"
+  assert_line 'Plugin-Version: 2.7.1'
+  run bash -c "unzip -p $work/plugins/ant.jpi META-INF/MANIFEST.MF | tr -d '\r'"
+  assert_line 'Plugin-Version: 1.3'
+  run docker build -t $SUT_IMAGE-upgrade-plugins $BATS_TEST_DIRNAME/upgrade-plugins
+  assert_success
+  # Images contains maven-plugin 2.13 and ant-plugin 1.2
+  run bash -c "docker run -ti -v $work:/var/jenkins_home --rm $SUT_IMAGE-upgrade-plugins true"
+  assert_success
+  run bash -c "unzip -p $work/plugins/maven-plugin.jpi META-INF/MANIFEST.MF | tr -d '\r'"
+  assert_success
+  # Should be updated
+  assert_line 'Plugin-Version: 2.13'
+  run bash -c "unzip -p $work/plugins/ant.jpi META-INF/MANIFEST.MF | tr -d '\r'"
+  # 1.2 is older than the existing 1.3, so keep 1.3
+  assert_line 'Plugin-Version: 1.3'
+}
+
+@test "clean work directory" {
+    run bash -c "rm -rf $BATS_TEST_DIRNAME/upgrade-plugins/work"
+}
+
+@test "do not upgrade if plugin has been manually updated" {
+  run docker build -t $SUT_IMAGE-install-plugins $BATS_TEST_DIRNAME/install-plugins
+  assert_success
+  local work; work="$BATS_TEST_DIRNAME/upgrade-plugins/work"
+  # Image contains maven-plugin 2.7.1 and ant-plugin 1.3
+  run bash -c "docker run -ti -v $work:/var/jenkins_home --rm $SUT_IMAGE-install-plugins curl --connect-timeout 5 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L https://updates.jenkins.io/download/plugins/maven-plugin/2.12.1/maven-plugin.hpi -o /var/jenkins_home/plugins/maven-plugin.jpi"
+  assert_success
+  run bash -c "unzip -p $work/plugins/maven-plugin.jpi META-INF/MANIFEST.MF | tr -d '\r'"
+  assert_line 'Plugin-Version: 2.12.1'
+  run docker build -t $SUT_IMAGE-upgrade-plugins $BATS_TEST_DIRNAME/upgrade-plugins
+  assert_success
+  # Images contains maven-plugin 2.13 and ant-plugin 1.2
+  run bash -c "docker run -ti -v $work:/var/jenkins_home --rm $SUT_IMAGE-upgrade-plugins true"
+  assert_success
+  run bash -c "unzip -p $work/plugins/maven-plugin.jpi META-INF/MANIFEST.MF | tr -d '\r'"
+  assert_success
+  # Shouldn't be updated
+  refute_line 'Plugin-Version: 2.13'
+}
+
+@test "clean work directory" {
+    run bash -c "rm -rf $BATS_TEST_DIRNAME/upgrade-plugins/work"
+}
