@@ -223,6 +223,12 @@ All the data needed is in the /var/jenkins_home directory - so depending on how 
 
 As always - please ensure that you know how to drive docker - especially volume handling!
 
+## Upgrading plugins
+
+By default, plugins will be upgraded if they haven't been upgraded manually and if the version from the docker image is newer than the version in the container. Versions installed by the docker image are tracked through a marker file.
+
+The default behaviour when upgrading from a docker image that didn't write marker files is to leave existing plugins in place. If you want to upgrade existing plugins without marker you may run the docker image with `-e TRY_UPGRADE_IF_NO_MARKER=true`. Then plugins will be upgraded if the version provided by the docker image is newer.
+
 # Building
 
 Build with the usual
