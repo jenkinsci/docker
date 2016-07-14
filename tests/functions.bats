@@ -4,7 +4,7 @@ load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
 load test_helpers
 
-. jenkins-support
+. $BATS_TEST_DIRNAME/../jenkins-support
 
 @test "versionLT" {
   run versionLT 1.0 1.0
