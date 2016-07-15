@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson>
+  <jdks>
+    <jdk>
+      <name>jdk8</name>
+      <home></home>
+      <properties>
+        <hudson.tools.InstallSourceProperty>
+          <installers>
+            <hudson.tools.ZipExtractionInstaller>
+              <label>linux &amp;&amp; 64bit</label>
+              <url>http://localhost:8080/userContent/jdk/jdk-8u92-linux-x64.tar.gz</url>
+              <subdir>jdk1.8.0_92</subdir>
+            </hudson.tools.ZipExtractionInstaller>
+            <hudson.tools.ZipExtractionInstaller>
+              <label>linux &amp;&amp; 32bit</label>
+              <url>http://localhost:8080/userContent/jdk/jdk-8u92-linux-i586.tar.gz</url>
+              <subdir>jdk1.8.0_92</subdir>
+            </hudson.tools.ZipExtractionInstaller>
+          </installers>
+        </hudson.tools.InstallSourceProperty>
+      </properties>
+    </jdk>
+    <jdk>
+      <name>jdk7</name>
+      <home></home>
+      <properties>
+        <hudson.tools.InstallSourceProperty>
+          <installers>
+            <hudson.tools.ZipExtractionInstaller>
+              <label>linux &amp;&amp; 64bit</label>
+              <url>http://localhost:8080/userContent/jdk/jdk-7u80-linux-x64.tar.gz</url>
+              <subdir>jdk1.7.0_80</subdir>
+            </hudson.tools.ZipExtractionInstaller>
+            <hudson.tools.ZipExtractionInstaller>
+              <label>linux &amp;&amp; 32bit</label>
+              <url>http://localhost:8080/userContent/jdk/jdk-7u80-linux-i586.tar.gz</url>
+              <subdir>jdk1.7.0_80</subdir>
+            </hudson.tools.ZipExtractionInstaller>
+          </installers>
+        </hudson.tools.InstallSourceProperty>
+      </properties>
+    </jdk>
+    <jdk>
+      <name>jdk6</name>
+      <home></home>
+      <properties>
+        <hudson.tools.InstallSourceProperty>
+          <installers>
+            <hudson.tools.ZipExtractionInstaller>
+              <label>linux &amp;&amp; 64bit</label>
+              <url>http://localhost:8080/userContent/jdk/jdk-6u45-linux-x64.tar.gz</url>
+              <subdir>java-6-oracle</subdir>
+            </hudson.tools.ZipExtractionInstaller>
+            <hudson.tools.ZipExtractionInstaller>
+              <label>linux &amp;&amp; 32bit</label>
+              <url>http://localhost:8080/userContent/jdk/jdk-6u45-linux-x86.tar.gz</url>
+              <subdir>java-6-oracle</subdir>
+            </hudson.tools.ZipExtractionInstaller>
+          </installers>
+        </hudson.tools.InstallSourceProperty>
+      </properties>
+    </jdk>
+  </jdks>
+</hudson>
