@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<freestyle-multi-branch-project plugin="multi-branch-project-plugin@0.4.2">
+<freestyle-multi-branch-project plugin="multi-branch-project-plugin@0.5.1">
   <actions/>
   <description>[My Jenkins git plugin](https://github.com/MarkEWaite/git-plugin) pull requests being evaluated</description>
   <displayName>Git Branches - Maven</displayName>
@@ -7,7 +7,7 @@
     <com.cloudbees.hudson.plugins.folder.properties.FolderCredentialsProvider_-FolderCredentialsProperty plugin="cloudbees-folder@5.12">
       <domainCredentialsMap class="hudson.util.CopyOnWriteMap$Hash">
         <entry>
-          <com.cloudbees.plugins.credentials.domains.Domain plugin="credentials@2.1.3">
+          <com.cloudbees.plugins.credentials.domains.Domain plugin="credentials@2.1.4">
             <specifications/>
           </com.cloudbees.plugins.credentials.domains.Domain>
           <java.util.concurrent.CopyOnWriteArrayList/>
@@ -52,15 +52,52 @@
     <numToKeep>0</numToKeep>
   </orphanedItemStrategy>
   <triggers/>
+  <sources>
+    <jenkins.branch.BranchSource plugin="branch-api@1.10">
+      <source class="jenkins.plugins.git.GitSCMSource" plugin="git@2.5.2">
+        <id>d7205f38-9ade-472c-923c-6a839d7ec90d</id>
+        <remote>https://github.com/MarkEWaite/git-plugin.git</remote>
+        <credentialsId></credentialsId>
+        <includes>master-PR*</includes>
+        <excludes></excludes>
+        <ignoreOnPushNotifications>false</ignoreOnPushNotifications>
+        <gitTool>Default</gitTool>
+        <extensions>
+          <hudson.plugins.git.extensions.impl.ChangelogToBranch>
+            <options>
+              <compareRemote>origin</compareRemote>
+              <compareTarget>master</compareTarget>
+            </options>
+          </hudson.plugins.git.extensions.impl.ChangelogToBranch>
+          <hudson.plugins.git.extensions.impl.AuthorInChangelog/>
+          <hudson.plugins.git.extensions.impl.CleanBeforeCheckout/>
+          <hudson.plugins.git.extensions.impl.CloneOption>
+            <shallow>false</shallow>
+            <noTags>true</noTags>
+            <reference>/var/lib/git/mwaite/jenkins/git-plugin.git</reference>
+            <timeout>2</timeout>
+            <depth>0</depth>
+          </hudson.plugins.git.extensions.impl.CloneOption>
+          <hudson.plugins.git.extensions.impl.ChangelogToBranch>
+            <options>
+              <compareRemote>origin</compareRemote>
+              <compareTarget>master</compareTarget>
+            </options>
+          </hudson.plugins.git.extensions.impl.ChangelogToBranch>
+          <hudson.plugins.git.extensions.impl.LocalBranch>
+            <localBranch>**</localBranch>
+          </hudson.plugins.git.extensions.impl.LocalBranch>
+          <hudson.plugins.git.extensions.impl.PruneStaleBranch/>
+        </extensions>
+      </source>
+      <strategy class="jenkins.branch.DefaultBranchPropertyStrategy">
+        <properties class="empty-list"/>
+      </strategy>
+    </jenkins.branch.BranchSource>
+  </sources>
+  <factory class="com.github.mjdetullio.jenkins.plugins.multibranch.FreeStyleBranchProjectFactory">
+    <owner class="freestyle-multi-branch-project" reference="../.."/>
+  </factory>
   <disabled>false</disabled>
   <disabledSubProjects/>
-  <allowAnonymousSync>false</allowAnonymousSync>
-  <suppressTriggerNewBranchBuild>false</suppressTriggerNewBranchBuild>
-  <scmSource class="jenkins.plugins.git.GitSCMSource" plugin="git@2.5.0">
-    <id>d7205f38-9ade-472c-923c-6a839d7ec90d</id>
-    <remote>git://github.com/MarkEWaite/git-plugin.git</remote>
-    <includes>master-PR*</includes>
-    <excludes/>
-    <ignoreOnPushNotifications>false</ignoreOnPushNotifications>
-  </scmSource>
 </freestyle-multi-branch-project>

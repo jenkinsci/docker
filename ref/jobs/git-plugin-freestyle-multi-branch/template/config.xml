@@ -11,7 +11,7 @@
       </strategy>
     </jenkins.model.BuildDiscarderProperty>
     <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.19.2">
-      <projectUrl>https://github.com/MarkEWaite/git-client-plugin/</projectUrl>
+      <projectUrl>https://github.com/MarkEWaite/git-plugin/</projectUrl>
       <displayName></displayName>
     </com.coravy.hudson.plugins.github.GithubProjectProperty>
     <org.bstick12.jenkinsci.plugins.leastload.LeastLoadDisabledProperty plugin="leastload@1.0.3">
@@ -24,9 +24,9 @@
           <description>Tests to execute</description>
           <choices class="java.util.Arrays$ArrayList">
             <a class="string-array">
-              <string>CliGitAPIImplTest</string>
-              <string>JGitAPIImplTest</string>
-              <string>JGitAPIImplTest,CliGitAPIImplTest</string>
+              <string>GitSCMTest</string>
+              <string>GitStatusTest</string>
+              <string>GitChangeSet*Test</string>
               <string>*</string>
             </a>
           </choices>

@@ -69,6 +69,25 @@
               <compareTarget>master</compareTarget>
             </options>
           </hudson.plugins.git.extensions.impl.ChangelogToBranch>
+          <hudson.plugins.git.extensions.impl.AuthorInChangelog/>
+          <hudson.plugins.git.extensions.impl.CleanBeforeCheckout/>
+          <hudson.plugins.git.extensions.impl.CloneOption>
+            <shallow>false</shallow>
+            <noTags>true</noTags>
+            <reference>/var/lib/git/mwaite/jenkins/git-client-plugin.git</reference>
+            <timeout>2</timeout>
+            <depth>0</depth>
+          </hudson.plugins.git.extensions.impl.CloneOption>
+          <hudson.plugins.git.extensions.impl.ChangelogToBranch>
+            <options>
+              <compareRemote>origin</compareRemote>
+              <compareTarget>master</compareTarget>
+            </options>
+          </hudson.plugins.git.extensions.impl.ChangelogToBranch>
+          <hudson.plugins.git.extensions.impl.LocalBranch>
+            <localBranch>**</localBranch>
+          </hudson.plugins.git.extensions.impl.LocalBranch>
+          <hudson.plugins.git.extensions.impl.PruneStaleBranch/>
         </extensions>
       </source>
       <strategy class="jenkins.branch.DefaultBranchPropertyStrategy">
