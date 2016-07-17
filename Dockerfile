@@ -14,7 +14,9 @@ ARG gid=1000
 # If you bind mount a volume from the host or a data container, 
 # ensure you use the same uid
 RUN groupadd -g ${gid} ${group} \
-    && useradd -d "$JENKINS_HOME" -u ${uid} -g ${gid} -m -s /bin/bash ${user}
+    && useradd -u ${uid} -g ${gid} -m -s /bin/bash ${user}
+
+RUN mkdir $JENKINS_HOME && chown -R ${user} "$JENKINS_HOME"
 
 # Jenkins home directory is a volume, so configuration and build history 
 # can be persisted and survive image upgrades
@@ -46,7 +48,7 @@ RUN curl -fsSL http://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war
   && echo "$JENKINS_SHA  /usr/share/jenkins/jenkins.war" | sha1sum -c -
 
 ENV JENKINS_UC https://updates.jenkins.io
-RUN chown -R ${user} "$JENKINS_HOME" /usr/share/jenkins/ref
+RUN chown -R ${user} "$JENKINS_HOME" /usr/share/jenkins/ref 
 
 # for main web interface:
 EXPOSE 8080
