@@ -81,6 +81,7 @@ USER ${user}
 
 ENV LOGNAME ${user}
 
+COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
 ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 

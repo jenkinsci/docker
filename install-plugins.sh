@@ -8,6 +8,8 @@
 REF_DIR=${REF:-/usr/share/jenkins/ref/plugins}
 FAILED="$REF_DIR/failed-plugins.txt"
 
+. /usr/local/bin/jenkins-support
+
 function getLockFile() {
 	echo -n "$REF_DIR/${1}.lock"
 }
@@ -71,11 +73,6 @@ function checkIntegrity() {
 
 	zip -T "$jpi" >/dev/null
 	return $?
-}
-
-# compare if version1 < version2
-versionLT() {
-	[ "$1" = "$2" ] && return 1 || [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]
 }
 
 function resolveDependencies() {	
