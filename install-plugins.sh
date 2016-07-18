@@ -84,7 +84,7 @@ function resolveDependencies() {
 	jpi="$(getArchiveFilename "$plugin")"
 
 	# ^M below is a control character, inserted by typing ctrl+v ctrl+m
-	dependencies="$(unzip -p "$hpi" META-INF/MANIFEST.MF | sed -e 's###g' | tr '\n' '|' | sed -e 's#| ##g' | tr '|' '\n' | grep "^Plugin-Dependencies: " | sed -e 's#^Plugin-Dependencies: ##')"
+	dependencies="$(unzip -p "$jpi" META-INF/MANIFEST.MF | sed -e 's###g' | tr '\n' '|' | sed -e 's#| ##g' | tr '|' '\n' | grep "^Plugin-Dependencies: " | sed -e 's#^Plugin-Dependencies: ##')"
 
 	if [[ ! $dependencies ]]; then
 		echo " > $plugin has no dependencies"
