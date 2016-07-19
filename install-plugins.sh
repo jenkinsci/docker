@@ -8,6 +8,8 @@
 REF_DIR=${REF:-/usr/share/jenkins/ref/plugins}
 FAILED="$REF_DIR/failed-plugins.txt"
 
+. /usr/local/bin/jenkins-support
+
 function getLockFile() {
 	echo -n "$REF_DIR/${1}.lock"
 }
@@ -73,18 +75,13 @@ function checkIntegrity() {
 	return $?
 }
 
-# compare if version1 < version2
-versionLT() {
-	[ "$1" = "$2" ] && return 1 || [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]
-}
-
 function resolveDependencies() {	
 	local plugin jpi dependencies
 	plugin="$1"
 	jpi="$(getArchiveFilename "$plugin")"
 
 	# ^M below is a control character, inserted by typing ctrl+v ctrl+m
-	dependencies="$(unzip -p "$hpi" META-INF/MANIFEST.MF | sed -e 's###g' | tr '\n' '|' | sed -e 's#| ##g' | tr '|' '\n' | grep "^Plugin-Dependencies: " | sed -e 's#^Plugin-Dependencies: ##')"
+	dependencies="$(unzip -p "$jpi" META-INF/MANIFEST.MF | sed -e 's###g' | tr '\n' '|' | sed -e 's#| ##g' | tr '|' '\n' | grep "^Plugin-Dependencies: " | sed -e 's#^Plugin-Dependencies: ##')"
 
 	if [[ ! $dependencies ]]; then
 		echo " > $plugin has no dependencies"
