@@ -77,6 +77,8 @@ load test_helpers
   assert_line 'credentials.jpi.pinned'
   assert_line 'mesos.jpi'
   assert_line 'mesos.jpi.pinned'
+  refute_line 'metrics.jpi'
+  refute_line 'metrics.jpi.pinned'
 }
 
 @test "clean test containers" {
