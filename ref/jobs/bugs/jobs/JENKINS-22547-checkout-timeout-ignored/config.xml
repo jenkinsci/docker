@@ -74,7 +74,7 @@
       <regexp>git.*checkout.*timeout=37</regexp>
       <succeedIfFound>true</succeedIfFound>
       <unstableIfFound>false</unstableIfFound>
-      <alsoCheckConsoleOutput>false</alsoCheckConsoleOutput>
+      <alsoCheckConsoleOutput>true</alsoCheckConsoleOutput>
     </hudson.plugins.textfinder.TextFinderPublisher>
   </publishers>
   <buildWrappers/>
