@@ -73,6 +73,12 @@ load test_helpers
   assert_line 'maven-plugin.jpi.pinned'
   assert_line 'ant.jpi'
   assert_line 'ant.jpi.pinned'
+  assert_line 'credentials.jpi'
+  assert_line 'credentials.jpi.pinned'
+  assert_line 'mesos.jpi'
+  assert_line 'mesos.jpi.pinned'
+  refute_line 'metrics.jpi'
+  refute_line 'metrics.jpi.pinned'
 }
 
 @test "clean test containers" {
