@@ -9,13 +9,13 @@
           <installers>
             <hudson.tools.ZipExtractionInstaller>
               <label>linux &amp;&amp; 64bit</label>
-              <url>http://localhost:8080/userContent/jdk/jdk-8u92-linux-x64.tar.gz</url>
-              <subdir>jdk1.8.0_92</subdir>
+              <url>http://localhost:8080/userContent/jdk/jdk-8u101-linux-x64.tar.gz</url>
+              <subdir>jdk1.8.0_101</subdir>
             </hudson.tools.ZipExtractionInstaller>
             <hudson.tools.ZipExtractionInstaller>
               <label>linux &amp;&amp; 32bit</label>
-              <url>http://localhost:8080/userContent/jdk/jdk-8u92-linux-i586.tar.gz</url>
-              <subdir>jdk1.8.0_92</subdir>
+              <url>http://localhost:8080/userContent/jdk/jdk-8u101-linux-i586.tar.gz</url>
+              <subdir>jdk1.8.0_101</subdir>
             </hudson.tools.ZipExtractionInstaller>
           </installers>
         </hudson.tools.InstallSourceProperty>
