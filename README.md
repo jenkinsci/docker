@@ -162,8 +162,15 @@ Dependencies that are already included in the Jenkins war will only be downloade
 
 ```
 FROM jenkins
-RUN /usr/local/bin/install-plugins.sh docker-slaves github-branch-source:1.8
+RUN /usr/local/bin/install-plugins.sh \
+  docker-slaves \
+  github-branch-source:1.8
 ```
+
+`install-plugins.sh` can be configured based on environment variables:
+* `JENKINS_UC`: Base url for the Jenkins update center.  Defaults to `http://updates.jenkins.io`.
+* `JENKINS_MIRROR`: Base url used for downloading plugins, allows using a different mirror than `updates.jenkins.io`.  Defaults to `$JENKINS_UC/download`
+
 
 When jenkins container starts, it will check `JENKINS_HOME` has this reference content, and copy them
 there if required. It will not override such files, so if you upgraded some plugins from UI they won't

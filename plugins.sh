@@ -82,6 +82,13 @@ fi
 REF=/usr/share/jenkins/ref/plugins
 mkdir -p $REF
 COUNT_PLUGINS_INSTALLED=0
+
+JENKINS_MIRROR="${JENKINS_MIRROR:-$JENKINS_UC/download}"
+if ! [ -z "$JENKINS_UC_DOWNLOAD" ]; then
+    echo "JENKINS_UC_DOWNLOAD envvar is deprecated, use JENKINS_MIRROR"
+    JENKINS_MIRROR=$JENKINS_UC_DOWNLOAD
+fi
+
 while read spec || [ -n "$spec" ]; do
 
     plugin=(${spec//:/ });
@@ -89,14 +96,10 @@ while read spec || [ -n "$spec" ]; do
     [[ ${plugin[0]} =~ ^\s*$ ]] && continue
     [[ -z ${plugin[1]} ]] && plugin[1]="latest"
 
-    if [ -z "$JENKINS_UC_DOWNLOAD" ]; then
-      JENKINS_UC_DOWNLOAD=$JENKINS_UC/download
-    fi
-
     if ! grep -q "${plugin[0]}:${plugin[1]}" $TEMP_ALREADY_INSTALLED
     then
         echo "Downloading ${plugin[0]}:${plugin[1]}"
-        curl --retry 3 --retry-delay 5 -sSL -f ${JENKINS_UC_DOWNLOAD}/plugins/${plugin[0]}/${plugin[1]}/${plugin[0]}.hpi -o $REF/${plugin[0]}.jpi
+        curl --retry 3 --retry-delay 5 -sSL -f ${JENKINS_MIRROR}/plugins/${plugin[0]}/${plugin[1]}/${plugin[0]}.hpi -o $REF/${plugin[0]}.jpi
         unzip -qqt $REF/${plugin[0]}.jpi
         COUNT_PLUGINS_INSTALLED=`expr $COUNT_PLUGINS_INSTALLED + 1`
     else
