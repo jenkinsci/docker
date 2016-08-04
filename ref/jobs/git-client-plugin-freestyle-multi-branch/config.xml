@@ -57,7 +57,7 @@
       <source class="jenkins.plugins.git.GitSCMSource" plugin="git@2.5.2">
         <id>b7205f38-9abe-472c-923c-6a839b7ec90d</id>
         <remote>https://github.com/MarkEWaite/git-client-plugin.git</remote>
-        <includes>master-PR*</includes>
+        <includes>*-PR*</includes>
         <excludes></excludes>
         <ignoreOnPushNotifications>false</ignoreOnPushNotifications>
         <gitTool>Default</gitTool>
