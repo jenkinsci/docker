@@ -32,7 +32,6 @@
         <source class="jenkins.plugins.git.GitSCMSource" plugin="git@2.5.3-SNAPSHOT">
           <id>6742324b-391e-4e67-b2b8-d64c09b4b229</id>
           <remote>https://github.com/MarkEWaite/jenkins-bugs</remote>
-          <credentialsId></credentialsId>
           <includes>*</includes>
           <excludes></excludes>
           <ignoreOnPushNotifications>false</ignoreOnPushNotifications>

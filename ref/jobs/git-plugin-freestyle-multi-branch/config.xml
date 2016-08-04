@@ -57,7 +57,6 @@
       <source class="jenkins.plugins.git.GitSCMSource" plugin="git@2.5.2">
         <id>d7205f38-9ade-472c-923c-6a839d7ec90d</id>
         <remote>https://github.com/MarkEWaite/git-plugin.git</remote>
-        <credentialsId></credentialsId>
         <includes>master-PR*</includes>
         <excludes></excludes>
         <ignoreOnPushNotifications>false</ignoreOnPushNotifications>
