@@ -23,8 +23,7 @@
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
-        <url>git@github.com:MarkEWaite/bin.git</url>
-        <credentialsId>MarkEWaite-github-rsa-private-key</credentialsId>
+        <url>https://github.com/MarkEWaite/jenkins-bugs</url>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>
@@ -35,7 +34,7 @@
     <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
     <gitTool>Default</gitTool>
     <browser class="hudson.plugins.git.browser.GitWeb">
-      <url>https://github.com/MarkEWaite/bin</url>
+      <url>https://github.com/MarkEWaite/jenkins-bugs</url>
     </browser>
     <submoduleCfg class="list"/>
     <extensions>
@@ -43,8 +42,8 @@
       <hudson.plugins.git.extensions.impl.CleanBeforeCheckout/>
     </extensions>
   </scm>
-  <assignedNode>master || linux</assignedNode>
-  <canRoam>true</canRoam>
+  <assignedNode>master</assignedNode>
+  <canRoam>false</canRoam>
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
