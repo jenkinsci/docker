@@ -66,6 +66,7 @@ load test_helpers
 @test "plugins are installed with install-plugins.sh" {
   run docker build -t $SUT_IMAGE-install-plugins $BATS_TEST_DIRNAME/install-plugins
   assert_success
+  refute_line --partial 'Skipping already bundled dependency'
   # replace DOS line endings \r\n
   run bash -c "docker run -ti --rm $SUT_IMAGE-install-plugins ls --color=never -1 /var/jenkins_home/plugins | tr -d '\r'"
   assert_success
@@ -77,8 +78,14 @@ load test_helpers
   assert_line 'credentials.jpi.pinned'
   assert_line 'mesos.jpi'
   assert_line 'mesos.jpi.pinned'
+  # optional dependencies
   refute_line 'metrics.jpi'
   refute_line 'metrics.jpi.pinned'
+  # plugins bundled but under detached-plugins, so need to be installed
+  assert_line 'javadoc.jpi'
+  assert_line 'javadoc.jpi.pinned'
+  assert_line 'mailer.jpi'
+  assert_line 'mailer.jpi.pinned'
 }
 
 @test "clean test containers" {
