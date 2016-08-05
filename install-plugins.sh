@@ -7,6 +7,7 @@
 
 REF_DIR=${REF:-/usr/share/jenkins/ref/plugins}
 FAILED="$REF_DIR/failed-plugins.txt"
+JENKINS_MIRROR="${JENKINS_MIRROR:-$JENKINS_UC/download}"
 
 . /usr/local/bin/jenkins-support
 
@@ -59,7 +60,7 @@ function doDownload() {
 		return 0
 	fi
 
-	url="$JENKINS_UC/download/plugins/$plugin/$version/${plugin}.hpi"
+	url="$JENKINS_MIRROR/plugins/$plugin/$version/${plugin}.hpi"
 
 	echo "Downloading plugin: $plugin from $url"
 	curl --connect-timeout 5 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L "$url" -o "$jpi"
@@ -173,7 +174,7 @@ main() {
 		fi
 
 		download "$plugin" "$version" "true" &
-	done				  
+	done
 	wait
 
 	if [[ -f $FAILED ]]; then
