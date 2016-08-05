@@ -56,7 +56,7 @@
     <jenkins.branch.BranchSource plugin="branch-api@1.10">
       <source class="jenkins.plugins.git.GitSCMSource" plugin="git@2.5.2">
         <id>d7205f38-9ade-472c-923c-6a839d7ec90d</id>
-        <remote>https://github.com/MarkEWaite/git-plugin.git</remote>
+        <remote>git://github.com/MarkEWaite/git-plugin.git</remote>
         <includes>*-PR*</includes>
         <excludes></excludes>
         <ignoreOnPushNotifications>false</ignoreOnPushNotifications>
