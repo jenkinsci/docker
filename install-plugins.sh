@@ -122,7 +122,7 @@ function bundledPlugins() {
   if [ -f $JENKINS_WAR ]
   then
       TEMP_PLUGIN_DIR=/tmp/plugintemp.$$
-      for i in `jar tf $JENKINS_WAR|egrep 'plugins.*\..pi'|egrep -v '\/$'|sort`
+      for i in `jar tf $JENKINS_WAR | egrep '[^detached-]plugins.*\..pi' | sort`
       do
           rm -fr $TEMP_PLUGIN_DIR
           mkdir -p $TEMP_PLUGIN_DIR
