@@ -57,8 +57,8 @@ load test_helpers
   # replace DOS line endings \r\n
   run bash -c "docker run -ti --rm $SUT_IMAGE-plugins ls --color=never -1 /var/jenkins_home/plugins | tr -d '\r'"
   assert_success
-  refute_line 'maven-plugin.jpi'
-  refute_line 'maven-plugin.jpi.pinned'
+  assert_line 'maven-plugin.jpi'
+  assert_line 'maven-plugin.jpi.pinned'
   assert_line 'ant.jpi'
   assert_line 'ant.jpi.pinned'
 }
