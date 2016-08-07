@@ -32,6 +32,7 @@
         <source class="jenkins.plugins.git.GitSCMSource" plugin="git@2.5.3">
           <id>32caacc4-c8b6-4d53-bcb9-bb26b45c7e23</id>
           <remote>git://github.com/MarkEWaite/jenkins-bugs.git</remote>
+          <scanCredentialsId>invalid-user-and-password</scanCredentialsId>
           <includes>*</includes>
           <excludes></excludes>
           <ignoreOnPushNotifications>false</ignoreOnPushNotifications>
