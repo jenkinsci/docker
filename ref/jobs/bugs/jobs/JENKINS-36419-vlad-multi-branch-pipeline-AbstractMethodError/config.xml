@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject plugin="workflow-multibranch@2.8">
   <actions/>
-  <description>[JENKINS-36419](https://issues.jenkins-ci.org/browse/JENKINS-36419) vlad's job sample showing multibranch pipeline cannot index after git plugin 2.5.1 upgrade</description>
-  <displayName>JENKINS-36419 multi-branch pipeline AbstractMethodError</displayName>
+  <description>[JENKINS-36419](https://issues.jenkins-ci.org/browse/JENKINS-36419) vlad&apos;s job sample showing multibranch pipeline cannot index after git plugin 2.5.1 upgrade</description>
+  <displayName>JENKINS-36419 Vlad multi-branch pipeline AbstractMethodError</displayName>
   <properties/>
   <views>
     <hudson.model.AllView>
@@ -17,29 +17,26 @@
   <healthMetrics>
     <com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric plugin="cloudbees-folder@5.12"/>
   </healthMetrics>
-  <icon class="org.jenkinsci.plugins.orgfolder.github.GitHubRepoIcon" plugin="github-organization-folder@1.3"/>
+  <icon class="com.github.mjdetullio.jenkins.plugins.multibranch.BallColorFolderIcon" plugin="multi-branch-project-plugin@0.5">
+    <owner class="org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject" reference="../.."/>
+  </icon>
   <orphanedItemStrategy class="com.cloudbees.hudson.plugins.folder.computed.DefaultOrphanedItemStrategy" plugin="cloudbees-folder@5.12">
     <pruneDeadBranches>true</pruneDeadBranches>
-    <daysToKeep>45</daysToKeep>
-    <numToKeep>100</numToKeep>
+    <daysToKeep>0</daysToKeep>
+    <numToKeep>0</numToKeep>
   </orphanedItemStrategy>
-  <triggers>
-    <com.cloudbees.hudson.plugins.folder.computed.PeriodicFolderTrigger plugin="cloudbees-folder@5.12">
-      <spec>H * * * *</spec>
-      <interval>3600000</interval>
-    </com.cloudbees.hudson.plugins.folder.computed.PeriodicFolderTrigger>
-  </triggers>
+  <triggers/>
   <sources class="jenkins.branch.MultiBranchProject$BranchSourceList" plugin="branch-api@1.10">
     <data>
       <jenkins.branch.BranchSource>
         <source class="org.jenkinsci.plugins.github_branch_source.GitHubSCMSource" plugin="github-branch-source@1.7">
           <id>cfc000cc-b0fd-4329-844e-cf215d846fbe</id>
           <checkoutCredentialsId>SAME</checkoutCredentialsId>
-          <scanCredentialsId>...</scanCredentialsId>
-          <repoOwner>vladdu</repoOwner>
-          <repository>erlide_eclipse</repository>
+          <scanCredentialsId>invalid-user-and-password</scanCredentialsId>
+          <repoOwner>MarkEWaite</repoOwner>
+          <repository>jenkins-bugs</repository>
           <includes>*</includes>
-          <excludes></excludes>
+          <excludes>master</excludes>
         </source>
         <strategy class="jenkins.branch.DefaultBranchPropertyStrategy">
           <properties class="empty-list"/>
