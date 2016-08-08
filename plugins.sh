@@ -12,6 +12,8 @@
 
 set -e
 
+echo "WARN: plugins.sh is deprecated, please switch to install-plugins.sh"
+
 if [ -z "$1" ]
 then
     echo "
@@ -62,7 +64,7 @@ else
     then
         echo "Analyzing war: $JENKINS_WAR"
         TEMP_PLUGIN_DIR=/tmp/plugintemp.$$
-        for i in `jar tf $JENKINS_WAR|egrep 'plugins'|egrep -v '\/$'|sort`
+        for i in `jar tf $JENKINS_WAR | egrep '[^detached-]plugins.*\..pi' | sort`
         do
             rm -fr $TEMP_PLUGIN_DIR
             mkdir -p $TEMP_PLUGIN_DIR

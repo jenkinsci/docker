@@ -5,6 +5,8 @@
 # FROM jenkins
 # RUN install-plugins.sh docker-slaves github-branch-source
 
+set -o pipefail
+
 REF_DIR=${REF:-/usr/share/jenkins/ref/plugins}
 FAILED="$REF_DIR/failed-plugins.txt"
 
@@ -54,7 +56,8 @@ function doDownload() {
 	version="$2"
 	jpi="$(getArchiveFilename "$plugin")"
 
-	if [[ -f $jpi ]]; then
+  # If plugin already exists and is the same version do not download
+	if test -f "$jpi" && unzip -p "$jpi" META-INF/MANIFEST.MF | tr -d '\r' | grep "^Plugin-Version: ${version}$" > /dev/null; then
 		echo "Using provided plugin: $plugin"
 		return 0
 	fi
@@ -122,7 +125,7 @@ function bundledPlugins() {
   if [ -f $JENKINS_WAR ]
   then
       TEMP_PLUGIN_DIR=/tmp/plugintemp.$$
-      for i in `jar tf $JENKINS_WAR|egrep 'plugins.*\..pi'|egrep -v '\/$'|sort`
+      for i in `jar tf $JENKINS_WAR | egrep '[^detached-]plugins.*\..pi' | sort`
       do
           rm -fr $TEMP_PLUGIN_DIR
           mkdir -p $TEMP_PLUGIN_DIR

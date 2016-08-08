@@ -57,8 +57,8 @@ load test_helpers
   # replace DOS line endings \r\n
   run bash -c "docker run -ti --rm $SUT_IMAGE-plugins ls --color=never -1 /var/jenkins_home/plugins | tr -d '\r'"
   assert_success
-  refute_line 'maven-plugin.jpi'
-  refute_line 'maven-plugin.jpi.pinned'
+  assert_line 'maven-plugin.jpi'
+  assert_line 'maven-plugin.jpi.pinned'
   assert_line 'ant.jpi'
   assert_line 'ant.jpi.pinned'
 }
@@ -66,6 +66,7 @@ load test_helpers
 @test "plugins are installed with install-plugins.sh" {
   run docker build -t $SUT_IMAGE-install-plugins $BATS_TEST_DIRNAME/install-plugins
   assert_success
+  refute_line --partial 'Skipping already bundled dependency'
   # replace DOS line endings \r\n
   run bash -c "docker run -ti --rm $SUT_IMAGE-install-plugins ls --color=never -1 /var/jenkins_home/plugins | tr -d '\r'"
   assert_success
@@ -77,8 +78,25 @@ load test_helpers
   assert_line 'credentials.jpi.pinned'
   assert_line 'mesos.jpi'
   assert_line 'mesos.jpi.pinned'
+  # optional dependencies
   refute_line 'metrics.jpi'
   refute_line 'metrics.jpi.pinned'
+  # plugins bundled but under detached-plugins, so need to be installed
+  assert_line 'javadoc.jpi'
+  assert_line 'javadoc.jpi.pinned'
+  assert_line 'mailer.jpi'
+  assert_line 'mailer.jpi.pinned'
+}
+
+@test "plugins are installed with install-plugins.sh even when already exist" {
+  run docker build -t $SUT_IMAGE-install-plugins-update --no-cache $BATS_TEST_DIRNAME/install-plugins/update
+  assert_success
+  assert_line "Using provided plugin: ant"
+  refute_line --partial 'Skipping already bundled dependency'
+  # replace DOS line endings \r\n
+  run bash -c "docker run -ti --rm $SUT_IMAGE-install-plugins-update unzip -p /var/jenkins_home/plugins/maven-plugin.jpi META-INF/MANIFEST.MF | tr -d '\r'"
+  assert_success
+  assert_line 'Plugin-Version: 2.13'
 }
 
 @test "clean test containers" {
@@ -86,6 +104,7 @@ load test_helpers
 }
 
 @test "plugins are getting upgraded but not downgraded" {
+  # Initial execution
   run docker build -t $SUT_IMAGE-install-plugins $BATS_TEST_DIRNAME/install-plugins
   assert_success
   local work; work="$BATS_TEST_DIRNAME/upgrade-plugins/work"
@@ -96,6 +115,8 @@ load test_helpers
   assert_line 'Plugin-Version: 2.7.1'
   run bash -c "unzip -p $work/plugins/ant.jpi META-INF/MANIFEST.MF | tr -d '\r'"
   assert_line 'Plugin-Version: 1.3'
+
+  # Upgrade to new image with different plugins
   run docker build -t $SUT_IMAGE-upgrade-plugins $BATS_TEST_DIRNAME/upgrade-plugins
   assert_success
   # Images contains maven-plugin 2.13 and ant-plugin 1.2
