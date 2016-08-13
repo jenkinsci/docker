@@ -78,13 +78,12 @@ function checkIntegrity() {
 	return $?
 }
 
-function resolveDependencies() {	
+function resolveDependencies() {
 	local plugin jpi dependencies
 	plugin="$1"
 	jpi="$(getArchiveFilename "$plugin")"
 
-	# ^M below is a control character, inserted by typing ctrl+v ctrl+m
-	dependencies="$(unzip -p "$jpi" META-INF/MANIFEST.MF | sed -e 's###g' | tr '\n' '|' | sed -e 's#| ##g' | tr '|' '\n' | grep "^Plugin-Dependencies: " | sed -e 's#^Plugin-Dependencies: ##')"
+	dependencies="$(unzip -p "$jpi" META-INF/MANIFEST.MF | tr -d '\r' | tr '\n' '|' | sed -e 's#| ##g' | tr '|' '\n' | grep "^Plugin-Dependencies: " | sed -e 's#^Plugin-Dependencies: ##')"
 
 	if [[ ! $dependencies ]]; then
 		echo " > $plugin has no dependencies"
@@ -98,7 +97,7 @@ function resolveDependencies() {
 	for d in "${array[@]}"
 	do
 		plugin="$(cut -d':' -f1 - <<< "$d")"
-		if [[ $d == *"resolution:=optional"* ]]; then	
+		if [[ $d == *"resolution:=optional"* ]]; then
 			echo "Skipping optional dependency $plugin"
 		else
 			pluginInstalled="$(echo "${bundledPlugins}" | grep "^${plugin}:")"
@@ -176,7 +175,7 @@ main() {
 		fi
 
 		download "$plugin" "$version" "true" &
-	done				  
+	done
 	wait
 
 	if [[ -f $FAILED ]]; then
