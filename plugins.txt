@@ -77,6 +77,7 @@ subversion
 support-core:latest
 swarm:latest
 text-finder:latest
+throttle-concurrents:latest
 timestamper:latest
 token-macro:latest
 tool-labels-plugin:latest
