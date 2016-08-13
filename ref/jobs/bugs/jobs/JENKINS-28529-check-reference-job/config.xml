@@ -3,7 +3,8 @@
   <actions/>
   <description>[JENKINS-28529](https://issues.jenkins-ci.org/browse/JENKINS-28529)&#xd;
 &#xd;
-When [JENKINS-28529 job](/view/All/job/bugs/job/JENKINS-28529-polling-unexpectedly-cleans-workspace/) polls, it cleans the repository unnecessarily</description>
+When [JENKINS-28529 job](/view/All/job/bugs/job/JENKINS-28529-polling-unexpectedly-cleans-workspace/) polls, it cleans the repository unnecessarily&#xd;
+The [JENKINS-28529 workspace](/view/All/job/bugs/job/JENKINS-28529-polling-unexpectedly-cleans-workspace/ws/) should contain at least one file info*.txt</description>
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.plugins.buildblocker.BuildBlockerProperty plugin="build-blocker-plugin@1.7.3">
