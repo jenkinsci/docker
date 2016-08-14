@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 
 # Resolve dependencies and download plugins given on the command line
 #
@@ -24,7 +24,7 @@ function download() {
 	local plugin originalPlugin version lock ignoreLockFile
 	plugin="$1"
 	version="${2:-latest}"
-	ignoreLockFile="$3"
+	ignoreLockFile="${3:-}"
 	lock="$(getLockFile "$plugin")"
 
 	if [[ $ignoreLockFile ]] || mkdir "$lock" &>/dev/null; then
@@ -100,11 +100,11 @@ function resolveDependencies() {
 		if [[ $d == *"resolution:=optional"* ]]; then
 			echo "Skipping optional dependency $plugin"
 		else
-			pluginInstalled="$(echo "${bundledPlugins}" | grep "^${plugin}:")"
-			pluginInstalled="${pluginInstalled//[$'\r']}"
-			if ! [ -z "${pluginInstalled}" ]; then
-				versionInstalled=$(versionFromPlugin "${pluginInstalled}")
-				versionToInstall=$(versionFromPlugin "${d}")
+			local pluginInstalled
+			if pluginInstalled="$(echo "${bundledPlugins}" | grep "^${plugin}:")"; then
+				pluginInstalled="${pluginInstalled//[$'\r']}"
+				local versionInstalled=$(versionFromPlugin "${pluginInstalled}")
+				local versionToInstall=$(versionFromPlugin "${d}")
 				if versionLT "${versionInstalled}" "${versionToInstall}"; then
 					echo "Upgrading bundled dependency $d ($versionToInstall > $versionInstalled)"
 					download "$plugin" "$versionToInstall" &
