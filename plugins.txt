@@ -6,6 +6,7 @@ bitbucket:latest
 bouncycastle-api:latest
 branch-api:latest
 build-blocker-plugin:latest
+buildresult-trigger:latest
 cloudbees-folder:latest
 conditional-buildstep:latest
 config-file-provider:latest
