@@ -104,15 +104,15 @@ function resolveDependencies() {
             if pluginInstalled="$(echo "${bundledPlugins}" | grep "^${plugin}:")"; then
                 pluginInstalled="${pluginInstalled//[$'\r']}"
                 local versionInstalled; versionInstalled=$(versionFromPlugin "${pluginInstalled}")
-                local versionToInstall; versionToInstall=$(versionFromPlugin "${d}")
-                if versionLT "${versionInstalled}" "${versionToInstall}"; then
-                    echo "Upgrading bundled dependency $d ($versionToInstall > $versionInstalled)"
-                    download "$plugin" "$versionToInstall" &
+                local minVersion; minVersion=$(versionFromPlugin "${d}")
+                if versionLT "${versionInstalled}" "${minVersion}"; then
+                    echo "Upgrading bundled dependency $d ($minVersion > $versionInstalled)"
+                    download "$plugin" &
                 else
-                    echo "Skipping already bundled dependency $d ($versionToInstall <= $versionInstalled)"
+                    echo "Skipping already bundled dependency $d ($minVersion <= $versionInstalled)"
                 fi
             else
-                download "$plugin" "$(versionFromPlugin "${d}")" &
+                download "$plugin" &
             fi
         fi
     done
