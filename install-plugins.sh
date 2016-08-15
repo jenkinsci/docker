@@ -151,6 +151,12 @@ function versionFromPlugin() {
 
 }
 
+function installedPlugins() {
+    for f in "$REF_DIR"/*.jpi; do
+        echo "$(basename "$f" | sed -e 's/\.jpi//'):$(get_plugin_version "$f")"
+    done
+}
+
 main() {
     local plugin version
 
@@ -177,6 +183,13 @@ main() {
         download "$plugin" "$version" "true" &
     done
     wait
+
+    echo
+    echo "WAR bundled plugins:"
+    echo "${bundledPlugins}"
+    echo
+    echo "Installed plugins:"
+    installedPlugins
 
     if [[ -f $FAILED ]]; then
         echo -e "\nSome plugins failed to download!\n$(<"$FAILED")" >&2
