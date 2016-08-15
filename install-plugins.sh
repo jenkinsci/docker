@@ -103,8 +103,8 @@ function resolveDependencies() {
 			local pluginInstalled
 			if pluginInstalled="$(echo "${bundledPlugins}" | grep "^${plugin}:")"; then
 				pluginInstalled="${pluginInstalled//[$'\r']}"
-				local versionInstalled=$(versionFromPlugin "${pluginInstalled}")
-				local versionToInstall=$(versionFromPlugin "${d}")
+				local versionInstalled; versionInstalled=$(versionFromPlugin "${pluginInstalled}")
+				local versionToInstall; versionToInstall=$(versionFromPlugin "${d}")
 				if versionLT "${versionInstalled}" "${versionToInstall}"; then
 					echo "Upgrading bundled dependency $d ($versionToInstall > $versionInstalled)"
 					download "$plugin" "$versionToInstall" &
@@ -124,18 +124,18 @@ function bundledPlugins() {
   if [ -f $JENKINS_WAR ]
   then
       TEMP_PLUGIN_DIR=/tmp/plugintemp.$$
-      for i in `jar tf $JENKINS_WAR | egrep '[^detached-]plugins.*\..pi' | sort`
+      for i in $(jar tf $JENKINS_WAR | egrep '[^detached-]plugins.*\..pi' | sort)
       do
           rm -fr $TEMP_PLUGIN_DIR
           mkdir -p $TEMP_PLUGIN_DIR
-          PLUGIN=`basename $i|cut -f1 -d'.'`
-          (cd $TEMP_PLUGIN_DIR;jar xf $JENKINS_WAR "$i";jar xvf $TEMP_PLUGIN_DIR/$i META-INF/MANIFEST.MF >/dev/null 2>&1)
-          VER=`egrep -i Plugin-Version "$TEMP_PLUGIN_DIR/META-INF/MANIFEST.MF"|cut -d\: -f2|sed 's/ //'`
+          PLUGIN=$(basename "$i"|cut -f1 -d'.')
+          (cd $TEMP_PLUGIN_DIR;jar xf "$JENKINS_WAR" "$i";jar xvf "$TEMP_PLUGIN_DIR/$i" META-INF/MANIFEST.MF >/dev/null 2>&1)
+          VER=$(egrep -i Plugin-Version "$TEMP_PLUGIN_DIR/META-INF/MANIFEST.MF"|cut -d: -f2|sed 's/ //')
           echo "$PLUGIN:$VER"
       done
       rm -fr $TEMP_PLUGIN_DIR
   else
-      rm -f $TEMP_ALREADY_INSTALLED
+      rm -f "$TEMP_ALREADY_INSTALLED"
       echo "ERROR file not found: $JENKINS_WAR"
       exit 1
   fi
