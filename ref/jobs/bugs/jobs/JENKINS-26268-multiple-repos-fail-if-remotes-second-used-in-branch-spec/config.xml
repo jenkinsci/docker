@@ -21,11 +21,11 @@
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
         <name>origin</name>
-        <url>git://github.com/jenkinsci/git-plugin.git</url>
+        <url>https://github.com/jenkinsci/git-plugin.git</url>
       </hudson.plugins.git.UserRemoteConfig>
       <hudson.plugins.git.UserRemoteConfig>
         <name>downstream</name>
-        <url>git://github.com/MarkEWaite/git-plugin.git</url>
+        <url>https://github.com/MarkEWaite/git-plugin.git</url>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>

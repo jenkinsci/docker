@@ -23,7 +23,7 @@
    stage &apos;Checkout&apos;
 
    // Get some code from a GitHub repository
-   checkout([$class: &apos;GitSCM&apos;, branches: [[name: &apos;*/master&apos;]], browser: [$class: &apos;GithubWeb&apos;, repoUrl: &apos;https://github.com/jenkinsci/git-plugin&apos;], doGenerateSubmoduleConfigurations: false, extensions: [[$class: &apos;CloneOption&apos;, depth: 0, noTags: false, reference: &apos;/var/lib/git/mwaite/jenkins/git-plugin.git&apos;, shallow: false, timeout: 1], [$class: &apos;CleanBeforeCheckout&apos;], [$class: &apos;PruneStaleBranch&apos;], [$class: &apos;AuthorInChangelog&apos;]], gitTool: &apos;Default&apos;, submoduleCfg: [], userRemoteConfigs: [[url: &apos;git://github.com/jenkinsci/git-plugin.git&apos;]]])
+   checkout([$class: &apos;GitSCM&apos;, branches: [[name: &apos;*/master&apos;]], browser: [$class: &apos;GithubWeb&apos;, repoUrl: &apos;https://github.com/jenkinsci/git-plugin&apos;], doGenerateSubmoduleConfigurations: false, extensions: [[$class: &apos;CloneOption&apos;, depth: 0, noTags: false, reference: &apos;/var/lib/git/mwaite/jenkins/git-plugin.git&apos;, shallow: false, timeout: 1], [$class: &apos;CleanBeforeCheckout&apos;], [$class: &apos;PruneStaleBranch&apos;], [$class: &apos;AuthorInChangelog&apos;]], gitTool: &apos;Default&apos;, submoduleCfg: [], userRemoteConfigs: [[url: &apos;https://github.com/jenkinsci/git-plugin.git&apos;]]])
 
    stage &apos;Test&apos;
    // Verify objects directory is small

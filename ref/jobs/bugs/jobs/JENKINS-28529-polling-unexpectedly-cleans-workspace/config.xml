@@ -34,7 +34,7 @@ It should remain after polling.  The bug is that the file is deleted by the poll
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
         <refspec>+refs/heads/JENKINS-28529:refs/remotes/origin/JENKINS-28529</refspec>
-        <url>git://github.com/MarkEWaite/jenkins-bugs.git</url>
+        <url>https://github.com/MarkEWaite/jenkins-bugs.git</url>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>

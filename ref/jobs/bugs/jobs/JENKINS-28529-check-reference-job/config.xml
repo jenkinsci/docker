@@ -45,7 +45,7 @@ The [JENKINS-28529 workspace](/view/All/job/bugs/job/JENKINS-28529-polling-unexp
 rm -rf *
 
 # Poll the job
-wget -qO- http://localhost:8080/git/notifyCommit?url=git://github.com/MarkEWaite/jenkins-bugs.git  &amp;&gt; /dev/null
+wget -qO- http://localhost:8080/git/notifyCommit?url=https://github.com/MarkEWaite/jenkins-bugs.git  &amp;&gt; /dev/null
 
 # Wait briefly
 sleep 5

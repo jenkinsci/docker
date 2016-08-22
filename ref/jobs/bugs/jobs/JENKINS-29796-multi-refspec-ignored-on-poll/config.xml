@@ -26,7 +26,7 @@
       <hudson.plugins.git.UserRemoteConfig>
         <name>origin-JENKINS-29796</name>
         <refspec>+refs/heads/production/JENKINS-29796:refs/remotes/origin-JENKINS-29796/production/JENKINS-29796 +refs/heads/develop/JENKINS-29796:refs/remotes/origin-JENKINS-29796/develop/JENKINS-29796</refspec>
-        <url>git://github.com/MarkEWaite/jenkins-bugs/</url>
+        <url>https://github.com/MarkEWaite/jenkins-bugs/</url>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>

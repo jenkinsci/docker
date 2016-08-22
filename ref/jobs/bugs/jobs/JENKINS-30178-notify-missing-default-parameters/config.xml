@@ -53,7 +53,7 @@
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
-        <url>git://github.com/MarkEWaite/JENKINS-26197.git</url>
+        <url>https://github.com/MarkEWaite/JENKINS-26197.git</url>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>
