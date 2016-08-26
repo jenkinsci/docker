@@ -116,8 +116,10 @@ replace_constants() {
 	echo $variable=$value
 	tmpdir=$(mktemp -d)
 	for file in $(find /usr/share/jenkins/ref/ -type f -name '*.xml'); do
-		grep -q $variable $file && sed "s/$variable/$value/g" < $file > $tmpdir/sed-out && mv $tmpdir/sed-out $file
+		base=$(basename $file)
+		grep -q $variable $file && sed "s/$variable/$value/g" < $file > $tmpdir/$base && mv $tmpdir/$base $file
 	done
+	rm -rf $tmpdir
 }
 : ${JENKINS_HOSTNAME:=localhost}
 replace_constants "JENKINS_HOSTNAME" $JENKINS_HOSTNAME
