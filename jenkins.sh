@@ -108,6 +108,20 @@ copy_reference_file() {
 	fi
 }
 : ${JENKINS_HOME:="/var/jenkins_home"}
+
+# Replace constants in reference configuration files with actual values
+replace_constants() {
+	local variable; variable=$1
+	local value; value=$2
+	echo $variable=$value
+	tmpdir=$(mktemp -dt "${0##*/}.XXXXXXXXXX")
+	for file in $(find /usr/share/jenkins/ref/ -type f -name '*.xml'); do
+		grep -q $variable $file && sed "s/$variable/$value/g" < $file > $tmpdir/sed-out && mv $tmpdir/sed-out $file
+	done
+}
+: ${JENKINS_HOSTNAME:=localhost}
+replace_constants "JENKINS_HOSTNAME" $JENKINS_HOSTNAME
+
 touch "${COPY_REFERENCE_FILE_LOG}" || (echo "Can not write to ${COPY_REFERENCE_FILE_LOG}. Wrong volume permissions?" && exit 1)
 echo "--- Copying files at $(date)" >> "$COPY_REFERENCE_FILE_LOG"
 find /usr/share/jenkins/ref/ -type f -exec bash -c ". /usr/local/bin/jenkins-support; copy_reference_file '{}'" \;
