@@ -114,7 +114,7 @@ replace_constants() {
 	local variable; variable=$1
 	local value; value=$2
 	echo $variable=$value
-	tmpdir=$(mktemp -dt "${0##*/}.XXXXXXXXXX")
+	tmpdir=$(mktemp -d)
 	for file in $(find /usr/share/jenkins/ref/ -type f -name '*.xml'); do
 		grep -q $variable $file && sed "s/$variable/$value/g" < $file > $tmpdir/sed-out && mv $tmpdir/sed-out $file
 	done
