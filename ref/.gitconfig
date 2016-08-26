@@ -1,6 +1,6 @@
 [user]
 	name = Jenkins Docker User
-	email = mark.earl.waite@gmail.com
+	email = LOGNAME@localhost
 
 [core]
         editor = vi

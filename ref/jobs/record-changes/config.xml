@@ -41,7 +41,7 @@ cd $JENKINS_HOME/. || exit 1
 
 if [ ! -d $JENKINS_HOME/.git ]; then
     git config --global user.name &quot;Jenkins User&quot; &amp;&amp; \
-    git config --global user.email mark.earl.waite@gmail.com &amp;&amp; \
+    git config --global user.email LOGNAME@localhost &amp;&amp; \
     git init &amp;&amp; \
     echo .cache/ &gt;&gt; .gitignore &amp;&amp; \
     echo .config/ &gt;&gt; .gitignore &amp;&amp; \
