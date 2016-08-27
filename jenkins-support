@@ -100,7 +100,7 @@ copy_reference_file() {
             mkdir -p "$JENKINS_HOME/${dir:23}"
             cp -r "${f}" "$JENKINS_HOME/${rel}";
             # pin plugins on initial copy
-            touch "$JENKINS_HOME/${rel}.pinned"
+            # touch "$JENKINS_HOME/${rel}.pinned"
             echo "$image_version" > "$JENKINS_HOME/${version_marker}"
             reason=${reason:-$image_version}
         else
@@ -124,4 +124,17 @@ copy_reference_file() {
             echo "$action $rel : $reason" >> "$COPY_REFERENCE_FILE_LOG"
         fi
     fi
+}
+
+# Replace constants in reference configuration files with actual values
+replace_constants() {
+	local variable; variable=$1
+	local value; value=$2
+	echo $variable=$value
+	tmpdir=$(mktemp -d)
+	for file in $(find /usr/share/jenkins/ref/ -type f -name '*.xml'); do
+		base=$(basename $file)
+		grep -q $variable $file && sed "s/$variable/$value/g" < $file > $tmpdir/$base && mv $tmpdir/$base $file
+	done
+	rm -rf $tmpdir
 }
