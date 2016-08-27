@@ -8,7 +8,7 @@
         <hudson.tools.InstallSourceProperty>
           <installers>
             <hudson.tools.ZipExtractionInstaller>
-              <url>http://localhost:8080/userContent/ant/apache-ant-1.9.7-bin.zip</url>
+              <url>http://JENKINS_HOSTNAME:8080/userContent/ant/apache-ant-1.9.7-bin.zip</url>
               <subdir>apache-ant-1.9.7</subdir>
             </hudson.tools.ZipExtractionInstaller>
           </installers>
