@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<scriptApproval plugin="script-security@1.21">
+<scriptApproval plugin="script-security@1.22">
   <approvedScriptHashes>
     <string>091a016dcee303082a90c62b43a0c9283362bb0f</string>
     <string>0c4a9194697a7d069db445d7cb8ac2312b32125e</string>
@@ -7,18 +7,23 @@
     <string>285709d52aa509a9f855e3ab507acc093e05bdbe</string>
     <string>445a7e4c6710cb4b934fe7763c22302c782dbaab</string>
     <string>6b34c6ae9713a8b2944c27b19253cf62b198d23f</string>
+    <string>a194e3bb70875e4e4754c602e46dbbd30100afcb</string>
     <string>c72b9b480839b7b5cb762a130cf8c6cfecda4730</string>
     <string>de909ede623fb42b5f1df12a8758eace4b7dc837</string>
   </approvedScriptHashes>
   <approvedSignatures>
     <string>method groovy.lang.MetaObjectProtocol getMethods</string>
+    <string>method hudson.model.Run getLog int</string>
+    <string>method hudson.model.Run getLogFile</string>
     <string>method java.lang.Class getName</string>
+    <string>method org.jenkinsci.plugins.workflow.support.steps.build.RunWrapper getRawBuild</string>
     <string>method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder$BadgeManager createSummary java.lang.String</string>
     <string>method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder$BadgeManager getBuild</string>
     <string>method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildSummaryAction appendText java.lang.String boolean boolean boolean java.lang.String</string>
     <string>staticMethod org.codehaus.groovy.runtime.DefaultGroovyMethods getMetaClass java.lang.Object</string>
     <string>staticMethod org.codehaus.groovy.runtime.DefaultGroovyMethods getText java.net.URL java.util.Map</string>
     <string>staticMethod org.codehaus.groovy.runtime.DefaultGroovyMethods sort java.util.Collection</string>
+    <string>staticMethod org.codehaus.groovy.runtime.ScriptBytecodeAdapter bitwiseNegate java.lang.Object</string>
   </approvedSignatures>
   <aclApprovedSignatures/>
   <approvedClasspathEntries/>
