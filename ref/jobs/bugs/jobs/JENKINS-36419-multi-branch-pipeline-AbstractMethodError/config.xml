@@ -29,9 +29,10 @@
   <sources class="jenkins.branch.MultiBranchProject$BranchSourceList" plugin="branch-api@1.10">
     <data>
       <jenkins.branch.BranchSource>
-        <source class="jenkins.plugins.git.GitSCMSource" plugin="git@2.5.3-SNAPSHOT">
+        <source class="jenkins.plugins.git.GitSCMSource" plugin="git@2.5.3">
           <id>6742324b-391e-4e67-b2b8-d64c09b4b229</id>
           <remote>https://github.com/MarkEWaite/jenkins-bugs</remote>
+          <credentialsId>invalid-user-and-password</credentialsId>
           <includes>*</includes>
           <excludes></excludes>
           <ignoreOnPushNotifications>false</ignoreOnPushNotifications>
