@@ -7,14 +7,13 @@ This is a fully functional Jenkins server, based on the Long Term Support releas
 
 For weekly releases check out [`jenkinsci/jenkins`](https://hub.docker.com/r/jenkinsci/jenkins/)
 
-
 <img src="http://jenkins-ci.org/sites/default/files/jenkins_logo.png"/>
-
 
 # Usage
 
 ```
-docker run -p 8080:8080 -p 50000:50000 jenkins
+docker build -t markewaite/master-with-plugins:latest .
+docker run -i --rm -p 8080:8080 -p 50000:50000 -v ~/.m2/:/var/jenkins_home/.m2/ -v ~/public_html/:/var/jenkins_home/userContent/ -t markewaite/master-with-plugins:latest
 ```
 
 NOTE: read below the _build executors_ part for the role of the `50000` port mapping.
@@ -28,7 +27,6 @@ docker run -p 8080:8080 -p 50000:50000 -v /your/home:/var/jenkins_home jenkins
 
 This will store the jenkins data in `/your/home` on the host.
 Ensure that `/your/home` is accessible by the jenkins user in container (jenkins user - uid 1000) or use `-u some_other_user` parameter with `docker run`.
-
 
 You can also use a volume container:
 
@@ -67,7 +65,6 @@ FROM jenkins
 COPY executors.groovy /usr/share/jenkins/ref/init.groovy.d/executors.groovy
 ```
 
-
 # Attaching build executors
 
 You can run builds on the master out of the box.
@@ -99,7 +96,6 @@ java.util.logging.ConsoleHandler.level=FINEST
 EOF
 docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS="-Djava.util.logging.config.file=/var/jenkins_home/log.properties" -v `pwd`/data:/var/jenkins_home jenkins
 ```
-
 
 # Passing Jenkins launcher parameters
 

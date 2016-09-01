@@ -1,0 +1,4 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<org.jenkinsci.plugins.gitclient.JGitTool_-DescriptorImpl plugin="git-client@1.19.6">
+  <installations class="hudson.plugins.git.GitTool-array"/>
+</org.jenkinsci.plugins.gitclient.JGitTool_-DescriptorImpl>

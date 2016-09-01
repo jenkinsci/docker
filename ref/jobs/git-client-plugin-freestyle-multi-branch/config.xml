@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<freestyle-multi-branch-project plugin="multi-branch-project-plugin@0.5.1">
+  <actions/>
+  <description>[My Jenkins git client plugin](https://github.com/MarkEWaite/git-client-plugin) pull requests being evaluated</description>
+  <displayName>Git Client Branches - Maven</displayName>
+  <properties>
+    <com.cloudbees.hudson.plugins.folder.properties.FolderCredentialsProvider_-FolderCredentialsProperty plugin="cloudbees-folder@5.12">
+      <domainCredentialsMap class="hudson.util.CopyOnWriteMap$Hash">
+        <entry>
+          <com.cloudbees.plugins.credentials.domains.Domain plugin="credentials@2.1.4">
+            <specifications/>
+          </com.cloudbees.plugins.credentials.domains.Domain>
+          <java.util.concurrent.CopyOnWriteArrayList/>
+        </entry>
+      </domainCredentialsMap>
+    </com.cloudbees.hudson.plugins.folder.properties.FolderCredentialsProvider_-FolderCredentialsProperty>
+  </properties>
+  <views>
+    <branch-list-view>
+      <owner class="freestyle-multi-branch-project" reference="../../.."/>
+      <name>All</name>
+      <filterExecutors>false</filterExecutors>
+      <filterQueue>false</filterQueue>
+      <properties class="hudson.model.View$PropertyList"/>
+      <jobNames>
+        <comparator class="hudson.util.CaseInsensitiveComparator"/>
+      </jobNames>
+      <jobFilters/>
+      <columns>
+        <hudson.views.StatusColumn/>
+        <hudson.views.WeatherColumn/>
+        <hudson.views.JobColumn/>
+        <hudson.views.LastSuccessColumn/>
+        <hudson.views.LastFailureColumn/>
+        <hudson.views.LastDurationColumn/>
+        <hudson.views.BuildButtonColumn/>
+      </columns>
+      <includeRegex>.*</includeRegex>
+      <recurse>false</recurse>
+    </branch-list-view>
+  </views>
+  <viewsTabBar class="hudson.views.DefaultViewsTabBar"/>
+  <healthMetrics>
+    <com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric plugin="cloudbees-folder@5.12"/>
+  </healthMetrics>
+  <icon class="org.jenkinsci.plugins.orgfolder.github.GitHubOrgIcon" plugin="github-organization-folder@1.4">
+    <folder class="freestyle-multi-branch-project" reference="../.."/>
+  </icon>
+  <orphanedItemStrategy class="com.cloudbees.hudson.plugins.folder.computed.DefaultOrphanedItemStrategy" plugin="cloudbees-folder@5.12">
+    <pruneDeadBranches>true</pruneDeadBranches>
+    <daysToKeep>0</daysToKeep>
+    <numToKeep>0</numToKeep>
+  </orphanedItemStrategy>
+  <triggers/>
+  <sources>
+    <jenkins.branch.BranchSource plugin="branch-api@1.10">
+      <source class="jenkins.plugins.git.GitSCMSource" plugin="git@2.5.3">
+        <id>b7205f38-9abe-472c-923c-6a839b7ec90d</id>
+        <remote>https://github.com/MarkEWaite/git-client-plugin.git</remote>
+        <credentialsId>invalid-user-and-password</credentialsId>
+        <includes>*-PR*</includes>
+        <excludes></excludes>
+        <ignoreOnPushNotifications>false</ignoreOnPushNotifications>
+        <gitTool>Default</gitTool>
+        <extensions>
+          <hudson.plugins.git.extensions.impl.ChangelogToBranch>
+            <options>
+              <compareRemote>origin</compareRemote>
+              <compareTarget>master</compareTarget>
+            </options>
+          </hudson.plugins.git.extensions.impl.ChangelogToBranch>
+          <hudson.plugins.git.extensions.impl.AuthorInChangelog/>
+          <hudson.plugins.git.extensions.impl.CleanBeforeCheckout/>
+          <hudson.plugins.git.extensions.impl.CloneOption>
+            <shallow>false</shallow>
+            <noTags>true</noTags>
+            <reference>/var/lib/git/mwaite/jenkins/git-client-plugin.git</reference>
+            <timeout>2</timeout>
+            <depth>0</depth>
+            <honorRefspec>true</honorRefspec>
+          </hudson.plugins.git.extensions.impl.CloneOption>
+          <hudson.plugins.git.extensions.impl.ChangelogToBranch>
+            <options>
+              <compareRemote>origin</compareRemote>
+              <compareTarget>master</compareTarget>
+            </options>
+          </hudson.plugins.git.extensions.impl.ChangelogToBranch>
+          <hudson.plugins.git.extensions.impl.LocalBranch>
+            <localBranch>**</localBranch>
+          </hudson.plugins.git.extensions.impl.LocalBranch>
+          <hudson.plugins.git.extensions.impl.PruneStaleBranch/>
+        </extensions>
+      </source>
+      <strategy class="jenkins.branch.DefaultBranchPropertyStrategy">
+        <properties class="empty-list"/>
+      </strategy>
+    </jenkins.branch.BranchSource>
+  </sources>
+  <factory class="com.github.mjdetullio.jenkins.plugins.multibranch.FreeStyleBranchProjectFactory">
+    <owner class="freestyle-multi-branch-project" reference="../.."/>
+  </factory>
+  <disabled>false</disabled>
+  <disabledSubProjects/>
+</freestyle-multi-branch-project>

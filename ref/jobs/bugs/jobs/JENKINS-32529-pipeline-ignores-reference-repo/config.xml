@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.2">
+  <actions/>
+  <description>[JENKINS-32529](https://issues.jenkins-ci.org/browse/JENKINS-32529) reference repo honored by pipeline script</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>10</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.19.1">
+      <projectUrl>https://github.com/jenkinsci/git-plugin/</projectUrl>
+      <displayName></displayName>
+    </com.coravy.hudson.plugins.github.GithubProjectProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.4">
+    <script>node (&quot;linux&quot;) {
+   // Mark the code checkout &apos;stage&apos;....
+   stage &apos;Checkout&apos;
+
+   // Get some code from a GitHub repository
+   checkout([$class: &apos;GitSCM&apos;, branches: [[name: &apos;*/master&apos;]], browser: [$class: &apos;GithubWeb&apos;, repoUrl: &apos;https://github.com/jenkinsci/git-plugin&apos;], doGenerateSubmoduleConfigurations: false, extensions: [[$class: &apos;CloneOption&apos;, depth: 0, noTags: false, reference: &apos;/var/lib/git/mwaite/jenkins/git-plugin.git&apos;, shallow: false, timeout: 1], [$class: &apos;CleanBeforeCheckout&apos;], [$class: &apos;PruneStaleBranch&apos;], [$class: &apos;AuthorInChangelog&apos;]], gitTool: &apos;Default&apos;, submoduleCfg: [], userRemoteConfigs: [[url: &apos;https://github.com/jenkinsci/git-plugin.git&apos;]]])
+
+   stage &apos;Test&apos;
+   // Verify objects directory is small
+   sh &quot;if [ `du -s .git/objects/ | awk &apos;{print \$1}&apos;` -lt 1000 ]; then echo objects less than 1000, test passed; ls -altr .git/objects/*; else echo objects too large; ls -altr .git/objects/; exit 1; fi&quot;
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers>
+    <hudson.triggers.SCMTrigger>
+      <spec></spec>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+</flow-definition>

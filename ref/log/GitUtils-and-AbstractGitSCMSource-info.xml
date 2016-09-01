@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<log>
+  <name>GitUtils-and-AbstractGitSCMSource-info</name>
+  <targets>
+    <target>
+      <name>hudson.plugins.git.util.GitUtils</name>
+      <level>800</level>
+    </target>
+    <target>
+      <name>jenkins.plugins.git.AbstractGitSCMSource</name>
+      <level>800</level>
+    </target>
+  </targets>
+</log>

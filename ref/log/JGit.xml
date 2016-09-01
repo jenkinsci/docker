@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<log>
+  <name>JGit</name>
+  <targets>
+    <target>
+      <name>org.eclipse.jgit</name>
+      <level>900</level>
+    </target>
+  </targets>
+</log>

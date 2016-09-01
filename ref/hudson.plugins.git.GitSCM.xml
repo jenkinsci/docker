@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson.plugins.git.GitSCM_-DescriptorImpl plugin="git@2.4.4">
+  <generation>1</generation>
+  <globalConfigName>Jenkins Docker User</globalConfigName>
+  <globalConfigEmail>LOGNAME@JENKINS_HOSTNAME</globalConfigEmail>
+  <createAccountBasedOnEmail>false</createAccountBasedOnEmail>
+</hudson.plugins.git.GitSCM_-DescriptorImpl>

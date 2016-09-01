@@ -1,0 +1,36 @@
+[user]
+	name = Jenkins Docker User
+	email = LOGNAME@JENKINS_HOSTNAME
+
+[core]
+        editor = vi
+
+[alias]
+        log-a = log --graph --pretty=oneline --abbrev-commit --decorate
+
+[color]
+        ui = true
+        ui = auto
+
+[color "branch"]
+        current = magenta bold
+        local = yellow bold
+        remote = green bold
+
+[color "diff"]
+        meta = yellow bold
+        frag = magenta bold
+        old = red bold
+        new = green bold
+
+[color "status"]
+        added = green bold
+        changed = red bold
+        unmerged = magenta bold
+        untracked = cyan bold
+
+[color "diff"]
+        whitespace = red reverse
+
+[push]
+	default = simple
