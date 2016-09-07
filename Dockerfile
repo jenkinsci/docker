@@ -38,7 +38,8 @@ COPY sudoers/jenkins /etc/sudoers.d/jenkins
 # Jenkins is run with user `jenkins`, uid = 251
 # If you bind mount a volume from the host or a data container, 
 # ensure you use the same uid
-RUN useradd -d "$JENKINS_HOME" -u 251 --groups sudo -m -s /bin/bash jenkins
+RUN groupadd -g 251 jenkins
+RUN useradd -d "$JENKINS_HOME" -u 251 -g 251 --groups sudo,jenkins -m -s /bin/bash jenkins
 
 
 # `/usr/share/jenkins/ref/` contains all reference configuration we want 
