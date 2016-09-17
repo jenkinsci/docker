@@ -6,6 +6,6 @@ node('docker') {
   docker.build('jenkins')
 
   stage 'Test'
-  sh "git checkout https://github.com/sstephenson/bats.git"
-  sh "bats/bin/bats tests/tests.bats"
+  sh "git clone https://github.com/sstephenson/bats.git"
+  sh "bats/bin/bats tests"
 }
