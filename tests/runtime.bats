@@ -20,14 +20,14 @@ load test_helpers
   # running --help --version should return the version, not the help
   local version=$(grep 'ENV JENKINS_VERSION' Dockerfile | sed -e 's/.*:-\(.*\)}/\1/')
   # need the last line of output
-  assert "${version}" docker run --rm -ti -e JENKINS_OPTS="--help --version" --name $SUT_CONTAINER -P $SUT_IMAGE | tail -n 1
+  assert "${version}" docker run --rm -e JENKINS_OPTS="--help --version" --name $SUT_CONTAINER -P $SUT_IMAGE | tail -n 1
 }
 
 @test "test jenkins arguments" {
   # running --help --version should return the version, not the help
   local version=$(grep 'ENV JENKINS_VERSION' Dockerfile | sed -e 's/.*:-\(.*\)}/\1/')
   # need the last line of output
-  assert "${version}" docker run --rm -ti --name $SUT_CONTAINER -P $SUT_IMAGE --help --version | tail -n 1
+  assert "${version}" docker run --rm --name $SUT_CONTAINER -P $SUT_IMAGE --help --version | tail -n 1
 }
 
 @test "create test container" {

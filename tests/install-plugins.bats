@@ -15,7 +15,7 @@ load test_helpers
   run docker build -t $SUT_IMAGE-plugins $BATS_TEST_DIRNAME/plugins
   assert_success
   # replace DOS line endings \r\n
-  run bash -c "docker run -ti --rm $SUT_IMAGE-plugins ls --color=never -1 /var/jenkins_home/plugins | tr -d '\r'"
+  run bash -c "docker run --rm $SUT_IMAGE-plugins ls --color=never -1 /var/jenkins_home/plugins | tr -d '\r'"
   assert_success
   assert_line 'maven-plugin.jpi'
   assert_line 'maven-plugin.jpi.pinned'
@@ -28,7 +28,7 @@ load test_helpers
   assert_success
   refute_line --partial 'Skipping already bundled dependency'
   # replace DOS line endings \r\n
-  run bash -c "docker run -ti --rm $SUT_IMAGE-install-plugins ls --color=never -1 /var/jenkins_home/plugins | tr -d '\r'"
+  run bash -c "docker run --rm $SUT_IMAGE-install-plugins ls --color=never -1 /var/jenkins_home/plugins | tr -d '\r'"
   assert_success
   assert_line 'maven-plugin.jpi'
   assert_line 'maven-plugin.jpi.pinned'
@@ -54,7 +54,7 @@ load test_helpers
   assert_line "Using provided plugin: ant"
   refute_line --partial 'Skipping already bundled dependency'
   # replace DOS line endings \r\n
-  run bash -c "docker run -ti --rm $SUT_IMAGE-install-plugins-update unzip -p /var/jenkins_home/plugins/maven-plugin.jpi META-INF/MANIFEST.MF | tr -d '\r'"
+  run bash -c "docker run --rm $SUT_IMAGE-install-plugins-update unzip -p /var/jenkins_home/plugins/maven-plugin.jpi META-INF/MANIFEST.MF | tr -d '\r'"
   assert_success
   assert_line 'Plugin-Version: 2.13'
 }
@@ -64,8 +64,9 @@ load test_helpers
   run docker build -t $SUT_IMAGE-install-plugins $BATS_TEST_DIRNAME/install-plugins
   assert_success
   local work; work="$BATS_TEST_DIRNAME/upgrade-plugins/work"
+  mkdir -p $work
   # Image contains maven-plugin 2.7.1 and ant-plugin 1.3
-  run bash -c "docker run -ti -v $work:/var/jenkins_home --rm $SUT_IMAGE-install-plugins true"
+  run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-install-plugins true"
   assert_success
   run bash -c "unzip -p $work/plugins/maven-plugin.jpi META-INF/MANIFEST.MF | tr -d '\r'"
   assert_line 'Plugin-Version: 2.7.1'
@@ -76,7 +77,7 @@ load test_helpers
   run docker build -t $SUT_IMAGE-upgrade-plugins $BATS_TEST_DIRNAME/upgrade-plugins
   assert_success
   # Images contains maven-plugin 2.13 and ant-plugin 1.2
-  run bash -c "docker run -ti -v $work:/var/jenkins_home --rm $SUT_IMAGE-upgrade-plugins true"
+  run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-upgrade-plugins true"
   assert_success
   run bash -c "unzip -p $work/plugins/maven-plugin.jpi META-INF/MANIFEST.MF | tr -d '\r'"
   assert_success
@@ -95,15 +96,16 @@ load test_helpers
   run docker build -t $SUT_IMAGE-install-plugins $BATS_TEST_DIRNAME/install-plugins
   assert_success
   local work; work="$BATS_TEST_DIRNAME/upgrade-plugins/work"
+  mkdir -p $work
   # Image contains maven-plugin 2.7.1 and ant-plugin 1.3
-  run bash -c "docker run -ti -v $work:/var/jenkins_home --rm $SUT_IMAGE-install-plugins curl --connect-timeout 5 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L https://updates.jenkins.io/download/plugins/maven-plugin/2.12.1/maven-plugin.hpi -o /var/jenkins_home/plugins/maven-plugin.jpi"
+  run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-install-plugins curl --connect-timeout 5 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L https://updates.jenkins.io/download/plugins/maven-plugin/2.12.1/maven-plugin.hpi -o /var/jenkins_home/plugins/maven-plugin.jpi"
   assert_success
   run bash -c "unzip -p $work/plugins/maven-plugin.jpi META-INF/MANIFEST.MF | tr -d '\r'"
   assert_line 'Plugin-Version: 2.12.1'
   run docker build -t $SUT_IMAGE-upgrade-plugins $BATS_TEST_DIRNAME/upgrade-plugins
   assert_success
   # Images contains maven-plugin 2.13 and ant-plugin 1.2
-  run bash -c "docker run -ti -v $work:/var/jenkins_home --rm $SUT_IMAGE-upgrade-plugins true"
+  run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-upgrade-plugins true"
   assert_success
   run bash -c "unzip -p $work/plugins/maven-plugin.jpi META-INF/MANIFEST.MF | tr -d '\r'"
   assert_success
