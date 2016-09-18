@@ -3,7 +3,7 @@ version: '2'
 services:
 
   jenkins:
-    image: serverking/jenkins:latest
+    build: .
     privileged: true
     network_mode: "bridge"
     environment:
