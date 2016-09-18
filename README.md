@@ -31,7 +31,7 @@ services:
     environment:
       - JAVA_OPTS=-Duser.timezone=Europe/Zurich
       - JENKINS_OPTS=''
-      - EXECUTORS=7
+      - JENKINS_EXECUTORS=7
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /data/jenkins_home/builds:/var/jenkins_home/builds
@@ -54,7 +54,7 @@ services:
     environment:
       - JAVA_OPTS=-Duser.timezone=Europe/Zurich
       - JENKINS_OPTS=''
-      - EXECUTORS=7
+      - JENKINS_EXECUTORS=7
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /data/jenkins_home/builds:/var/jenkins_home/builds
@@ -91,7 +91,7 @@ As all the data needed is in the /var/jenkins_home directory - so depending on h
 The number of build executors can simply be defined by setting an environment variable on your docker container. By default its set to 2 executors, but you can extend the image and change it to your desired number of executors. This can be done by eighter follow the sample docker compose excerpt above or passing parameters to the run command like below:
 
 ```
-docker run --name myjenkins -p 8080:8080 -e EXECUTORS=7 serverking/jenkins
+docker run --name myjenkins -p 8080:8080 -e JENKINS_EXECUTORS=7 serverking/jenkins
 ```
 
 ### Attaching build executors

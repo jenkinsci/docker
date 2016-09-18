@@ -1,17 +1,18 @@
 FROM alpine:latest
 
-ADD src /
-
-ENV JAVA_HOME /usr/lib/jvm/java-1.7-openjdk/jre
+ENV JAVA_HOME /usr/lib/jvm/java-1.8-openjdk/jre
 ENV JENKINS_HOME /var/jenkins_home
 ENV JENKINS_SLAVE_AGENT_PORT 50000
-ENV JENKINS_VERSION 2.0-beta-1
+ENV JENKINS_VERSION 2.7.4
+
+ADD src /
 
 # Packages
-RUN echo http://dl-4.alpinelinux.org/alpine/edge/community >> /etc/apk/repositories && \
+RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main && \
+    apk add --no-cache --repository  http://dl-cdn.alpinelinux.org/alpine/edge/community && \
     apk update && \
     apk upgrade && \
-    apk add ca-certificates supervisor openjdk7-jre-base java-common bash git curl zip wget docker ttf-dejavu && \
+    apk add ca-certificates supervisor openjdk8 bash git curl zip wget docker ttf-dejavu jq && \
     rm -rf /var/cache/apk/*
 
 # Docker compose
@@ -23,7 +24,14 @@ RUN echo "Installing docker-compose" && \
 RUN echo "Installing jenkins ${JENKINS_VERSION}" && \
     curl -sSL --create-dirs --retry 1 http://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war -o /usr/share/jenkins/jenkins.war
 
-# Jenkins plugins from plugins.txt
+# Jenkins solve plugin dependencies from plugins.txt
+RUN curl -sSO https://updates.jenkins-ci.org/current/update-center.actual.json && \
+    while read plugin; do \
+    cat update-center.actual.json | jq --arg p "${plugin%:*}" -r '.plugins[] | select(.name == $p) | .dependencies[] | select(.optional == false) | .name + ":latest"' >> /var/jenkins_home/plugins.txt; \
+    done < /var/jenkins_home/plugins.txt && \
+    sort -u /var/jenkins_home/plugins.txt -o /var/jenkins_home/plugins.txt
+
+# Jenkins install plugins from plugins.txt
 RUN while read plugin; do \
     echo "Downloading ${plugin}" && \
     curl -sSL --create-dirs --retry 1 https://updates.jenkins-ci.org/download/plugins/${plugin%:*}/${plugin#*:}/${plugin%:*}.hpi -o /var/jenkins_home/plugins/${plugin%:*}.jpi && \
