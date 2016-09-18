@@ -81,6 +81,15 @@ The sample docker compose excerpt above shows how to bind those volumes. A defau
 Refer to the Docker docs section on [Managing data in containers](https://docs.docker.com/userguide/dockervolumes/)
 
 
+### Providing DSL jobs with GIT
+
+DSL jobs can be maintained on a remote git repository. The jobs itself must be stored into the DSL folder. 
+
+```
+docker run -d -p 8080:8080 -e SEEDJOB_GIT=https://your.repo.git tomdesinto/jenkins-dsl-ready
+```
+
+
 ### Upgrading
 
 As all the data needed is in the /var/jenkins_home directory - so depending on how you manage that - depends on how you upgrade. If you bind external host volumes for builds and workspaces, your jobs will be updated with jenkins. 
