@@ -132,6 +132,6 @@ groovy:latest
 
 ## Todo's
 - [x] JenkinsCI official refactoring
-- [ ] DSL plugin bootstrap setup 
+- [x] DSL plugin bootstrap setup 
 - [ ] DSL sample jobs
 
