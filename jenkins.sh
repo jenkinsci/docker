@@ -7,7 +7,19 @@ find /usr/share/jenkins/ref/ -type f -exec bash -c '. /usr/local/bin/jenkins-sup
 
 # if `docker run` first argument start with `--` the user is passing jenkins launcher arguments
 if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
-  eval "exec java $JAVA_OPTS -jar /usr/share/jenkins/jenkins.war $JENKINS_OPTS \"\$@\""
+
+  # read JAVA_OPTS and JENKINS_OPTS into arrays to avoid need for eval (and associated vulnerabilities)
+  java_opts_array=()
+  while IFS= read -r -d '' item; do
+    java_opts_array+=( "$item" )
+  done < <(xargs printf '%s\0' <<<"$JAVA_OPTS")
+
+  jenkins_opts_array=( )
+  while IFS= read -r -d '' item; do
+    jenkins_opts_array+=( "$item" )
+  done < <(xargs printf '%s\0' <<<"$JENKINS_OPTS")
+
+  exec java "${java_opts_array[@]}" -jar /usr/share/jenkins/jenkins.war "${jenkins_opts_array[@]}" "$@"
 fi
 
 # As argument is not jenkins, assume user want to run his own process, for sample a `bash` shell to explore this image
