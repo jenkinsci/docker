@@ -3,7 +3,7 @@ import hudson.model.FreeStyleProject;
 import hudson.tasks.Shell;
 import javaposse.jobdsl.plugin.*;
 
-def scm = System.getenv('SEEDJOB_GIT')
+def scm = System.getenv('bootstraprepo')
 
 project = Jenkins.instance.createProject(FreeStyleProject, "bootstrap")
 project.getBuildersList().clear()
