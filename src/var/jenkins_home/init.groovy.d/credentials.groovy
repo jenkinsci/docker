@@ -12,8 +12,7 @@ def github_private_key = System.getenv('GITHUB_PRIVATE_KEY')
 if(github_private_key) {
 
   global_domain = Domain.global()
-  credentials_store =
-    Jenkins.instance.getExtensionList('com.cloudbees.plugins.credentials.SystemCredentialsProvider')[0].getStore()
+  credentials_store = Jenkins.instance.getExtensionList('com.cloudbees.plugins.credentials.SystemCredentialsProvider')[0].getStore()
 
   credentials = new BasicSSHUserPrivateKey(
     CredentialsScope.GLOBAL,

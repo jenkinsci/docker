@@ -1,20 +1,9 @@
-import jenkins.model.*;
-import hudson.model.FreeStyleProject;
-import hudson.tasks.Shell;
-import javaposse.jobdsl.plugin.*;
+import javaposse.jobdsl.dsl.DslScriptLoader
+import javaposse.jobdsl.plugin.JenkinsJobManagement
 
-def scm = System.getenv('bootstraprepo')
+def jobDslScript = new File('/var/jenkins_home/jobs/jobs.groovy')
+def workspace = new File('.')
 
-project = Jenkins.instance.createProject(FreeStyleProject, "bootstrap")
-project.getBuildersList().clear()
+def jobManagement = new JenkinsJobManagement(System.out, [:], workspace)
 
-project.getBuildersList().add(new ExecuteDslScripts(
-  new ExecuteDslScripts.ScriptLocation("false","dsl/**/*.groovy",null),
-  false,
-  RemovedJobAction.DELETE,
-  RemovedViewAction.DELETE,
-  LookupStrategy.JENKINS_ROOT,
-  "src/main/groovy")
-);
-
-project.save()
+new DslScriptLoader(jobManagement).runScript(jobDslScript.text)
