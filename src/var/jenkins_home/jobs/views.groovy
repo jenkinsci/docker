@@ -1,4 +1,4 @@
-listView('1.bld-loc') { 
+listView('01.bld-loc') { 
   description('Build stage')
   recurse(true)
   jobs { 
@@ -6,7 +6,7 @@ listView('1.bld-loc') {
   } 
 }
 
-listView('2.dev-loc') {
+listView('02.dev-loc') {
   description('Development deployment stage - localhost')
   recurse(true)
   jobs {
@@ -14,7 +14,7 @@ listView('2.dev-loc') {
   }
 }
 
-listView('3.rel-loc') {
+listView('03.rel-loc') {
   description('Release deployment stage - localhost')
   recurse(true)
   jobs {
@@ -22,7 +22,7 @@ listView('3.rel-loc') {
   }
 }
 
-listView('4.dev-pub') {
+listView('04.dev-pub') {
   description('Development deployment stage - public')
   recurse(true)
   jobs {
@@ -30,7 +30,7 @@ listView('4.dev-pub') {
   }
 }
 
-listView('5.rel-pub') {
+listView('05.rel-pub') {
   description('Release deployment stage - public')
   recurse(true)
   jobs {
@@ -38,7 +38,7 @@ listView('5.rel-pub') {
   }
 }
 
-listView('6.dem-pub') {
+listView('06.dem-pub') {
   description('Demo deployment stage - public')
   recurse(true)
   jobs {
@@ -46,7 +46,7 @@ listView('6.dem-pub') {
   }
 }
 
-listView('7.dev-sec') {
+listView('07.dev-sec') {
   description('Development deployment stage - secure')
   recurse(true)
   jobs {
@@ -54,7 +54,7 @@ listView('7.dev-sec') {
   }
 }
 
-listView('8.rel-sec') {
+listView('08.rel-sec') {
   description('Release deployment stage - secure')
   recurse(true)
   jobs {
@@ -62,7 +62,7 @@ listView('8.rel-sec') {
   }
 }
 
-listView('9.int-sec') {
+listView('09.int-sec') {
   description('Integration deployment stage - confidential')
   recurse(true)
   jobs {
