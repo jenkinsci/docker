@@ -25,7 +25,7 @@ try {
   DockerTemplateBase templateBase = new DockerTemplateBase("", "", "", "", """/var/run/docker.sock:/var/run/docker.sock""", "", "", "", "", 2048, 0, 1024, "", false, false, false, "");
   
   // https://github.com/jenkinsci/ssh-slaves-plugin/blob/ssh-slaves-1.11/src/main/java/hudson/plugins/sshslaves/SSHConnector.java#L178
-  SSHConnector connector = new SSHConnector(22, "docker-slave", "", "", "", "", 0, 0, 0);
+  SSHConnector connector = new SSHConnector(22, "docker-slave", null, null, null, null, null);
   
   // https://github.com/jenkinsci/docker-plugin/blob/docker-plugin-parent-0.16.0/docker-plugin/src/main/java/com/nirima/jenkins/plugins/docker/launcher/DockerComputerSSHLauncher.java#L43
   DockerComputerSSHLauncher launcher = new DockerComputerSSHLauncher(connector);
