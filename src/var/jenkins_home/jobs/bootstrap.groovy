@@ -7,11 +7,10 @@ job('bootstrap') {
     }
     steps {
         dsl {
-            external 'jobs/**/*.groovy'
+            external 'src/var/jenkins_home/jobs/**/*.groovy'
             additionalClasspath 'src/main/groovy'
         }
     }
     publishers {
-        archiveJunit 'build/test-results/**/*.xml'
     }
 }
