@@ -1,6 +1,5 @@
 github-organization-folder:1.5
 workflow-aggregator:2.4
-pipeline-stage-view:2.0
 git:3.0.0
 build-blocker-plugin:1.7.3
 job-dsl:1.51
