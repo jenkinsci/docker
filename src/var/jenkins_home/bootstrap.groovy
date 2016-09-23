@@ -1,6 +1,6 @@
 job('bootstrap') {
     scm {
-        github build.environment.get("JENKINS_BOOTSTRAP_REPOSITORY")
+        github("${JENKINS_BOOTSTRAP_REPOSITORY}")
     }
     triggers {
         scm 'H/5 * * * *'
