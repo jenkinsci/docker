@@ -8,7 +8,6 @@ job('bootstrap') {
     steps {
         dsl {
             external 'src/var/jenkins_home/jobs/**/*.groovy'
-            additionalClasspath 'src/main/groovy'
         }
     }
     publishers {
