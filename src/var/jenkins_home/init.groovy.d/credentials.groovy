@@ -7,14 +7,14 @@ import com.cloudbees.plugins.credentials.domains.*
 import com.cloudbees.plugins.credentials.common.*
 import com.cloudbees.jenkins.plugins.sshcredentials.impl.*
 
-def github_private_key = System.getenv('GITHUB_PRIVATE_KEY')
+def github_private_key = System.getenv('JENKINS_GITHUB_PRIVATE_KEY')
 
 if(github_private_key) {
 
   global_domain = Domain.global()
   credentials_store = Jenkins.instance.getExtensionList('com.cloudbees.plugins.credentials.SystemCredentialsProvider')[0].getStore()
 
-  credentials = new BasicSSHUserPrivateKey(
+  mycredentials = new BasicSSHUserPrivateKey(
     CredentialsScope.GLOBAL,
     null,
     "github",
@@ -42,9 +42,9 @@ if(github_private_key) {
     credentials_store.updateCredentials(
       global_domain,
       existing_credentials,
-      credentials
+      mycredentials
     )
   } else {
-    credentials_store.addCredentials(global_domain, credentials)
+    credentials_store.addCredentials(global_domain, mycredentials)
   }
 }
