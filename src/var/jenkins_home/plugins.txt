@@ -2,3 +2,4 @@ github-organization-folder:1.5
 workflow-aggregator:2.4
 git:3.0.0
 job-dsl:1.51
+grails:1.7
