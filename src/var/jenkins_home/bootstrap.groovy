@@ -1,13 +1,13 @@
 job('bootstrap') {
     scm {
-        github 'flavioaiello/jenkins'
+        github build.environment.get("JENKINS_BOOTSTRAP_REPOSITORY")
     }
     triggers {
         scm 'H/5 * * * *'
     }
     steps {
         dsl {
-            external 'src/var/jenkins_home/jobs/**/*.groovy'
+            external 'dsl/**/*.groovy'
         }
     }
     publishers {
