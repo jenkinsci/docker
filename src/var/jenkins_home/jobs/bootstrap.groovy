@@ -1,4 +1,4 @@
-job('seed') {
+job('bootstrap') {
     scm {
         github 'flavioaiello/jenkins'
     }
@@ -8,7 +8,7 @@ job('seed') {
     steps {
         gradle 'clean test'
         dsl {
-            external 'dsl/**/*.groovy'
+            external 'jobs/**/*.groovy'
             additionalClasspath 'src/main/groovy'
         }
     }
