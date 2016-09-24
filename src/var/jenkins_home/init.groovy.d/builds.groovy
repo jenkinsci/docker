@@ -1,7 +1,17 @@
-import hudson.model.*
-def pattern = ~/\d+/
+import hudson.model.*;
+import jenkins.model.*;
 
-updateBuildNumber(Hudson.instance.items)
+Thread.start {
+      sleep 1000
+      println "--> setting builds root directory"
+      def buildsDir = System.getenv('JENKINS_BUILDSDIR') ? System.getenv('JENKINS_BUILDSDIR') : "${JENKINS_HOME}/builds/${ITEM_FULL_NAME}"
+      Jenkins.instance.setRawBuildsDir(buildsDir)
+      println "--> setting builds root directory... done"
+      sleep 1000
+      println "--> update build numbers"
+      updateBuildNumber(Hudson.instance.items)
+      println "--> update build numbers... done"
+}
 
 def updateBuildNumber(items) {
   for (item in items) {
@@ -10,7 +20,7 @@ def updateBuildNumber(items) {
         println("check buildNumber for " + item.name + " current nextBuildNumber: " + item.getNextBuildNumber() + " buildDir: " + item.getBuildDir() + " rootDir: " + item.getRootDir())
         def max = 0
         try {
-          item.getBuildDir().eachDirMatch(pattern) { dir ->
+          item.getBuildDir().eachDirMatch(~/\d+/) { dir ->
             tmpmax = dir.getPath().replace(item.getBuildDir().getAbsolutePath()+"/", "").toInteger()
             if (tmpmax > max ) {
               max = tmpmax
