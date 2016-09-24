@@ -1,6 +1,12 @@
 job('bootstrap') {
     scm {
-        github(System.getenv('JENKINS_BOOTSTRAP_REPOSITORY'))
+      git {
+        remote {
+          url System.getenv('JENKINS_BOOTSTRAP_REPOSITORY');
+          credentials 'git'
+        }
+        branch 'develop'
+      }
     }
     triggers {
         scm 'H/5 * * * *'

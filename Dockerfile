@@ -15,7 +15,7 @@ RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/ma
 
 # Docker compose
 RUN echo "Installing docker-compose ..." && \
-    curl -sSL --create-dirs --retry 1 https://github.com/docker/compose/releases/download/1.6.2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose && \
+    curl -sSL --create-dirs --retry 1 https://github.com/docker/compose/releases/download/1.8.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose && \
     chmod +x /usr/local/bin/docker-compose
 
 # Jenkins

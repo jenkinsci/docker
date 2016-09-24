@@ -11,8 +11,8 @@ services:
       - JENKINS_OPTS=''
       - JENKINS_EXECUTORS=7
       - JENKINS_BUILDSDIR=$${JENKINS_HOME}/builds/$${ITEM_FULL_NAME}
-      - JENKINS_BOOTSTRAP_REPOSITORY=flavioaiello/jenkins
-      - JENKINS_GITHUB_PRIVATE_KEY=''
+      - JENKINS_BOOTSTRAP_REPOSITORY=ssh://git@github.com/flavioaiello/jenkins.git
+      - JENKINS_GIT_PRIVATE_KEY=
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /data/jenkins/workspace:/var/jenkins_home/workspace

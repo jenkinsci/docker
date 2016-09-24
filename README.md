@@ -1,15 +1,11 @@
 # The supercharged Jenking v2 Docker image (not official - based on alpine)
 
-![Supercharged Jenkins](https://github.com/flavioaiello/jenkins/blob/master/superhero.png)
+![Supercharged Jenkins](superhero.png)
 
 This is the supercharged Jenkins Continuous Integration and Delivery server based up on the official release. [http://jenkins-ci.org/](http://jenkins-ci.org/).
 
 ## Usage
 
-### Docker Client
-```
-docker run -p 8080:8080 serverking/jenkins
-```
 ### Docker Compose
 
 To start jenkins using docker compose simply emit the following command:
@@ -25,17 +21,19 @@ version: '2'
 services:
 
   jenkins:
-    image: serverking/jenkins:latest
+    build: .
     privileged: true
     network_mode: "bridge"
     environment:
       - JAVA_OPTS=-Duser.timezone=Europe/Zurich
       - JENKINS_OPTS=''
       - JENKINS_EXECUTORS=7
+      - JENKINS_BOOTSTRAP_REPOSITORY=
+      - JENKINS_GIT_PRIVATE_KEY=
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /data/jenkins_home/builds:/var/jenkins_home/builds
-      - /data/jenkins_home/workspaces:/var/jenkins_home/workspaces
+      - /data/jenkins_home/workspace:/var/jenkins_home/workspace
     ports:
         - "8080:8080"
     restart: always
@@ -48,17 +46,19 @@ version: '2'
 services:
 
   jenkins:
-    image: serverking/jenkins:latest
+    build: .
     privileged: true
     network_mode: "bridge"
     environment:
       - JAVA_OPTS=-Duser.timezone=Europe/Zurich
       - JENKINS_OPTS=''
       - JENKINS_EXECUTORS=7
+      - JENKINS_BOOTSTRAP_REPOSITORY=
+      - JENKINS_GIT_PRIVATE_KEY=
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /data/jenkins_home/builds:/var/jenkins_home/builds
-      - /data/jenkins_home/workspaces:/var/jenkins_home/workspaces
+      - /data/jenkins_home/workspace:/var/jenkins_home/workspace
       - /data/jenkins_home/certs:/var/jenkins_home/certs
     ports:
         - "8443:8443"
@@ -131,7 +131,7 @@ You can derive this Dockerfile if you need more tools installed. In such a deriv
 
 ### Installing plugins
 
-For your convenience, you also can use a plain text file to define plugins to be installed (using core-support plugin format). All plugins need to be listed in the form `pluginID:version` as there is no transitive dependency resolution.
+For your convenience, you also can use a plain text file to define plugins to be installed (using core-support plugin format). All plugins need to be listed in the form `pluginID:version`. There ist now transitive dependency resolution, so keep the list small as the dockerfile resolves and installs dependent plugins for you.
 ```
 credentials:1.18
 maven-plugin:2.7.1
