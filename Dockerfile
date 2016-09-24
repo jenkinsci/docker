@@ -10,7 +10,7 @@ RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/ma
     apk add --no-cache --repository  http://dl-cdn.alpinelinux.org/alpine/edge/community && \
     apk update && \
     apk upgrade && \
-    apk add ca-certificates supervisor openjdk8 bash git curl zip wget docker ttf-dejavu jq coreutils && \
+    apk add ca-certificates supervisor openjdk8 bash git curl zip wget docker ttf-dejavu jq coreutils openssh && \
     rm -rf /var/cache/apk/*
 
 # Docker compose
