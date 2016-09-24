@@ -26,7 +26,7 @@ def updateBuildNumber(items) {
         }
       } 
       else {
-        //updateBuildNumber(((com.cloudbees.hudson.plugins.folder.Folder) item).getItems())
+        updateBuildNumber(((com.cloudbees.hudson.plugins.folder.Folder) item).getItems())
       }
     }
     catch(Exception e) {
