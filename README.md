@@ -84,7 +84,7 @@ Refer to the Docker docs section on [Managing data in containers](https://docs.d
 DSL jobs can be maintained on a remote git repository. The jobs itself must be stored into the DSL folder. 
 
 ```
-docker run -d -p 8080:8080 -e SEEDJOB_GIT=https://your.repo.git
+docker run -d -p 8080:8080 -e JENKINS_BOOTSTRAP_REPOSITORY=https://your.repo.git
 ```
 
 
