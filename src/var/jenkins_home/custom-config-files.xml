@@ -1,4 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<org.jenkinsci.plugins.configfiles.custom.CustomConfigProvider plugin="config-file-provider@2.2.1">
-  <configs/>
-</org.jenkinsci.plugins.configfiles.custom.CustomConfigProvider>
