@@ -4,6 +4,7 @@ ENV JAVA_HOME /usr/lib/jvm/java-1.8-openjdk/jre
 ENV JENKINS_HOME /var/jenkins_home
 ENV JENKINS_SLAVE_AGENT_PORT 50000
 ENV JENKINS_VERSION 2.7.4
+ENV DOCKER_COMPOSE_VERSION 1.8.0
 
 # Packages
 RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main && \
@@ -15,7 +16,7 @@ RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/ma
 
 # Docker compose
 RUN echo "Installing docker-compose ..." && \
-    curl -sSL --create-dirs --retry 1 https://github.com/docker/compose/releases/download/1.8.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose && \
+    curl -sSL --create-dirs --retry 1 https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose && \
     chmod +x /usr/local/bin/docker-compose
 
 # Jenkins

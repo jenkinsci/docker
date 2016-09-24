@@ -29,7 +29,6 @@ services:
       - JENKINS_OPTS=''
       - JENKINS_EXECUTORS=7
       - JENKINS_BOOTSTRAP_REPOSITORY=
-      - JENKINS_GIT_PRIVATE_KEY=
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /data/jenkins_home/builds:/var/jenkins_home/builds
@@ -54,7 +53,6 @@ services:
       - JENKINS_OPTS=''
       - JENKINS_EXECUTORS=7
       - JENKINS_BOOTSTRAP_REPOSITORY=
-      - JENKINS_GIT_PRIVATE_KEY=
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /data/jenkins_home/builds:/var/jenkins_home/builds
