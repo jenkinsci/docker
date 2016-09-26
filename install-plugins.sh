@@ -76,7 +76,7 @@ function checkIntegrity() {
     plugin="$1"
     jpi="$(getArchiveFilename "$plugin")"
 
-    zip -T "$jpi" >/dev/null
+    unzip -t -qq "$jpi" >/dev/null
     return $?
 }
 
