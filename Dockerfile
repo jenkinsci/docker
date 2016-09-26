@@ -1,6 +1,6 @@
 FROM openjdk:8-jdk-alpine
 
-RUN apk add --no-cache git openssh-client curl zip unzip bash ttf-dejavu coreutils
+RUN apk add --no-cache git openssh-client curl unzip bash ttf-dejavu coreutils
 
 ENV JENKINS_HOME /var/jenkins_home
 ENV JENKINS_SLAVE_AGENT_PORT 50000
