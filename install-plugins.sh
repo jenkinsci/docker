@@ -67,7 +67,7 @@ doDownload() {
     url="$JENKINS_UC_DOWNLOAD/plugins/$plugin/$version/${plugin}.hpi"
 
     echo "Downloading plugin: $plugin from $url"
-    curl --connect-timeout 5 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L "$url" -o "$jpi"
+    curl --connect-timeout ${CURL_CONNECTION_TIMEOUT:-20} --retry ${CURL_RETRY:-5} --retry-delay ${CURL_RETRY_DELAY:-0} --retry-max-time ${CURL_RETRY_MAX_TIME:-60} -s -f -L "$url" -o "$jpi"
     return $?
 }
 
@@ -170,10 +170,10 @@ main() {
         mkdir "$(getLockFile "${plugin%%:*}")"
     done
 
-    printf '\n%s' "Analyzing war..."
+    echo "Analyzing war..."
     bundledPlugins="$(bundledPlugins)"
 
-    printf '\n%s' "Downloading plugins..."
+    echo "Downloading plugins..."
     for plugin in "$@"; do
         version=""
 
@@ -194,11 +194,11 @@ main() {
     installedPlugins
 
     if [[ -f $FAILED ]]; then
-        printf '\n%s' "Some plugins failed to download!" "$(<"$FAILED")" >&2
+        echo "Some plugins failed to download!" "$(<"$FAILED")" >&2
         exit 1
     fi
 
-    printf '\n%s' "Cleaning up locks"
+    echo "Cleaning up locks"
     rm -r "$REF_DIR"/*.lock
 }
 

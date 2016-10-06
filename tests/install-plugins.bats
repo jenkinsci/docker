@@ -98,7 +98,7 @@ load test_helpers
   local work; work="$BATS_TEST_DIRNAME/upgrade-plugins/work"
   mkdir -p $work
   # Image contains maven-plugin 2.7.1 and ant-plugin 1.3
-  run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-install-plugins curl --connect-timeout 5 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L https://updates.jenkins.io/download/plugins/maven-plugin/2.12.1/maven-plugin.hpi -o /var/jenkins_home/plugins/maven-plugin.jpi"
+  run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-install-plugins curl --connect-timeout 20 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L https://updates.jenkins.io/download/plugins/maven-plugin/2.12.1/maven-plugin.hpi -o /var/jenkins_home/plugins/maven-plugin.jpi"
   assert_success
   run bash -c "unzip -p $work/plugins/maven-plugin.jpi META-INF/MANIFEST.MF | tr -d '\r'"
   assert_line 'Plugin-Version: 2.12.1'
