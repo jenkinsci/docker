@@ -67,7 +67,7 @@ doDownload() {
     url="$JENKINS_UC_DOWNLOAD/plugins/$plugin/$version/${plugin}.hpi"
 
     echo "Downloading plugin: $plugin from $url"
-    curl --connect-timeout 5 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L "$url" -o "$jpi"
+    curl --connect-timeout ${CURL_CONNECTION_TIMEOUT:-5} --retry ${CURL_RETRY:-5} --retry-delay ${CURL_RETRY_DELAY:-0} --retry-max-time ${CURL_RETRY_MAX_TIME:-60} -s -f -L "$url" -o "$jpi"
     return $?
 }
 
