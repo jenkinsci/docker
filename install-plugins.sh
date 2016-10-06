@@ -170,10 +170,10 @@ main() {
         mkdir "$(getLockFile "${plugin%%:*}")"
     done
 
-    printf '\n%s' "Analyzing war..."
+    echo "Analyzing war..."
     bundledPlugins="$(bundledPlugins)"
 
-    printf '\n%s' "Downloading plugins..."
+    echo "Downloading plugins..."
     for plugin in "$@"; do
         version=""
 
@@ -194,11 +194,11 @@ main() {
     installedPlugins
 
     if [[ -f $FAILED ]]; then
-        printf '\n%s' "Some plugins failed to download!" "$(<"$FAILED")" >&2
+        echo "Some plugins failed to download!" "$(<"$FAILED")" >&2
         exit 1
     fi
 
-    printf '\n%s' "Cleaning up locks"
+    echo "Cleaning up locks"
     rm -r "$REF_DIR"/*.lock
 }
 
