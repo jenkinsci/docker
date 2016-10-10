@@ -160,13 +160,22 @@ installedPlugins() {
 }
 
 main() {
-    local plugin version
+    local plugin plugins version
 
     mkdir -p "$REF_DIR" || exit 1
 
+    # Read plugins from stdin or from the command line arguments
+    if [[ ($# -eq 0) ]]; then
+        while read line; do
+            plugins="${plugins:=} ${line}"
+        done
+    else
+        plugins="$@"
+    fi
+
     # Create lockfile manually before first run to make sure any explicit version set is used.
     echo "Creating initial locks..."
-    for plugin in "$@"; do
+    for plugin in $plugins; do
         mkdir "$(getLockFile "${plugin%%:*}")"
     done
 
@@ -174,7 +183,7 @@ main() {
     bundledPlugins="$(bundledPlugins)"
 
     echo "Downloading plugins..."
-    for plugin in "$@"; do
+    for plugin in $plugins; do
         version=""
 
         if [[ $plugin =~ .*:.* ]]; then
