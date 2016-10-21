@@ -62,7 +62,7 @@ doDownload() {
         return 0
     fi
 
-    if [ "$JENKINS_UC_DOWNLOAD" == "" ]; then
+    if [ -z "$JENKINS_UC_DOWNLOAD" ]; then
         JENKINS_UC_DOWNLOAD=${JENKINS_UC_DOWNLOAD:-"$JENKINS_UC/download"}
     fi
     url="$JENKINS_UC_DOWNLOAD/plugins/$plugin/$version/${plugin}.hpi"
