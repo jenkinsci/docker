@@ -41,6 +41,14 @@ function retry {
     false
 }
 
+function docker_build {
+    if [ -n "$JENKINS_VERSION" ]; then
+        docker build --build-arg JENKINS_VERSION=$JENKINS_VERSION --build-arg JENKINS_SHA=$JENKINS_SHA "$@"
+    else
+        docker build "$@"
+    fi
+}
+
 function get_jenkins_url {
     if [ -z "${DOCKER_HOST}" ]; then
         DOCKER_IP=localhost
