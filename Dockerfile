@@ -1,4 +1,4 @@
-FROM infra-repo-dev.symphony.com:6555/sym/alpine-oracle-java7-java8-maven-python27
+FROM local:alpine-oracle-java7-java8-maven-python27
 MAINTAINER Paul Pollack <paul.pollack@symphony.com>
 
 RUN apk update && apk add git curl && rm -rf /var/lib/apt/lists/*
@@ -50,7 +50,9 @@ RUN curl -fsSL ${JENKINS_URL} -o /usr/share/jenkins/jenkins.war \
 
 ENV JENKINS_UC https://updates.jenkins.io
 RUN chown -R ${user} "$JENKINS_HOME" /usr/share/jenkins/ref  && \
-    pip install diff_cover
+    pip install diff_cover && \
+    mkdir /opt/bin && \
+    curl -o /opt/bin/cover2cover.py https://raw.githubusercontent.com/SymphonyOSF/cover2cover/master/cover2cover.py
 
 # for main web interface:
 EXPOSE 8080
