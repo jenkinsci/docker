@@ -26,7 +26,7 @@ VOLUME /var/jenkins_home
 RUN mkdir -p /usr/share/jenkins/ref/init.groovy.d
 
 ENV TINI_VERSION 0.9.0
-# TINI_ARCH supported values are "-amd64", "arm64" for aarch, "-armhf" 
+# TINI_ARCH supported values are "-amd64", "-arm64" for aarch, "-armhf" 
 # Releases listed on - https://github.com/krallin/tini/releases
 #   Note: TINI_SHA (sha1sum) will need to change if altered from default ""
 ENV TINI_ARCH # 
