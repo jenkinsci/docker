@@ -26,10 +26,14 @@ VOLUME /var/jenkins_home
 RUN mkdir -p /usr/share/jenkins/ref/init.groovy.d
 
 ENV TINI_VERSION 0.9.0
+# TINI_ARCH supported values are "-amd64", "arm64" for aarch, "-armhf" 
+# Releases listed on - https://github.com/krallin/tini/releases
+#   Note: TINI_SHA (sha1sum) will need to change if altered from default ""
+ENV TINI_ARCH # 
 ENV TINI_SHA fa23d1e20732501c3bb8eeeca423c89ac80ed452
 
 # Use tini as subreaper in Docker container to adopt zombie processes 
-RUN curl -fsSL https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini-static -o /bin/tini && chmod +x /bin/tini \
+RUN curl -fsSL https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini-static${TINI_ARCH} -o /bin/tini && chmod +x /bin/tini \
   && echo "$TINI_SHA  /bin/tini" | sha1sum -c -
 
 COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy
