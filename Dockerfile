@@ -54,6 +54,8 @@ RUN chown -R ${user} "$JENKINS_HOME" /usr/share/jenkins/ref  && \
     mkdir /opt/bin && \
     curl -o /opt/bin/cover2cover.py https://raw.githubusercontent.com/SymphonyOSF/cover2cover/master/cover2cover.py
 
+ADD ./org.jenkinsci.plugins.workflow.libs.GlobalLibraries.xml ${JENKINS_HOME}/
+
 # for main web interface:
 EXPOSE 8080
 
