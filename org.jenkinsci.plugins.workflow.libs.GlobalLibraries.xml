@@ -14,7 +14,7 @@
           </userRemoteConfigs>
           <branches>
             <hudson.plugins.git.BranchSpec>
-              <name>*/TEST</name>
+              <name>*/master</name>
             </hudson.plugins.git.BranchSpec>
           </branches>
           <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
@@ -22,7 +22,7 @@
           <extensions/>
         </scm>
       </retriever>
-      <defaultVersion>AUTOMERGE</defaultVersion>
+      <defaultVersion>master</defaultVersion>
       <implicit>false</implicit>
       <allowVersionOverride>true</allowVersionOverride>
     </org.jenkinsci.plugins.workflow.libs.LibraryConfiguration>

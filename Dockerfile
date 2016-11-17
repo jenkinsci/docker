@@ -1,4 +1,4 @@
-FROM infra-repo-dev.symphony.com:6555/sym/alpine-oracle-java7-java8-maven-python27
+FROM local:alpine-oracle-java7-java8-maven-python27
 MAINTAINER Paul Pollack <paul.pollack@symphony.com>
 
 RUN apk update && apk add git curl && rm -rf /var/lib/apt/lists/*
@@ -54,8 +54,6 @@ RUN chown -R ${user} "$JENKINS_HOME" /usr/share/jenkins/ref  && \
     mkdir /opt/bin && \
     curl -o /opt/bin/cover2cover.py https://raw.githubusercontent.com/SymphonyOSF/cover2cover/master/cover2cover.py
 
-ADD ./org.jenkinsci.plugins.workflow.libs.GlobalLibraries.xml ${JENKINS_HOME}/
-
 # for main web interface:
 EXPOSE 8080
 
@@ -71,6 +69,7 @@ COPY plugins.sh /usr/local/bin/plugins.sh
 COPY install-plugins.sh /usr/local/bin/install-plugins.sh
 COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
+COPY org.jenkinsci.plugins.workflow.libs.GlobalLibraries.xml /tmp/org.jenkinsci.plugins.workflow.libs.GlobalLibraries.xml
 
 RUN /usr/local/bin/install-plugins.sh credentials ssh-credentials ssh-agent ssh-slaves git-client git github github-api github-oauth ghprb scm-api postbuild-task greenballs credentials-binding pipeline-utility-steps workflow-aggregator jira sonar:2.44
 
