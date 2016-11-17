@@ -71,7 +71,7 @@ COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
 COPY org.jenkinsci.plugins.workflow.libs.GlobalLibraries.xml /tmp/org.jenkinsci.plugins.workflow.libs.GlobalLibraries.xml
 
-RUN /usr/local/bin/install-plugins.sh credentials ssh-credentials ssh-agent ssh-slaves git-client git github github-api github-oauth ghprb scm-api postbuild-task greenballs credentials-binding pipeline-utility-steps workflow-aggregator jira sonar:2.44
+RUN /usr/local/bin/install-plugins.sh credentials ssh-credentials ssh-agent ssh-slaves git-client git github github-api github-oauth ghprb scm-api postbuild-task greenballs credentials-binding pipeline-utility-steps workflow-aggregator github-organization-folder jira sonar:2.44
 
 ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
