@@ -1,4 +1,4 @@
-FROM infra-repo-dev.symphony.com:6555/sym/alpine-oracle-java7-java8-maven-python27
+FROM us.gcr.io/symphony-gce-dev/sym/alpine-oracle-java7-java8-maven-python27
 MAINTAINER Paul Pollack <paul.pollack@symphony.com>
 
 RUN apk update && apk add git curl && rm -rf /var/lib/apt/lists/*
@@ -32,6 +32,15 @@ RUN curl -fsSL https://github.com/krallin/tini/releases/download/v${TINI_VERSION
   && echo "$TINI_SHA  /bin/tini" | sha1sum -c -
 
 COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy
+COPY createCredentials.groovy /usr/share/jenkins/ref/init.groovy.d/createCredentials.groovy
+COPY security.groovy /usr/share/jenkins/ref/init.groovy.d/security.groovy
+COPY org.jenkinsci.plugins.workflow.libs.GlobalLibraries.xml /tmp/org.jenkinsci.plugins.workflow.libs.GlobalLibraries.xml
+COPY hudson.tasks.Maven.xml /tmp/hudson.tasks.Maven.xml
+COPY hudson.plugins.sonar.SonarGlobalConfiguration.xml /tmp/hudson.plugins.sonar.SonarGlobalConfiguration.xml
+COPY hudson.plugins.sonar.SonarRunnerInstallation.xml /tmp/hudson.plugins.sonar.SonarRunnerInstallation.xml
+COPY github-plugin-configuration.xml /tmp/github-plugin-configuration.xml
+COPY maven-settings-files.xml /tmp/maven-settings-files.xml
+COPY jenkins.model.JenkinsLocationConfiguration.xml /tmp/jenkins.model.JenkinsLocationConfiguration.xml
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
@@ -49,7 +58,7 @@ RUN curl -fsSL ${JENKINS_URL} -o /usr/share/jenkins/jenkins.war \
   && echo "${JENKINS_SHA}  /usr/share/jenkins/jenkins.war" | sha1sum -c -
 
 ENV JENKINS_UC https://updates.jenkins.io
-RUN chown -R ${user} "$JENKINS_HOME" /usr/share/jenkins/ref  && \
+RUN chown -R ${user} "$JENKINS_HOME" /usr/share/jenkins/ref /tmp  && \
     pip install diff_cover && \
     mkdir /opt/bin && \
     curl -o /opt/bin/cover2cover.py https://raw.githubusercontent.com/SymphonyOSF/cover2cover/master/cover2cover.py
@@ -69,7 +78,6 @@ COPY plugins.sh /usr/local/bin/plugins.sh
 COPY install-plugins.sh /usr/local/bin/install-plugins.sh
 COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
-COPY org.jenkinsci.plugins.workflow.libs.GlobalLibraries.xml /tmp/org.jenkinsci.plugins.workflow.libs.GlobalLibraries.xml
 
 RUN /usr/local/bin/install-plugins.sh credentials ssh-credentials ssh-agent ssh-slaves git-client git github github-api github-oauth ghprb scm-api postbuild-task greenballs credentials-binding pipeline-utility-steps workflow-aggregator github-organization-folder jira sonar:2.44
 

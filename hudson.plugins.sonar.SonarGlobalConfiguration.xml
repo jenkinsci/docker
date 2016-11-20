@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson.plugins.sonar.SonarGlobalConfiguration plugin="sonar@2.4.4">
+  <installations>
+    <hudson.plugins.sonar.SonarInstallation>
+      <name>SymphonySonar</name>
+      <serverUrl>https://sonar.symphony.com</serverUrl>
+      <serverVersion>5.3</serverVersion>
+      <serverAuthenticationToken>d48153bfdb315557b4eecf11c48411d2f930786e</serverAuthenticationToken>
+      <mojoVersion></mojoVersion>
+      <databaseUrl></databaseUrl>
+      <databaseLogin></databaseLogin>
+      <additionalProperties></additionalProperties>
+      <additionalAnalysisProperties></additionalAnalysisProperties>
+      <triggers>
+        <skipScmCause>false</skipScmCause>
+        <skipUpstreamCause>false</skipUpstreamCause>
+        <envVar></envVar>
+      </triggers>
+      <sonarLogin></sonarLogin>
+      <databaseSecret>90Qwc9P5TWE9VaZM6KC+WA==</databaseSecret>
+      <sonarSecret>90Qwc9P5TWE9VaZM6KC+WA==</sonarSecret>
+    </hudson.plugins.sonar.SonarInstallation>
+  </installations>
+  <buildWrapperEnabled>false</buildWrapperEnabled>
+</hudson.plugins.sonar.SonarGlobalConfiguration>
