@@ -27,7 +27,15 @@ if (!System.getenv('NO_BOOTSTRAP')) {
 	admin.setFullName('admin')
 	def email_param = new hudson.tasks.Mailer.UserProperty('matthew.arturi@symphony.com')
 	admin.addProperty(email_param)
-	def pw_param = hudson.security.HudsonPrivateSecurityRealm.Details.fromPlainPassword('w@rpdr1ve')
+	def secret = System.getenv('JENKINS_OPTS')
+    def parts = secret.tokenize()
+    def pwd = ''
+    for (String part : parts) {
+        if (part.indexOf('--argumentsRealm.passwd.jenkins') > -1) {
+            pwd = part.tokenize('=')[1]
+        }
+    }
+	def pw_param = hudson.security.HudsonPrivateSecurityRealm.Details.fromPlainPassword(pwd)
 	admin.addProperty(pw_param)
 	admin.save()
 }
