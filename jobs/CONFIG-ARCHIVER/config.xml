@@ -48,7 +48,7 @@ if [ -f $JENKINS_HOME/jobs/CONFIG-ARCHIVER/config.xml ]; then
 	fi
 	cp $JENKINS_HOME/jobs/CONFIG-ARCHIVER/config.xml jobs/CONFIG-ARCHIVER/
 fi
-
+git checkout master
 git add . &amp;&amp; git status
 git commit -a -m &quot;Synchronizing Jenkins config&quot;</command>
     </hudson.tasks.Shell>
