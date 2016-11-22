@@ -2,15 +2,22 @@
 <jenkins.branch.OrganizationFolder plugin="branch-api@1.11.1">
   <actions>
     <org.jenkinsci.plugins.orgfolder.github.GitHubOrgAction plugin="github-organization-folder@1.5">
-      <url>https://github.com/SymphonyOSF</url>
-      <avatar>https://avatars.githubusercontent.com/u/8978267?v=3</avatar>
+      <url>https://github.com/marturi</url>
+      <name>Matt Arturi</name>
+      <avatar>https://avatars.githubusercontent.com/u/174713?v=3</avatar>
     </org.jenkinsci.plugins.orgfolder.github.GitHubOrgAction>
     <org.jenkinsci.plugins.orgfolder.github.GitHubLink plugin="github-organization-folder@1.5">
       <image>logo</image>
-      <url>https://github.com/SymphonyOSF</url>
+      <url>https://github.com/marturi</url>
     </org.jenkinsci.plugins.orgfolder.github.GitHubLink>
   </actions>
-  <properties/>
+  <description></description>
+  <displayName>SymphonyOSF</displayName>
+  <properties>
+    <jenkins.branch.NoTriggerOrganizationFolderProperty>
+      <branches>PR-\d+</branches>
+    </jenkins.branch.NoTriggerOrganizationFolderProperty>
+  </properties>
   <views>
     <hudson.model.ListView>
       <owner class="jenkins.branch.OrganizationFolder" reference="../../.."/>
@@ -48,20 +55,17 @@
     <daysToKeep>0</daysToKeep>
     <numToKeep>0</numToKeep>
   </orphanedItemStrategy>
-  <triggers>
-    <com.cloudbees.hudson.plugins.folder.computed.PeriodicFolderTrigger plugin="cloudbees-folder@5.13">
-      <spec>H H * * *</spec>
-      <interval>86400000</interval>
-    </com.cloudbees.hudson.plugins.folder.computed.PeriodicFolderTrigger>
-  </triggers>
+  <triggers/>
   <navigators>
     <org.jenkinsci.plugins.github__branch__source.GitHubSCMNavigator plugin="github-branch-source@1.10">
-      <repoOwner>SymphonyOSF</repoOwner>
+      <repoOwner>marturi</repoOwner>
+      <scanCredentialsId>symphonyjenkinsauto</scanCredentialsId>
       <checkoutCredentialsId>SAME</checkoutCredentialsId>
-      <pattern>.*</pattern>
+      <pattern>SBE</pattern>
+      <includes>dev</includes>
       <buildOriginBranch>true</buildOriginBranch>
-      <buildOriginBranchWithPR>true</buildOriginBranchWithPR>
-      <buildOriginPRMerge>false</buildOriginPRMerge>
+      <buildOriginBranchWithPR>false</buildOriginBranchWithPR>
+      <buildOriginPRMerge>true</buildOriginPRMerge>
       <buildOriginPRHead>false</buildOriginPRHead>
       <buildForkPRMerge>true</buildForkPRMerge>
       <buildForkPRHead>false</buildForkPRHead>
