@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <jenkins.model.JenkinsLocationConfiguration>
-  <adminAddress>admin</adminAddress>
+  <adminAddress>address not configured yet &lt;nobody@nowhere&gt;</adminAddress>
   <jenkinsUrl>https://warpdrive.dev.symphony.com/</jenkinsUrl>
 </jenkins.model.JenkinsLocationConfiguration>

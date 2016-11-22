@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<github-plugin-configuration plugin="github@1.23.1">
+<github-plugin-configuration plugin="github@1.22.2">
   <configs>
     <github-server-config>
       <apiUrl>https://api.github.com</apiUrl>
