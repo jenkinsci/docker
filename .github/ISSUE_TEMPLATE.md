@@ -15,6 +15,8 @@ If after going through the previous checklist you still think you should create 
 
 ### Expected outcome
 
+### Have you tried a non-dockerized Jenkins and get the expected outcome?
+
 ### Output of `docker version`
 
 ### Other relevant information

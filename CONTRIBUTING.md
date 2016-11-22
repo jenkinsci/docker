@@ -11,5 +11,6 @@ If after going through the previous checklist you still think you should create 
 * Docker commands that you execute
 * Actual result
 * Expected outcome
+* Have you tried a non-dockerized Jenkins and get the expected outcome?
 * Output of `docker version`
 * Other relevant information
