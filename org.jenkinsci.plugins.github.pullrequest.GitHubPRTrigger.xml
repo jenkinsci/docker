@@ -1,0 +1,4 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<org.jenkinsci.plugins.github.pullrequest.GitHubPRTrigger_-DescriptorImpl plugin="github-pullrequest@0.1.0-rc11">
+  <publishedURL></publishedURL>
+</org.jenkinsci.plugins.github.pullrequest.GitHubPRTrigger_-DescriptorImpl>

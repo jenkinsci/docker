@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<org.jenkinsci.plugins.github.admin.GitHubHookRegisterProblemMonitor plugin="github@1.22.2">
+  <id>GitHubHookRegisterProblemMonitor</id>
+  <ignored>
+    <com.cloudbees.jenkins.GitHubRepositoryName>
+      <host>github.com</host>
+      <userName>marturi</userName>
+      <repositoryName>multibranch-demo</repositoryName>
+    </com.cloudbees.jenkins.GitHubRepositoryName>
+    <com.cloudbees.jenkins.GitHubRepositoryName>
+      <host>github.com</host>
+      <userName>cloudbeers</userName>
+      <repositoryName>multibranch-demo-lib</repositoryName>
+    </com.cloudbees.jenkins.GitHubRepositoryName>
+    <com.cloudbees.jenkins.GitHubRepositoryName>
+      <host>github.com</host>
+      <userName>SymphonyOSF</userName>
+      <repositoryName>OnPremContainerJmeter</repositoryName>
+    </com.cloudbees.jenkins.GitHubRepositoryName>
+  </ignored>
+</org.jenkinsci.plugins.github.admin.GitHubHookRegisterProblemMonitor>

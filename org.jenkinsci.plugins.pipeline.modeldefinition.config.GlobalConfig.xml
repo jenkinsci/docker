@@ -1,0 +1,4 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<org.jenkinsci.plugins.pipeline.modeldefinition.config.GlobalConfig plugin="pipeline-model-definition@0.5">
+  <dockerLabel></dockerLabel>
+</org.jenkinsci.plugins.pipeline.modeldefinition.config.GlobalConfig>
