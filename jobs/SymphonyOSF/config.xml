@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<jenkins.branch.OrganizationFolder plugin="branch-api@1.11">
+  <actions>
+    <org.jenkinsci.plugins.orgfolder.github.GitHubOrgAction plugin="github-organization-folder@1.5">
+      <url>https://github.com/SymphonyOSF</url>
+      <avatar>https://avatars.githubusercontent.com/u/8978267?v=3</avatar>
+    </org.jenkinsci.plugins.orgfolder.github.GitHubOrgAction>
+    <org.jenkinsci.plugins.orgfolder.github.GitHubLink plugin="github-organization-folder@1.5">
+      <image>logo</image>
+      <url>https://github.com/SymphonyOSF</url>
+    </org.jenkinsci.plugins.orgfolder.github.GitHubLink>
+  </actions>
+  <description></description>
+  <displayName>SymphonyOSF</displayName>
+  <properties>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.config.FolderConfig plugin="pipeline-model-definition@0.5">
+      <dockerLabel></dockerLabel>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.config.FolderConfig>
+    <jenkins.branch.NoTriggerOrganizationFolderProperty>
+      <branches>PR-\d+</branches>
+    </jenkins.branch.NoTriggerOrganizationFolderProperty>
+  </properties>
+  <views>
+    <hudson.model.ListView>
+      <owner class="jenkins.branch.OrganizationFolder" reference="../../.."/>
+      <name>Repositories</name>
+      <filterExecutors>false</filterExecutors>
+      <filterQueue>false</filterQueue>
+      <properties class="hudson.model.View$PropertyList"/>
+      <jobNames>
+        <comparator class="hudson.util.CaseInsensitiveComparator"/>
+      </jobNames>
+      <jobFilters/>
+      <columns>
+        <hudson.views.StatusColumn/>
+        <hudson.views.WeatherColumn/>
+        <org.jenkinsci.plugins.orgfolder.github.CustomNameJobColumn plugin="github-organization-folder@1.5">
+          <bundle>org.jenkinsci.plugins.orgfolder.github.Messages</bundle>
+          <key>ListViewColumn.Repository</key>
+        </org.jenkinsci.plugins.orgfolder.github.CustomNameJobColumn>
+        <org.jenkinsci.plugins.orgfolder.github.RepositoryDescriptionColumn plugin="github-organization-folder@1.5"/>
+      </columns>
+      <includeRegex>.*</includeRegex>
+      <recurse>false</recurse>
+    </hudson.model.ListView>
+  </views>
+  <viewsTabBar class="hudson.views.DefaultViewsTabBar"/>
+  <primaryView>Repositories</primaryView>
+  <healthMetrics>
+    <com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric plugin="cloudbees-folder@5.13"/>
+  </healthMetrics>
+  <icon class="org.jenkinsci.plugins.orgfolder.github.GitHubOrgIcon" plugin="github-organization-folder@1.5">
+    <folder class="jenkins.branch.OrganizationFolder" reference="../.."/>
+  </icon>
+  <orphanedItemStrategy class="com.cloudbees.hudson.plugins.folder.computed.DefaultOrphanedItemStrategy" plugin="cloudbees-folder@5.13">
+    <pruneDeadBranches>true</pruneDeadBranches>
+    <daysToKeep>0</daysToKeep>
+    <numToKeep>0</numToKeep>
+  </orphanedItemStrategy>
+  <triggers/>
+  <navigators>
+    <org.jenkinsci.plugins.github__branch__source.GitHubSCMNavigator plugin="github-branch-source@1.10">
+      <repoOwner>SymphonyOSF</repoOwner>
+      <scanCredentialsId>symphonyjenkinsauto</scanCredentialsId>
+      <checkoutCredentialsId>SAME</checkoutCredentialsId>
+      <pattern>WarpDriveDemo</pattern>
+      <includes>master</includes>
+      <buildOriginBranch>true</buildOriginBranch>
+      <buildOriginBranchWithPR>false</buildOriginBranchWithPR>
+      <buildOriginPRMerge>true</buildOriginPRMerge>
+      <buildOriginPRHead>false</buildOriginPRHead>
+      <buildForkPRMerge>true</buildForkPRMerge>
+      <buildForkPRHead>false</buildForkPRHead>
+    </org.jenkinsci.plugins.github__branch__source.GitHubSCMNavigator>
+  </navigators>
+  <projectFactories>
+    <org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProjectFactory plugin="workflow-multibranch@2.9"/>
+  </projectFactories>
+</jenkins.branch.OrganizationFolder>
