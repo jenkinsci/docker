@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<hudson.plugins.git.GitSCM_-DescriptorImpl plugin="git@3.0.0">
-  <generation>14</generation>
-  <globalConfigName>symphonyjenkinsauto</globalConfigName>
-  <globalConfigEmail>matthew.arturi@symphony.com</globalConfigEmail>
-  <createAccountBasedOnEmail>false</createAccountBasedOnEmail>
-</hudson.plugins.git.GitSCM_-DescriptorImpl>
