@@ -59,7 +59,7 @@
   <navigators>
     <org.jenkinsci.plugins.github__branch__source.GitHubSCMNavigator plugin="github-branch-source@1.10">
       <repoOwner>marturi</repoOwner>
-      <scanCredentialsId>symphonyjenkinsauto</scanCredentialsId>
+      <scanCredentialsId>eca9fefc-7514-4c44-bdb4-884d32c917e0</scanCredentialsId>
       <checkoutCredentialsId>SAME</checkoutCredentialsId>
       <pattern>SBE</pattern>
       <includes>dev</includes>
