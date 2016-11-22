@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <org.jenkinsci.plugins.workflow.libs.GlobalLibraries plugin="workflow-cps-global-lib@2.4">
   <libraries>
-  	<org.jenkinsci.plugins.workflow.libs.LibraryConfiguration>
+    <org.jenkinsci.plugins.workflow.libs.LibraryConfiguration>
       <name>sym-pipeline</name>
       <retriever class="org.jenkinsci.plugins.workflow.libs.SCMRetriever">
-        <scm class="hudson.plugins.git.GitSCM" plugin="git@3.0.0">
+        <scm class="hudson.plugins.git.GitSCM" plugin="git@3.0.1">
           <configVersion>2</configVersion>
           <userRemoteConfigs>
             <hudson.plugins.git.UserRemoteConfig>
