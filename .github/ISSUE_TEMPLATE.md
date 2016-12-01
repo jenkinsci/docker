@@ -8,9 +8,16 @@ Please note that only issues related to this Docker image will be addressed here
 
 If after going through the previous checklist you still think you should create an issue here please provide:
 
-* Docker commands that you execute
-* Actual result
-* Expected outcome
-* Have you tried a non-dockerized Jenkins and get the expected outcome?
-* Output of `docker version`
-* Other relevant information
+
+### Docker commands that you execute
+
+### Actual result
+
+### Expected outcome
+
+### Have you tried a non-dockerized Jenkins and get the expected outcome?
+
+### Output of `docker version`
+
+### Other relevant information
+
