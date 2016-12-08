@@ -49,10 +49,6 @@
     <id>802</id>
   </flow-owner>
   <flow-owner plugin="workflow-job@2.9">
-    <job>SymphonyOSF/SBE/PR-7744</job>
-    <id>1</id>
-  </flow-owner>
-  <flow-owner plugin="workflow-job@2.9">
     <job>CI_BUILD_TRIGGER</job>
     <id>998</id>
   </flow-owner>
