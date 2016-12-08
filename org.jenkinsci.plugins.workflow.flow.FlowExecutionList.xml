@@ -49,11 +49,7 @@
     <id>802</id>
   </flow-owner>
   <flow-owner plugin="workflow-job@2.9">
-    <job>CI_BUILD_TRIGGER</job>
-    <id>998</id>
-  </flow-owner>
-  <flow-owner plugin="workflow-job@2.9">
-    <job>SymphonyOSF/SBE/dev</job>
-    <id>1</id>
+    <job>PR_OPEN_TRIGGER</job>
+    <id>2189</id>
   </flow-owner>
 </list>
