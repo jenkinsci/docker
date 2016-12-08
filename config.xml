@@ -2,8 +2,8 @@
 <hudson>
   <disabledAdministrativeMonitors/>
   <version>2.19.2</version>
-  <numExecutors>2</numExecutors>
-  <mode>NORMAL</mode>
+  <numExecutors>1</numExecutors>
+  <mode>EXCLUSIVE</mode>
   <useSecurity>true</useSecurity>
   <authorizationStrategy class="hudson.security.FullControlOnceLoggedInAuthorizationStrategy">
     <denyAnonymousReadAccess>false</denyAnonymousReadAccess>
@@ -19,7 +19,60 @@
   <jdks/>
   <viewsTabBar class="hudson.views.DefaultViewsTabBar"/>
   <myViewsTabBar class="hudson.views.DefaultMyViewsTabBar"/>
-  <clouds/>
+  <clouds>
+    <org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud plugin="kubernetes@0.9">
+      <name>GCE K8s</name>
+      <templates>
+        <org.csanchez.jenkins.plugins.kubernetes.PodTemplate>
+          <name>jnlp-agent</name>
+          <instanceCap>2147483647</instanceCap>
+          <label></label>
+          <nodeSelector></nodeSelector>
+          <volumes>
+            <org.csanchez.jenkins.plugins.kubernetes.volumes.HostPathVolume>
+              <mountPath>/usr/bin/docker</mountPath>
+              <hostPath>/usr/bin/docker</hostPath>
+            </org.csanchez.jenkins.plugins.kubernetes.volumes.HostPathVolume>
+            <org.csanchez.jenkins.plugins.kubernetes.volumes.HostPathVolume>
+              <mountPath>/var/run/docker.sock</mountPath>
+              <hostPath>/var/run/docker.sock</hostPath>
+            </org.csanchez.jenkins.plugins.kubernetes.volumes.HostPathVolume>
+            <org.csanchez.jenkins.plugins.kubernetes.volumes.SecretVolume>
+              <mountPath>/usr/share/gce_service_account</mountPath>
+              <secretName>symphony-gce-dev</secretName>
+            </org.csanchez.jenkins.plugins.kubernetes.volumes.SecretVolume>
+          </volumes>
+          <containers>
+            <org.csanchez.jenkins.plugins.kubernetes.ContainerTemplate>
+              <name>jnlp-agent</name>
+              <image>us.gcr.io/symphony-gce-dev/sym/alpine-jenkins-k8s-slave:0.2</image>
+              <privileged>false</privileged>
+              <alwaysPullImage>false</alwaysPullImage>
+              <workingDir>/home/jenkins</workingDir>
+              <command></command>
+              <args>${computer.jnlpmac} ${computer.name}</args>
+              <ttyEnabled>false</ttyEnabled>
+              <resourceRequestCpu></resourceRequestCpu>
+              <resourceRequestMemory></resourceRequestMemory>
+              <resourceLimitCpu></resourceLimitCpu>
+              <resourceLimitMemory></resourceLimitMemory>
+              <envVars/>
+            </org.csanchez.jenkins.plugins.kubernetes.ContainerTemplate>
+          </containers>
+          <annotations/>
+          <imagePullSecrets/>
+        </org.csanchez.jenkins.plugins.kubernetes.PodTemplate>
+      </templates>
+      <serverUrl>https://kubernetes.default</serverUrl>
+      <skipTlsVerify>true</skipTlsVerify>
+      <namespace>jenkins</namespace>
+      <jenkinsUrl>http://jenkins-ui:8080/jenkins</jenkinsUrl>
+      <jenkinsTunnel>jenkins-discovery:50000</jenkinsTunnel>
+      <credentialsId>k8ssvc</credentialsId>
+      <containerCap>10</containerCap>
+      <retentionTimeout>5</retentionTimeout>
+    </org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud>
+  </clouds>
   <quietPeriod>5</quietPeriod>
   <scmCheckoutRetryCount>0</scmCheckoutRetryCount>
   <views>

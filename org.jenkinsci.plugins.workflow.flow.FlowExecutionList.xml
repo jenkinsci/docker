@@ -1,2 +1,63 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<list/>
+<list>
+  <flow-owner plugin="workflow-job@2.9">
+    <job>CI_BUILD_TRIGGER</job>
+    <id>381</id>
+  </flow-owner>
+  <flow-owner plugin="workflow-job@2.9">
+    <job>CI_BUILD_TRIGGER</job>
+    <id>382</id>
+  </flow-owner>
+  <flow-owner plugin="workflow-job@2.9">
+    <job>CI_BUILD_TRIGGER</job>
+    <id>383</id>
+  </flow-owner>
+  <flow-owner plugin="workflow-job@2.9">
+    <job>CI_BUILD_TRIGGER</job>
+    <id>384</id>
+  </flow-owner>
+  <flow-owner plugin="workflow-job@2.9">
+    <job>CI_BUILD_TRIGGER</job>
+    <id>385</id>
+  </flow-owner>
+  <flow-owner plugin="workflow-job@2.9">
+    <job>CI_BUILD_TRIGGER</job>
+    <id>386</id>
+  </flow-owner>
+  <flow-owner plugin="workflow-job@2.9">
+    <job>CI_BUILD_TRIGGER</job>
+    <id>387</id>
+  </flow-owner>
+  <flow-owner plugin="workflow-job@2.9">
+    <job>CI_BUILD_TRIGGER</job>
+    <id>388</id>
+  </flow-owner>
+  <flow-owner plugin="workflow-job@2.9">
+    <job>CI_BUILD_TRIGGER</job>
+    <id>389</id>
+  </flow-owner>
+  <flow-owner plugin="workflow-job@2.9">
+    <job>CI_BUILD_TRIGGER</job>
+    <id>800</id>
+  </flow-owner>
+  <flow-owner plugin="workflow-job@2.9">
+    <job>CI_BUILD_TRIGGER</job>
+    <id>801</id>
+  </flow-owner>
+  <flow-owner plugin="workflow-job@2.9">
+    <job>CI_BUILD_TRIGGER</job>
+    <id>802</id>
+  </flow-owner>
+  <flow-owner plugin="workflow-job@2.9">
+    <job>SymphonyOSF/SBE/PR-7744</job>
+    <id>1</id>
+  </flow-owner>
+  <flow-owner plugin="workflow-job@2.9">
+    <job>CI_BUILD_TRIGGER</job>
+    <id>998</id>
+  </flow-owner>
+  <flow-owner plugin="workflow-job@2.9">
+    <job>SymphonyOSF/SBE/dev</job>
+    <id>1</id>
+  </flow-owner>
+</list>

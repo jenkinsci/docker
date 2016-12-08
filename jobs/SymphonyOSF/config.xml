@@ -2,20 +2,19 @@
 <jenkins.branch.OrganizationFolder plugin="branch-api@1.11.1">
   <actions>
     <org.jenkinsci.plugins.orgfolder.github.GitHubOrgAction plugin="github-organization-folder@1.5">
-      <url>https://github.com/marturi</url>
-      <name>Matt Arturi</name>
-      <avatar>https://avatars.githubusercontent.com/u/174713?v=3</avatar>
+      <url>https://github.com/SymphonyOSF</url>
+      <avatar>https://avatars.githubusercontent.com/u/8978267?v=3</avatar>
     </org.jenkinsci.plugins.orgfolder.github.GitHubOrgAction>
     <org.jenkinsci.plugins.orgfolder.github.GitHubLink plugin="github-organization-folder@1.5">
       <image>logo</image>
-      <url>https://github.com/marturi</url>
+      <url>https://github.com/SymphonyOSF</url>
     </org.jenkinsci.plugins.orgfolder.github.GitHubLink>
   </actions>
   <description></description>
   <displayName>SymphonyOSF</displayName>
   <properties>
     <jenkins.branch.NoTriggerOrganizationFolderProperty>
-      <branches>PR-\d+</branches>
+      <branches></branches>
     </jenkins.branch.NoTriggerOrganizationFolderProperty>
   </properties>
   <views>
@@ -58,8 +57,8 @@
   <triggers/>
   <navigators>
     <org.jenkinsci.plugins.github__branch__source.GitHubSCMNavigator plugin="github-branch-source@1.10">
-      <repoOwner>marturi</repoOwner>
-      <scanCredentialsId>eca9fefc-7514-4c44-bdb4-884d32c917e0</scanCredentialsId>
+      <repoOwner>SymphonyOSF</repoOwner>
+      <scanCredentialsId>symphonyjenkinsauto</scanCredentialsId>
       <checkoutCredentialsId>SAME</checkoutCredentialsId>
       <pattern>SBE</pattern>
       <includes>dev</includes>

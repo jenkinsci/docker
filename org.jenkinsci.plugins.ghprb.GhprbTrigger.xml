@@ -8,7 +8,7 @@
   <cron>H/5 * * * *</cron>
   <useComments>false</useComments>
   <useDetailedComments>false</useDetailedComments>
-  <manageWebhooks>true</manageWebhooks>
+  <manageWebhooks>false</manageWebhooks>
   <unstableAs>FAILURE</unstableAs>
   <autoCloseFailedPullRequests>false</autoCloseFailedPullRequests>
   <displayBuildErrorsOnDownstreamBuilds>false</displayBuildErrorsOnDownstreamBuilds>

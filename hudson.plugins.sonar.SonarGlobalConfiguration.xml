@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<hudson.plugins.sonar.SonarGlobalConfiguration plugin="sonar@2.4.4">
+<hudson.plugins.sonar.SonarGlobalConfiguration plugin="sonar@2.5">
   <installations>
     <hudson.plugins.sonar.SonarInstallation>
       <name>SymphonySonar</name>
-      <serverUrl>https://sonar.symphony.com</serverUrl>
+      <serverUrl>http://sonar:9000/sonar</serverUrl>
       <serverVersion>5.3</serverVersion>
       <serverAuthenticationToken>d48153bfdb315557b4eecf11c48411d2f930786e</serverAuthenticationToken>
       <mojoVersion></mojoVersion>
@@ -21,5 +21,5 @@
       <sonarSecret>oSg8oHWAkMftIPTqPzsjgg==</sonarSecret>
     </hudson.plugins.sonar.SonarInstallation>
   </installations>
-  <buildWrapperEnabled>false</buildWrapperEnabled>
+  <buildWrapperEnabled>true</buildWrapperEnabled>
 </hudson.plugins.sonar.SonarGlobalConfiguration>
