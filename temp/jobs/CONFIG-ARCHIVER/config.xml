@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@3.0.1">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>https://github.com/SymphonyOSF/jenkins-docker.git</url>
+        <credentialsId>symphonyjenkinsauto</credentialsId>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>*/master</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions/>
+  </scm>
+  <assignedNode>master</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers>
+    <hudson.triggers.TimerTrigger>
+      <spec>H/15 * * * *</spec>
+    </hudson.triggers.TimerTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>if [ ! -d &apos;temp/&apos; ]; then
+	mkdir temp/
+fi
+
+if [ -f config.tar ]; then
+	rm config.tar
+fi
+
+cp $JENKINS_HOME/*.xml temp/
+
+if [ -f $JENKINS_HOME/jobs/SymphonyOSF/config.xml ]; then
+	mkdir -p temp/jobs/SymphonyOSF
+	cp $JENKINS_HOME/jobs/SymphonyOSF/config.xml temp/jobs/SymphonyOSF/
+fi
+
+if [ -f $JENKINS_HOME/jobs/CONFIG-ARCHIVER/config.xml ]; then
+	mkdir -p temp/jobs/CONFIG-ARCHIVER
+	cp $JENKINS_HOME/jobs/CONFIG-ARCHIVER/config.xml temp/jobs/CONFIG-ARCHIVER/
+fi
+
+#cd temp
+#tar cvf ../config.tar .
+#cd ..
+#rm -R temp
+
+git checkout master
+git add . &amp;&amp; git status
+git commit -a -m &quot;Synchronizing Jenkins config&quot;</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.plugins.git.GitPublisher plugin="git@3.0.1">
+      <configVersion>2</configVersion>
+      <pushMerge>false</pushMerge>
+      <pushOnlyIfSuccess>true</pushOnlyIfSuccess>
+      <forcePush>true</forcePush>
+      <branchesToPush>
+        <hudson.plugins.git.GitPublisher_-BranchToPush>
+          <targetRepoName>origin</targetRepoName>
+          <branchName>master</branchName>
+        </hudson.plugins.git.GitPublisher_-BranchToPush>
+      </branchesToPush>
+    </hudson.plugins.git.GitPublisher>
+  </publishers>
+  <buildWrappers/>
+</project>

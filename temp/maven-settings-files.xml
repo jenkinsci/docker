@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<org.jenkinsci.plugins.configfiles.maven.DefaultMavenSettingsProvider plugin="config-file-provider@2.13">
+  <configs>
+    <entry>
+      <string>SymphonyGlobalMavenSettings</string>
+      <org.jenkinsci.plugins.configfiles.maven.MavenSettingsConfig>
+        <id>SymphonyGlobalMavenSettings</id>
+        <name>SymphonyGlobalMavenSettings</name>
+        <comment>user settings</comment>
+        <content>
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;settings xsi:schemaLocation=&quot;http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd&quot; xmlns=&quot;http://maven.apache.org/SETTINGS/1.1.0&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;&gt;
+  &lt;servers&gt;
+    &lt;server&gt;
+      &lt;username&gt;services&lt;/username&gt;
+      &lt;password&gt;AP7J6JxNf4eHv6ctNsSKNgHTK8n&lt;/password&gt;
+      &lt;id&gt;symphony&lt;/id&gt;
+    &lt;/server&gt;
+    &lt;server&gt;
+      &lt;username&gt;services&lt;/username&gt;
+      &lt;password&gt;AP7J6JxNf4eHv6ctNsSKNgHTK8n&lt;/password&gt;
+      &lt;id&gt;snapshots&lt;/id&gt;
+    &lt;/server&gt;
+  &lt;/servers&gt;
+&lt;/settings&gt;
+</content>
+        <providerId>org.jenkinsci.plugins.configfiles.maven.MavenSettingsConfig</providerId>
+        <serverCredentialMappings/>
+        <isReplaceAll>true</isReplaceAll>
+      </org.jenkinsci.plugins.configfiles.maven.MavenSettingsConfig>
+    </entry>
+  </configs>
+</org.jenkinsci.plugins.configfiles.maven.DefaultMavenSettingsProvider>
