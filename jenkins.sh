@@ -5,14 +5,6 @@ touch "${COPY_REFERENCE_FILE_LOG}" || { echo "Can not write to ${COPY_REFERENCE_
 echo "--- Copying files at $(date)" >> "$COPY_REFERENCE_FILE_LOG"
 find /usr/share/jenkins/ref/ -type f -exec bash -c '. /usr/local/bin/jenkins-support; for arg; do copy_reference_file "$arg"; done' _ {} +
 
-mv /tmp/org.jenkinsci.plugins.workflow.libs.GlobalLibraries.xml $JENKINS_HOME/
-mv /tmp/hudson.tasks.Maven.xml $JENKINS_HOME/
-mv /tmp/hudson.plugins.sonar.SonarGlobalConfiguration.xml $JENKINS_HOME/
-mv /tmp/hudson.plugins.sonar.SonarRunnerInstallation.xml $JENKINS_HOME/
-mv /tmp/github-plugin-configuration.xml $JENKINS_HOME/
-mv /tmp/maven-settings-files.xml $JENKINS_HOME/
-mv /tmp/jenkins.model.JenkinsLocationConfiguration.xml $JENKINS_HOME/
-
 # if `docker run` first argument start with `--` the user is passing jenkins launcher arguments
 if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
 

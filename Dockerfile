@@ -34,13 +34,6 @@ RUN curl -fsSL https://github.com/krallin/tini/releases/download/v${TINI_VERSION
 COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy
 COPY createCredentials.groovy /usr/share/jenkins/ref/init.groovy.d/createCredentials.groovy
 COPY security.groovy /usr/share/jenkins/ref/init.groovy.d/security.groovy
-COPY org.jenkinsci.plugins.workflow.libs.GlobalLibraries.xml /tmp/org.jenkinsci.plugins.workflow.libs.GlobalLibraries.xml
-COPY hudson.tasks.Maven.xml /tmp/hudson.tasks.Maven.xml
-COPY hudson.plugins.sonar.SonarGlobalConfiguration.xml /tmp/hudson.plugins.sonar.SonarGlobalConfiguration.xml
-COPY hudson.plugins.sonar.SonarRunnerInstallation.xml /tmp/hudson.plugins.sonar.SonarRunnerInstallation.xml
-COPY github-plugin-configuration.xml /tmp/github-plugin-configuration.xml
-COPY maven-settings-files.xml /tmp/maven-settings-files.xml
-COPY jenkins.model.JenkinsLocationConfiguration.xml /tmp/jenkins.model.JenkinsLocationConfiguration.xml
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
