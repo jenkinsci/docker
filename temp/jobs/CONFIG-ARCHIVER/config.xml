@@ -39,6 +39,7 @@
 fi
 
 if [ -f config.tar ]; then
+	echo &apos;removing&apos;
 	rm config.tar
 fi
 
