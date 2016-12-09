@@ -48,4 +48,8 @@
     <job>CI_BUILD_TRIGGER</job>
     <id>802</id>
   </flow-owner>
+  <flow-owner plugin="workflow-job@2.9">
+    <job>PR_OPEN_TRIGGER</job>
+    <id>2215</id>
+  </flow-owner>
 </list>
