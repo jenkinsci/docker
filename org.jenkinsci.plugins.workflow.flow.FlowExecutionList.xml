@@ -48,4 +48,24 @@
     <job>CI_BUILD_TRIGGER</job>
     <id>802</id>
   </flow-owner>
+  <flow-owner plugin="workflow-job@2.9">
+    <job>SymphonyOSF/SBE/PR-7740</job>
+    <id>2</id>
+  </flow-owner>
+  <flow-owner plugin="workflow-job@2.9">
+    <job>SymphonyOSF/SBE/PR-7743</job>
+    <id>2</id>
+  </flow-owner>
+  <flow-owner plugin="workflow-job@2.9">
+    <job>CI_BUILD_TRIGGER</job>
+    <id>1019</id>
+  </flow-owner>
+  <flow-owner plugin="workflow-job@2.9">
+    <job>SymphonyOSF/SBE/dev</job>
+    <id>2</id>
+  </flow-owner>
+  <flow-owner plugin="workflow-job@2.9">
+    <job>SymphonyOSF/SBE/dev</job>
+    <id>3</id>
+  </flow-owner>
 </list>
