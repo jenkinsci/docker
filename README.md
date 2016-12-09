@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Official Jenkins Docker image
 
 The Jenkins Continuous Integration and Delivery server.
@@ -219,3 +220,6 @@ Bats can be easily installed with `brew install bats` on OS X
 # Questions?
 
 Jump on irc.freenode.net and the #jenkins room. Ask!
+=======
+# warp-drive-jenkins-config
+>>>>>>> 2b9bccfdd6a6bbb4967ca2800e6e495bb22ced87
