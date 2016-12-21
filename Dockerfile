@@ -1,6 +1,6 @@
 FROM openjdk:8-jdk-alpine
 
-RUN apk add --no-cache git openssh-client curl unzip bash ttf-dejavu coreutils
+RUN apk add --no-cache git openssh-client curl unzip bash ttf-dejavu coreutils tini=0.9.0-r1
 
 ENV JENKINS_HOME /var/jenkins_home
 ENV JENKINS_SLAVE_AGENT_PORT 50000
@@ -24,13 +24,6 @@ VOLUME /var/jenkins_home
 # to set on a fresh new installation. Use it to bundle additional plugins 
 # or config file with your custom jenkins Docker image.
 RUN mkdir -p /usr/share/jenkins/ref/init.groovy.d
-
-ENV TINI_VERSION 0.9.0
-ENV TINI_SHA fa23d1e20732501c3bb8eeeca423c89ac80ed452
-
-# Use tini as subreaper in Docker container to adopt zombie processes 
-RUN curl -fsSL https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini-static -o /bin/tini && chmod +x /bin/tini \
-  && echo "$TINI_SHA  /bin/tini" | sha1sum -c -
 
 COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy
 
@@ -64,7 +57,7 @@ USER ${user}
 
 COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
-ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
+ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
 # from a derived Dockerfile, can use `RUN plugins.sh active.txt` to setup /usr/share/jenkins/ref/plugins from a support bundle
 COPY plugins.sh /usr/local/bin/plugins.sh
