@@ -68,9 +68,9 @@ load test_helpers
   # Image contains maven-plugin 2.7.1 and ant-plugin 1.3
   run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-install-plugins true"
   assert_success
-  run bash -c "unzip -p $work/plugins/maven-plugin.jpi META-INF/MANIFEST.MF | tr -d '\r'"
+  run unzip_manifest maven-plugin.jpi $work
   assert_line 'Plugin-Version: 2.7.1'
-  run bash -c "unzip -p $work/plugins/ant.jpi META-INF/MANIFEST.MF | tr -d '\r'"
+  run unzip_manifest ant.jpi $work
   assert_line 'Plugin-Version: 1.3'
 
   # Upgrade to new image with different plugins
@@ -79,11 +79,11 @@ load test_helpers
   # Images contains maven-plugin 2.13 and ant-plugin 1.2
   run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-upgrade-plugins true"
   assert_success
-  run bash -c "unzip -p $work/plugins/maven-plugin.jpi META-INF/MANIFEST.MF | tr -d '\r'"
+  run unzip_manifest maven-plugin.jpi $work
   assert_success
   # Should be updated
   assert_line 'Plugin-Version: 2.13'
-  run bash -c "unzip -p $work/plugins/ant.jpi META-INF/MANIFEST.MF | tr -d '\r'"
+  run unzip_manifest ant.jpi $work
   # 1.2 is older than the existing 1.3, so keep 1.3
   assert_line 'Plugin-Version: 1.3'
 }
@@ -100,14 +100,14 @@ load test_helpers
   # Image contains maven-plugin 2.7.1 and ant-plugin 1.3
   run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-install-plugins curl --connect-timeout 20 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L https://updates.jenkins.io/download/plugins/maven-plugin/2.12.1/maven-plugin.hpi -o /var/jenkins_home/plugins/maven-plugin.jpi"
   assert_success
-  run bash -c "unzip -p $work/plugins/maven-plugin.jpi META-INF/MANIFEST.MF | tr -d '\r'"
+  run unzip_manifest maven-plugin.jpi $work
   assert_line 'Plugin-Version: 2.12.1'
   run docker build -t $SUT_IMAGE-upgrade-plugins $BATS_TEST_DIRNAME/upgrade-plugins
   assert_success
   # Images contains maven-plugin 2.13 and ant-plugin 1.2
   run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-upgrade-plugins true"
   assert_success
-  run bash -c "unzip -p $work/plugins/maven-plugin.jpi META-INF/MANIFEST.MF | tr -d '\r'"
+  run unzip_manifest maven-plugin.jpi $work
   assert_success
   # Shouldn't be updated
   refute_line 'Plugin-Version: 2.13'

@@ -77,3 +77,9 @@ function cleanup {
     docker kill "$1" &>/dev/null ||:
     docker rm -fv "$1" &>/dev/null ||:
 }
+
+function unzip_manifest {
+    local plugin=$1
+    local work=$2
+    bash -c "docker run --rm -v $work:/var/jenkins_home --entrypoint unzip $SUT_IMAGE -p /var/jenkins_home/plugins/$plugin META-INF/MANIFEST.MF | tr -d '\r'"
+}
