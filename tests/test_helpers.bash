@@ -3,7 +3,6 @@
 # check dependencies
 (
     type docker &>/dev/null || ( echo "docker is not available"; exit 1 )
-    type unzip &>/dev/null || ( echo "unzip is not available"; exit 1 )
     type curl &>/dev/null || ( echo "curl is not available"; exit 1 )
 )>&2
 
@@ -76,4 +75,10 @@ function test_url {
 function cleanup {
     docker kill "$1" &>/dev/null ||:
     docker rm -fv "$1" &>/dev/null ||:
+}
+
+function unzip_manifest {
+    local plugin=$1
+    local work=$2
+    bash -c "docker run --rm -v $work:/var/jenkins_home --entrypoint unzip $SUT_IMAGE -p /var/jenkins_home/plugins/$plugin META-INF/MANIFEST.MF | tr -d '\r'"
 }
