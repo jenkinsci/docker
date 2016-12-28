@@ -153,7 +153,7 @@ Use plugin artifact ID, whithout `-plugin` extension, and append the version if 
 Dependencies that are already included in the Jenkins war will only be downloaded if their required version is newer than the one included.
 
 ```
-FROM jenkins
+FROM jenkinsci/jenkins
 RUN /usr/local/bin/install-plugins.sh docker-slaves github-branch-source:1.8
 ```
 
