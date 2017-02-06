@@ -21,7 +21,7 @@ node('docker') {
 
     if (infra.isTrusted()) {
         stage('Publish') {
-            sh './weekly.sh'
+            sh './publish.sh'
         }
     }
 }
