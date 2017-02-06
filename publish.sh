@@ -59,15 +59,21 @@ publish() {
                  --build-arg "JENKINS_SHA=$sha" \
                  --tag "jenkinsci/jenkins:${tag}" ${build_opts} .
 
-    docker-tag "${tag}" "latest${variant}"
-
     docker push "jenkinsci/jenkins:${tag}"
-    docker push "jenkinsci/jenkins:latest${variant}"
+
+    # push latest (for master) or the name of the branch (for other branches)
+    if [ -z "${variant}" ]; then
+        docker-tag "${tag}" "latest"
+        docker push "jenkinsci/jenkins:latest"
+    else
+        docker-tag "${tag}" "${variant#-}"
+        docker push "jenkinsci/jenkins:${variant#-}"
+    fi
 
     # Update lts tag
     if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         echo "Updating lts${variant} tag to ${tag}"
-        docker-tag "$version" "lts${variant}"
+        docker-tag "${tag}" "lts${variant}"
         docker push "jenkinsci/jenkins:lts${variant}"
     fi
 }
