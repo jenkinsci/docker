@@ -1,15 +1,27 @@
+#!/usr/bin/env groovy
+
 node('docker') {
-  deleteDir()
-  stage 'Checkout'
-  checkout scm
+    deleteDir()
 
-  stage 'Build'
-  docker.build('jenkins')
+    stage('Checkout') {
+        checkout scm
+    }
 
-  stage 'Test'
-  sh """
-  git submodule update --init --recursive
-  git clone https://github.com/sstephenson/bats.git
-  bats/bin/bats tests
-  """
+    stage('Build') {
+        docker.build('jenkins')
+    }
+
+    stage('Test') {
+        sh """
+        git submodule update --init --recursive
+        git clone https://github.com/sstephenson/bats.git
+        bats/bin/bats tests
+        """
+    }
+
+    if (infra.isTrusted()) {
+        stage('Publish') {
+            sh './weekly.sh'
+        }
+    }
 }
