@@ -24,8 +24,17 @@ docker-tag() {
     fi
 }
 
+get-variant() {
+    local branch; branch=$(git rev-parse --abbrev-ref HEAD)
+    case "$branch" in
+        master) echo "" ;;
+        *) echo "-${branch}" ;;
+    esac
+}
+
 get-published-versions() {
-    curl -q -fsSL https://registry.hub.docker.com/v1/repositories/jenkinsci/jenkins/tags | egrep -o '"name": "[0-9\.]+"' | egrep -o '[0-9\.]+'
+    local regex="[0-9\.]+[a-z\-]*"
+    curl -q -fsSL https://registry.hub.docker.com/v1/repositories/jenkinsci/jenkins/tags | egrep -o "\"name\": \"${regex}\"" | egrep -o "${regex}"
 }
 
 get-latest-versions() {
@@ -34,6 +43,8 @@ get-latest-versions() {
 
 publish() {
     local version=$1
+    local variant=$2
+    local tag="${version}${variant}"
     local sha
     local build_opts="--no-cache --pull"
 
@@ -41,29 +52,32 @@ publish() {
 
     docker build --build-arg "JENKINS_VERSION=$version" \
                  --build-arg "JENKINS_SHA=$sha" \
-                 --tag "jenkinsci/jenkins:$version" ${build_opts} .
+                 --tag "jenkinsci/jenkins:${tag}" ${build_opts} .
 
-    docker-tag $version latest
+    docker-tag "${tag}" "latest${variant}"
 
-    docker push "jenkinsci/jenkins:$version"
-    docker push "jenkinsci/jenkins:latest"
+    docker push "jenkinsci/jenkins:${tag}"
+    docker push "jenkinsci/jenkins:latest${variant}"
 
     # Update lts tag
     if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-        echo "Updating lts tag to $version"
-        docker-tag $version lts
-        docker push "jenkinsci/jenkins:lts"
+        echo "Updating lts${variant} tag to ${tag}"
+        docker-tag "$version" "lts${variant}"
+        docker push "jenkinsci/jenkins:lts${variant}"
     fi
 }
+
+variant=$(get-variant)
 
 published_versions="$(get-published-versions)"
 
 for version in $(get-latest-versions); do
-    if echo "${published_versions}" | grep -q "^${version}$"; then
-        echo "Version is already published: $version"
+    tag="${version}${variant}"
+    if echo "${published_versions}" | grep -q "^${tag}$"; then
+        echo "Tag is already published: $tag"
     else
-        echo "Publishing version: $version"
-        publish $version
+        echo "Publishing tag: $tag"
+        publish "$version" "$variant"
     fi
 done
 
