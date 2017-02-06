@@ -39,8 +39,8 @@ publish() {
 
     sha=$(curl -q -fsSL "http://repo.jenkins-ci.org/simple/releases/org/jenkins-ci/main/jenkins-war/${version}/jenkins-war-${version}.war.sha1")
 
-    docker build --build-arg "version=$version" \
-                 --build-arg "sha=$sha" \
+    docker build --build-arg "JENKINS_VERSION=$version" \
+                 --build-arg "JENKINS_SHA=$sha" \
                  --tag "jenkinsci/jenkins:$version" ${build_opts} .
 
     docker-tag $version latest
@@ -49,7 +49,7 @@ publish() {
     docker push "jenkinsci/jenkins:latest"
 
     # Update lts tag
-    if [ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]; then
+    if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         echo "Updating lts tag to $version"
         docker-tag $version lts
         docker push "jenkinsci/jenkins:lts"
