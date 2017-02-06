@@ -18,4 +18,10 @@ node('docker') {
         bats/bin/bats tests
         """
     }
+
+    if (infra.isTrusted()) {
+        stage('Publish') {
+            sh './weekly.sh'
+        }
+    }
 }
