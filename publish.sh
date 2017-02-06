@@ -26,7 +26,7 @@ docker-tag() {
 
 get-variant() {
     local branch
-    branch=$(git show-ref --heads | grep $(git rev-list -n 1 HEAD) | sed -e 's#.*/heads/##')
+    branch=$(git show-ref | grep $(git rev-list -n 1 HEAD) | tail -1 | rev | cut -d/ -f 1 | rev)
     if [ -z "$branch" ]; then
         >&2 echo "Could not get the current branch name for commit, not in a branch?: $(git rev-list -n 1 HEAD)"
         return 1
