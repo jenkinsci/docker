@@ -39,7 +39,7 @@ get-variant() {
 
 get-published-versions() {
     local regex="[0-9\.]+[a-z\-]*"
-    curl -q -fsSL https://registry.hub.docker.com/v1/repositories/jenkinsci/jenkins/tags | egrep -o "\"name\": \"${regex}\"" | egrep -o "${regex}"
+    curl -q -fsSL https://registry.hub.docker.com/v2/repositories/jenkinsci/jenkins/tags?page_size=30 | egrep -o "\"name\": \"${regex}\"" | egrep -o "${regex}"
 }
 
 get-latest-versions() {
@@ -60,28 +60,39 @@ publish() {
                  --tag "jenkinsci/jenkins:${tag}" ${build_opts} .
 
     docker push "jenkinsci/jenkins:${tag}"
+}
+
+publish-latest() {
+    local tag=$1
+    local variant=$2
 
     # push latest (for master) or the name of the branch (for other branches)
     if [ -z "${variant}" ]; then
+        echo "Updating latest tag to ${tag}"
         docker-tag "${tag}" "latest"
         docker push "jenkinsci/jenkins:latest"
     else
+        echo "Updating ${variant#-} tag to ${tag}"
         docker-tag "${tag}" "${variant#-}"
         docker push "jenkinsci/jenkins:${variant#-}"
     fi
-
-    # Update lts tag
-    if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-        echo "Updating lts${variant} tag to ${tag}"
-        docker-tag "${tag}" "lts${variant}"
-        docker push "jenkinsci/jenkins:lts${variant}"
-    fi
 }
+
+publish-lts() {
+    local tag=$1
+    local variant=$2
+    echo "Updating lts${variant} tag to ${lts_tag}"
+    docker-tag "${lts_tag}" "lts${variant}"
+    docker push "jenkinsci/jenkins:lts${variant}"
+}
+
 
 variant=$(get-variant)
 
 published_versions="$(get-published-versions)"
 
+lts_tag=""
+tag=""
 for version in $(get-latest-versions); do
     tag="${version}${variant}"
     if echo "${published_versions}" | grep -q "^${tag}$"; then
@@ -90,6 +101,14 @@ for version in $(get-latest-versions); do
         echo "Publishing tag: $tag"
         publish "$version" "$variant"
     fi
+
+    # Update lts tag
+    if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        lts_tag="${tag}"
+    fi
 done
 
-
+publish-latest "${tag}" "${variant}"
+if [ -n "${lts_tag}" ]; then
+    publish-lts "${tag}" "${variant}"
+fi
