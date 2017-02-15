@@ -1,6 +1,8 @@
 #!/bin/bash -eu
 
 # Publish any versions of the docker image not yet pushed to jenkinsci/jenkins
+# Arguments:
+#   -n dry run, do not build or publish images
 
 set -o pipefail
 
@@ -37,9 +39,29 @@ get-variant() {
     esac
 }
 
-get-published-versions() {
-    local regex="[0-9\.]+[a-z\-]*"
-    curl -q -fsSL https://registry.hub.docker.com/v2/repositories/jenkinsci/jenkins/tags?page_size=30 | egrep -o "\"name\": \"${regex}\"" | egrep -o "${regex}"
+login-token() {
+    # could use jq .token
+    curl -q -sSL https://auth.docker.io/token\?service\=registry.docker.io\&scope\=repository:jenkinsci/jenkins:pull | grep -o '"token":"[^"]*"' | cut -d':' -f 2 | xargs echo
+}
+
+is-published() {
+    get-manifest "$1" > /dev/null
+}
+
+get-manifest() {
+    local tag=$1
+    curl -q -fsSL -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/jenkinsci/jenkins/manifests/$tag"
+}
+
+get-digest() {
+    #get-manifest "$1" | jq .config.digest
+    get-manifest "$1" | grep -A 10 -o '"config".*' | grep digest | head -1 | cut -d':' -f 2,3 | xargs echo
+}
+
+compare-digest() {
+    local tag1=$1
+    local tag2=$2
+    [ "$(get-digest ${tag1})" == "$(get-digest ${tag2})" ]
 }
 
 get-latest-versions() {
@@ -62,53 +84,69 @@ publish() {
     docker push "jenkinsci/jenkins:${tag}"
 }
 
+tag-and-push() {
+    local source=$1
+    local target=$2
+    if compare-digest "${source}" "${target}"; then
+        echo "Images ${source} and ${target} are already the same, not updating tags"
+    else
+        echo "Creating tag ${target} pointing to ${source}"
+        if [ ! "$dry_run" = true ]; then
+            docker-tag "jenkinsci/jenkins:${source}" "jenkinsci/jenkins:${target}"
+            docker push "jenkinsci/jenkins:${source}"
+        fi
+    fi
+}
+
 publish-latest() {
-    local tag=$1
+    local version=$1
     local variant=$2
 
     # push latest (for master) or the name of the branch (for other branches)
     if [ -z "${variant}" ]; then
-        echo "Updating latest tag to ${tag}"
-        docker-tag "${tag}" "latest"
-        docker push "jenkinsci/jenkins:latest"
+        tag-and-push "${version}${variant}" "latest"
     else
-        echo "Updating ${variant#-} tag to ${tag}"
-        docker-tag "${tag}" "${variant#-}"
-        docker push "jenkinsci/jenkins:${variant#-}"
+        tag-and-push "${version}${variant}" "${variant#-}"
     fi
 }
 
 publish-lts() {
-    local tag=$1
+    local version=$1
     local variant=$2
-    echo "Updating lts${variant} tag to ${lts_tag}"
-    docker-tag "${lts_tag}" "lts${variant}"
-    docker push "jenkinsci/jenkins:lts${variant}"
+    tag-and-push "${version}" "lts${variant}"
 }
 
+dry_run=false
+if [ "-n" == "${1:-}" ]; then
+    dry_run=true
+fi
+if [ "$dry_run" = true ]; then
+    echo "Dry run, will not build or publish images"
+fi
+
+TOKEN=$(login-token)
 
 variant=$(get-variant)
 
-published_versions="$(get-published-versions)"
-
-lts_tag=""
-tag=""
+lts_version=""
+version=""
 for version in $(get-latest-versions); do
-    tag="${version}${variant}"
-    if echo "${published_versions}" | grep -q "^${tag}$"; then
-        echo "Tag is already published: $tag"
+    if is-published "$version$variant"; then
+        echo "Tag is already published: $version$variant"
     else
-        echo "Publishing tag: $tag"
-        publish "$version" "$variant"
+        echo "Publishing version: $version$variant"
+        if [ ! "$dry_run" = true ]; then
+            publish "$version" "$variant"
+        fi
     fi
 
     # Update lts tag
     if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-        lts_tag="${tag}"
+        lts_version="${version}"
     fi
 done
 
-publish-latest "${tag}" "${variant}"
-if [ -n "${lts_tag}" ]; then
-    publish-lts "${tag}" "${variant}"
+publish-latest "${version}" "${variant}"
+if [ -n "${lts_version}" ]; then
+    publish-lts "${lts_version}" "${variant}"
 fi
