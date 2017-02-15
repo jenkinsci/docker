@@ -1,6 +1,8 @@
 #!/bin/bash -eu
 
 # Publish any versions of the docker image not yet pushed to jenkinsci/jenkins
+# Arguments:
+#   -n dry run, do not build or publish images
 
 set -o pipefail
 
@@ -69,12 +71,16 @@ publish-latest() {
     # push latest (for master) or the name of the branch (for other branches)
     if [ -z "${variant}" ]; then
         echo "Updating latest tag to ${tag}"
-        docker-tag "${tag}" "latest"
-        docker push "jenkinsci/jenkins:latest"
+        if [ ! "$dry_run" = true ]; then
+            docker-tag "${tag}" "latest"
+            docker push "jenkinsci/jenkins:latest"
+        fi
     else
         echo "Updating ${variant#-} tag to ${tag}"
-        docker-tag "${tag}" "${variant#-}"
-        docker push "jenkinsci/jenkins:${variant#-}"
+        if [ ! "$dry_run" = true ]; then
+            docker-tag "${tag}" "${variant#-}"
+            docker push "jenkinsci/jenkins:${variant#-}"
+        fi
     fi
 }
 
@@ -82,10 +88,19 @@ publish-lts() {
     local tag=$1
     local variant=$2
     echo "Updating lts${variant} tag to ${lts_tag}"
-    docker-tag "${lts_tag}" "lts${variant}"
-    docker push "jenkinsci/jenkins:lts${variant}"
+    if [ ! "$dry_run" = true ]; then
+        docker-tag "${lts_tag}" "lts${variant}"
+        docker push "jenkinsci/jenkins:lts${variant}"
+    fi
 }
 
+dry_run=false
+if [ "-n" == "${1:-}" ]; then
+    dry_run=true
+fi
+if [ "$dry_run" = true ]; then
+    echo "Dry run, will not build or publish images"
+fi
 
 variant=$(get-variant)
 
@@ -99,7 +114,9 @@ for version in $(get-latest-versions); do
         echo "Tag is already published: $tag"
     else
         echo "Publishing tag: $tag"
-        publish "$version" "$variant"
+        if [ ! "$dry_run" = true ]; then
+            publish "$version" "$variant"
+        fi
     fi
 
     # Update lts tag
