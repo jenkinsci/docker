@@ -72,7 +72,7 @@ COPY install-plugins.sh /usr/local/bin/install-plugins.sh
 COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
 
-RUN /usr/local/bin/install-plugins.sh config-file-provider credentials ssh-credentials ssh-agent ssh-slaves git-client git github github-api github-oauth google-oauth-plugin kubernetes scm-api postbuild-task greenballs credentials-binding pipeline-utility-steps workflow-aggregator github-organization-folder jira sonar:2.44
+RUN /usr/local/bin/install-plugins.sh config-file-provider credentials ssh-credentials ssh-agent ssh-slaves git-client git github github-api github-oauth google-oauth-plugin kubernetes scm-api postbuild-task greenballs credentials-binding pipeline-utility-steps workflow-aggregator github-organization-folder jira sonar:2.44 matrix-project
 
 ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
