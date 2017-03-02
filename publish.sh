@@ -45,7 +45,7 @@ login-token() {
 }
 
 is-published() {
-    get-manifest "$1" > /dev/null
+    get-manifest "$1" &> /dev/null
 }
 
 get-manifest() {
@@ -56,12 +56,6 @@ get-manifest() {
 get-digest() {
     #get-manifest "$1" | jq .config.digest
     get-manifest "$1" | grep -A 10 -o '"config".*' | grep digest | head -1 | cut -d':' -f 2,3 | xargs echo
-}
-
-compare-digest() {
-    local tag1=$1
-    local tag2=$2
-    [ "$(get-digest ${tag1})" == "$(get-digest ${tag2})" ]
 }
 
 get-latest-versions() {
@@ -87,8 +81,10 @@ publish() {
 tag-and-push() {
     local source=$1
     local target=$2
-    if compare-digest "${source}" "${target}"; then
-        echo "Images ${source} and ${target} are already the same, not updating tags"
+    local digest_source; digest_source=$(get-digest ${tag1})
+    local digest_target; digest_target=$(get-digest ${tag2})
+    if [ "$digest_source" == "$digest_target" ]; then
+        echo "Images ${source} [$digest_source] and ${target} [$digest_target] are already the same, not updating tags"
     else
         echo "Creating tag ${target} pointing to ${source}"
         if [ ! "$dry_run" = true ]; then
