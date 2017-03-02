@@ -138,7 +138,8 @@ FROM jenkins
 # if we want to install via apt
 USER root
 RUN apt-get update && apt-get install -y ruby make more-thing-here
-USER jenkins # drop back to the regular jenkins user - good practice
+# drop back to the regular jenkins user - good practice
+USER jenkins
 ```
 
 In such a derived image, you can customize your jenkins instance with hook scripts or additional plugins.
