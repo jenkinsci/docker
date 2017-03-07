@@ -19,6 +19,8 @@ docker-tag() {
     local from="jenkinsci/jenkins:$1"
     local to="jenkinsci/jenkins:$2"
     local out
+
+    docker pull "$from"
     if out=$(docker tag -f "$from" "$to" 2>&1); then
         echo "$out"
     else
