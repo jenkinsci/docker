@@ -98,11 +98,15 @@ tag-and-push() {
     local digest_target
 
     # if tag doesn't exist yet, ie. dry run
-    if ! digest_source=$(get-digest "${source}" 2>/dev/null); then
+    if ! digest_source=$(get-digest "${source}" 2>&1); then
+        echo "Unable to get digest for ${source}: ${digest_source}"
         digest_source=""
     fi
-    digest_target=$(get-digest "${target}")
-    if [ "$digest_source" == "$digest_target" ]; then
+    if ! digest_target=$(get-digest "${target}" 2>&1); then
+        echo "Unable to get digest for ${target}: ${digest_target}"
+        digest_target=""
+    fi
+    if [ "$digest_source" == "$digest_target" ] && [ -n "${digest_target}" ]; then
         echo "Images ${source} [$digest_source] and ${target} [$digest_target] are already the same, not updating tags"
     else
         echo "Creating tag ${target} pointing to ${source}"
