@@ -69,7 +69,12 @@ publish() {
     local sha
     local build_opts="--no-cache --pull"
 
-    sha=$(curl -q -fsSL "http://repo.jenkins-ci.org/simple/releases/org/jenkins-ci/main/jenkins-war/${version}/jenkins-war-${version}.war.sha1")
+    local dir=war
+    # lts is in a different dir
+    if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        dir=war-stable
+    fi
+    sha=$(curl -q -fsSL "http://mirrors.jenkins.io/${dir}/${version}/jenkins.war.sha256" | cut -d' ' -f 1)
 
     docker build --build-arg "JENKINS_VERSION=$version" \
                  --build-arg "JENKINS_SHA=$sha" \
