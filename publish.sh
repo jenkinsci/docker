@@ -81,8 +81,8 @@ publish() {
 tag-and-push() {
     local source=$1
     local target=$2
-    local digest_source; digest_source=$(get-digest ${tag1})
-    local digest_target; digest_target=$(get-digest ${tag2})
+    local digest_source; digest_source=$(get-digest "${source}")
+    local digest_target; digest_target=$(get-digest "${target}")
     if [ "$digest_source" == "$digest_target" ]; then
         echo "Images ${source} [$digest_source] and ${target} [$digest_target] are already the same, not updating tags"
     else
