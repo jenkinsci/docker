@@ -132,7 +132,10 @@ tag-and-push() {
         echo "Creating tag ${target} pointing to ${source}"
         docker-tag "${source}" "${target}"
         if [ ! "$dry_run" = true ]; then
-            docker push "jenkinsci/jenkins:${source}"
+            echo "Pushing jenkinsci/jenkins:${target}"
+            docker push "jenkinsci/jenkins:${target}"
+        else
+            echo "Would push jenkinsci/jenkins:${target}"
         fi
     fi
 }
