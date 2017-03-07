@@ -69,6 +69,12 @@ publish() {
     local sha
     local build_opts="--no-cache --pull"
 
+    if [ "$dry_run" = true ]; then
+        build_opts=""
+    else
+        build_opts="--no-cache --pull"
+    fi
+
     local dir=war
     # lts is in a different dir
     if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -80,7 +86,9 @@ publish() {
                  --build-arg "JENKINS_SHA=$sha" \
                  --tag "jenkinsci/jenkins:${tag}" ${build_opts} .
 
-    docker push "jenkinsci/jenkins:${tag}"
+    if [ "$dry_run" = true ]; then
+        docker push "jenkinsci/jenkins:${tag}"
+    fi
 }
 
 tag-and-push() {
@@ -98,8 +106,8 @@ tag-and-push() {
         echo "Images ${source} [$digest_source] and ${target} [$digest_target] are already the same, not updating tags"
     else
         echo "Creating tag ${target} pointing to ${source}"
+        docker-tag "jenkinsci/jenkins:${source}" "jenkinsci/jenkins:${target}"
         if [ ! "$dry_run" = true ]; then
-            docker-tag "jenkinsci/jenkins:${source}" "jenkinsci/jenkins:${target}"
             docker push "jenkinsci/jenkins:${source}"
         fi
     fi
@@ -128,7 +136,7 @@ if [ "-n" == "${1:-}" ]; then
     dry_run=true
 fi
 if [ "$dry_run" = true ]; then
-    echo "Dry run, will not build or publish images"
+    echo "Dry run, will not publish images"
 fi
 
 TOKEN=$(login-token)
@@ -142,9 +150,7 @@ for version in $(get-latest-versions); do
         echo "Tag is already published: $version$variant"
     else
         echo "Publishing version: $version$variant"
-        if [ ! "$dry_run" = true ]; then
-            publish "$version" "$variant"
-        fi
+        publish "$version" "$variant"
     fi
 
     # Update lts tag
