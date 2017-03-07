@@ -3,6 +3,7 @@
 # Publish any versions of the docker image not yet pushed to jenkinsci/jenkins
 # Arguments:
 #   -n dry run, do not build or publish images
+#   -d debug
 
 set -o pipefail
 
@@ -52,12 +53,21 @@ is-published() {
 
 get-manifest() {
     local tag=$1
-    curl -q -fsSL -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/jenkinsci/jenkins/manifests/$tag"
+    local opts=""
+    if [ "$debug" = true ]; then
+        opts="-v"
+    fi
+    curl $opts -q -fsSL -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/jenkinsci/jenkins/manifests/$tag"
 }
 
 get-digest() {
+    local manifest
+    manifest=$(get-manifest "$1")
     #get-manifest "$1" | jq .config.digest
-    get-manifest "$1" | grep -A 10 -o '"config".*' | grep digest | head -1 | cut -d':' -f 2,3 | xargs echo
+    if [ "$debug" = true ]; then
+        >&2 echo "DEBUG: Manifest for $1: $manifest"
+    fi
+    echo "$manifest" | grep -A 10 -o '"config".*' | grep digest | head -1 | cut -d':' -f 2,3 | xargs echo
 }
 
 get-latest-versions() {
@@ -99,15 +109,23 @@ tag-and-push() {
     local digest_source
     local digest_target
 
+    if [ "$debug" = true ]; then
+        >&2 echo "DEBUG: Getting digest for ${source}"
+    fi
     # if tag doesn't exist yet, ie. dry run
-    if ! digest_source=$(get-digest "${source}" 2>&1); then
-        echo "Unable to get digest for ${source}: ${digest_source}"
+    if ! digest_source=$(get-digest "${source}"); then
+        echo "Unable to get digest for ${source} ${digest_source}"
         digest_source=""
     fi
-    if ! digest_target=$(get-digest "${target}" 2>&1); then
-        echo "Unable to get digest for ${target}: ${digest_target}"
+
+    if [ "$debug" = true ]; then
+        >&2 echo "DEBUG: Getting digest for ${target}"
+    fi
+    if ! digest_target=$(get-digest "${target}"); then
+        echo "Unable to get digest for ${target} ${digest_target}"
         digest_target=""
     fi
+
     if [ "$digest_source" == "$digest_target" ] && [ -n "${digest_target}" ]; then
         echo "Images ${source} [$digest_source] and ${target} [$digest_target] are already the same, not updating tags"
     else
@@ -137,10 +155,29 @@ publish-lts() {
     tag-and-push "${version}" "lts${variant}"
 }
 
+# Process arguments
+
 dry_run=false
-if [ "-n" == "${1:-}" ]; then
-    dry_run=true
-fi
+debug=false
+
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+        -n)
+        dry_run=true
+        ;;
+        -d)
+        debug=true
+        ;;
+        *)
+        echo "Unknown option: $key"
+        return 1
+        ;;
+    esac
+    shift
+done
+
+
 if [ "$dry_run" = true ]; then
     echo "Dry run, will not publish images"
 fi
