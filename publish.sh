@@ -106,7 +106,7 @@ tag-and-push() {
         echo "Images ${source} [$digest_source] and ${target} [$digest_target] are already the same, not updating tags"
     else
         echo "Creating tag ${target} pointing to ${source}"
-        docker-tag "jenkinsci/jenkins:${source}" "jenkinsci/jenkins:${target}"
+        docker-tag "${source}" "${target}"
         if [ ! "$dry_run" = true ]; then
             docker push "jenkinsci/jenkins:${source}"
         fi
