@@ -98,7 +98,7 @@ publish() {
                  --build-arg "JENKINS_SHA=$sha" \
                  --tag "jenkinsci/jenkins:${tag}" ${build_opts} .
 
-    if [ "$dry_run" = true ]; then
+    if [ ! "$dry_run" = true ]; then
         docker push "jenkinsci/jenkins:${tag}"
     fi
 }
