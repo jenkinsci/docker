@@ -1,7 +1,7 @@
 #!/bin/sh
 # =================================================================
 # Taken from fabric8 image
-# https://github.com/fabric8io-images/java/blob/master/images/alpine/openjdk8/jdk/java-default-options
+# https://github.com/fabric8io-images/java/blob/master/images/alpine/openjdk8/jdk/container-limits
 # =================================================================
 
 # Detected container limits

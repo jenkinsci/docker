@@ -6,11 +6,11 @@
 # Detect whether running in a container and set appropriate options
 # for limiting Java VM resources
 #
-# Usage: JAVA_OPTIONS="$(java-default-options.sh)"
+# Usage: JAVA_OPTS="$(java-default-options.sh)"
 
 # Env Vars evaluated:
 
-# JAVA_OPTIONS: Checked for already set options
+# JAVA_OPTS: Checked for already set options
 # JAVA_MAX_MEM_RATIO: Ratio use to calculate a default maximum Memory, in percent.
 #                     E.g. the default value "50" implies that 50% of the Memory
 #                     given to the container is used as the maximum heap memory with
@@ -29,9 +29,9 @@
 
 # Check for memory options and calculate a sane default if not given
 max_memory() {
-  # Check whether -Xmx is already given in JAVA_OPTIONS. Then we dont
+  # Check whether -Xmx is already given in JAVA_OPTS. Then we dont
   # do anything here
-  if echo "${JAVA_OPTIONS}" | grep -q -- "-Xmx"; then
+  if echo "${JAVA_OPTS}" | grep -q -- "-Xmx"; then
     return
   fi
 
