@@ -1,0 +1,14 @@
+[Unit]
+Description=Jenkins in Docker
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+ExecStartPre=-/usr/bin/docker rm jenkins
+ExecStartPre=/bin/mkdir -p /var/local/jenkins 
+ExecStartPre=/bin/chown -R jenkins:jenkins /var/local/jenkins
+ExecStart=/usr/bin/docker run --name jenkins -p 8080:8080 -p 50000:50000 -v /var/run/docker.sock:/var/run/docker.sock  -v /var/local/jenkins:/var/jenkins_home davidbrs64/jenkins
+
+[Install]
+WantedBy=default.target
