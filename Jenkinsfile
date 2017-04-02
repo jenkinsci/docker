@@ -32,7 +32,7 @@ node('docker') {
          * containers from artifacts
          */
         stage('Publish') {
-            sh './publish.sh'
+            sh './scripts/publish.sh'
         }
     }
 }

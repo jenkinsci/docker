@@ -6,7 +6,7 @@ load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
 load test_helpers
 
-. $BATS_TEST_DIRNAME/../jenkins-support
+. $BATS_TEST_DIRNAME/../scripts/jenkins-support
 
 @test "build image" {
   cd $BATS_TEST_DIRNAME/..
