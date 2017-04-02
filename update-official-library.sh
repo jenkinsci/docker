@@ -1,5 +1,7 @@
 #!/bin/bash -eu
 
+# todo there are no references to this file, not safe to move it to scripts dir
+
 # Generate the Docker official-images file
 
 sha() {
