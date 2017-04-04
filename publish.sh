@@ -155,7 +155,7 @@ publish-latest() {
 publish-lts() {
     local version=$1
     local variant=$2
-    tag-and-push "${version}" "lts${variant}"
+    tag-and-push "${version}${variant}" "lts${variant}"
 }
 
 # Process arguments
