@@ -71,7 +71,7 @@ get-digest() {
 }
 
 get-latest-versions() {
-    curl -q -fsSL https://api.github.com/repos/jenkinsci/jenkins/tags?per_page=20 | grep '"name": "jenkins-' | egrep -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq
+    curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | egrep -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 20
 }
 
 publish() {
