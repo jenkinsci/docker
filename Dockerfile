@@ -2,13 +2,15 @@ FROM openjdk:8-jdk
 
 RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
 
-ENV JENKINS_HOME /var/jenkins_home
-ENV JENKINS_SLAVE_AGENT_PORT 50000
-
 ARG user=jenkins
 ARG group=jenkins
 ARG uid=1000
 ARG gid=1000
+ARG main_port=8080
+ARG slave_port=50000
+
+ENV JENKINS_HOME /var/jenkins_home
+ENV JENKINS_SLAVE_AGENT_PORT ${slave_port}
 
 # Jenkins is run with user `jenkins`, uid = 1000
 # If you bind mount a volume from the host or a data container, 
@@ -53,10 +55,10 @@ ENV JENKINS_UC https://updates.jenkins.io
 RUN chown -R ${user} "$JENKINS_HOME" /usr/share/jenkins/ref
 
 # for main web interface:
-EXPOSE 8080
+EXPOSE ${main_port}
 
 # will be used by attached slave agents:
-EXPOSE 50000
+EXPOSE ${slave_port}
 
 ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 
