@@ -7,10 +7,10 @@ ARG group=jenkins
 ARG uid=1000
 ARG gid=1000
 ARG main_port=8080
-ARG slave_port=50000
+ARG agent_port=50000
 
 ENV JENKINS_HOME /var/jenkins_home
-ENV JENKINS_SLAVE_AGENT_PORT ${slave_port}
+ENV JENKINS_SLAVE_AGENT_PORT ${agent_port}
 
 # Jenkins is run with user `jenkins`, uid = 1000
 # If you bind mount a volume from the host or a data container, 
@@ -58,7 +58,7 @@ RUN chown -R ${user} "$JENKINS_HOME" /usr/share/jenkins/ref
 EXPOSE ${main_port}
 
 # will be used by attached slave agents:
-EXPOSE ${slave_port}
+EXPOSE ${agent_port}
 
 ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 
