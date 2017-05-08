@@ -41,7 +41,7 @@ COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groov
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION ${JENKINS_VERSION:-2.32.3}
+ENV JENKINS_VERSION ${JENKINS_VERSION:-2.46.2}
 
 # jenkins.war checksum, download will be validated using it
 ARG JENKINS_SHA=3eb599dd78ecf00e5f177ec5c4b1ba4274be4e5f63236da6ac92401a66fa91e8
