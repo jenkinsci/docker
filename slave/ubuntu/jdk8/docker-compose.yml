@@ -1,0 +1,18 @@
+master:
+  image: jenkins:1.609.3
+  environment:
+    JAVA_OPTS: "-Djava.awt.headless=true"
+  ports:
+    - "50000:50000"
+    - "8080:8080"
+  volumes:
+    - /var/jenkins_home
+    - ./init.groovy:/usr/share/jenkins/ref/init.groovy.d/jnlp-slave.groovy
+
+slave:
+  build: .
+  environment:
+    master: "http://master:8080"
+    slave: "slave1"
+  links:
+    - master
