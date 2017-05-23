@@ -62,9 +62,14 @@ doDownload() {
         return 0
     fi
 
-    JENKINS_UC_DOWNLOAD=${JENKINS_UC_DOWNLOAD:-"$JENKINS_UC/download"}
-
-    url="$JENKINS_UC_DOWNLOAD/plugins/$plugin/$version/${plugin}.hpi"
+    if [[ "$version" == "latest" && -n "$JENKINS_UC_LATEST" ]]; then
+        # If version-specific Update Center is available, which is the case for LTS versions,
+        # use it to resolve latest versions.
+        url="$JENKINS_UC_LATEST/latest/${plugin}.hpi"
+    else
+        JENKINS_UC_DOWNLOAD=${JENKINS_UC_DOWNLOAD:-"$JENKINS_UC/download"}
+        url="$JENKINS_UC_DOWNLOAD/plugins/$plugin/$version/${plugin}.hpi"
+    fi
 
     echo "Downloading plugin: $plugin from $url"
     curl --connect-timeout "${CURL_CONNECTION_TIMEOUT:-20}" --retry "${CURL_RETRY:-5}" --retry-delay "${CURL_RETRY_DELAY:-0}" --retry-max-time "${CURL_RETRY_MAX_TIME:-60}" -s -f -L "$url" -o "$jpi"
@@ -159,6 +164,19 @@ installedPlugins() {
     done
 }
 
+jenkinsMajorMinorVersion() {
+    local JENKINS_WAR=/usr/share/jenkins/jenkins.war
+    if [[ -f $JENKINS_WAR ]]; then
+        local version=$(unzip -p "$JENKINS_WAR" META-INF/MANIFEST.MF | grep 'Jenkins-Version:' | cut -d ' ' -f 2)
+        local major=$(echo $version | cut -d '.' -f 1)
+        local minor=$(echo $version | cut -d '.' -f 2)
+        echo "$major.$minor"
+    else
+        echo "ERROR file not found: $JENKINS_WAR"
+        exit 1
+    fi
+}
+
 main() {
     local plugin version
     local plugins=()
@@ -182,6 +200,15 @@ main() {
 
     echo "Analyzing war..."
     bundledPlugins="$(bundledPlugins)"
+
+    # Check if there's a version-specific update center, which is the case for LTS versions
+    local jenkinsVersion="$(jenkinsMajorMinorVersion)"
+    local status=$(curl --write-out '%{http_code}' --silent --output /dev/null $JENKINS_UC/$jenkinsVersion/)
+    if [[ "$status" == "200" ]]; then
+        JENKINS_UC_LATEST="$JENKINS_UC/$jenkinsVersion"
+    else
+        JENKINS_UC_LATEST=
+    fi
 
     echo "Downloading plugins..."
     for plugin in "${plugins[@]}"; do
