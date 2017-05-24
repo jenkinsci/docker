@@ -28,6 +28,8 @@ RUN mkdir -p /usr/share/jenkins/ref/init.groovy.d
 ENV TINI_VERSION 0.14.0
 ENV TINI_SHA 6c41ec7d33e857d4779f14d9c74924cab0c7973485d2972419a3b7c7620ff5fd
 #TODO get new sha hash for tini-static
+# https://github.com/krallin/tini/issues/86
+# https://travis-ci.org/krallin/tini/jobs/198544693
 
 # Use tini as subreaper in Docker container to adopt zombie processes
 #TODO adjust to tini-static for with new hash
