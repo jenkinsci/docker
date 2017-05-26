@@ -13,12 +13,6 @@ node('docker') {
     }
 
     if (!infra.isTrusted()) {
-        /* Outside of the trusted.ci environment, we're building and testing
-         * the Dockerful in this repository, but not publishing to docker hub
-         */
-        stage('Build') {
-            docker.build('jenkins')
-        }
 
         stage('shellcheck') {
             docker.image('koalaman/shellcheck').inside() {
@@ -28,6 +22,13 @@ node('docker') {
                 shellcheck -e SC1091 *.sh
                 """
             }
+        }
+
+        /* Outside of the trusted.ci environment, we're building and testing
+         * the Dockerfile in this repository, but not publishing to docker hub
+         */
+        stage('Build') {
+            docker.build('jenkins')
         }
 
         stage('Test') {
