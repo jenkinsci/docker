@@ -6,7 +6,7 @@ ARG user=jenkins
 ARG group=jenkins
 ARG uid=1000
 ARG gid=1000
-ARG main_port=8080
+ARG http_port=8080
 ARG agent_port=50000
 
 ENV JENKINS_HOME /var/jenkins_home
@@ -55,7 +55,7 @@ ENV JENKINS_UC https://updates.jenkins.io
 RUN chown -R ${user} "$JENKINS_HOME" /usr/share/jenkins/ref
 
 # for main web interface:
-EXPOSE ${main_port}
+EXPOSE ${http_port}
 
 # will be used by attached slave agents:
 EXPOSE ${agent_port}
