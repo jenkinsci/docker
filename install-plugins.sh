@@ -170,11 +170,12 @@ jenkinsMajorMinorVersion() {
     if [[ -f "$JENKINS_WAR" ]]; then
         local version major minor
         version="$(java -jar /usr/share/jenkins/jenkins.war --version)"
-        major="$(echo $version | cut -d '.' -f 1)"
-        minor="$(echo $version | cut -d '.' -f 2)"
+        major="$(echo "$version" | cut -d '.' -f 1)"
+        minor="$(echo "$version" | cut -d '.' -f 2)"
         echo "$major.$minor"
     else
-        return
+        echo "ERROR file not found: $JENKINS_WAR"
+        return 1
     fi
 }
 
