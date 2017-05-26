@@ -165,20 +165,21 @@ installedPlugins() {
 }
 
 jenkinsMajorMinorVersion() {
-    local JENKINS_WAR=/usr/share/jenkins/jenkins.war
-    if [[ -f $JENKINS_WAR ]]; then
-        local version=$(unzip -p "$JENKINS_WAR" META-INF/MANIFEST.MF | grep 'Jenkins-Version:' | cut -d ' ' -f 2)
-        local major=$(echo $version | cut -d '.' -f 1)
-        local minor=$(echo $version | cut -d '.' -f 2)
+    local JENKINS_WAR
+    JENKINS_WAR=/usr/share/jenkins/jenkins.war
+    if [[ -f "$JENKINS_WAR" ]]; then
+        local version major minor
+        version="$(java -jar /usr/share/jenkins/jenkins.war --version)"
+        major="$(echo $version | cut -d '.' -f 1)"
+        minor="$(echo $version | cut -d '.' -f 2)"
         echo "$major.$minor"
     else
-        echo "ERROR file not found: $JENKINS_WAR"
-        exit 1
+        return
     fi
 }
 
 main() {
-    local plugin version
+    local plugin pluginVersion jenkinsVersion
     local plugins=()
 
     mkdir -p "$REF_DIR" || exit 1
@@ -202,24 +203,24 @@ main() {
     bundledPlugins="$(bundledPlugins)"
 
     # Check if there's a version-specific update center, which is the case for LTS versions
-    local jenkinsVersion="$(jenkinsMajorMinorVersion)"
-    local status=$(curl --write-out '%{http_code}' --silent --output /dev/null $JENKINS_UC/$jenkinsVersion/)
-    if [[ "$status" == "200" ]]; then
+    jenkinsVersion="$(jenkinsMajorMinorVersion)"
+    if curl -fsL -o /dev/null "$JENKINS_UC/$jenkinsVersion"; then
         JENKINS_UC_LATEST="$JENKINS_UC/$jenkinsVersion"
+        echo "Using version-specific update center: $JENKINS_UC_LATEST..."
     else
         JENKINS_UC_LATEST=
     fi
 
     echo "Downloading plugins..."
     for plugin in "${plugins[@]}"; do
-        version=""
+        pluginVersion=""
 
         if [[ $plugin =~ .*:.* ]]; then
-            version=$(versionFromPlugin "${plugin}")
+            pluginVersion=$(versionFromPlugin "${plugin}")
             plugin="${plugin%%:*}"
         fi
 
-        download "$plugin" "$version" "true" &
+        download "$plugin" "$pluginVersion" "true" &
     done
     wait
 
