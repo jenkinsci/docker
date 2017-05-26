@@ -21,9 +21,14 @@ node('docker') {
         }
 
         stage('shellcheck') {
-            // run shellcheck ignoring error SC1091
-            // Not following: /usr/local/bin/jenkins-support was not specified as input
-            sh "shellcheck -e SC1091 *.sh"
+            docker.image('koalaman/shellcheck').inside() {
+                // run shellcheck ignoring error SC1091
+                // Not following: /usr/local/bin/jenkins-support was not specified as input
+                sh """
+                find / -iname install-plugins.sh
+                shellcheck -e SC1091 *.sh
+                """
+            }
         }
 
         stage('Test') {
