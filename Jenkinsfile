@@ -25,7 +25,7 @@ node('docker') {
                 // run shellcheck ignoring error SC1091
                 // Not following: /usr/local/bin/jenkins-support was not specified as input
                 sh """
-                find / -iname install-plugins.sh
+                pwd
                 shellcheck -e SC1091 *.sh
                 """
             }
