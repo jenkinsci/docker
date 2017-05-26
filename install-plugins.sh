@@ -67,7 +67,7 @@ doDownload() {
     url="$JENKINS_UC_DOWNLOAD/plugins/$plugin/$version/${plugin}.hpi"
 
     echo "Downloading plugin: $plugin from $url"
-    curl --connect-timeout ${CURL_CONNECTION_TIMEOUT:-20} --retry ${CURL_RETRY:-5} --retry-delay ${CURL_RETRY_DELAY:-0} --retry-max-time ${CURL_RETRY_MAX_TIME:-60} -s -f -L "$url" -o "$jpi"
+    curl --connect-timeout "${CURL_CONNECTION_TIMEOUT:-20}" --retry "${CURL_RETRY:-5}" --retry-delay "${CURL_RETRY_DELAY:-0}" --retry-max-time "${CURL_RETRY_MAX_TIME:-60}" -s -f -L "$url" -o "$jpi"
     return $?
 }
 
@@ -160,22 +160,23 @@ installedPlugins() {
 }
 
 main() {
-    local plugin plugins version
+    local plugin version
+    local plugins=()
 
     mkdir -p "$REF_DIR" || exit 1
 
     # Read plugins from stdin or from the command line arguments
     if [[ ($# -eq 0) ]]; then
-        while read line; do
-            plugins="${plugins:=} ${line}"
+        while read -r line; do
+            plugins+=("${line}")
         done
     else
-        plugins="$@"
+        plugins=($@)
     fi
 
     # Create lockfile manually before first run to make sure any explicit version set is used.
     echo "Creating initial locks..."
-    for plugin in $plugins; do
+    for plugin in "${plugins[@]}"; do
         mkdir "$(getLockFile "${plugin%%:*}")"
     done
 
@@ -183,7 +184,7 @@ main() {
     bundledPlugins="$(bundledPlugins)"
 
     echo "Downloading plugins..."
-    for plugin in $plugins; do
+    for plugin in "${plugins[@]}"; do
         version=""
 
         if [[ $plugin =~ .*:.* ]]; then

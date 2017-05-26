@@ -20,6 +20,12 @@ node('docker') {
             docker.build('jenkins')
         }
 
+        stage('shellcheck') {
+            // run shellcheck ignoring error SC1091
+            // Not following: /usr/local/bin/jenkins-support was not specified as input
+            sh "shellcheck -e SC1091 *.sh"
+        }
+
         stage('Test') {
             sh """
             git submodule update --init --recursive
