@@ -1,6 +1,10 @@
-FROM openjdk:8-jdk
+FROM ubuntu:16.04
 
-RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
+RUN  locale-gen en_US en_US.UTF-8 \
+     && apt-get update \
+     && apt-get install -y curl wget git zip unzip openjdk-8-jre-headless \
+     && apt-get clean \
+     && rm -rf /var/lib/apt/lists/*
 
 ARG user=jenkins
 ARG group=jenkins
