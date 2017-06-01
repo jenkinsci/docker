@@ -162,10 +162,10 @@ FROM jenkins
 RUN /usr/local/bin/install-plugins.sh docker-slaves github-branch-source:1.8
 ```
 
-Furthermore it is possible to pass a file that contains this set of plugins (with or without line breaks).
+Furthermore it is possible to pass a file that contains this set of plugins (with or without line breaks) using the weekly builds.
 
 ```
-FROM jenkins
+FROM jenkinsci/jenkins
 COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
 RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
 ```
