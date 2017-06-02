@@ -107,19 +107,20 @@ resolveDependencies() {
         if [[ $d == *"resolution:=optional"* ]]; then
             echo "Skipping optional dependency $plugin"
         else
-            local pluginInstalled
+            local pluginInstalled version
+            version=$(versionFromPlugin "${d}")
             if pluginInstalled="$(echo "${bundledPlugins}" | grep "^${plugin}:")"; then
                 pluginInstalled="${pluginInstalled//[$'\r']}"
                 local versionInstalled; versionInstalled=$(versionFromPlugin "${pluginInstalled}")
                 local minVersion; minVersion=$(versionFromPlugin "${d}")
                 if versionLT "${versionInstalled}" "${minVersion}"; then
                     echo "Upgrading bundled dependency $d ($minVersion > $versionInstalled)"
-                    download "$plugin" &
+                    download "$plugin" "$version" &
                 else
                     echo "Skipping already bundled dependency $d ($minVersion <= $versionInstalled)"
                 fi
             else
-                download "$plugin" &
+                download "$plugin" "$version" &
             fi
         fi
     done
