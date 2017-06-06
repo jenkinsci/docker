@@ -54,7 +54,7 @@ then
     echo "Analyzing: $JENKINS_PLUGINS_DIR"
     for i in "$JENKINS_PLUGINS_DIR"/*/; do
         JENKINS_PLUGIN=$(basename "$i")
-        JENKINS_PLUGIN_VER=$(egrep -i Plugin-Version "$i/META-INF/MANIFEST.MF"|cut -d: -f2|sed 's/ //')
+        JENKINS_PLUGIN_VER=$(grep -E -i Plugin-Version "$i/META-INF/MANIFEST.MF"|cut -d: -f2|sed 's/ //')
         echo "$JENKINS_PLUGIN:$JENKINS_PLUGIN_VER"
     done >"$TEMP_ALREADY_INSTALLED"
 else
@@ -68,9 +68,9 @@ else
             mkdir -p "$TEMP_PLUGIN_DIR"
             PLUGIN=$(basename "$i"|cut -f1 -d'.')
             (cd "$TEMP_PLUGIN_DIR" || exit; jar xf "$JENKINS_WAR" "$i"; jar xvf "$TEMP_PLUGIN_DIR/$i" META-INF/MANIFEST.MF >/dev/null 2>&1)
-            VER=$(egrep -i Plugin-Version "$TEMP_PLUGIN_DIR/META-INF/MANIFEST.MF"|cut -d: -f2|sed 's/ //')
+            VER=$(grep -E -i Plugin-Version "$TEMP_PLUGIN_DIR/META-INF/MANIFEST.MF"|cut -d: -f2|sed 's/ //')
             echo "$PLUGIN:$VER"
-        done 3< <(jar tf "$JENKINS_WAR" | egrep '[^detached-]plugins.*\..pi' | sort) > "$TEMP_ALREADY_INSTALLED"
+        done 3< <(jar tf "$JENKINS_WAR" | grep -E '[^detached-]plugins.*\..pi' | sort) > "$TEMP_ALREADY_INSTALLED"
         rm -fr "$TEMP_PLUGIN_DIR"
     else
         rm -f "$TEMP_ALREADY_INSTALLED"
@@ -84,7 +84,8 @@ mkdir -p $REF
 COUNT_PLUGINS_INSTALLED=0
 while read -r spec || [ -n "$spec" ]; do
 
-    plugin=(${spec//:/ });
+    plugin=()
+    IFS=' ' read -r -a plugin <<< "${spec//:/ }"
     [[ ${plugin[0]} =~ ^# ]] && continue
     [[ ${plugin[0]} =~ ^[[:space:]]*$ ]] && continue
     [[ -z ${plugin[1]} ]] && plugin[1]="latest"

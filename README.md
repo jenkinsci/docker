@@ -26,7 +26,7 @@ For weekly releases check out [`jenkinsci/jenkins`](https://hub.docker.com/r/jen
 # Usage
 
 ```
-docker run -p 8080:8080 -p 50000:50000 jenkins
+docker run -p 8080:8080 -p 50000:50000 jenkinsci/jenkins:lts
 ```
 
 NOTE: read below the _build executors_ part for the role of the `50000` port mapping.
@@ -35,7 +35,7 @@ This will store the workspace in /var/jenkins_home. All Jenkins data lives in th
 You will probably want to make that an explicit volume so you can manage it and attach to another container for upgrades :
 
 ```
-docker run -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home jenkins
+docker run -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home jenkinsci/jenkins:lts
 ```
 
 this will automatically create a 'jenkins_home' volume on docker host, that will survive container stop/restart/deletion. 
@@ -86,7 +86,7 @@ You might need to customize the JVM running Jenkins, typically to pass system pr
 variable for this purpose :
 
 ```
-docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS=-Dhudson.footerURL=http://mycompany.com jenkins
+docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS=-Dhudson.footerURL=http://mycompany.com jenkinsci/jenkins:lts
 ```
 
 # Configuring logging
@@ -101,11 +101,11 @@ handlers=java.util.logging.ConsoleHandler
 jenkins.level=FINEST
 java.util.logging.ConsoleHandler.level=FINEST
 EOF
-docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS="-Djava.util.logging.config.file=/var/jenkins_home/log.properties" -v `pwd`/data:/var/jenkins_home jenkins
+docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS="-Djava.util.logging.config.file=/var/jenkins_home/log.properties" -v `pwd`/data:/var/jenkins_home jenkinsci/jenkins:lts
 ```
 
 # Configuring reverse proxy
-If you want to install Jenkins behind a reverse proxy with prefix, example: mysite.com/jenkins, you need to add environnement variable `JENKINS_OPTS="--prefix=/jenkins"` and then follow the below procedures to configure your reverse proxy, which will depend if you have Apache ou Nginx:
+If you want to install Jenkins behind a reverse proxy with prefix, example: mysite.com/jenkins, you need to add environnement variable `JENKINS_OPTS="--prefix=/jenkins"` and then follow the below procedures to configure your reverse proxy, which will depend if you have Apache or Nginx:
 - [Apache](https://wiki.jenkins-ci.org/display/JENKINS/Running+Jenkins+behind+Apache)
 - [Nginx](https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+behind+an+NGinX+reverse+proxy)
 
@@ -138,7 +138,7 @@ ENV JENKINS_SLAVE_AGENT_PORT 50001
 ```
 or as a parameter to docker,
 ```
-docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGENT_PORT=50001 jenkins
+docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGENT_PORT=50001 jenkinsci/jenkins:lts
 ```
 
 # Installing more tools
@@ -172,6 +172,14 @@ Dependencies that are already included in the Jenkins war will only be downloade
 ```
 FROM jenkins
 RUN /usr/local/bin/install-plugins.sh docker-slaves github-branch-source:1.8
+```
+
+Furthermore it is possible to pass a file that contains this set of plugins (with or without line breaks).
+
+```
+FROM jenkins
+COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
+RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
 ```
 
 When jenkins container starts, it will check `JENKINS_HOME` has this reference content, and copy them
