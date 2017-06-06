@@ -4,12 +4,12 @@
 
 sha() {
     local branch=$1
-    git rev-parse $branch
+    git rev-parse "$branch"
 }
 
 version_from_dockerfile() {
     local branch=$1
-    git show $branch:Dockerfile | grep JENKINS_VERSION: | sed -e 's/.*:-\(.*\)}/\1/'
+    git show "$branch:Dockerfile" | grep JENKINS_VERSION: | sed -e 's/.*:-\(.*\)}/\1/'
 }
 
 master_sha=$(sha master)

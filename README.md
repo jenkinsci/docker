@@ -162,6 +162,14 @@ FROM jenkins
 RUN /usr/local/bin/install-plugins.sh docker-slaves github-branch-source:1.8
 ```
 
+Furthermore it is possible to pass a file that contains this set of plugins (with or without line breaks).
+
+```
+FROM jenkins
+COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
+RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
+```
+
 When jenkins container starts, it will check `JENKINS_HOME` has this reference content, and copy them
 there if required. It will not override such files, so if you upgraded some plugins from UI they won't
 be reverted on next start.
