@@ -7,7 +7,7 @@ Changes from official:
  * Added SystemD service file.
 
 To deploy this image make sure the UID 3000 has write access to the docker socket file at `/var/run/docker.sock`, for example by creating user with that UID and adding it to the `docker` group.
- 
+Important note: Selinux, will prevent Jenkins container access to /var/run/docker.sock in case of enforcing mode, for solving this issue please check https://github.com/dpw/selinux-dockersock.git.   
 The rest of the README is left as it is in upstream for documentation
 
 # Official Jenkins Docker image
