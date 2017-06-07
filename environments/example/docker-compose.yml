@@ -1,0 +1,9 @@
+master:
+  build: .
+  environment:
+    JAVA_OPTS: "-Djava.awt.headless=true"
+  ports:
+    - "5000:5000"
+    - "8080:8080"
+  volumes:
+    - /var/jenkins_home
