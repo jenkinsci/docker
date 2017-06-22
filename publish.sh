@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 
-# Publish any versions of the docker image not yet pushed to jenkinsci/jenkins
+# Publish any versions of the docker image not yet pushed to jenkins/jenkins
 # Arguments:
 #   -n dry run, do not build or publish images
 #   -d debug
@@ -17,8 +17,8 @@ sort-versions() {
 
 # Try tagging with and without -f to support all versions of docker
 docker-tag() {
-    local from="jenkinsci/jenkins:$1"
-    local to="jenkinsci/jenkins:$2"
+    local from="jenkins/jenkins:$1"
+    local to="jenkins/jenkins:$2"
     local out
 
     docker pull "$from"
@@ -44,7 +44,7 @@ get-variant() {
 
 login-token() {
     # could use jq .token
-    curl -q -sSL "https://auth.docker.io/token?service=registry.docker.io&scope=repository:jenkinsci/jenkins:pull" | grep -o '"token":"[^"]*"' | cut -d':' -f 2 | xargs echo
+    curl -q -sSL "https://auth.docker.io/token?service=registry.docker.io&scope=repository:jenkins/jenkins:pull" | grep -o '"token":"[^"]*"' | cut -d':' -f 2 | xargs echo
 }
 
 is-published() {
@@ -94,10 +94,10 @@ publish() {
 
     docker build --build-arg "JENKINS_VERSION=$version" \
                  --build-arg "JENKINS_SHA=$sha" \
-                 --tag "jenkinsci/jenkins:${tag}" "${build_opts[@]}" .
+                 --tag "jenkins/jenkins:${tag}" "${build_opts[@]}" .
 
     if [ ! "$dry_run" = true ]; then
-        docker push "jenkinsci/jenkins:${tag}"
+        docker push "jenkins/jenkins:${tag}"
     fi
 }
 
@@ -130,10 +130,11 @@ tag-and-push() {
         echo "Creating tag ${target} pointing to ${source}"
         docker-tag "${source}" "${target}"
         if [ ! "$dry_run" = true ]; then
-            echo "Pushing jenkinsci/jenkins:${target}"
-            docker push "jenkinsci/jenkins:${target}"
+            echo "Pushing jenkins/jenkins:${target}"
+            export DOCKER_CONTENT_TRUST=1
+            docker push "jenkins/jenkins:${target}"
         else
-            echo "Would push jenkinsci/jenkins:${target}"
+            echo "Would push jenkins/jenkins:${target}"
         fi
     fi
 }
