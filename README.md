@@ -2,11 +2,8 @@
 
 The Jenkins Continuous Integration and Delivery server.
 
-This is a fully functional Jenkins server, based on the Long Term Support release.
+This is a fully functional Jenkins server.
 [http://jenkins.io/](http://jenkins.io/).
-
-For weekly releases check out [`jenkinsci/jenkins`](https://hub.docker.com/r/jenkinsci/jenkins/)
-
 
 <img src="http://jenkins-ci.org/sites/default/files/jenkins_logo.png"/>
 
@@ -14,7 +11,7 @@ For weekly releases check out [`jenkinsci/jenkins`](https://hub.docker.com/r/jen
 # Usage
 
 ```
-docker run -p 8080:8080 -p 50000:50000 jenkinsci/jenkins:lts
+docker run -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts
 ```
 
 NOTE: read below the _build executors_ part for the role of the `50000` port mapping.
@@ -23,7 +20,7 @@ This will store the workspace in /var/jenkins_home. All Jenkins data lives in th
 You will probably want to make that an explicit volume so you can manage it and attach to another container for upgrades :
 
 ```
-docker run -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home jenkinsci/jenkins:lts
+docker run -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts
 ```
 
 this will automatically create a 'jenkins_home' volume on docker host, that will survive container stop/restart/deletion. 
