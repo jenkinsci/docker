@@ -18,7 +18,7 @@ sort-versions() {
 # Try tagging with and without -f to support all versions of docker
 docker-tag() {
     local from="jenkins/jenkins:$1"
-    local to="jenkins/jenkins:$2"
+    local to="$2/jenkins:$3"
     local out
 
     docker pull "$from"
@@ -94,10 +94,13 @@ publish() {
 
     docker build --build-arg "JENKINS_VERSION=$version" \
                  --build-arg "JENKINS_SHA=$sha" \
-                 --tag "jenkins/jenkins:${tag}" "${build_opts[@]}" .
+                 --tag "jenkins/jenkins:${tag}" \
+                 --tag "jenkinsci/jenkins:${tag}" \
+                 "${build_opts[@]}" .
 
     if [ ! "$dry_run" = true ]; then
         docker push "jenkins/jenkins:${tag}"
+        docker push "jenkinsci/jenkins:${tag}"        
     fi
 }
 
@@ -128,11 +131,12 @@ tag-and-push() {
         echo "Images ${source} [$digest_source] and ${target} [$digest_target] are already the same, not updating tags"
     else
         echo "Creating tag ${target} pointing to ${source}"
-        docker-tag "${source}" "${target}"
+        docker-tag "${source}" "jenkins" "${target}"
+        docker-tag "${source}" "jenkinsci" "${target}"
         if [ ! "$dry_run" = true ]; then
             echo "Pushing jenkins/jenkins:${target}"
-            export DOCKER_CONTENT_TRUST=1
             docker push "jenkins/jenkins:${target}"
+            docker push "jenkinsci/jenkins:${target}"
         else
             echo "Would push jenkins/jenkins:${target}"
         fi
