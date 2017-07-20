@@ -28,7 +28,7 @@ node('docker') {
          */
         stage('Build') {
             docker.build('jenkins')
-            docker.build('jenkins', '--file Dockerfile.alpine .')
+            docker.build('jenkins:alpine', '--file Dockerfile-alpine .')
         }
 
         stage('Test') {
