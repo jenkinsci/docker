@@ -29,19 +29,6 @@ docker-tag() {
     fi
 }
 
-get-variant() {
-    local branch
-    branch=$(git show-ref | grep "$(git rev-list -n 1 HEAD)" | tail -1 | rev | cut -d/ -f 1 | rev)
-    if [ -z "$branch" ]; then
-        >&2 echo "Could not get the current branch name for commit, not in a branch?: $(git rev-list -n 1 HEAD)"
-        return 1
-    fi
-    case "$branch" in
-        master) echo "" ;;
-        *) echo "-${branch}" ;;
-    esac
-}
-
 login-token() {
     # could use jq .token
     curl -q -sSL "https://auth.docker.io/token?service=registry.docker.io&scope=repository:jenkinsci/jenkins:pull" | grep -o '"token":"[^"]*"' | cut -d':' -f 2 | xargs echo
@@ -160,6 +147,7 @@ publish-lts() {
 
 dry_run=false
 debug=false
+variant=""
 
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -169,6 +157,10 @@ while [[ $# -gt 0 ]]; do
         ;;
         -d)
         debug=true
+        ;;
+        -v|--variant)
+        variant="-"$2
+        shift
         ;;
         *)
         echo "Unknown option: $key"
@@ -184,8 +176,6 @@ if [ "$dry_run" = true ]; then
 fi
 
 TOKEN=$(login-token)
-
-variant=$(get-variant)
 
 lts_version=""
 version=""
