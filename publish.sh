@@ -79,7 +79,7 @@ publish() {
     fi
     sha=$(curl -q -fsSL "http://mirrors.jenkins.io/${dir}/${version}/jenkins.war.sha256" | cut -d' ' -f 1)
 
-    docker build --file "Dockerfile$variant"
+    docker build --file "Dockerfile$variant" \
                  --build-arg "JENKINS_VERSION=$version" \
                  --build-arg "JENKINS_SHA=$sha" \
                  --tag "jenkins/jenkins:${tag}" \
