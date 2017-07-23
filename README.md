@@ -151,17 +151,47 @@ COPY custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
 ## Preinstalling plugins
 
 You can rely on the `install-plugins.sh` script to pass a set of plugins to download with their dependencies.
-Use plugin artifact ID, whithout `-plugin` extension, and append the version if needed separated by `:`.
+This script will perform downloads from update centers, an internet access is required for the default update centers.
+
+### Setting update centers
+
+During the download, the script will use update centers defined by the following environment variables:
+
+* `JENKINS_UC` - Main update center. 
+  This update center may offer plugin versions depending on the Jenkins LTS Core versions.
+  Default value: https://updates.jenkins.io
+* `JENKINS_UC_EXPERIMENTAL` - [Experimental Update Center](https://jenkins.io/blog/2013/09/23/experimental-plugins-update-center/).
+  This center offers Alpha and Beta versions of plugins.
+  Default value: https://updates.jenkins.io/experimental
+  
+It is possible to override the environment variables in images.
+
+:exclamation: Note that changing this variables **will not** change the Update Center being used by Jenkins runtime.
+
+### Plugin version format
+
+Use plugin artifact ID, without `-plugin` extension, and append the version if needed separated by `:`.
 Dependencies that are already included in the Jenkins war will only be downloaded if their required version is newer than the one included.
 
-```
+There are also custom version specifiers:
+
+* `latest` - download the latest version from the main update center.
+  For Jenkins LTS images 
+  (example: `git:latest`)
+* `experimental` - download the latest version from the experimental update center defined by the `JENKINS_UC_EXPERIMENTAL` environment variable (example: `filesystem_scm:experimental`)
+
+### Script usage
+
+You can run the script manually in Dockerfile:
+
+```Dockerfile
 FROM jenkins
 RUN /usr/local/bin/install-plugins.sh docker-slaves github-branch-source:1.8
 ```
 
 Furthermore it is possible to pass a file that contains this set of plugins (with or without line breaks).
 
-```
+```Dockerfile
 FROM jenkins
 COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
 RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
