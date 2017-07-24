@@ -23,7 +23,7 @@ You will probably want to make that an explicit volume so you can manage it and 
 docker run -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts
 ```
 
-this will automatically create a 'jenkins_home' volume on docker host, that will survive container stop/restart/deletion. 
+this will automatically create a 'jenkins_home' volume on docker host, that will survive container stop/restart/deletion.
 
 Avoid using a bind mount from a folder on host into `/var/jenkins_home`, as this might result in file permission issue. If you _really_ need to bind mount jenkins_home, ensure that directory on host is accessible by the jenkins user in container (jenkins user - uid 1000) or use `-u some_other_user` parameter with `docker run`.
 
@@ -157,13 +157,13 @@ This script will perform downloads from update centers, an internet access is re
 
 During the download, the script will use update centers defined by the following environment variables:
 
-* `JENKINS_UC` - Main update center. 
+* `JENKINS_UC` - Main update center.
   This update center may offer plugin versions depending on the Jenkins LTS Core versions.
   Default value: https://updates.jenkins.io
 * `JENKINS_UC_EXPERIMENTAL` - [Experimental Update Center](https://jenkins.io/blog/2013/09/23/experimental-plugins-update-center/).
   This center offers Alpha and Beta versions of plugins.
   Default value: https://updates.jenkins.io/experimental
-  
+
 It is possible to override the environment variables in images.
 
 :exclamation: Note that changing this variables **will not** change the Update Center being used by Jenkins runtime.
@@ -176,7 +176,7 @@ Dependencies that are already included in the Jenkins war will only be downloade
 There are also custom version specifiers:
 
 * `latest` - download the latest version from the main update center.
-  For Jenkins LTS images 
+  For Jenkins LTS images
   (example: `git:latest`)
 * `experimental` - download the latest version from the experimental update center defined by the `JENKINS_UC_EXPERIMENTAL` environment variable (example: `filesystem_scm:experimental`)
 
