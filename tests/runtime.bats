@@ -9,7 +9,7 @@ load test_helpers
 
 @test "build image" {
   cd $BATS_TEST_DIRNAME/..
-  docker build -t $SUT_IMAGE .
+  docker_build -t $SUT_IMAGE .
 }
 
 @test "clean test containers" {

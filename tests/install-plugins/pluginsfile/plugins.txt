@@ -1,0 +1,5 @@
+ant:1.3
+maven-plugin:2.7.1
+mesos:0.13.0
+git:latest
+filesystem_scm:experimental

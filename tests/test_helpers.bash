@@ -3,7 +3,6 @@
 # check dependencies
 (
     type docker &>/dev/null || ( echo "docker is not available"; exit 1 )
-    type unzip &>/dev/null || ( echo "unzip is not available"; exit 1 )
     type curl &>/dev/null || ( echo "curl is not available"; exit 1 )
 )>&2
 
@@ -41,6 +40,14 @@ function retry {
     false
 }
 
+function docker_build {
+    if [ -n "$JENKINS_VERSION" ]; then
+        docker build --build-arg JENKINS_VERSION=$JENKINS_VERSION --build-arg JENKINS_SHA=$JENKINS_SHA "$@"
+    else
+        docker build "$@"
+    fi
+}
+
 function get_jenkins_url {
     if [ -z "${DOCKER_HOST}" ]; then
         DOCKER_IP=localhost
@@ -68,4 +75,10 @@ function test_url {
 function cleanup {
     docker kill "$1" &>/dev/null ||:
     docker rm -fv "$1" &>/dev/null ||:
+}
+
+function unzip_manifest {
+    local plugin=$1
+    local work=$2
+    bash -c "docker run --rm -v $work:/var/jenkins_home --entrypoint unzip $SUT_IMAGE -p /var/jenkins_home/plugins/$plugin META-INF/MANIFEST.MF | tr -d '\r'"
 }
