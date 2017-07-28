@@ -1,5 +1,7 @@
 #! /bin/bash -e
 
+[ -x '/usr/share/jenkins/preboot.sh' ] && /usr/share/jenkins/preboot.sh
+
 : "${JENKINS_HOME:="/var/jenkins_home"}"
 touch "${COPY_REFERENCE_FILE_LOG}" || { echo "Can not write to ${COPY_REFERENCE_FILE_LOG}. Wrong volume permissions?"; exit 1; }
 echo "--- Copying files at $(date)" >> "$COPY_REFERENCE_FILE_LOG"
