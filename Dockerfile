@@ -9,6 +9,9 @@ ARG gid=1000
 ARG http_port=8080
 ARG agent_port=50000
 
+RUN ln -sf /usr/share/zoneinfo/Asia/Hong_Kong /etc/localtime
+RUN echo "Asia/Hong_Kong" > /etc/timezone
+
 ENV JENKINS_HOME /var/jenkins_home
 ENV JENKINS_SLAVE_AGENT_PORT ${agent_port}
 
