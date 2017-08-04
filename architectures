@@ -1,0 +1,3 @@
+bashbrew-arch   variants
+amd64     default
+arm64v8   dedault
