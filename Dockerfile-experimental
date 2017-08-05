@@ -1,8 +1,6 @@
-FROM us.gcr.io/symphony-gce-dev/sym/alpine-oracle-java7-java8-maven-python27
-MAINTAINER Hiep Nguyen <hiep.nguyen@symphony.com>
+FROM openjdk:8-jdk
 
-
-RUN apk update && apk add --no-cache git openssh-client curl unzip bash ttf-dejavu coreutils
+RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
 
 ARG user=jenkins
 ARG group=jenkins
@@ -17,8 +15,8 @@ ENV JENKINS_SLAVE_AGENT_PORT ${agent_port}
 # Jenkins is run with user `jenkins`, uid = 1000
 # If you bind mount a volume from the host or a data container, 
 # ensure you use the same uid
-RUN addgroup -g ${gid} ${group} \
-    && adduser -h "$JENKINS_HOME" -u ${uid} -G ${group} -s /bin/bash -D ${user}
+RUN groupadd -g ${gid} ${group} \
+    && useradd -d "$JENKINS_HOME" -u ${uid} -g ${gid} -m -s /bin/bash ${user}
 
 # Jenkins home directory is a volume, so configuration and build history 
 # can be persisted and survive image upgrades
@@ -37,18 +35,13 @@ RUN curl -fsSL https://github.com/krallin/tini/releases/download/v${TINI_VERSION
   && echo "$TINI_SHA  /bin/tini" | sha256sum -c -
 
 COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy
-COPY createCredentials.groovy /usr/share/jenkins/ref/init.groovy.d/createCredentials.groovy
-#COPY security.groovy /usr/share/jenkins/ref/init.groovy.d/security.groovy
-
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-
-ENV JENKINS_VERSION ${JENKINS_VERSION:-2.60.1}
+ENV JENKINS_VERSION ${JENKINS_VERSION:-2.60.2}
 
 # jenkins.war checksum, download will be validated using it
-ARG JENKINS_SHA=34fde424dde0e050738f5ad1e316d54f741c237bd380bd663a07f96147bb1390
-
+ARG JENKINS_SHA=14d0788d89be82958a46965de039a55813f9727bd4d0592dc77905976483ba95
 
 # Can be used to customize where jenkins.war get downloaded from
 ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war
@@ -59,11 +52,8 @@ RUN curl -fsSL ${JENKINS_URL} -o /usr/share/jenkins/jenkins.war \
   && echo "${JENKINS_SHA}  /usr/share/jenkins/jenkins.war" | sha256sum -c -
 
 ENV JENKINS_UC https://updates.jenkins.io
-
-RUN chown -R ${user} "$JENKINS_HOME" /usr/share/jenkins/ref /tmp  && \
-    pip install diff_cover && \
-    mkdir /opt/bin && \
-    curl -o /opt/bin/cover2cover.py https://raw.githubusercontent.com/SymphonyOSF/cover2cover/master/cover2cover.py
+ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
+RUN chown -R ${user} "$JENKINS_HOME" /usr/share/jenkins/ref
 
 # for main web interface:
 EXPOSE ${http_port}
@@ -82,9 +72,3 @@ ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 # from a derived Dockerfile, can use `RUN plugins.sh active.txt` to setup /usr/share/jenkins/ref/plugins from a support bundle
 COPY plugins.sh /usr/local/bin/plugins.sh
 COPY install-plugins.sh /usr/local/bin/install-plugins.sh
-
-# Update the plugin list here. It's IMPORTANT to specify both the plugin NAME and VERSION for VERSION CONTROL 
-RUN /usr/local/bin/install-plugins.sh 	config-file-provider credentials ssh-credentials ssh-agent ssh-slaves  git-client git github github-api saml \
-					github-oauth google-oauth-plugin kubernetes scm-api postbuild-task greenballs credentials-binding pipeline-utility-steps \
-					workflow-aggregator github-organization-folder jira sonar matrix-project matrix-auth saferestart robot jobConfigHistory 
-
