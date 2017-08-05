@@ -1,6 +1,7 @@
 FROM us.gcr.io/symphony-gce-dev/sym/alpine-oracle-java7-java8-maven-python27
 MAINTAINER Hiep Nguyen <hiep.nguyen@symphony.com>
 
+
 RUN apk update && apk add --no-cache git openssh-client curl unzip bash ttf-dejavu coreutils
 
 ARG user=jenkins
@@ -42,10 +43,12 @@ COPY createCredentials.groovy /usr/share/jenkins/ref/init.groovy.d/createCredent
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
+
 ENV JENKINS_VERSION ${JENKINS_VERSION:-2.60.1}
 
 # jenkins.war checksum, download will be validated using it
 ARG JENKINS_SHA=34fde424dde0e050738f5ad1e316d54f741c237bd380bd663a07f96147bb1390
+
 
 # Can be used to customize where jenkins.war get downloaded from
 ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war
@@ -56,6 +59,7 @@ RUN curl -fsSL ${JENKINS_URL} -o /usr/share/jenkins/jenkins.war \
   && echo "${JENKINS_SHA}  /usr/share/jenkins/jenkins.war" | sha256sum -c -
 
 ENV JENKINS_UC https://updates.jenkins.io
+
 RUN chown -R ${user} "$JENKINS_HOME" /usr/share/jenkins/ref /tmp  && \
     pip install diff_cover && \
     mkdir /opt/bin && \
