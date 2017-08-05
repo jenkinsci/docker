@@ -37,7 +37,8 @@ RUN curl -fsSL https://github.com/krallin/tini/releases/download/v${TINI_VERSION
 
 COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy
 COPY createCredentials.groovy /usr/share/jenkins/ref/init.groovy.d/createCredentials.groovy
-COPY security.groovy /usr/share/jenkins/ref/init.groovy.d/security.groovy
+#COPY security.groovy /usr/share/jenkins/ref/init.groovy.d/security.groovy
+
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
@@ -78,5 +79,8 @@ ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 COPY plugins.sh /usr/local/bin/plugins.sh
 COPY install-plugins.sh /usr/local/bin/install-plugins.sh
 
-RUN /usr/local/bin/install-plugins.sh config-file-provider credentials ssh-credentials ssh-agent ssh-slaves git-client git github github-api github-oauth google-oauth-plugin kubernetes scm-api postbuild-task greenballs credentials-binding pipeline-utility-steps workflow-aggregator github-organization-folder jira sonar matrix-project
+# Update the plugin list here. It's IMPORTANT to specify both the plugin NAME and VERSION for VERSION CONTROL 
+RUN /usr/local/bin/install-plugins.sh 	config-file-provider credentials ssh-credentials ssh-agent ssh-slaves  git-client git github github-api saml \
+					github-oauth google-oauth-plugin kubernetes scm-api postbuild-task greenballs credentials-binding pipeline-utility-steps \
+					workflow-aggregator github-organization-folder jira sonar matrix-project matrix-auth saferestart robot jobConfigHistory 
 
