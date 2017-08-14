@@ -34,6 +34,13 @@ ENV TINI_SHA 6c41ec7d33e857d4779f14d9c74924cab0c7973485d2972419a3b7c7620ff5fd
 RUN curl -fsSL https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini-static-amd64 -o /bin/tini && chmod +x /bin/tini \
   && echo "$TINI_SHA  /bin/tini" | sha256sum -c -
 
+ENV GIT_LFS_VERSION 2.2.1
+ENV GIT_LFS_SHA 70c4141eaebd616cf2811257006541445e4ba1484ea23e5db01dbba88349ca8d
+
+RUN curl -fsSL https://packagecloud.io/github/git-lfs/packages/debian/stretch/git-lfs_${GIT_LFS_VERSION}_amd64.deb/download -o /tmp/git-lfs_${GIT_LFS_VERSION}_amd64.deb \
+    && echo "$GIT_LFS_SHA  /tmp/git-lfs_${GIT_LFS_VERSION}_amd64.deb" | sha256sum -c - \
+    && apt-get install -y /tmp/git-lfs_${GIT_LFS_VERSION}_amd64.deb && rm /tmp/git-lfs_${GIT_LFS_VERSION}_amd64.deb
+
 COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy
 
 # jenkins version being bundled in this docker image
