@@ -15,7 +15,8 @@ node('docker') {
     if (!infra.isTrusted()) {
 
         stage('shellcheck') {
-            docker.image('koalaman/shellcheck').inside() {
+            // newer versions of the image don't have cat installed and docker pipeline fails
+            docker.image('koalaman/shellcheck:v0.4.6').inside() {
                 // run shellcheck ignoring error SC1091
                 // Not following: /usr/local/bin/jenkins-support was not specified as input
                 sh "shellcheck -e SC1091 *.sh"
@@ -27,6 +28,7 @@ node('docker') {
          */
         stage('Build') {
             docker.build('jenkins')
+            docker.build('jenkins:alpine', '--file Dockerfile-alpine .')
         }
 
         stage('Test') {
@@ -41,7 +43,10 @@ node('docker') {
          * containers from artifacts
          */
         stage('Publish') {
-            sh './publish.sh'
+            infra.withDockerCredentials {
+                sh './publish.sh'
+                sh './publish.sh --variant alpine'
+            }
         }
     }
 }

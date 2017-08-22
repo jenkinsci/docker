@@ -46,6 +46,10 @@ load test_helpers
   assert_line 'javadoc.jpi.pinned'
   assert_line 'mailer.jpi'
   assert_line 'mailer.jpi.pinned'
+  assert_line 'git.jpi'
+  assert_line 'git.jpi.pinned'
+  assert_line 'filesystem_scm.jpi'
+  assert_line 'filesystem_scm.jpi.pinned'
 }
 
 @test "plugins are installed with install-plugins.sh from a plugins file" {
@@ -71,6 +75,10 @@ load test_helpers
   assert_line 'javadoc.jpi.pinned'
   assert_line 'mailer.jpi'
   assert_line 'mailer.jpi.pinned'
+  assert_line 'git.jpi'
+  assert_line 'git.jpi.pinned'
+  assert_line 'filesystem_scm.jpi'
+  assert_line 'filesystem_scm.jpi.pinned'
 }
 
 @test "plugins are installed with install-plugins.sh even when already exist" {
