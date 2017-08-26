@@ -21,6 +21,7 @@ def userPwdCreds = [
 def secretTextCreds = [
 	[id: 'symphonyjenkinsauto-token', user: 'symphonyjenkinsauto-token', env: 'SYMPHONYJENKINSAUTO_GH_TOKEN'],
 	[id: 'sonar-token', user: 'sonar-token', env: 'SONAR_TOKEN'],
+
         [id: 'sonar-gh-token', user: 'sonar-gh-token', env: 'SONAR_GH_TOKEN']
 ]
 
