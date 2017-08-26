@@ -37,8 +37,6 @@ RUN curl -fsSL https://github.com/krallin/tini/releases/download/v${TINI_VERSION
 
 COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy
 COPY createCredentials.groovy /usr/share/jenkins/ref/init.groovy.d/createCredentials.groovy
-#COPY security.groovy /usr/share/jenkins/ref/init.groovy.d/security.groovy
-
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
@@ -80,7 +78,7 @@ COPY plugins.sh /usr/local/bin/plugins.sh
 COPY install-plugins.sh /usr/local/bin/install-plugins.sh
 
 # Update the plugin list here. It's IMPORTANT to specify both the plugin NAME and VERSION for VERSION CONTROL 
-RUN /usr/local/bin/install-plugins.sh 	config-file-provider credentials ssh-credentials ssh-agent ssh-slaves  git-client git github github-api saml \
-					github-oauth google-oauth-plugin kubernetes scm-api postbuild-task greenballs credentials-binding pipeline-utility-steps \
-					workflow-aggregator github-organization-folder jira sonar matrix-project matrix-auth saferestart robot jobConfigHistory 
+RUN /usr/local/bin/install-plugins.sh 	artifactory:2.12.2 github-oauth:0.27 github-organization-folder:1.6 ghprb:1.39.0 google-oauth-plugin:0.5 \
+        				greenballs:1.15 kubernetes:0.11 groovy-label-assignment:1.2.0 postbuild-task:1.8 pipeline-utility-steps:1.4.0 rebuild:1.25 robot:1.6.4   \
+					saferestart:0.3 saml:1.0.3 sonar:2.6.1 ssh-slaves:1.20 role-strategy:2.5.1 jobConfigHistory:2.17 maven-plugin:2.17  
 
