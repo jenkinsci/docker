@@ -52,7 +52,7 @@ Jenkins.instance.setNumExecutors(5)
 and `Dockerfile`
 
 ```
-FROM jenkins
+FROM jenkins/jenkins:lts
 COPY executors.groovy /usr/share/jenkins/ref/init.groovy.d/executors.groovy
 ```
 
@@ -98,7 +98,7 @@ If you want to install Jenkins behind a reverse proxy with prefix, example: mysi
 
 Argument you pass to docker running the jenkins image are passed to jenkins launcher, so you can run for sample :
 ```
-docker run jenkins --version
+docker run jenkins/jenkins:lts --version
 ```
 This will dump Jenkins version, just like when you run jenkins as an executable war.
 
@@ -107,7 +107,7 @@ define a derived jenkins image based on the official one with some customized se
 to force use of HTTPS with a certificate included in the image
 
 ```
-FROM jenkins:1.565.3
+FROM jenkins/jenkins:lts
 
 COPY https.pem /var/lib/jenkins/cert
 COPY https.key /var/lib/jenkins/pk
@@ -118,7 +118,7 @@ EXPOSE 8083
 You can also change the default slave agent port for jenkins by defining `JENKINS_SLAVE_AGENT_PORT` in a sample Dockerfile.
 
 ```
-FROM jenkins:1.565.3
+FROM jenkins/jenkins:lts
 ENV JENKINS_SLAVE_AGENT_PORT 50001
 ```
 or as a parameter to docker,
@@ -131,7 +131,7 @@ docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGEN
 You can run your container as root - and install via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile to customise, for example:
 
 ```
-FROM jenkins
+FROM jenkins/jenkins:lts
 # if we want to install via apt
 USER root
 RUN apt-get update && apt-get install -y ruby make more-thing-here
@@ -144,7 +144,7 @@ For this purpose, use `/usr/share/jenkins/ref` as a place to define the default 
 wish the target installation to look like :
 
 ```
-FROM jenkins
+FROM jenkins/jenkins:lts
 COPY custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
 ```
 
@@ -185,14 +185,14 @@ There are also custom version specifiers:
 You can run the script manually in Dockerfile:
 
 ```Dockerfile
-FROM jenkins
+FROM jenkins/jenkins:lts
 RUN /usr/local/bin/install-plugins.sh docker-slaves github-branch-source:1.8
 ```
 
 Furthermore it is possible to pass a file that contains this set of plugins (with or without line breaks).
 
 ```Dockerfile
-FROM jenkins
+FROM jenkins/jenkins:lts
 COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
 RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
 ```
@@ -248,7 +248,7 @@ The default behaviour when upgrading from a docker image that didn't write marke
 
 Build with the usual
 
-    docker build -t jenkins .
+    docker build -t jenkins/jenkins .
 
 Tests are written using [bats](https://github.com/sstephenson/bats) under the `tests` dir
 
