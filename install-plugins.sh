@@ -107,6 +107,7 @@ resolveDependencies() {
     for d in "${array[@]}"
     do
         plugin="$(cut -d':' -f1 - <<< "$d")"
+        version="$(cut -d':' -f2 - <<< "$d")"
         if [[ $d == *"resolution:=optional"* ]]; then
             echo "Skipping optional dependency $plugin"
         else
@@ -122,7 +123,7 @@ resolveDependencies() {
                     echo "Skipping already bundled dependency $d ($minVersion <= $versionInstalled)"
                 fi
             else
-                download "$plugin" &
+                download "$plugin" "$version" &
             fi
         fi
     done
