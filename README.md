@@ -2,11 +2,8 @@
 
 The Jenkins Continuous Integration and Delivery server.
 
-This is a fully functional Jenkins server, based on the Long Term Support release.
+This is a fully functional Jenkins server.
 [http://jenkins.io/](http://jenkins.io/).
-
-For weekly releases check out [`jenkinsci/jenkins`](https://hub.docker.com/r/jenkinsci/jenkins/)
-
 
 <img src="http://jenkins-ci.org/sites/default/files/jenkins_logo.png"/>
 
@@ -14,7 +11,7 @@ For weekly releases check out [`jenkinsci/jenkins`](https://hub.docker.com/r/jen
 # Usage
 
 ```
-docker run -p 8080:8080 -p 50000:50000 jenkinsci/jenkins:lts
+docker run -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts
 ```
 
 NOTE: read below the _build executors_ part for the role of the `50000` port mapping.
@@ -23,10 +20,10 @@ This will store the workspace in /var/jenkins_home. All Jenkins data lives in th
 You will probably want to make that an explicit volume so you can manage it and attach to another container for upgrades :
 
 ```
-docker run -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home jenkinsci/jenkins:lts
+docker run -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts
 ```
 
-this will automatically create a 'jenkins_home' volume on docker host, that will survive container stop/restart/deletion. 
+this will automatically create a 'jenkins_home' volume on docker host, that will survive container stop/restart/deletion.
 
 Avoid using a bind mount from a folder on host into `/var/jenkins_home`, as this might result in file permission issue. If you _really_ need to bind mount jenkins_home, ensure that directory on host is accessible by the jenkins user in container (jenkins user - uid 1000) or use `-u some_other_user` parameter with `docker run`.
 
@@ -55,7 +52,7 @@ Jenkins.instance.setNumExecutors(5)
 and `Dockerfile`
 
 ```
-FROM jenkins
+FROM jenkins/jenkins:lts
 COPY executors.groovy /usr/share/jenkins/ref/init.groovy.d/executors.groovy
 ```
 
@@ -74,7 +71,7 @@ You might need to customize the JVM running Jenkins, typically to pass system pr
 variable for this purpose :
 
 ```
-docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS=-Dhudson.footerURL=http://mycompany.com jenkinsci/jenkins:lts
+docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS=-Dhudson.footerURL=http://mycompany.com jenkins/jenkins:lts
 ```
 
 # Configuring logging
@@ -89,7 +86,7 @@ handlers=java.util.logging.ConsoleHandler
 jenkins.level=FINEST
 java.util.logging.ConsoleHandler.level=FINEST
 EOF
-docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS="-Djava.util.logging.config.file=/var/jenkins_home/log.properties" -v `pwd`/data:/var/jenkins_home jenkinsci/jenkins:lts
+docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS="-Djava.util.logging.config.file=/var/jenkins_home/log.properties" -v `pwd`/data:/var/jenkins_home jenkins/jenkins:lts
 ```
 
 # Configuring reverse proxy
@@ -101,7 +98,7 @@ If you want to install Jenkins behind a reverse proxy with prefix, example: mysi
 
 Argument you pass to docker running the jenkins image are passed to jenkins launcher, so you can run for sample :
 ```
-docker run jenkins --version
+docker run jenkins/jenkins:lts --version
 ```
 This will dump Jenkins version, just like when you run jenkins as an executable war.
 
@@ -110,7 +107,7 @@ define a derived jenkins image based on the official one with some customized se
 to force use of HTTPS with a certificate included in the image
 
 ```
-FROM jenkins:1.565.3
+FROM jenkins/jenkins:lts
 
 COPY https.pem /var/lib/jenkins/cert
 COPY https.key /var/lib/jenkins/pk
@@ -121,12 +118,12 @@ EXPOSE 8083
 You can also change the default slave agent port for jenkins by defining `JENKINS_SLAVE_AGENT_PORT` in a sample Dockerfile.
 
 ```
-FROM jenkins:1.565.3
+FROM jenkins/jenkins:lts
 ENV JENKINS_SLAVE_AGENT_PORT 50001
 ```
 or as a parameter to docker,
 ```
-docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGENT_PORT=50001 jenkinsci/jenkins:lts
+docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGENT_PORT=50001 jenkins/jenkins:lts
 ```
 
 # Installing more tools
@@ -134,7 +131,7 @@ docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGEN
 You can run your container as root - and install via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile to customise, for example:
 
 ```
-FROM jenkins
+FROM jenkins/jenkins:lts
 # if we want to install via apt
 USER root
 RUN apt-get update && apt-get install -y ruby make more-thing-here
@@ -147,25 +144,55 @@ For this purpose, use `/usr/share/jenkins/ref` as a place to define the default 
 wish the target installation to look like :
 
 ```
-FROM jenkins
+FROM jenkins/jenkins:lts
 COPY custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
 ```
 
 ## Preinstalling plugins
 
 You can rely on the `install-plugins.sh` script to pass a set of plugins to download with their dependencies.
-Use plugin artifact ID, whithout `-plugin` extension, and append the version if needed separated by `:`.
+This script will perform downloads from update centers, an internet access is required for the default update centers.
+
+### Setting update centers
+
+During the download, the script will use update centers defined by the following environment variables:
+
+* `JENKINS_UC` - Main update center.
+  This update center may offer plugin versions depending on the Jenkins LTS Core versions.
+  Default value: https://updates.jenkins.io
+* `JENKINS_UC_EXPERIMENTAL` - [Experimental Update Center](https://jenkins.io/blog/2013/09/23/experimental-plugins-update-center/).
+  This center offers Alpha and Beta versions of plugins.
+  Default value: https://updates.jenkins.io/experimental
+
+It is possible to override the environment variables in images.
+
+:exclamation: Note that changing this variables **will not** change the Update Center being used by Jenkins runtime.
+
+### Plugin version format
+
+Use plugin artifact ID, without `-plugin` extension, and append the version if needed separated by `:`.
 Dependencies that are already included in the Jenkins war will only be downloaded if their required version is newer than the one included.
 
-```
-FROM jenkins
+There are also custom version specifiers:
+
+* `latest` - download the latest version from the main update center.
+  For Jenkins LTS images
+  (example: `git:latest`)
+* `experimental` - download the latest version from the experimental update center defined by the `JENKINS_UC_EXPERIMENTAL` environment variable (example: `filesystem_scm:experimental`)
+
+### Script usage
+
+You can run the script manually in Dockerfile:
+
+```Dockerfile
+FROM jenkins/jenkins:lts
 RUN /usr/local/bin/install-plugins.sh docker-slaves github-branch-source:1.8
 ```
 
 Furthermore it is possible to pass a file that contains this set of plugins (with or without line breaks).
 
-```
-FROM jenkins
+```Dockerfile
+FROM jenkins/jenkins:lts
 COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
 RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
 ```
@@ -221,7 +248,7 @@ The default behaviour when upgrading from a docker image that didn't write marke
 
 Build with the usual
 
-    docker build -t jenkins .
+    docker build -t jenkins/jenkins .
 
 Tests are written using [bats](https://github.com/sstephenson/bats) under the `tests` dir
 
