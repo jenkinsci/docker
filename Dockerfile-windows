@@ -1,0 +1,43 @@
+# escape=`
+
+FROM microsoft/windowsservercore as builder
+
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+
+ENV JDK_VERSION 8.23.0.3-jdk8.0.144
+ENV JENKINS_VERSION 2.77
+ENV GIT_VERSION 2.14.1
+ENV DOCKER_CHANNEL test
+ENV DOCKER_VERSION 17.09.0-ce-rc1
+ENV DOCKER_DOWNLOAD_URL https://download.docker.com/win/static/${DOCKER_CHANNEL}/x86_64/docker-${DOCKER_VERSION}.zip
+
+RUN Invoke-WebRequest -Uri http://cdn.azul.com/zulu/bin/zulu${Env:JDK_VERSION}-win_x64.zip -Outfile openjdk.zip
+RUN Expand-Archive -Path openjdk.zip -Destination .
+RUN Move-Item zulu* openjdk
+RUN Remove-Item openjdk\src.zip
+
+RUN Invoke-WebRequest -OutFile jenkins.war -UseBasicParsing "http://mirror.xmission.com/jenkins/war/${Env:JENKINS_VERSION}/jenkins.war"
+
+RUN Invoke-Webrequest "https://github.com/git-for-windows/git/releases/download/v${Env:GIT_VERSION}.windows.1/MinGit-${Env:GIT_VERSION}-64-bit.zip" -OutFile git.zip -UseBasicParsing
+RUN Expand-Archive -Path git.zip -DestinationPath git
+
+RUN Invoke-WebRequest -Uri $env:DOCKER_DOWNLOAD_URL -OutFile 'docker.zip'
+RUN Expand-Archive -Path docker.zip -DestinationPath .
+
+FROM microsoft/nanoserver
+
+COPY --from=builder ["openjdk", "C:\\Program Files\\openjdk"]
+RUN setx PATH "%PATH%;C:\Program Files\openjdk\bin"
+
+COPY --from=builder ["git", "C:\\Program Files\\git"]
+RUN setx PATH "%PATH%;C:\Program Files\git\cmd"
+
+COPY --from=builder ["jenkins.war", "C:\\Program Files\\jenkins\\jenkins.war"]
+
+COPY --from=builder ["docker\\docker.exe", "C:\\Program Files\\docker\\docker.exe"]
+RUN setx PATH "%PATH%;C:\Program Files\docker"
+
+EXPOSE 8080
+EXPOSE 50000
+
+ENTRYPOINT ["java", "-jar", "C:\\Program Files\\jenkins\\jenkins.war"]
