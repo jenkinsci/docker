@@ -16,9 +16,8 @@ ENV JENKINS_SLAVE_AGENT_PORT ${agent_port}
 # If you bind mount a volume from the host or a data container, 
 # ensure you use the same uid
 RUN groupadd -g ${gid} ${group} \
-    && useradd -u ${uid} -g ${gid} -m -s /bin/bash ${user}
-
-RUN mkdir $JENKINS_HOME && chown -R ${user} "$JENKINS_HOME"
+    && useradd -u ${uid} -g ${gid} -m -s /bin/bash ${user} \
+    && mkdir $JENKINS_HOME && chown -R ${user} "$JENKINS_HOME"
 
 # Jenkins home directory is a volume, so configuration and build history 
 # can be persisted and survive image upgrades
