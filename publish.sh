@@ -35,7 +35,20 @@ login-token() {
 }
 
 is-published() {
-    get-manifest "$1" &> /dev/null
+    local tag=$1
+    local opts=""
+    if [ "$debug" = true ]; then
+        opts="-v"
+    fi
+    local http_code;
+    http_code=$(curl $opts -q -fsSL -o /dev/null -w "%{http_code}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/jenkins/jenkins/manifests/$tag")
+    if [ "$http_code" -eq "404" ]; then
+        false
+    elif [ "$http_code" -eq "200" ]; then
+        true
+    else
+        echo "Received unexpected http code from Docker hub: $http_code"
+    fi
 }
 
 get-manifest() {
@@ -44,7 +57,7 @@ get-manifest() {
     if [ "$debug" = true ]; then
         opts="-v"
     fi
-    curl $opts -q -fsSL -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/jenkinsci/jenkins/manifests/$tag"
+    curl $opts -q -fsSL -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/jenkins/jenkins/manifests/$tag"
 }
 
 get-digest() {
@@ -84,8 +97,9 @@ publish() {
                  --build-arg "JENKINS_SHA=$sha" \
                  --tag "jenkins/jenkins:${tag}" \
                  --tag "jenkinsci/jenkins:${tag}" \
-                 "${build_opts[@]}" .
+                 "${build_opts[@]+"${build_opts[@]}"}" .
 
+    # " line to fix syntax highlightning
     if [ ! "$dry_run" = true ]; then
         docker push "jenkins/jenkins:${tag}"
         docker push "jenkinsci/jenkins:${tag}"        
