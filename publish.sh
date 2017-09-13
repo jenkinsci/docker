@@ -102,7 +102,7 @@ publish() {
     # " line to fix syntax highlightning
     if [ ! "$dry_run" = true ]; then
         docker push "jenkins/jenkins:${tag}"
-        docker push "jenkinsci/jenkins:${tag}"
+        docker push "jenkinsci/jenkins:${tag}"        
     fi
 }
 
@@ -200,7 +200,7 @@ TOKEN=$(login-token)
 lts_version=""
 version=""
 for version in $(get-latest-versions); do
-    if [ "$variant" == "alpine" ]; then
+    if is-published "$version$variant"; then
         echo "Tag is already published: $version$variant"
     else
         echo "Publishing version: $version$variant"
