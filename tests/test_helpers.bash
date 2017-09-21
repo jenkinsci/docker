@@ -40,6 +40,10 @@ function retry {
     false
 }
 
+function sut_image {
+    echo "bats-jenkins-${DOCKERFILE:-Dockerfile}" | tr '[:upper:]' '[:lower:]' | sed -e 's/dockerfile$/default/' | sed -e 's/dockerfile//'
+}
+
 function docker_build {
     local opts="-f ${DOCKERFILE:-Dockerfile}"
     if [ -n "$JENKINS_VERSION" ]; then

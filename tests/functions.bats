@@ -1,10 +1,10 @@
 #!/usr/bin/env bats
 
-SUT_IMAGE=bats-jenkins
-
 load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
 load test_helpers
+
+SUT_IMAGE=$(sut_image)
 
 . $BATS_TEST_DIRNAME/../jenkins-support
 
