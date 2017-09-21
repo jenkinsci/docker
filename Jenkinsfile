@@ -35,8 +35,13 @@ node('docker') {
             sh """
             git submodule update --init --recursive
             git clone https://github.com/sstephenson/bats.git
-            bats/bin/bats tests
             """
+        }
+        stage('Test debian') {
+            sh "DOCKERFILE=Dockerfile bats/bin/bats tests"
+        }
+        stage('Test alpine') {
+            sh "DOCKERFILE=Dockerfile-alpine bats/bin/bats tests"
         }
     } else {
         /* In our trusted.ci environment we only want to be publishing our

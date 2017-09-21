@@ -41,10 +41,11 @@ function retry {
 }
 
 function docker_build {
+    local opts="-f ${DOCKERFILE:-Dockerfile}"
     if [ -n "$JENKINS_VERSION" ]; then
-        docker build --build-arg JENKINS_VERSION=$JENKINS_VERSION --build-arg JENKINS_SHA=$JENKINS_SHA "$@"
+        docker build $opts --build-arg JENKINS_VERSION=$JENKINS_VERSION --build-arg JENKINS_SHA=$JENKINS_SHA "$@"
     else
-        docker build "$@"
+        docker build $opts "$@"
     fi
 }
 
