@@ -35,9 +35,25 @@ node('docker') {
             sh """
             git submodule update --init --recursive
             git clone https://github.com/sstephenson/bats.git
-            bats/bin/bats tests
             """
         }
+
+        def labels = ['debian', 'alpine']
+        def builders = [:]
+        for (x in labels) {
+            def label = x
+
+            // Create a map to pass in to the 'parallel' step so we can fire all the builds at once
+            builders[label] = {
+                stage("Test ${label}") {
+                    def dockerfile = label == 'debian' ? 'Dockerfile' : "Dockerfile-${label}"
+                    sh "DOCKERFILE=${dockerfile} bats/bin/bats tests"
+                }
+            }
+        }
+
+        parallel builders
+
     } else {
         /* In our trusted.ci environment we only want to be publishing our
          * containers from artifacts

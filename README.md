@@ -252,7 +252,8 @@ Build with the usual
 
 Tests are written using [bats](https://github.com/sstephenson/bats) under the `tests` dir
 
-    bats tests
+    DOCKERFILE=Dockerfile bats tests
+    DOCKERFILE=Dockerfile-alpine bats tests
 
 Bats can be easily installed with `brew install bats` on OS X
 
