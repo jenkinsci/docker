@@ -26,7 +26,7 @@ load test_helpers
 @test "plugins are installed with install-plugins.sh" {
   run docker build -t $SUT_IMAGE-install-plugins $BATS_TEST_DIRNAME/install-plugins
   assert_success
-  refute_line --partial 'Skipping already bundled dependency'
+  refute_line --partial 'Skipping already installed dependency'
   # replace DOS line endings \r\n
   run bash -c "docker run --rm $SUT_IMAGE-install-plugins ls --color=never -1 /var/jenkins_home/plugins | tr -d '\r'"
   assert_success
@@ -55,7 +55,7 @@ load test_helpers
 @test "plugins are installed with install-plugins.sh from a plugins file" {
   run docker build -t $SUT_IMAGE-install-plugins-pluginsfile $BATS_TEST_DIRNAME/install-plugins/pluginsfile
   assert_success
-  refute_line --partial 'Skipping already bundled dependency'
+  refute_line --partial 'Skipping already installed dependency'
   # replace DOS line endings \r\n
   run bash -c "docker run --rm $SUT_IMAGE-install-plugins ls --color=never -1 /var/jenkins_home/plugins | tr -d '\r'"
   assert_success
@@ -85,11 +85,16 @@ load test_helpers
   run docker build -t $SUT_IMAGE-install-plugins-update --no-cache $BATS_TEST_DIRNAME/install-plugins/update
   assert_success
   assert_line "Using provided plugin: ant"
-  refute_line --partial 'Skipping already bundled dependency'
   # replace DOS line endings \r\n
   run bash -c "docker run --rm $SUT_IMAGE-install-plugins-update unzip -p /var/jenkins_home/plugins/maven-plugin.jpi META-INF/MANIFEST.MF | tr -d '\r'"
   assert_success
   assert_line 'Plugin-Version: 2.13'
+}
+
+@test "dependencies are not installed with install-plugins.sh when they already exist" {
+  run docker build -t $SUT_IMAGE-install-plugins-update --no-cache $BATS_TEST_DIRNAME/install-plugins/update
+  assert_success
+  assert_line --partial 'Skipping already installed dependency'
 }
 
 @test "plugins are getting upgraded but not downgraded" {
