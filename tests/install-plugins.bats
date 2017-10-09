@@ -84,17 +84,12 @@ load test_helpers
 @test "plugins are installed with install-plugins.sh even when already exist" {
   run docker build -t $SUT_IMAGE-install-plugins-update --no-cache $BATS_TEST_DIRNAME/install-plugins/update
   assert_success
+  assert_line --partial 'Skipping already installed dependency'
   assert_line "Using provided plugin: ant"
   # replace DOS line endings \r\n
   run bash -c "docker run --rm $SUT_IMAGE-install-plugins-update unzip -p /var/jenkins_home/plugins/maven-plugin.jpi META-INF/MANIFEST.MF | tr -d '\r'"
   assert_success
   assert_line 'Plugin-Version: 2.13'
-}
-
-@test "dependencies are not installed with install-plugins.sh when they already exist" {
-  run docker build -t $SUT_IMAGE-install-plugins-update --no-cache $BATS_TEST_DIRNAME/install-plugins/update
-  assert_success
-  assert_line --partial 'Skipping already installed dependency'
 }
 
 @test "plugins are getting upgraded but not downgraded" {
