@@ -41,13 +41,14 @@ is-published() {
         opts="-v"
     fi
     local http_code;
-    http_code=$(curl $opts -q -fsSL -o /dev/null -w "%{http_code}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/jenkins/jenkins/manifests/$tag")
+    http_code=$(curl $opts -q -fsL -o /dev/null -w "%{http_code}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/jenkins/jenkins/manifests/$tag")
     if [ "$http_code" -eq "404" ]; then
         false
     elif [ "$http_code" -eq "200" ]; then
         true
     else
         echo "Received unexpected http code from Docker hub: $http_code"
+        exit 1
     fi
 }
 
