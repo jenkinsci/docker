@@ -111,7 +111,7 @@ resolveDependencies() {
             echo "Skipping optional dependency $plugin"
         else
             local pluginInstalled
-            if pluginInstalled="$(echo "${bundledPlugins}" | grep "^${plugin}:")"; then
+            if pluginInstalled="$(echo -e "${bundledPlugins}\n${installedPlugins}" | grep "^${plugin}:")"; then
                 pluginInstalled="${pluginInstalled//[$'\r']}"
                 local versionInstalled; versionInstalled=$(versionFromPlugin "${pluginInstalled}")
                 local minVersion; minVersion=$(versionFromPlugin "${d}")
@@ -119,7 +119,7 @@ resolveDependencies() {
                     echo "Upgrading bundled dependency $d ($minVersion > $versionInstalled)"
                     download "$plugin" &
                 else
-                    echo "Skipping already bundled dependency $d ($minVersion <= $versionInstalled)"
+                    echo "Skipping already installed dependency $d ($minVersion <= $versionInstalled)"
                 fi
             else
                 download "$plugin" &
@@ -205,6 +205,9 @@ main() {
 
     echo "Analyzing war..."
     bundledPlugins="$(bundledPlugins)"
+
+    echo "Registering preinstalled plugins..."
+    installedPlugins="$(installedPlugins)"
 
     # Check if there's a version-specific update center, which is the case for LTS versions
     jenkinsVersion="$(jenkinsMajorMinorVersion)"
