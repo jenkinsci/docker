@@ -4,27 +4,35 @@ FROM microsoft/windowsservercore as builder
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-ENV JDK_VERSION 8.23.0.3-jdk8.0.144
-ENV JENKINS_VERSION 2.77
-ENV GIT_VERSION 2.14.1
+ENV JAVA_VERSION 8u141
+ENV JAVA_OJDKBUILD_VERSION 1.8.0.141-1
+ENV JAVA_OJDKBUILD_ZIP java-1.8.0-openjdk-1.8.0.141-1.b16.ojdkbuild.windows.x86_64.zip
+
+ENV JENKINS_VERSION 2.73.2
+
+ENV GIT_VERSION 2.14.2
+ENV GIT_VERSION_BUILD 3
+
 ENV DOCKER_CHANNEL test
 ENV DOCKER_VERSION 17.09.0-ce-rc1
 ENV DOCKER_DOWNLOAD_URL https://download.docker.com/win/static/${DOCKER_CHANNEL}/x86_64/docker-${DOCKER_VERSION}.zip
 
-RUN Invoke-WebRequest -Uri http://cdn.azul.com/zulu/bin/zulu${Env:JDK_VERSION}-win_x64.zip -Outfile openjdk.zip
-RUN Expand-Archive -Path openjdk.zip -Destination .
-RUN Move-Item zulu* openjdk
+RUN Invoke-WebRequest -Uri "https://github.com/ojdkbuild/ojdkbuild/releases/download/${Env:JAVA_OJDKBUILD_VERSION}/${Env:JAVA_OJDKBUILD_ZIP}" -OutFile ojdkbuild.zip -UseBasicParsing
+RUN Expand-Archive -Path ojdkbuild.zip -Destination .
+RUN Move-Item java-* openjdk
 RUN Remove-Item openjdk\src.zip
 
-RUN Invoke-WebRequest -OutFile jenkins.war -UseBasicParsing "http://mirror.xmission.com/jenkins/war/${Env:JENKINS_VERSION}/jenkins.war"
+RUN Invoke-WebRequest -OutFile jenkins.war -UseBasicParsing "http://mirrors.jenkins.io/war-stable/${Env:JENKINS_VERSION}/jenkins.war"
 
-RUN Invoke-Webrequest "https://github.com/git-for-windows/git/releases/download/v${Env:GIT_VERSION}.windows.1/MinGit-${Env:GIT_VERSION}-64-bit.zip" -OutFile git.zip -UseBasicParsing
+RUN Invoke-Webrequest "https://github.com/git-for-windows/git/releases/download/v${Env:GIT_VERSION}.windows.${Env:GIT_VERSION_BUILD}/MinGit-${Env:GIT_VERSION}.${Env:GIT_VERSION_BUILD}-64-bit.zip" -OutFile git.zip -UseBasicParsing
 RUN Expand-Archive -Path git.zip -DestinationPath git
 
 RUN Invoke-WebRequest -Uri $env:DOCKER_DOWNLOAD_URL -OutFile 'docker.zip'
 RUN Expand-Archive -Path docker.zip -DestinationPath .
 
 FROM microsoft/nanoserver
+
+USER ContainerAdministrator
 
 COPY --from=builder ["openjdk", "C:\\Program Files\\openjdk"]
 RUN setx PATH "%PATH%;C:\Program Files\openjdk\bin"
