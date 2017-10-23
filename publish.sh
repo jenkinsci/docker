@@ -85,12 +85,7 @@ publish() {
         build_opts=()
     fi
 
-    local dir=war
-    # lts is in a different dir
-    if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-        dir=war-stable
-    fi
-    sha=$(curl -q -fsSL "http://mirrors.jenkins.io/${dir}/${version}/jenkins.war.sha256" | cut -d' ' -f 1)
+    sha=$(curl -q -fsSL "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/${version}/jenkins-war-${version}.war.sha256" )
 
     docker build --file "Dockerfile$variant" \
                  --build-arg "JENKINS_VERSION=$version" \
