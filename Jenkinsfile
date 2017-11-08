@@ -2,7 +2,7 @@
 
 properties([
     buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '5')),
-    pipelineTriggers([cron('H/6 * * * *')]),
+    pipelineTriggers([cron('H H/6 * * *')]),
 ])
 
 node('docker') {
