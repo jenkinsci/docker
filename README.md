@@ -226,7 +226,7 @@ script-security:1.13
 
 For 2.x-derived images, you may also want to
 
-    RUN echo 2.0 > /usr/share/jenkins/ref/jenkins.install.UpgradeWizard.state
+    RUN echo ${JENKINS_VERSION:-2.0} > /usr/share/jenkins/ref/jenkins.install.InstallUtil.lastExecVersion
 
 to indicate that this Jenkins installation is fully configured.
 Otherwise a banner will appear prompting the user to install additional plugins,
