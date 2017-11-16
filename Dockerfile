@@ -1,4 +1,4 @@
-FROM java:8-jdk
+FROM openjdk:8-jdk
 
 #
 # This line was inherited from the original repo. It has been left
@@ -23,8 +23,8 @@ RUN apt-get install -y ruby ruby-dev gem debhelper devscripts dh-apparmor \
     lxc
 
 RUN pip install --upgrade pip virtualenv virtualenvwrapper
-RUN gem install bundler thor json hipchat excon httparty nokogiri \
-    jenkins_api_client
+RUN gem install --no-rdoc --no-ri \
+  bundler thor json hipchat excon httparty nokogiri jenkins_api_client
 
 ENV JENKINS_HOME /srv/jenkins
 ENV JENKINS_SLAVE_AGENT_PORT 50000
