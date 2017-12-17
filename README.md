@@ -151,7 +151,7 @@ COPY custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
 ## Preinstalling plugins
 
 You can rely on the `install-plugins.sh` script to pass a set of plugins to download with their dependencies.
-This script will perform downloads from update centers, an internet access is required for the default update centers.
+This script will perform downloads from update centers, and internet access is required for the default update centers.
 
 ### Setting update centers
 
