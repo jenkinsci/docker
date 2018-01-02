@@ -191,7 +191,13 @@ main() {
     # Read plugins from stdin or from the command line arguments
     if [[ ($# -eq 0) ]]; then
         while read -r line || [ "$line" != "" ]; do
-            plugins+=("${line}")
+            # Remove leading/trailing spaces, comments, and empty lines
+            plugin=$(echo "${line}" | sed -e 's/^[ \t]*//g' -e 's/[ \t]*$//g' -e 's/[ \t]*#.*$//g' -e '/^[ \t]*$/d')
+
+            # Avoid adding empty plugin into array
+            if [ ${#plugin} -ne 0 ]; then
+                plugins+=("${plugin}")
+            fi
         done
     else
         plugins=("$@")
