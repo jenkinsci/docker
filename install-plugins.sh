@@ -192,7 +192,7 @@ main() {
     if [[ ($# -eq 0) ]]; then
         while read -r line || [ "$line" != "" ]; do
             # Remove leading/trailing spaces, comments, and empty lines
-            plugin=$(echo "${line}" | sed -e 's/^[ \t]*//g' -e 's/[ \t]*$//g' -e 's/[ \t]*#.*$//g' -e '/^[ \t]*$/d')
+            plugin=$(echo "${line}" | tr -d '\r' | sed -e 's/^[ \t]*//g' -e 's/[ \t]*$//g' -e 's/[ \t]*#.*$//g' -e '/^[ \t]*$/d')
 
             # Avoid adding empty plugin into array
             if [ ${#plugin} -ne 0 ]; then
