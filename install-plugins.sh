@@ -206,6 +206,7 @@ main() {
     # Create lockfile manually before first run to make sure any explicit version set is used.
     echo "Creating initial locks..."
     for plugin in "${plugins[@]}"; do
+	[[ ${plugin:0:1} == '#' ]] && continue;
         mkdir "$(getLockFile "${plugin%%:*}")"
     done
 
@@ -226,6 +227,7 @@ main() {
 
     echo "Downloading plugins..."
     for plugin in "${plugins[@]}"; do
+	[[ ${plugin:0:1} == '#' ]] && continue;
         pluginVersion=""
 
         if [[ $plugin =~ .*:.* ]]; then
