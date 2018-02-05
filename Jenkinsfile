@@ -5,6 +5,8 @@ properties([
     pipelineTriggers([cron('H H/6 * * *')]),
 ])
 
+timeout(20) {
+
 node('docker') {
     deleteDir()
 
@@ -66,4 +68,6 @@ node('docker') {
             }
         }
     }
+}
+
 }
