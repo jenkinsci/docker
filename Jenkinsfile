@@ -31,6 +31,7 @@ node('docker') {
         stage('Build') {
             docker.build('jenkins')
             docker.build('jenkins:alpine', '--file Dockerfile-alpine .')
+            docker.build('arm32v7/jenkins','--build-arg ARCH_PREFIX=arm32v7/')
         }
 
         stage('Test') {
