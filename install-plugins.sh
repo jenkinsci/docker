@@ -118,12 +118,12 @@ resolveDependencies() {
                 local minVersion; minVersion=$(versionFromPlugin "${d}")
                 if versionLT "${versionInstalled}" "${minVersion}"; then
                     echo "Upgrading bundled dependency $d ($minVersion > $versionInstalled)"
-                    download "$plugin" $plugin_version &
+                    download "$plugin" "$plugin_version" &
                 else
                     echo "Skipping already installed dependency $d ($minVersion <= $versionInstalled)"
                 fi
             else
-                download "$plugin" $plugin_version &
+                download "$plugin" "$plugin_version" &
             fi
         fi
     done
