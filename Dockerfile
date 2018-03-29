@@ -66,6 +66,23 @@ EXPOSE ${agent_port}
 
 ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 
+## BEGIN INSTALL DOCKER
+RUN apt-get update && \
+  apt-get install -y \
+  apt-transport-https \
+  ca-certificates \
+  curl \
+  gnupg2 \
+  software-properties-common
+RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
+RUN add-apt-repository \
+  "deb [arch=amd64] https://download.docker.com/linux/debian \
+  $(lsb_release -cs) \
+  stable"
+RUN apt-get update
+RUN apt-get install -y docker-ce
+## END INSTALL DOCKER
+
 USER ${user}
 
 COPY jenkins-support /usr/local/bin/jenkins-support
@@ -75,3 +92,4 @@ ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
 # from a derived Dockerfile, can use `RUN plugins.sh active.txt` to setup /usr/share/jenkins/ref/plugins from a support bundle
 COPY plugins.sh /usr/local/bin/plugins.sh
 COPY install-plugins.sh /usr/local/bin/install-plugins.sh
+
