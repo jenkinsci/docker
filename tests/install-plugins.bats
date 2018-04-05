@@ -26,7 +26,7 @@ SUT_IMAGE=$(sut_image)
 @test "plugins are installed with install-plugins.sh" {
   run docker_build_child $SUT_IMAGE-install-plugins $BATS_TEST_DIRNAME/install-plugins
   assert_success
-  refute_line --partial 'Skipping already bundled dependency'
+  refute_line --partial 'Skipping already installed dependency'
   # replace DOS line endings \r\n
   run bash -c "docker run --rm $SUT_IMAGE-install-plugins ls --color=never -1 /var/jenkins_home/plugins | tr -d '\r'"
   assert_success
@@ -53,9 +53,11 @@ SUT_IMAGE=$(sut_image)
 }
 
 @test "plugins are installed with install-plugins.sh from a plugins file" {
+  run docker_build_child $SUT_IMAGE-install-plugins $BATS_TEST_DIRNAME/install-plugins
+  assert_success
   run docker_build_child $SUT_IMAGE-install-plugins-pluginsfile $BATS_TEST_DIRNAME/install-plugins/pluginsfile
   assert_success
-  refute_line --partial 'Skipping already bundled dependency'
+  refute_line --partial 'Skipping already installed dependency'
   # replace DOS line endings \r\n
   run bash -c "docker run --rm $SUT_IMAGE-install-plugins ls --color=never -1 /var/jenkins_home/plugins | tr -d '\r'"
   assert_success
@@ -82,10 +84,12 @@ SUT_IMAGE=$(sut_image)
 }
 
 @test "plugins are installed with install-plugins.sh even when already exist" {
+  run docker_build_child $SUT_IMAGE-install-plugins $BATS_TEST_DIRNAME/install-plugins
+  assert_success
   run docker_build_child $SUT_IMAGE-install-plugins-update $BATS_TEST_DIRNAME/install-plugins/update --no-cache
   assert_success
+  assert_line --partial 'Skipping already installed dependency javadoc'
   assert_line "Using provided plugin: ant"
-  refute_line --partial 'Skipping already bundled dependency'
   # replace DOS line endings \r\n
   run bash -c "docker run --rm $SUT_IMAGE-install-plugins-update unzip -p /var/jenkins_home/plugins/maven-plugin.jpi META-INF/MANIFEST.MF | tr -d '\r'"
   assert_success
