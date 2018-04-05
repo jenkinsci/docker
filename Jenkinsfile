@@ -16,7 +16,7 @@ node('docker') {
 
         stage('shellcheck') {
             // newer versions of the image don't have cat installed and docker pipeline fails
-            docker.image('koalaman/shellcheck:v0.4.6').inside() {
+            docker.image('koalaman/shellcheck:v0.4.6').inside() { // checking
                 // run shellcheck ignoring error SC1091
                 // Not following: /usr/local/bin/jenkins-support was not specified as input
                 sh "shellcheck -e SC1091 *.sh"
