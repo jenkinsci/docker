@@ -4,7 +4,6 @@
 #
 # FROM jenkins
 # RUN install-plugins.sh docker-slaves github-branch-source
-
 set -o pipefail
 
 REF_DIR=${REF:-/usr/share/jenkins/ref/plugins}
@@ -167,6 +166,50 @@ installedPlugins() {
     done
 }
 
+availableUpdates() {
+    local url
+    if [[ -n "$JENKINS_UC_LATEST" ]]; then
+        # If version-specific Update Center is available, which is the case for LTS versions,
+        # use it to resolve latest versions.
+        url="$JENKINS_UC_LATEST/update-center.actual.json"
+    else
+        JENKINS_UC_DOWNLOAD=${JENKINS_UC_DOWNLOAD:-"$JENKINS_UC/download"}
+        url="$JENKINS_UC_DOWNLOAD/update-center.actual.json"
+    fi
+    local jqExecutable="$REF_DIR/jq"
+    local ucMetadataFile="$REF_DIR/uc.json"
+
+    local updatesFile="$REF_DIR/availableUpdates.txt"
+
+    # TODO: do jq installation in Dockerfile so that it comes from cache when plugin list is refreshed
+    local failureReason=""
+    curl --connect-timeout "${CURL_CONNECTION_TIMEOUT:-20}" \
+         --retry "${CURL_RETRY:-5}" --retry-delay "${CURL_RETRY_DELAY:-0}" --retry-max-time "${CURL_RETRY_MAX_TIME:-60}" \
+         -s -f -L "https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64" -o "$jqExecutable" \
+            || failureReason="Cannot retrieve the jq executable, error code: $?"
+    chmod +x ${jqExecutable} || failureReason="Cannot chmod +x ${jqExecutable}, error code: $?"
+
+    curl --connect-timeout "${CURL_CONNECTION_TIMEOUT:-20}" \
+         --retry "${CURL_RETRY:-5}" --retry-delay "${CURL_RETRY_DELAY:-0}" --retry-max-time "${CURL_RETRY_MAX_TIME:-60}" \
+         -s -f -L "$url" -o "$ucMetadataFile" \
+            || failureReason="Cannot retrieve the UC metadata from ${url}, error code: $?"
+
+    if [[ -n "$failureReason" ]] ; then
+        echo "Cannot check for updates: $failureReason"
+    else
+        for f in "$REF_DIR"/*.jpi; do
+            local pluginName=$(basename "$f" | sed -e 's/\.jpi//')
+            local versionInstalled=$(get_plugin_version "$f")
+            local latestVersion=$(cat "$ucMetadataFile" | ${jqExecutable} -r ".plugins[\"${pluginName}\"].version")
+            if versionLT "${versionInstalled}" "${latestVersion}"; then
+                echo "$pluginName:$versionInstalled:$latestVersion" >> $updatesFile
+                # Also report it in the build log
+                echo "$pluginName:$versionInstalled:$latestVersion"
+            fi
+        done
+    fi
+}
+
 jenkinsMajorMinorVersion() {
     local JENKINS_WAR
     JENKINS_WAR=/usr/share/jenkins/jenkins.war
@@ -243,6 +286,10 @@ main() {
     echo
     echo "Installed plugins:"
     installedPlugins
+    echo
+    echo "Available updates:"
+    availableUpdates
+    echo
 
     if [[ -f $FAILED ]]; then
         echo "Some plugins failed to download!" "$(<"$FAILED")" >&2
