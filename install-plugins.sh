@@ -201,7 +201,7 @@ availableUpdates() {
             local pluginName versionInstalled latestVersion
             pluginName=$(basename "$f" | sed -e 's/\.jpi//')
             versionInstalled=$(get_plugin_version "$f")
-            latestVersion=$(cat "$ucMetadataFile" | ${jqExecutable} -r ".plugins[\"${pluginName}\"].version")
+            latestVersion=$("${jqExecutable}" -r ".plugins[\"${pluginName}\"].version" "$ucMetadataFile")
             if versionLT "${versionInstalled}" "${latestVersion}"; then
                 echo "$pluginName:$versionInstalled:$latestVersion" >> "$updatesFile"
                 # Also report it in the build log
