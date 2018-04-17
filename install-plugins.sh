@@ -187,7 +187,7 @@ availableUpdates() {
          --retry "${CURL_RETRY:-5}" --retry-delay "${CURL_RETRY_DELAY:-0}" --retry-max-time "${CURL_RETRY_MAX_TIME:-60}" \
          -s -f -L "https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64" -o "$jqExecutable" \
             || failureReason="Cannot retrieve the jq executable, error code: $?"
-    chmod +x ${jqExecutable} || failureReason="Cannot chmod +x ${jqExecutable}, error code: $?"
+    chmod +x "${jqExecutable}" || failureReason="Cannot chmod +x ${jqExecutable}, error code: $?"
 
     curl --connect-timeout "${CURL_CONNECTION_TIMEOUT:-20}" \
          --retry "${CURL_RETRY:-5}" --retry-delay "${CURL_RETRY_DELAY:-0}" --retry-max-time "${CURL_RETRY_MAX_TIME:-60}" \
@@ -198,11 +198,12 @@ availableUpdates() {
         echo "Cannot check for updates: $failureReason"
     else
         for f in "$REF_DIR"/*.jpi; do
-            local pluginName=$(basename "$f" | sed -e 's/\.jpi//')
-            local versionInstalled=$(get_plugin_version "$f")
-            local latestVersion=$(cat "$ucMetadataFile" | ${jqExecutable} -r ".plugins[\"${pluginName}\"].version")
+            local pluginName versionInstalled latestVersion
+            pluginName=$(basename "$f" | sed -e 's/\.jpi//')
+            versionInstalled=$(get_plugin_version "$f")
+            latestVersion=$(cat "$ucMetadataFile" | ${jqExecutable} -r ".plugins[\"${pluginName}\"].version")
             if versionLT "${versionInstalled}" "${latestVersion}"; then
-                echo "$pluginName:$versionInstalled:$latestVersion" >> $updatesFile
+                echo "$pluginName:$versionInstalled:$latestVersion" >> "$updatesFile"
                 # Also report it in the build log
                 echo "$pluginName:$versionInstalled:$latestVersion"
             fi
