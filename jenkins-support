@@ -125,3 +125,51 @@ copy_reference_file() {
         fi
     fi
 }
+
+# Retries a command a configurable number of times with backoff.
+#
+# The retry count is given by ATTEMPTS (default 60), the initial backoff
+# timeout is given by TIMEOUT in seconds (default 1.)
+#
+function retry_command() {
+  local max_attempts=${ATTEMPTS-60}
+  local timeout=${TIMEOUT-1}
+  local success_timeout=${SUCCESS_TIMEOUT-1}
+  local max_success_attempt=${SUCCESS_ATTEMPTS-1}
+  local attempt=0
+  local success_attempt=0
+  local exitCode=0
+
+  while (( $attempt < $max_attempts ))
+  do
+    set +e
+    "$@"
+    exitCode=$?
+    set -e
+
+    if [[ $exitCode == 0 ]]
+    then
+      success_attempt=$(( success_attempt + 1 ))
+      if (( $success_attempt >= $max_success_attempt))
+      then
+        break
+      else
+        sleep $success_timeout
+        continue
+      fi
+    fi
+
+    echo "$(date -u '+%T') Failure ($exitCode) Retrying in $timeout seconds..." 1>&2
+    sleep $timeout
+    success_attempt=0
+    attempt=$(( attempt + 1 ))
+    timeout=$(( timeout ))
+  done
+
+  if [[ $exitCode != 0 ]]
+  then
+    echo "$(date -u '+%T') Failed in the last attempt ($@)" 1>&2
+  fi
+
+  return $exitCode
+}
