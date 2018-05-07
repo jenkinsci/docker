@@ -3,9 +3,9 @@
 The Jenkins Continuous Integration and Delivery server.
 
 This is a fully functional Jenkins server.
-[http://jenkins.io/](http://jenkins.io/).
+[https://jenkins.io/](https://jenkins.io/).
 
-<img src="http://jenkins-ci.org/sites/default/files/jenkins_logo.png"/>
+<img src="https://jenkins.io/sites/default/files/jenkins_logo.png"/>
 
 
 # Usage
