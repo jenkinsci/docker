@@ -48,7 +48,7 @@ else
     exit 1
 fi
 
-JENKINS_PLUGINS_DIR=/var/jenkins_home/plugins
+JENKINS_PLUGINS_DIR=${JENKINS_HOME}/plugins
 if [ -d "$JENKINS_PLUGINS_DIR" ]
 then
     echo "Analyzing: $JENKINS_PLUGINS_DIR"
@@ -110,7 +110,7 @@ if (( "$COUNT_PLUGINS_INSTALLED" > 0 ))
 then
     echo "INFO: Successfully installed $COUNT_PLUGINS_INSTALLED plugins."
 
-    if [ -d $JENKINS_PLUGINS_DIR ]
+    if [ -d "$JENKINS_PLUGINS_DIR" ]
     then
         echo "INFO: Please restart the container for changes to take effect!"
     fi

@@ -8,19 +8,22 @@ ARG uid=1000
 ARG gid=1000
 ARG http_port=8080
 ARG agent_port=50000
+ARG JENKINS_HOME=/var/jenkins_home
 
-ENV JENKINS_HOME /var/jenkins_home
+ENV JENKINS_HOME $JENKINS_HOME
 ENV JENKINS_SLAVE_AGENT_PORT ${agent_port}
 
 # Jenkins is run with user `jenkins`, uid = 1000
 # If you bind mount a volume from the host or a data container,
 # ensure you use the same uid
-RUN groupadd -g ${gid} ${group} \
+RUN mkdir -p $JENKINS_HOME \
+    && chown ${uid}:${gid} $JENKINS_HOME \
+    && groupadd -g ${gid} ${group} \
     && useradd -d "$JENKINS_HOME" -u ${uid} -g ${gid} -m -s /bin/bash ${user}
 
 # Jenkins home directory is a volume, so configuration and build history
 # can be persisted and survive image upgrades
-VOLUME /var/jenkins_home
+VOLUME $JENKINS_HOME
 
 # `/usr/share/jenkins/ref/` contains all reference configuration we want
 # to set on a fresh new installation. Use it to bundle additional plugins
@@ -29,10 +32,10 @@ RUN mkdir -p /usr/share/jenkins/ref/init.groovy.d
 
 # Use tini as subreaper in Docker container to adopt zombie processes
 ARG TINI_VERSION=v0.16.1
-COPY tini_pub.gpg /var/jenkins_home/tini_pub.gpg
+COPY tini_pub.gpg ${JENKINS_HOME}/tini_pub.gpg
 RUN curl -fsSL https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-$(dpkg --print-architecture) -o /sbin/tini \
   && curl -fsSL https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-$(dpkg --print-architecture).asc -o /sbin/tini.asc \
-  && gpg --import /var/jenkins_home/tini_pub.gpg \
+  && gpg --import ${JENKINS_HOME}/tini_pub.gpg \
   && gpg --verify /sbin/tini.asc \
   && rm -rf /sbin/tini.asc /root/.gnupg \
   && chmod +x /sbin/tini
