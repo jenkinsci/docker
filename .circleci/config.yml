@@ -1,0 +1,15 @@
+version: 2
+jobs:
+  build:
+    working_directory: /app
+    docker:
+      - image: alpine
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Greeting
+          command: echo Hello, world.
+      - run:
+          name: Print the Current Time
+          command: date
