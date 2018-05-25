@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: /app
     docker:
-      - image: djenkins:valpine
+      - image: .
     steps:
       - checkout
       - setup_remote_docker
