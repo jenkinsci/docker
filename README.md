@@ -257,6 +257,12 @@ Tests are written using [bats](https://github.com/sstephenson/bats) under the `t
 
 Bats can be easily installed with `brew install bats` on OS X
 
+# Debugging
+
+In order to debug the master, use the `-e DEBUG=true -p 5005:5005` when starting the container. 
+Jenkins will be suspended on the startup in such case,
+and then it will be possible to attach a debugger from IDE to it.
+
 # Questions?
 
 Jump on irc.freenode.net and the #jenkins room. Ask!
