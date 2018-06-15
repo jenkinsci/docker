@@ -20,7 +20,10 @@ if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
     jenkins_opts_array+=( "$item" )
   done < <([[ $JENKINS_OPTS ]] && xargs printf '%s\0' <<<"$JENKINS_OPTS")
 
-  exec java --add-modules java.xml.bind -Duser.home="$JENKINS_HOME" "${java_opts_array[@]}" -jar ${JENKINS_WAR} --enable-future-java "${jenkins_opts_array[@]}" "$@"
+  exec java -p "${JAVA_LIB_DIR}/jaxb-api.jar:${JAVA_LIB_DIR}/javax.activation.jar:" \
+    --add-modules "${JAVA_MODULES}" \
+    -cp "${JAVA_LIB_DIR}/jaxb-impl.jar:${JAVA_LIB_DIR}/jaxb-core.jar" \
+    -Duser.home="$JENKINS_HOME" "${java_opts_array[@]}" -jar ${JENKINS_WAR} --enable-future-java "${jenkins_opts_array[@]}" "$@"
 fi
 
 # As argument is not jenkins, assume user want to run his own process, for example a `bash` shell to explore this image

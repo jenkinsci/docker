@@ -1,4 +1,4 @@
-FROM openjdk:10-jdk
+FROM openjdk:11-jdk
 
 RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
 
@@ -41,6 +41,15 @@ RUN curl -fsSL https://github.com/krallin/tini/releases/download/${TINI_VERSION}
   && chmod +x /sbin/tini
 
 COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy
+
+# Libs required to run on Java 11
+ENV JAVA_LIB_DIR /usr/share/jenkins/ref/java_cp
+ENV JAVA_MODULES "java.xml.bind,java.activation"
+RUN mkdir ${JAVA_LIB_DIR} \
+    && curl -fsSL http://central.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.0/jaxb-api-2.3.0.jar -o ${JAVA_LIB_DIR}/jaxb-api.jar \
+    && curl -fsSL http://central.maven.org/maven2/com/sun/xml/bind/jaxb-core/2.3.0.1/jaxb-core-2.3.0.1.jar -o ${JAVA_LIB_DIR}/jaxb-core.jar \
+    && curl -fsSL http://central.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.0.1/jaxb-impl-2.3.0.1.jar -o ${JAVA_LIB_DIR}/jaxb-impl.jar \
+    && curl -fsSL https://github.com/javaee/activation/releases/download/JAF-1_2_0/javax.activation.jar -o ${JAVA_LIB_DIR}/javax.activation.jar
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
