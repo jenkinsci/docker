@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk
+FROM openjdk:11-jdk
 
 RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
 
@@ -42,20 +42,30 @@ RUN curl -fsSL https://github.com/krallin/tini/releases/download/${TINI_VERSION}
 
 COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy
 
+# Libs required to run on Java 11
+ENV JAVA_LIB_DIR /usr/share/jenkins/ref/java_cp
+ENV JAVA_MODULES "java.xml.bind,java.activation"
+RUN mkdir ${JAVA_LIB_DIR} \
+    && curl -fsSL http://central.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.0/jaxb-api-2.3.0.jar -o ${JAVA_LIB_DIR}/jaxb-api.jar \
+    && curl -fsSL http://central.maven.org/maven2/com/sun/xml/bind/jaxb-core/2.3.0.1/jaxb-core-2.3.0.1.jar -o ${JAVA_LIB_DIR}/jaxb-core.jar \
+    && curl -fsSL http://central.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.0.1/jaxb-impl-2.3.0.1.jar -o ${JAVA_LIB_DIR}/jaxb-impl.jar \
+    && curl -fsSL https://github.com/javaee/activation/releases/download/JAF-1_2_0/javax.activation.jar -o ${JAVA_LIB_DIR}/javax.activation.jar
+
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION ${JENKINS_VERSION:-2.60.3}
+ENV JENKINS_VERSION ${JENKINS_VERSION:-2.127}
 
 # jenkins.war checksum, download will be validated using it
-ARG JENKINS_SHA=2d71b8f87c8417f9303a73d52901a59678ee6c0eefcf7325efed6035ff39372a
+ARG JENKINS_SHA=5ab171dc956939e8b43bf81512577a74e540ecd99388e6b51e0b477d1cf2910b
 
 # Can be used to customize where jenkins.war get downloaded from
 ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war
 
 # could use ADD but this one does not check Last-Modified header neither does it allow to control checksum
 # see https://github.com/docker/docker/issues/8331
-RUN curl -fsSL ${JENKINS_URL} -o /usr/share/jenkins/jenkins.war \
-  && echo "${JENKINS_SHA}  /usr/share/jenkins/jenkins.war" | sha256sum -c -
+RUN curl -fsSL ${JENKINS_URL} -o /usr/share/jenkins/jenkins.war
+RUN sha256sum /usr/share/jenkins/jenkins.war
+RUN echo "${JENKINS_SHA}  /usr/share/jenkins/jenkins.war" | sha256sum -c -
 
 ENV JENKINS_UC https://updates.jenkins.io
 ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
