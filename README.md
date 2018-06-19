@@ -163,6 +163,10 @@ During the download, the script will use update centers defined by the following
 * `JENKINS_UC_EXPERIMENTAL` - [Experimental Update Center](https://jenkins.io/blog/2013/09/23/experimental-plugins-update-center/).
   This center offers Alpha and Beta versions of plugins.
   Default value: https://updates.jenkins.io/experimental
+* `JENKINS_INCREMENTALS_REPO_MIRROR` -
+  Defines Maven mirror to be used to download plugins from the
+  [Incrementals repo](https://jenkins.io/blog/2018/05/15/incremental-deployment/).
+  Default value: https://repo.jenkins-ci.org/incrementals
 
 It is possible to override the environment variables in images.
 
@@ -179,6 +183,11 @@ There are also custom version specifiers:
   For Jenkins LTS images
   (example: `git:latest`)
 * `experimental` - download the latest version from the experimental update center defined by the `JENKINS_UC_EXPERIMENTAL` environment variable (example: `filesystem_scm:experimental`)
+* `incrementals;org.jenkins-ci.plugins.workflow;2.19-rc289.d09828a05a74`
+- download the plugin from the [Incrementals repo](https://jenkins.io/blog/2018/05/15/incremental-deployment/).
+  * For this option you need to specify `groupId` of the plugin.
+    Note that this value may change between plugin versions without notice.
+
 
 ### Script usage
 
@@ -256,6 +265,12 @@ Tests are written using [bats](https://github.com/sstephenson/bats) under the `t
     DOCKERFILE=Dockerfile-alpine bats tests
 
 Bats can be easily installed with `brew install bats` on OS X
+
+# Debugging
+
+In order to debug the master, use the `-e DEBUG=true -p 5005:5005` when starting the container. 
+Jenkins will be suspended on the startup in such case,
+and then it will be possible to attach a debugger from IDE to it.
 
 # Questions?
 

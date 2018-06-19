@@ -15,6 +15,13 @@ if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
     java_opts_array+=( "$item" )
   done < <([[ $JAVA_OPTS ]] && xargs printf '%s\0' <<<"$JAVA_OPTS")
 
+  if [[ "$DEBUG" ]] ; then
+    java_opts_array+=( \
+      '-Xdebug' \
+      '-Xrunjdwp:server=y,transport=dt_socket,address=5005,suspend=y' \
+    )
+  fi
+
   jenkins_opts_array=( )
   while IFS= read -r -d '' item; do
     jenkins_opts_array+=( "$item" )
