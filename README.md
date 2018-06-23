@@ -11,16 +11,16 @@ This is a fully functional Jenkins server.
 # Usage
 
 ```
-docker run -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts
+docker run -d -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts
 ```
 
 NOTE: read below the _build executors_ part for the role of the `50000` port mapping.
 
-This will store the workspace in /var/jenkins_home. All Jenkins data lives in there - including plugins and configuration.
+This will store the workspace in /var/jenkins_home. Container will be started in detached mode. All Jenkins data lives in there - including plugins and configuration.
 You will probably want to make that an explicit volume so you can manage it and attach to another container for upgrades :
 
 ```
-docker run -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts
+docker run -d -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts
 ```
 
 this will automatically create a 'jenkins_home' [docker volume](https://docs.docker.com/storage/volumes/) on the host machine, that will survive the container stop/restart/deletion.
