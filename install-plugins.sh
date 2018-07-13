@@ -224,13 +224,26 @@ availableUpdates() {
             # Example: query all security warning for the plugin's version
             # ./jq -r '.warnings[] | select(.name == "git") | select(.id | contains("SECURITY")) | select(.versions[].lastVersion | . >= "3.0.0" and (contains("beta") | not) and (contains("alpha") | not)) | "\(.id): \(.message) (\(.url))"'
             # TODO: This logic won't work properly for experimental releases which may have also fixes delivered in a separate baseline (e.g. Git)
-            securityWarnings=$("${jqExecutable}" -r ".warnings[] | select(.name == \"${pluginName}\") | select(.id | contains(\"SECURITY\")) | select(.versions[].lastVersion | . >= \"${versionInstalled}\" and (contains(\"beta\") | not) and (contains(\"alpha\") | not)) | \"- \\(.id): \\(.message) (\\(.url))\"" "$ucMetadataFile")
+            local experimentalFilter="select(.versions[].lastVersion | (contains(\"beta\") | not) and (contains(\"alpha\") | not))"
+            local outputFormat="\"\\(.versions[0].lastVersion) - \\(.id): \\(.message) (\\(.url))\""
+            securityWarnings=$("${jqExecutable}" -r ".warnings[] | select(.name == \"${pluginName}\") | select(.id | contains(\"SECURITY\")) | ${experimentalFilter} | ${outputFormat}" "$ucMetadataFile")
             if [[ -n "$securityWarnings" ]] ; then
-                >&2 echo "Security warnings for $pluginName:"
-                >&2 echo "${securityWarnings}"
-                echo "${pluginName}" >> "${securityWarningsFile}"
-                echo "${securityWarnings}" >> "${securityWarningsFile}"
-                securityFailed="${pluginName}"
+                local firstHit=true
+                echo "${securityWarnings}" | while read line ; do
+                    local lastAffectedVersion=$(echo $line | awk '{print $1;}')
+                    if versionLT "${lastAffectedVersion}" "${versionInstalled}" ; then
+                        lastAffectedVersion="${lastAffectedVersion}"
+                    else
+                        if [[ $firstHit = true ]] ; then
+                           >&2 echo "Security warnings for plugin $pluginName:"
+                           echo "${pluginName}" >> "${securityWarningsFile}"
+                           firstHit=false
+                        fi
+                        >&2 echo "up to ${line}"
+                        echo "up to ${line}" >> "${securityWarningsFile}"
+                        securityFailed="${pluginName}"
+                    fi
+                done
             fi
         done
 
