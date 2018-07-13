@@ -231,7 +231,7 @@ availableUpdates() {
                 local firstHit=true
                 while read -r line ; do
                     local lastAffectedVersion
-                    lastAffectedVersion=$(echo $line | awk '{print $1;}')
+                    lastAffectedVersion=$(echo "$line" | awk '{print $1;}')
                     if versionLT "${lastAffectedVersion}" "${versionInstalled}" ; then
                         lastAffectedVersion="${lastAffectedVersion}"
                     else
@@ -244,7 +244,7 @@ availableUpdates() {
                         echo "up to ${line}" >> "${securityWarningsFile}"
                         securityFailed="${pluginName}"
                     fi
-                done <<< $(echo "${securityWarnings}")
+                done <<< "${securityWarnings}"
             fi
         done
 
