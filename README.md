@@ -180,7 +180,7 @@ During the download, the script will use update centers defined by the following
   If `CHECK_UPDATES` is `true`, defines behavior for discovered security warnings.
   If `true`, the warnings will be just printed and ignored.
   Otherwise the image will fail if security warnings are discovered.
-  Default value: `false`
+  Default value: `true` (security is not enforced)
 
 It is possible to override the environment variables in images.
 

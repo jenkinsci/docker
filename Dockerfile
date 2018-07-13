@@ -74,7 +74,7 @@ ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 ## If true, check available updates
 ENV CHECK_UPDATES true
 ## Behavior when discovering security issues
-ENV IGNORE_SECURITY_WARNINGS false
+ENV IGNORE_SECURITY_WARNINGS true
 RUN curl -fsSL "https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64" -o /usr/local/bin/jq \
   && chmod +x /usr/local/bin/jq
 
