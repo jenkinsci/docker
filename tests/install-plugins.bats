@@ -83,6 +83,14 @@ SUT_IMAGE=$(sut_image)
   assert_line 'filesystem_scm.jpi.pinned'
 }
 
+
+@test "plugins are not installed by default if there is a security issue" {
+  run docker_build_child $SUT_IMAGE-install-plugins $BATS_TEST_DIRNAME/install-plugins
+  assert_success
+  run docker_build_child $SUT_IMAGE-install-plugins-pluginsfile $BATS_TEST_DIRNAME/install-plugins/security
+  assert_failure
+}
+
 @test "plugins are installed with install-plugins.sh even when already exist" {
   run docker_build_child $SUT_IMAGE-install-plugins $BATS_TEST_DIRNAME/install-plugins
   assert_success
