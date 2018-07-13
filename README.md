@@ -173,6 +173,14 @@ During the download, the script will use update centers defined by the following
   Defines Maven mirror to be used to download plugins from the
   [Incrementals repo](https://jenkins.io/blog/2018/05/15/incremental-deployment/).
   Default value: https://repo.jenkins-ci.org/incrementals
+* `CHECK_UPDATES` -
+  Enables checking for available updates and security warnings.
+  Default value: `true`
+* `IGNORE_SECURITY_WARNINGS` -
+  If `CHECK_UPDATES` is `true`, defines behavior for discovered security warnings.
+  If `true`, the warnings will be just printed and ignored.
+  Otherwise the command will fail.
+  Default value: `false`
 
 It is possible to override the environment variables in images.
 

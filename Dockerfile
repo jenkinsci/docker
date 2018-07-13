@@ -70,6 +70,14 @@ EXPOSE ${agent_port}
 
 ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 
+# Update check tools and settings
+## If true, check available updates
+ARG CHECK_UPDATES=true
+## Behavior when discovering security issues
+ARG IGNORE_SECURITY_WARNINGS=false
+RUN curl -fsSL "https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64" -o /usr/local/bin/jq \
+  && chmod +x /usr/local/bin/jq
+
 USER ${user}
 
 COPY jenkins-support /usr/local/bin/jenkins-support

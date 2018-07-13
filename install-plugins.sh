@@ -184,38 +184,64 @@ availableUpdates() {
         JENKINS_UC_DOWNLOAD=${JENKINS_UC_DOWNLOAD:-"$JENKINS_UC/download"}
         url="$JENKINS_UC_DOWNLOAD/update-center.actual.json"
     fi
-    local jqExecutable="$REF_DIR/jq"
+    local jqExecutable="/usr/local/bin/jq"
     local ucMetadataFile="$REF_DIR/uc.json"
 
     local updatesFile="$REF_DIR/availableUpdates.txt"
+    local securityWarningsFile="$REF_DIR/securityWarnings.txt"
 
     # TODO: do jq installation in Dockerfile so that it comes from cache when plugin list is refreshed
     local failureReason=""
-    curl --connect-timeout "${CURL_CONNECTION_TIMEOUT:-20}" \
-         --retry "${CURL_RETRY:-5}" --retry-delay "${CURL_RETRY_DELAY:-0}" --retry-max-time "${CURL_RETRY_MAX_TIME:-60}" \
-         -s -f -L "https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64" -o "$jqExecutable" \
-            || failureReason="Cannot retrieve the jq executable, error code: $?"
-    chmod +x "${jqExecutable}" || failureReason="Cannot chmod +x ${jqExecutable}, error code: $?"
-
-    curl --connect-timeout "${CURL_CONNECTION_TIMEOUT:-20}" \
-         --retry "${CURL_RETRY:-5}" --retry-delay "${CURL_RETRY_DELAY:-0}" --retry-max-time "${CURL_RETRY_MAX_TIME:-60}" \
-         -s -f -L "$url" -o "$ucMetadataFile" \
-            || failureReason="Cannot retrieve the UC metadata from ${url}, error code: $?"
+    # Download UC metadata file if it is missing
+    if [ ! -f "$ucMetadataFile" ]; then
+        curl --connect-timeout "${CURL_CONNECTION_TIMEOUT:-20}" \
+             --retry "${CURL_RETRY:-5}" --retry-delay "${CURL_RETRY_DELAY:-0}" --retry-max-time "${CURL_RETRY_MAX_TIME:-60}" \
+             -s -f -L "$url" -o "$ucMetadataFile" \
+                || failureReason="Cannot retrieve the UC metadata from ${url}, error code: $?"
+    fi
 
     if [[ -n "$failureReason" ]] ; then
-        echo "Cannot check for updates: $failureReason"
+        >&2 echo "WARNING: Cannot check for updates: $failureReason"
+        if [[ "${IGNORE_SECURITY_WARNINGS}" = true ]] ; then
+            >&2 echo "WARNING: Security warnings are ignored, will continue build"
+        else
+            # If security warnings are critical, we cannot continue here
+            exit -1
+        fi
     else
+        local securityFailed=""
         for f in "$REF_DIR"/*.jpi; do
-            local pluginName versionInstalled latestVersion
+            local pluginName versionInstalled latestVersion securityWarnings
             pluginName=$(basename "$f" | sed -e 's/\.jpi//')
             versionInstalled=$(get_plugin_version "$f")
             latestVersion=$("${jqExecutable}" -r ".plugins[\"${pluginName}\"].version" "$ucMetadataFile")
             if versionLT "${versionInstalled}" "${latestVersion}"; then
                 echo "$pluginName:$versionInstalled:$latestVersion" >> "$updatesFile"
                 # Also report it in the build log
-                echo "$pluginName:$versionInstalled:$latestVersion"
+                echo "$pluginName:$versionInstalled => $latestVersion"
+            fi
+
+            # Example: query all security warning for the plugin's version
+            # ./jq -r '.warnings[] | select(.name == "git") | select(.id | contains("SECURITY")) | select(.versions[].lastVersion | . >= "3.0.0" and (contains("beta") | not) and (contains("alpha") | not)) | "\(.id): \(.message) (\(.url))"'
+            # TODO: This logic won't work properly for experimental releases which may have also fixes delivered in a separate baseline (e.g. Git)
+            securityWarnings=$("${jqExecutable}" -r ".warnings[] | select(.name == \"${pluginName}\") | select(.id | contains(\"SECURITY\")) | select(.versions[].lastVersion | . >= \"${versionInstalled}\" and (contains(\"beta\") | not) and (contains(\"alpha\") | not)) | \"- \\(.id): \\(.message) (\\(.url))\"" "$ucMetadataFile")
+            if [[ -n "$securityWarnings" ]] ; then
+                >&2 echo "Security warnings for $pluginName:"
+                >&2 echo "${securityWarnings}"
+                echo "${pluginName}" >> "${securityWarningsFile}"
+                echo "${securityWarnings}" >> "${securityWarningsFile}"
+                securityFailed="${pluginName}"
             fi
         done
+
+        if [[ -n "$securityFailed" ]] ; then
+            >&2 echo "WARNING: Some installed plugins have security warnings, see above"
+            if [[ "${IGNORE_SECURITY_WARNINGS}" = true ]] ; then
+                >&2 echo "WARNING: Ignoring the security warnings"
+            else
+                exit -1
+            fi
+        fi
     fi
 }
 
@@ -296,9 +322,11 @@ main() {
     echo "Installed plugins:"
     installedPlugins
     echo
-    echo "Available updates:"
-    availableUpdates
-    echo
+    if [[ "$CHECK_UPDATES" = true ]] ; then
+        echo "Available updates:"
+        availableUpdates
+        echo
+    fi
 
     if [[ -f $FAILED ]]; then
         echo "Some plugins failed to download!" "$(<"$FAILED")" >&2
