@@ -229,8 +229,9 @@ availableUpdates() {
             securityWarnings=$("${jqExecutable}" -r ".warnings[] | select(.name == \"${pluginName}\") | select(.id | contains(\"SECURITY\")) | ${experimentalFilter} | ${outputFormat}" "$ucMetadataFile")
             if [[ -n "$securityWarnings" ]] ; then
                 local firstHit=true
-                echo "${securityWarnings}" | while read line ; do
-                    local lastAffectedVersion=$(echo $line | awk '{print $1;}')
+                while read -r line ; do
+                    local lastAffectedVersion
+                    lastAffectedVersion=$(echo $line | awk '{print $1;}')
                     if versionLT "${lastAffectedVersion}" "${versionInstalled}" ; then
                         lastAffectedVersion="${lastAffectedVersion}"
                     else
@@ -243,7 +244,7 @@ availableUpdates() {
                         echo "up to ${line}" >> "${securityWarningsFile}"
                         securityFailed="${pluginName}"
                     fi
-                done
+                done <<< $(echo "${securityWarnings}")
             fi
         done
 
