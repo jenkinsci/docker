@@ -270,7 +270,12 @@ Tests are written using [bats](https://github.com/sstephenson/bats) under the `t
     DOCKERFILE=Dockerfile bats tests
     DOCKERFILE=Dockerfile-alpine bats tests
 
+Download the test helpers by updating the submodules
+    
+    git submodule update --init --recursive
+
 Bats can be easily installed with `brew install bats` on OS X
+
 
 # Debugging
 
