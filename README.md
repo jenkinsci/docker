@@ -31,7 +31,7 @@ NOTE: Avoid using a [bind mount](https://docs.docker.com/storage/bind-mounts/) f
 docker run -d -v jenkins_home:/var/jenkins_home -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts
 ```
 
-this will run Jenkins in detached mode with port forwarding and volume added. You can access logs with command 'docker logs CONTAINER_ID' in order to check first login token. ID of container will be returned from output of command above. 
+this will run Jenkins in detached mode with port forwarding and volume added. You can access logs with command 'docker logs CONTAINER_ID' in order to check first login token. ID of container will be returned from output of command above.
 
 ## Backing up data
 
@@ -256,6 +256,7 @@ As always - please ensure that you know how to drive docker - especially volume 
 ## Upgrading plugins
 
 By default, plugins will be upgraded if they haven't been upgraded manually and if the version from the docker image is newer than the version in the container. Versions installed by the docker image are tracked through a marker file.
+Plugins that have been upgraded manually can still be upgraded with `-e IGNORE_MARKER_FILE=true`.
 
 The default behaviour when upgrading from a docker image that didn't write marker files is to leave existing plugins in place. If you want to upgrade existing plugins without marker you may run the docker image with `-e TRY_UPGRADE_IF_NO_MARKER=true`. Then plugins will be upgraded if the version provided by the docker image is newer.
 
@@ -271,7 +272,7 @@ Tests are written using [bats](https://github.com/sstephenson/bats) under the `t
     DOCKERFILE=Dockerfile-alpine bats tests
 
 Download the test helpers by updating the submodules
-    
+
     git submodule update --init --recursive
 
 Bats can be easily installed with `brew install bats` on OS X
@@ -279,7 +280,7 @@ Bats can be easily installed with `brew install bats` on OS X
 
 # Debugging
 
-In order to debug the master, use the `-e DEBUG=true -p 5005:5005` when starting the container. 
+In order to debug the master, use the `-e DEBUG=true -p 5005:5005` when starting the container.
 Jenkins will be suspended on the startup in such case,
 and then it will be possible to attach a debugger from IDE to it.
 

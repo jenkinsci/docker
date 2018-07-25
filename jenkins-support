@@ -54,7 +54,7 @@ copy_reference_file() {
         image_version=$(get_plugin_version "${f}")
         if [[ -e $JENKINS_HOME/${version_marker} ]]; then
             marker_version=$(cat "$JENKINS_HOME/${version_marker}")
-            if versionLT "$marker_version" "$container_version"; then
+            if versionLT "$marker_version" "$container_version" && [[ -z "$IGNORE_MARKER_FILE" ]]; then
                 action="SKIPPED"
                 reason="Installed version ($container_version) has been manually upgraded from initial version ($marker_version)"
                 log=true
