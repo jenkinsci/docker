@@ -195,6 +195,7 @@ main() {
     local plugins=()
 
     mkdir -p "$REF_DIR" || exit 1
+    rm -f "$FAILED"
 
     # Read plugins from stdin or from the command line arguments
     if [[ ($# -eq 0) ]]; then
