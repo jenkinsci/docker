@@ -142,7 +142,7 @@ bundledPlugins() {
     if [ -f $JENKINS_WAR ]
     then
         TEMP_PLUGIN_DIR=/tmp/plugintemp.$$
-        for i in $(jar tf $JENKINS_WAR | grep -E '[^detached-]plugins.*\..pi' | sort)
+        for i in $(jar tf $JENKINS_WAR | grep -E '[WEB-INF\/detached-]plugins.*\..pi' | sort)
         do
             rm -fr $TEMP_PLUGIN_DIR
             mkdir -p $TEMP_PLUGIN_DIR
@@ -166,7 +166,6 @@ versionFromPlugin() {
     else
         echo "latest"
     fi
-
 }
 
 installedPlugins() {
@@ -180,7 +179,7 @@ jenkinsMajorMinorVersion() {
     JENKINS_WAR=/usr/share/jenkins/jenkins.war
     if [[ -f "$JENKINS_WAR" ]]; then
         local version major minor
-        version="$(java -jar /usr/share/jenkins/jenkins.war --version)"
+        version="$(java -jar $JENKINS_WAR --version)"
         major="$(echo "$version" | cut -d '.' -f 1)"
         minor="$(echo "$version" | cut -d '.' -f 2)"
         echo "$major.$minor"
