@@ -6,7 +6,8 @@ RUN apt-get update && apt-get install -y git curl gpg && rm -rf /var/lib/apt/lis
 # JFreeChart initialization fails unless assistive technologies are disabled.
 # Broken JFreeChart causes failures rendering trend graphs.
 # Seems like a configuration error in openjdk:8-jdk-slim, headless JDK inconsistent with assistive technologies.
-# Upstream pull request: https://github.com/docker-library/openjdk/pull/189
+# Upstream OpenJDK pull request: https://github.com/docker-library/openjdk/pull/189
+# Upstream Debian slim bug report: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=896907
 RUN sed -i 's/assistive_technologies=.*/assistive_technologies=/g' /etc/java-8-openjdk/accessibility.properties
 
 ARG user=jenkins
