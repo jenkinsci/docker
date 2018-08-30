@@ -1,4 +1,4 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'gcr.io/sightmachine-178216/jenkins', '.']
-# tags: ['mytag1', 'mytag2']
+tags: ['latest', '$TAG_NAME']
