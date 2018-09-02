@@ -12,6 +12,7 @@ QEMUARCHS=(arm aarch64 x86_64)
 QEMUVER="v2.9.1-1"
 REGISTRY="jenkins"
 IMAGE="jenkins-experimental"
+BASEIMAGE=
 
 get-manifest-tool() {
     if [[ ! -f manifest-tool ]]; then
@@ -40,6 +41,57 @@ get-qemu-handlers() {
             tar -xvf x86_64_qemu-"${target_arch}"-static.tar.gz
         done
         rm -f x86_64_qemu-*
+    fi
+}
+
+set-base-image() {
+    local variant=$1
+    local arch=$2
+    local dockerfile
+
+    if [[ ! -z "$variant" ]]; then
+        dockerfile="./multiarch/Dockerfile${variant}-${arch}"
+    else
+        dockerfile="./multiarch/Dockerfile-${arch}"
+    fi
+
+    if [[ "$variant" =~ alpine ]]; then
+        cp multiarch/Dockerfile.alpine "$dockerfile"
+    elif [[ "$variant" =~ slim ]]; then
+        cp multiarch/Dockerfile.slim "$dockerfile"
+    else
+        cp multiarch/Dockerfile.debian "$dockerfile"
+    fi
+
+    # Parse architectures and variants
+    if [[ $arch == amd64 ]]; then
+        BASEIMAGE="openjdk:8-jdk"
+    elif [[ $arch == arm ]]; then
+        BASEIMAGE="arm32v7/openjdk:8-jdk"
+    elif [[ $arch == arm64 ]]; then
+        BASEIMAGE="arm64v8/openjdk:8-jdk"
+    fi
+
+    if [[ $variant =~ alpine && $arch == arm ]]; then
+        BASEIMAGE="arm32v6/openjdk:8-jdk-alpine"
+    elif [[ $variant =~ alpine ]]; then
+        BASEIMAGE="$BASEIMAGE-alpine"
+    elif [[ $variant =~ slim ]]; then
+        BASEIMAGE="$BASEIMAGE-slim"
+    fi
+
+    # Make the Dockerfile after we set the base image
+    sed -i "s|BASEIMAGE|${BASEIMAGE}|g" "$dockerfile"
+
+    if [[ "${arch}" == "amd64" ]]; then
+        sed -i "/CROSS_BUILD_/d" "$dockerfile"
+    else
+        if [[ "${arch}" == "arm64" ]]; then
+            sed -i "s|ARCH|aarch64|g" "$dockerfile"
+        else
+            sed -i "s|ARCH|${arch}|g" "$dockerfile"
+        fi
+        sed -i "s/CROSS_BUILD_//g" "$dockerfile"
     fi
 }
 
@@ -134,6 +186,8 @@ publish() {
     sha=$(curl -q -fsSL "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/${version}/jenkins-war-${version}.war.sha256" )
 
     for arch in ${ARCHS[*]}; do
+        set-base-image "$variant" "$arch"
+
         docker build --file "multiarch/Dockerfile$variant-$arch" \
                      --build-arg "JENKINS_VERSION=$version" \
                      --build-arg "JENKINS_SHA=$sha" \
@@ -247,6 +301,7 @@ cleanup() {
     echo "Cleaning up"
     rm -f manifest-tool
     rm -f qemu-*
+    rm -rf ./multiarch/Dockerfile-*
 }
 
 # Process arguments
@@ -288,7 +343,7 @@ fi
 get-manifest-tool
 get-qemu-handlers
 
-# Register binfmt_misc to run builds against non x86 architectures
+# Register binfmt_misc to run cross platform builds against non x86 architectures
 docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
 TOKEN=$(login-token)
