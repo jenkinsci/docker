@@ -7,8 +7,8 @@
 
 set -eou pipefail
 
-ARCHS=(arm arm64 amd64)
-QEMUARCHS=(arm aarch64 x86_64)
+ARCHS=(arm arm64 s390x amd64)
+QEMUARCHS=(arm aarch64 s390x x86_64)
 QEMUVER="v2.9.1-1"
 REGISTRY="jenkins"
 IMAGE="jenkins-experimental"
@@ -56,11 +56,11 @@ set-base-image() {
     fi
 
     if [[ "$variant" =~ alpine ]]; then
-        cp multiarch/Dockerfile.alpine "$dockerfile"
+        /bin/cp -f multiarch/Dockerfile.alpine "$dockerfile"
     elif [[ "$variant" =~ slim ]]; then
-        cp multiarch/Dockerfile.slim "$dockerfile"
+        /bin/cp -f multiarch/Dockerfile.slim "$dockerfile"
     else
-        cp multiarch/Dockerfile.debian "$dockerfile"
+        /bin/cp -f multiarch/Dockerfile.debian "$dockerfile"
     fi
 
     # Parse architectures and variants
@@ -70,9 +70,12 @@ set-base-image() {
         BASEIMAGE="arm32v7/openjdk:8-jdk"
     elif [[ $arch == arm64 ]]; then
         BASEIMAGE="arm64v8/openjdk:8-jdk"
+    elif [[ $arch == s390x ]]; then
+        BASEIMAGE="s390x/openjdk:8-jdk"
     fi
 
     if [[ $variant =~ alpine && $arch == arm ]]; then
+        # The arm32v7 openjdk alpine variant doesn't seem to exist
         BASEIMAGE="arm32v6/openjdk:8-jdk-alpine"
     elif [[ $variant =~ alpine ]]; then
         BASEIMAGE="$BASEIMAGE-alpine"
