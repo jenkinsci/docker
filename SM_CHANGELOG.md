@@ -1,6 +1,13 @@
 CHANGELOG
 =========
 
+2.141.0
+-----
+* jenkins.war upgraded to v2.141
+* upgrading plugins
+    - prometheus:2.0.0
+    - pipeline-aws:1.30
+
 2.140.1
 -----
 * modified jenkins.sh (entrypoint) to clear out plugins directory

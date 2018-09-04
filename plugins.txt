@@ -15,8 +15,8 @@ jira:3.0.1
 junit:1.24
 kubernetes:1.12.4
 metrics:4.0.2.2
-pipeline-aws:1.29
-prometheus:1.2.2
+pipeline-aws:1.30
+prometheus:2.0.0
 timestamper:1.8.10
 workflow-aggregator:2.5
 workflow-cps:2.54
