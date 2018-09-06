@@ -9,7 +9,7 @@ set -eou pipefail
 
 ARCHS=(arm arm64 s390x amd64)
 QEMUARCHS=(arm aarch64 s390x x86_64)
-QEMUVER="v2.9.1-1"
+QEMUVER="v2.12.0-1"
 REGISTRY="jenkins"
 IMAGE="jenkins-experimental"
 BASEIMAGE=
@@ -31,7 +31,8 @@ get-manifest-tool() {
 }
 
 get-qemu-handlers() {
-    if [[ ! $(find . -name "*qemu-*") ]]; then
+    if [[ ! $(find ./multiarch -name "*qemu-*") ]]; then
+        pushd multiarch
         echo "Downloading Qemu handlers"
         for target_arch in ${QEMUARCHS[*]}; do
             if ! curl -OLs "https://github.com/multiarch/qemu-user-static/releases/download/$QEMUVER/x86_64_qemu-${target_arch}-static.tar.gz"; then
@@ -41,6 +42,7 @@ get-qemu-handlers() {
             tar -xvf x86_64_qemu-"${target_arch}"-static.tar.gz
         done
         rm -f x86_64_qemu-*
+        popd
     fi
 }
 
@@ -74,8 +76,9 @@ set-base-image() {
         BASEIMAGE="s390x/openjdk:8-jdk"
     fi
 
+    # The Alpine image only supports arm32v6 but should work fine on arm32v7
+    # hardware - https://github.com/moby/moby/issues/34875
     if [[ $variant =~ alpine && $arch == arm ]]; then
-        # The arm32v7 openjdk alpine variant doesn't seem to exist
         BASEIMAGE="arm32v6/openjdk:8-jdk-alpine"
     elif [[ $variant =~ alpine ]]; then
         BASEIMAGE="$BASEIMAGE-alpine"
@@ -303,7 +306,7 @@ push-manifest() {
 cleanup() {
     echo "Cleaning up"
     rm -f manifest-tool
-    rm -f qemu-*
+    rm -f ./multiarch/qemu-*
     rm -rf ./multiarch/Dockerfile-*
 }
 
