@@ -1,0 +1,6 @@
+.git
+Dockerfile
+.DS_Store
+.gitignore
+README.md
+cloudbuild.yaml
