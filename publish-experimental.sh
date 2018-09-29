@@ -7,11 +7,11 @@
 
 set -eou pipefail
 
-ARCHS=(arm arm64 s390x amd64)
-QEMUARCHS=(arm aarch64 s390x x86_64)
+ARCHS=(arm arm64 s390x ppc64le amd64)
+QEMUARCHS=(arm aarch64 s390x ppc64le x86_64)
 QEMUVER="v2.12.0-1"
-REGISTRY="jenkins"
-IMAGE="jenkins-experimental"
+REGISTRY="jenkins4eval"
+IMAGE="jenkins-multiarch-quemu"
 BASEIMAGE=
 
 get-manifest-tool() {
@@ -74,6 +74,8 @@ set-base-image() {
         BASEIMAGE="arm64v8/openjdk:8-jdk"
     elif [[ $arch == s390x ]]; then
         BASEIMAGE="s390x/openjdk:8-jdk"
+    elif [[ $arch == ppc64le ]]; then
+        BASEIMAGE="ppc64le/openjdk:8-jdk"
     fi
 
     # The Alpine image only supports arm32v6 but should work fine on arm32v7
