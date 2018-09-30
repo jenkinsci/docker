@@ -11,7 +11,7 @@ ARCHS=(arm arm64 s390x ppc64le amd64)
 QEMUARCHS=(arm aarch64 s390x ppc64le x86_64)
 QEMUVER="v2.12.0-1"
 REGISTRY="jenkins4eval"
-IMAGE="jenkins-multiarch-quemu"
+IMAGE="jenkins-multiarch-qemu"
 BASEIMAGE=
 
 get-manifest-tool() {
