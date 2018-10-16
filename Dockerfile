@@ -1,4 +1,10 @@
-FROM openjdk:8-jdk
+FROM ubuntu:18.04
+
+# upgrade
+RUN apt-get update && apt upgrade -y && rm -rf /var/lib/apt/lists/*
+
+# install stuff that is in openjdk-8-jdk but not ubuntu:18.04
+RUN apt-get update && apt-get install -y gpg openjdk-8-jdk && rm -rf /var/lib/apt/lists/*
 
 RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
 
