@@ -17,12 +17,9 @@ node('docker') {
     if (!infra.isTrusted()) {
 
         stage('shellcheck') {
-            // newer versions of the image don't have cat installed and docker pipeline fails
-            docker.image('koalaman/shellcheck:v0.4.6').inside('--entrypoint=') {
-                // run shellcheck ignoring error SC1091
-                // Not following: /usr/local/bin/jenkins-support was not specified as input
-                sh "shellcheck -e SC1091 *.sh"
-            }
+            // run shellcheck ignoring error SC1091
+            // Not following: /usr/local/bin/jenkins-support was not specified as input
+            sh 'make shellcheck'
         }
 
         /* Outside of the trusted.ci environment, we're building and testing
