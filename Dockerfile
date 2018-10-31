@@ -1,4 +1,4 @@
-FROM aarch64/openjdk:8-jdk
+FROM arm64v8/openjdk:8-jdk
 
 RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
 
