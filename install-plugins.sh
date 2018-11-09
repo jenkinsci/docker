@@ -73,7 +73,7 @@ doDownload() {
         # Download from Incrementals repo: https://jenkins.io/blog/2018/05/15/incremental-deployment/
         # Example URL: https://repo.jenkins-ci.org/incrementals/org/jenkins-ci/plugins/workflow/workflow-support/2.19-rc289.d09828a05a74/workflow-support-2.19-rc289.d09828a05a74.hpi
         local groupId incrementalsVersion
-        arrIN=(${version//;/ })
+        arrIN=("${version//;/ }")
         groupId=${arrIN[1]}
         incrementalsVersion=${arrIN[2]}
         url="${JENKINS_INCREMENTALS_REPO_MIRROR}/$(echo "${groupId}" | tr '.' '/')/${plugin}/${incrementalsVersion}/${plugin}-${incrementalsVersion}.hpi"
@@ -180,7 +180,7 @@ jenkinsMajorMinorVersion() {
     JENKINS_WAR=/usr/share/jenkins/jenkins.war
     if [[ -f "$JENKINS_WAR" ]]; then
         local version major minor
-        version="$(java -jar /usr/share/jenkins/jenkins.war --version)"
+        version="$(java -jar $JENKINS_WAR --version)"
         major="$(echo "$version" | cut -d '.' -f 1)"
         minor="$(echo "$version" | cut -d '.' -f 2)"
         echo "$major.$minor"

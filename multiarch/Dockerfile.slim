@@ -1,14 +1,13 @@
-FROM openjdk:8-jdk-slim
+# Placeholder for the specified arch that gets parsed in the publish-experimental.sh script.
+FROM BASEIMAGE
+
+# If we're building for another architecture than amd64, the CROSS_BUILD_
+# placeholder is removed so
+# e.g. CROSS_BUILD_COPY turns into COPY
+# If we're building normally, for amd64, CROSS_BUILD lines are removed
+CROSS_BUILD_COPY multiarch/qemu-ARCH-static /usr/bin/
 
 RUN apt-get update && apt-get install -y git curl gpg && rm -rf /var/lib/apt/lists/*
-
-# Disable assistive technologies since openjdk:slim installs headless JDK (without assistive technologies).
-# JFreeChart initialization fails unless assistive technologies are disabled.
-# Broken JFreeChart causes failures rendering trend graphs.
-# Seems like a configuration error in openjdk:8-jdk-slim, headless JDK inconsistent with assistive technologies.
-# Upstream OpenJDK pull request: https://github.com/docker-library/openjdk/pull/189
-# Upstream Debian slim bug report: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=896907
-RUN sed -i 's/assistive_technologies=.*/assistive_technologies=/g' /etc/java-8-openjdk/accessibility.properties
 
 ARG user=jenkins
 ARG group=jenkins
