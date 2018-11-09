@@ -8,7 +8,7 @@ This is a fully functional Jenkins server.
 <img src="https://jenkins.io/sites/default/files/jenkins_logo.png"/>
 
 * [Usage](#usage)
- * [Backing up data](#backing-up-data)
+  * [Backing up data](#backing-up-data)
 * [Setting the number of executors](#setting-the-number-of-executors)
 * [Attaching build executors](#attaching-build-executors)
 * [Passing JVM parameters](#passing-jvm-parameters)
@@ -16,9 +16,9 @@ This is a fully functional Jenkins server.
 * [Configuring reverse proxy](#configuring-reverse-proxy)
 * [Passing Jenkins launcher parameters](#passing-jenkins-launcher-parameters)
 * [Installing more tools](#installing-more-tools)
- * [Preinstalling plugins](#preinstalling-plugins)
+  * [Preinstalling plugins](#preinstalling-plugins)
 * [Upgrading](#upgrading)
- * [Upgrading plugins](#upgrading-plugins)
+  * [Upgrading plugins](#upgrading-plugins)
 * [Building](#building)
 * [Multiarch support](#multiarch-support)
 * [Debugging](#debugging)
@@ -301,9 +301,10 @@ relies on QEMU for emulating the architecture being built as well as the Docker
 [manifest-tool](https://github.com/estesp/manifest-tool) for creating registry
 v2.2 "thick" manifests.
 
-When changes are pushed, a Jenkins job is triggered via the `Jenkinfile` from
-this repo, which then runs the `publish-experimental.sh` script.  Multiarch
-images created by the script are built/tagged/pushed to the Docker Hub
+When changes are pushed to the upstream Jenkins project, a Jenkins job is
+triggered via the `Jenkinfile` from this repo, which then runs the
+`publish-experimental.sh` script.  Multiarch images created by the script are
+built/tagged/pushed to the Docker Hub
 [`jenkins4eval/jenkins-multiarch-qemu`](https://hub.docker.com/r/jenkins4eval/jenkins-multiarch-qemu/)
 repo.
 
