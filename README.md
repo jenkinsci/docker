@@ -7,6 +7,22 @@ This is a fully functional Jenkins server.
 
 <img src="https://jenkins.io/sites/default/files/jenkins_logo.png"/>
 
+* [Usage](#usage)
+ * [Backing up data](#backing-up-data)
+* [Setting the number of executors](#setting-the-number-of-executors)
+* [Attaching build executors](#attaching-build-executors)
+* [Passing JVM parameters](#passing-jvm-parameters)
+* [Configure logging](#configuring-logging)
+* [Configuring reverse proxy](#configuring-reverse-proxy)
+* [Passing Jenkins launcher parameters](#passing-jenkins-launcher-parameters)
+* [Installing more tools](#installing-more-tools)
+ * [Preinstalling plugins](#preinstalling-plugins)
+* [Upgrading](#upgrading)
+ * [Upgrading plugins](#upgrading-plugins)
+* [Building](#building)
+* [Multiarch support](#multiarch-support)
+* [Debugging](#debugging)
+* [Questions](#questions)
 
 # Usage
 
@@ -278,6 +294,29 @@ Download the test helpers by updating the submodules
 
 Bats can be easily installed with `brew install bats` on OS X
 
+# Multiarch support
+
+Multiarch support is added via the `publish-experimental.sh` script, which
+relies on QEMU for emulating the architecture being built as well as the Docker
+[manifest-tool](https://github.com/estesp/manifest-tool) for creating registry
+v2.2 "thick" manifests.
+
+When changes are pushed, a Jenkins job is triggered via the `Jenkinfile` from
+this repo, which then runs the `publish-experimental.sh` script.  Multiarch
+images created by the script are built/tagged/pushed to the Docker Hub
+[`jenkins4eval/jenkins-multiarch-qemu`](https://hub.docker.com/r/jenkins4eval/jenkins-multiarch-qemu/)
+repo.
+
+Currently supported architectures:
+
+* amd64
+* arm32
+* arm64
+* s390x
+* ppc64le
+
+NOTE: This functionality may change/move at some point in the
+future.
 
 # Debugging
 
