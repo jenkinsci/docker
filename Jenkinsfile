@@ -64,6 +64,14 @@ node('docker') {
                 sh './publish.sh --variant slim'
             }
         }
+
+        stage('Publish Experimental') {
+            infra.withDockerCredentials {
+                sh './publish-experimental.sh'
+                sh './publish-experimental.sh --variant alpine'
+                sh './publish-experimental.sh --variant slim'
+            }
+        }
     }
 }
 
