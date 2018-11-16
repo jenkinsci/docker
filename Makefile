@@ -9,7 +9,7 @@ shellcheck:
 	                             jenkins-support \
 	                             *.sh
 
-build: build-debian build-alpine build-slim
+build: build-debian build-alpine build-slim build-jdk11
 
 build-debian:
 	docker build --file Dockerfile .
@@ -19,6 +19,9 @@ build-alpine:
 
 build-slim:
 	docker build --file Dockerfile-slim .
+
+build-jdk11:
+	docker build --file Dockerfile-jdk11 .
 
 bats:
 	# Latest tag is unfortunately 0.4.0 which is quite older than the latest master tip.
@@ -39,7 +42,16 @@ test-alpine: prepare-test
 test-slim: prepare-test
 	DOCKERFILE=Dockerfile-slim bats/bin/bats tests
 
-test: test-debian test-alpine test-slim
+test-jdk11: prepare-test
+	DOCKERFILE=Dockerfile-jdk11 bats/bin/bats tests
+
+test: test-debian test-alpine test-slim test-jdk11
+
+publish:
+	./publish.sh' ; \
+	sh './publish.sh --variant alpine' ; \
+	sh './publish.sh --variant slim' ; \
+	sh './publish.sh --variant jdk11' ; \
 
 clean:
 	rm -rf tests/test_helper/bats-*; \
