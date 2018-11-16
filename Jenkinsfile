@@ -60,9 +60,9 @@ node('docker') {
 
         stage('Publish Experimental') {
             infra.withDockerCredentials {
-                sh './publish-experimental.sh', returnStatus:true
-                sh './publish-experimental.sh --variant alpine', returnStatus:true
-                sh './publish-experimental.sh --variant slim', returnStatus:true
+                sh returnStatus: true, script: './publish-experimental.sh'
+                sh returnStatus: true, script: './publish-experimental.sh --variant alpine'
+                sh returnStatus: true, script: './publish-experimental.sh --variant slim'
             }
         }
     }
