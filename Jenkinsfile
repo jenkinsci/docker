@@ -54,9 +54,7 @@ node('docker') {
          */
         stage('Publish') {
             infra.withDockerCredentials {
-                sh './publish.sh'
-                sh './publish.sh --variant alpine'
-                sh './publish.sh --variant slim'
+                sh 'make publish'
             }
         }
     }

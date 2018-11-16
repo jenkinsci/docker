@@ -43,6 +43,11 @@ test-jdk11: prepare-test
 
 test: test-debian test-alpine test-slim test-jdk11
 
+publish:
+	./publish.sh' ; \
+	sh './publish.sh --variant alpine' ; \
+	sh './publish.sh --variant slim'
+
 clean:
 	rm -rf tests/test_helper/bats-*; \
 	rm -rf bats
