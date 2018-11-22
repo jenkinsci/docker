@@ -7,6 +7,8 @@
 
 set -o pipefail
 
+. jenkins-support
+
 : "${JENKINS_REPO:=jenkins/jenkins}"
 : "${JENKINSCI_REPO:=jenkinsci/jenkins}"
 
@@ -108,6 +110,8 @@ publish() {
     if [ ! "$dry_run" = true ]; then
         docker push "${JENKINS_REPO}:${tag}"
         docker push "${JENKINSCI_REPO}:${tag}"
+    else
+        echo "Dry run mode: no docker push"
     fi
 }
 
@@ -174,6 +178,7 @@ publish-lts() {
 dry_run=false
 debug=false
 variant=""
+start_after="1.0" # By default, we will publish anything missing (only the last 20 actually)
 
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -186,6 +191,10 @@ while [[ $# -gt 0 ]]; do
         ;;
         -v|--variant)
         variant="-"$2
+        shift
+        ;;
+        --start-after)
+        start_after=$2
         shift
         ;;
         *)
@@ -209,8 +218,12 @@ for version in $(get-latest-versions); do
     if is-published "$version$variant"; then
         echo "Tag is already published: $version$variant"
     else
-        echo "Publishing version: $version$variant"
-        publish "$version" "$variant"
+        if versionLT "$start_after" "$version"; then # if start_after < version
+            echo "Version $version higher than $start_after: publishing $version$variant"
+            publish "$version" "$variant"
+        else
+            echo "Version $version lower or equal to $start_after, no publishing (variant=$variant)."
+        fi
     fi
 
     # Update lts tag

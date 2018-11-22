@@ -51,7 +51,7 @@ publish:
 	./publish.sh ; \
 	./publish.sh --variant alpine ; \
 	./publish.sh --variant slim ; \
-	./publish.sh --variant jdk11 ;
+	./publish.sh --variant jdk11 --start-after 2.151 ;
 
 clean:
 	rm -rf tests/test_helper/bats-*; \
