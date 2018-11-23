@@ -56,12 +56,12 @@ node('docker') {
             infra.withDockerCredentials {
                 sh 'make publish'
             }
+		}
 
-	stage('Publishi Experimental') {
+		stage('Publishi Experimental') {
             infra.withDockerCredentials {
-		sh returnStatus: true, script: 'make publish-experimental'
+				sh returnStatus: true, script: 'make publish-experimental'
             }
-        }
         }
     }
 }
