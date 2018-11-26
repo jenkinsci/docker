@@ -132,7 +132,7 @@ copy_reference_file() {
 # timeout is given by TIMEOUT in seconds (default 1.)
 #
 function retry_command() {
-  local max_attempts=${ATTEMPTS-60}
+  local max_attempts=${ATTEMPTS-3}
   local timeout=${TIMEOUT-1}
   local success_timeout=${SUCCESS_TIMEOUT-1}
   local max_success_attempt=${SUCCESS_ATTEMPTS-1}
