@@ -58,7 +58,7 @@ node('docker') {
             }
 	}
 
-	stage('Publishi Experimental') {
+	stage('Publish Experimental') {
             infra.withDockerCredentials {
 		sh returnStatus: true, script: 'make publish-experimental'
             }
