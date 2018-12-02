@@ -58,18 +58,21 @@ node('docker') {
          * containers from artifacts
          */
         stage('Publish') {
-            infra.withDockerCredentials {
-                sh './publish.sh'
-                sh './publish.sh --variant alpine'
-                sh './publish.sh --variant slim'
-            }
-        }
-
-        stage('Publish Experimental') {
-            infra.withDockerCredentials {
-                sh returnStatus: true, script: './publish-experimental.sh'
-                sh returnStatus: true, script: './publish-experimental.sh --variant alpine'
-                sh returnStatus: true, script: './publish-experimental.sh --variant slim'
+            parallel {
+                stage('Stable') {
+                    infra.withDockerCredentials {
+                        sh './publish.sh'
+                        sh './publish.sh --variant alpine'
+                        sh './publish.sh --variant slim'
+                    }
+                }
+                stage('Experimental') {
+                    infra.withDockerCredentials {
+                        sh './publish-experimental.sh'
+                        sh './publish-experimental.sh --variant alpine'
+                        sh './publish-experimental.sh --variant slim'
+                    }
+                }
             }
         }
     }
