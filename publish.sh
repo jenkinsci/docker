@@ -10,12 +10,10 @@ set -o pipefail
 . jenkins-support
 
 : "${JENKINS_REPO:=jenkins/jenkins}"
-: "${JENKINSCI_REPO:=jenkinsci/jenkins}"
 
 cat <<EOF
-Docker repositories in Use:
+Docker repository in Use:
 * JENKINS_REPO: ${JENKINS_REPO}
-* JENKINSCI_REPO: ${JENKINSCI_REPO}
 EOF
 
 sort-versions() {
@@ -103,13 +101,11 @@ publish() {
                  --build-arg "JENKINS_VERSION=$version" \
                  --build-arg "JENKINS_SHA=$sha" \
                  --tag "${JENKINS_REPO}:${tag}" \
-                 --tag "${JENKINSCI_REPO}:${tag}" \
                  "${build_opts[@]+"${build_opts[@]}"}" .
 
     # " line to fix syntax highlightning
     if [ ! "$dry_run" = true ]; then
         docker push "${JENKINS_REPO}:${tag}"
-        docker push "${JENKINSCI_REPO}:${tag}"
     else
         echo "Dry run mode: no docker push"
     fi
@@ -143,11 +139,9 @@ tag-and-push() {
     else
         echo "Creating tag ${target} pointing to ${source}"
         docker-tag "${source}" "jenkins" "${target}"
-        docker-tag "${source}" "jenkinsci" "${target}"
         destination="${REPO:-${JENKINS_REPO}}:${target}"
         if [ ! "$dry_run" = true ]; then
             echo "Pushing ${destination}"
-            docker push "${destination}"
             docker push "${destination}"
         else
             echo "Would push ${destination}"
