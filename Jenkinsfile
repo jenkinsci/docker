@@ -53,19 +53,21 @@ node('docker') {
          * containers from artifacts
          */
         stage('Publish') {
-            parallel {
-                stage('Stable') {
-                    infra.withDockerCredentials {
-                        sh 'make publish'
-                    }
-                }
-                stage('Experimental') {
-                    infra.withDockerCredentials {
-                        sh 'make publish-experimental'
-                    }
-                }
-            }
-        }
+ 			parallel 'Stable' : {
+ 				stage('Stable') {
+ 					infra.withDockerCredentials {
+ 						sh 'make publish'
+ 					}
+ 				}
+ 			},
+ 			'Experimental' : {
+ 				stage('Experimental') {
+ 					infra.withDockerCredentials {
+ 						sh 'make publish-experimental'
+ 					}
+ 				}
+ 			}
+ 		}
     }
 }
 
