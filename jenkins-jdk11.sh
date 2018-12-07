@@ -1,5 +1,8 @@
 #! /bin/bash -e
 
+# TODO: Revert before the GA (JENKINS-55087)
+echo "WARNING: You are running the Jenkins Java 11 preview image. See jenkins.io/redirect/java-support for more information"
+
 : "${JENKINS_WAR:="/usr/share/jenkins/jenkins.war"}"
 : "${JENKINS_HOME:="/var/jenkins_home"}"
 touch "${COPY_REFERENCE_FILE_LOG}" || { echo "Can not write to ${COPY_REFERENCE_FILE_LOG}. Wrong volume permissions?"; exit 1; }
