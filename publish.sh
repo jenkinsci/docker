@@ -1,11 +1,20 @@
 #!/bin/bash -eu
 
-# Publish any versions of the docker image not yet pushed to jenkins/jenkins
+# Publish any versions of the docker image not yet pushed to ${JENKINS_REPO}
 # Arguments:
 #   -n dry run, do not build or publish images
 #   -d debug
 
 set -o pipefail
+
+. jenkins-support
+
+: "${JENKINS_REPO:=jenkins/jenkins}"
+
+cat <<EOF
+Docker repository in Use:
+* JENKINS_REPO: ${JENKINS_REPO}
+EOF
 
 sort-versions() {
     if [ "$(uname)" == 'Darwin' ]; then
@@ -17,7 +26,7 @@ sort-versions() {
 
 # Try tagging with and without -f to support all versions of docker
 docker-tag() {
-    local from="jenkins/jenkins:$1"
+    local from="${JENKINS_REPO}:$1"
     local to="$2/jenkins:$3"
     local out
 
@@ -31,7 +40,7 @@ docker-tag() {
 
 login-token() {
     # could use jq .token
-    curl -q -sSL "https://auth.docker.io/token?service=registry.docker.io&scope=repository:jenkins/jenkins:pull" | grep -o '"token":"[^"]*"' | cut -d':' -f 2 | xargs echo
+    curl -q -sSL "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${JENKINS_REPO}:pull" | grep -o '"token":"[^"]*"' | cut -d':' -f 2 | xargs echo
 }
 
 is-published() {
@@ -41,7 +50,7 @@ is-published() {
         opts="-v"
     fi
     local http_code;
-    http_code=$(curl $opts -q -fsL -o /dev/null -w "%{http_code}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/jenkins/jenkins/manifests/$tag")
+    http_code=$(curl $opts -q -fsL -o /dev/null -w "%{http_code}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/${JENKINS_REPO}/manifests/$tag")
     if [ "$http_code" -eq "404" ]; then
         false
     elif [ "$http_code" -eq "200" ]; then
@@ -58,7 +67,7 @@ get-manifest() {
     if [ "$debug" = true ]; then
         opts="-v"
     fi
-    curl $opts -q -fsSL -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/jenkins/jenkins/manifests/$tag"
+    curl $opts -q -fsSL -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/${JENKINS_REPO}/manifests/$tag"
 }
 
 get-digest() {
@@ -91,14 +100,14 @@ publish() {
     docker build --file "Dockerfile$variant" \
                  --build-arg "JENKINS_VERSION=$version" \
                  --build-arg "JENKINS_SHA=$sha" \
-                 --tag "jenkins/jenkins:${tag}" \
-                 --tag "jenkinsci/jenkins:${tag}" \
+                 --tag "${JENKINS_REPO}:${tag}" \
                  "${build_opts[@]+"${build_opts[@]}"}" .
 
     # " line to fix syntax highlightning
     if [ ! "$dry_run" = true ]; then
-        docker push "jenkins/jenkins:${tag}"
-        docker push "jenkinsci/jenkins:${tag}"        
+        docker push "${JENKINS_REPO}:${tag}"
+    else
+        echo "Dry run mode: no docker push"
     fi
 }
 
@@ -130,13 +139,12 @@ tag-and-push() {
     else
         echo "Creating tag ${target} pointing to ${source}"
         docker-tag "${source}" "jenkins" "${target}"
-        docker-tag "${source}" "jenkinsci" "${target}"
+        destination="${REPO:-${JENKINS_REPO}}:${target}"
         if [ ! "$dry_run" = true ]; then
-            echo "Pushing jenkins/jenkins:${target}"
-            docker push "jenkins/jenkins:${target}"
-            docker push "jenkinsci/jenkins:${target}"
+            echo "Pushing ${destination}"
+            docker push "${destination}"
         else
-            echo "Would push jenkins/jenkins:${target}"
+            echo "Would push ${destination}"
         fi
     fi
 }
@@ -164,6 +172,7 @@ publish-lts() {
 dry_run=false
 debug=false
 variant=""
+start_after="1.0" # By default, we will publish anything missing (only the last 20 actually)
 
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -176,6 +185,10 @@ while [[ $# -gt 0 ]]; do
         ;;
         -v|--variant)
         variant="-"$2
+        shift
+        ;;
+        --start-after)
+        start_after=$2
         shift
         ;;
         *)
@@ -199,8 +212,12 @@ for version in $(get-latest-versions); do
     if is-published "$version$variant"; then
         echo "Tag is already published: $version$variant"
     else
-        echo "Publishing version: $version$variant"
-        publish "$version" "$variant"
+        if versionLT "$start_after" "$version"; then # if start_after < version
+            echo "Version $version higher than $start_after: publishing $version$variant"
+            publish "$version" "$variant"
+        else
+            echo "Version $version lower or equal to $start_after, no publishing (variant=$variant)."
+        fi
     fi
 
     # Update lts tag
