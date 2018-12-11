@@ -14,3 +14,5 @@ If after going through the previous checklist you still think you should create 
 * Have you tried a non-dockerized Jenkins and get the expected outcome?
 * Output of `docker version`
 * Other relevant information
+
+If you are interested to provide fixes by yourself, you might want to check out the [dedicated documentation](HACKING.adoc).
