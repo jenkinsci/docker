@@ -122,7 +122,7 @@ tag-and-push() {
     fi
     # if tag doesn't exist yet, ie. dry run
     if ! digest_source=$(get-digest "${source}"); then
-        echo "Unable to get digest for ${source} ${digest_source}"
+        echo "Unable to get source digest for '${source} ${digest_source}'"
         digest_source=""
     fi
 
@@ -130,7 +130,7 @@ tag-and-push() {
         >&2 echo "DEBUG: Getting digest for ${target}"
     fi
     if ! digest_target=$(get-digest "${target}"); then
-        echo "Unable to get digest for ${target} ${digest_target}"
+        echo "Unable to get target digest for '${target} ${digest_target}'"
         digest_target=""
     fi
 
@@ -152,6 +152,7 @@ tag-and-push() {
 publish-latest() {
     local version=$1
     local variant=$2
+    echo "publishing latest: $version$variant"
 
     # push latest (for master) or the name of the branch (for other branches)
     if [ -z "${variant}" ]; then
@@ -212,6 +213,7 @@ for version in $(get-latest-versions); do
     if is-published "$version$variant"; then
         echo "Tag is already published: $version$variant"
     else
+        echo "$version$variant not published yet"
         if versionLT "$start_after" "$version"; then # if start_after < version
             echo "Version $version higher than $start_after: publishing $version$variant"
             publish "$version" "$variant"
