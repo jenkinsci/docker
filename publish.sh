@@ -9,7 +9,10 @@ set -o pipefail
 
 . jenkins-support
 
-: "${JENKINS_REPO:=jenkins/jenkins}"
+: "${DOCKERHUB_ORGANISATION:=jenkins}"
+: "${DOCKERHUB_REPO:=jenkins}"
+
+JENKINS_REPO="${DOCKERHUB_ORGANISATION}/${DOCKERHUB_REPO}"
 
 cat <<EOF
 Docker repository in Use:
@@ -27,7 +30,7 @@ sort-versions() {
 # Try tagging with and without -f to support all versions of docker
 docker-tag() {
     local from="${JENKINS_REPO}:$1"
-    local to="$2/jenkins:$3"
+    local to="$2/${DOCKERHUB_REPO}:$3"
     local out
 
     docker pull "$from"
@@ -138,7 +141,7 @@ tag-and-push() {
         echo "Images ${source} [$digest_source] and ${target} [$digest_target] are already the same, not updating tags"
     else
         echo "Creating tag ${target} pointing to ${source}"
-        docker-tag "${source}" "jenkins" "${target}"
+        docker-tag "${source}" "${DOCKERHUB_ORGANISATION}" "${target}"
         destination="${REPO:-${JENKINS_REPO}}:${target}"
         if [ ! "$dry_run" = true ]; then
             echo "Pushing ${destination}"
