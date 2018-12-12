@@ -1,0 +1,43 @@
+# Hacking documentation
+
+This document explains how to develop on this repository.
+
+## Building
+
+Build with the usual
+
+    docker build -t jenkins/jenkins .
+
+Tests are written using [bats](https://github.com/sstephenson/bats) under the `tests` dir
+
+    DOCKERFILE=Dockerfile bats tests
+    DOCKERFILE=Dockerfile-alpine bats tests
+
+Download the test helpers by updating the submodules
+
+    git submodule update --init --recursive
+
+Bats can be easily installed with `brew install bats` on OS X
+
+
+
+## Debugging
+
+In order to debug the master, use the `-e DEBUG=true -p 5005:5005` when starting the container.
+Jenkins will be suspended on the startup in such case,
+and then it will be possible to attach a debugger from IDE to it.
+
+## How to test the publishing using an overriden target repository on Docker Hub
+
+Create a new dedicated target repository in your Docker Hub account, and use it like follows:
+
+[source]
+--
+export DOCKERHUB_ORGANISATION=batmat
+export DOCKERHUB_REPO=test-jenkins
+# The log below will help confirm this override was taken in account:
+./publish.sh --variant jdk11
+Docker repository in Use:
+* JENKINS_REPO: batmat/test-jenkins
+...
+--
