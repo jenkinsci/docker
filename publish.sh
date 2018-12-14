@@ -225,13 +225,16 @@ for version in $(get-latest-versions); do
         fi
     fi
 
-    # Update lts tag
-    if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    # Update lts tag (if we have an LTS version depending on $start_after)
+    if versionLT "$start_after" "$version" && [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         lts_version="${version}"
     fi
 done
 
 publish-latest "${version}" "${variant}"
+
 if [ -n "${lts_version}" ]; then
     publish-lts "${lts_version}" "${variant}"
+else
+    echo "No LTS publishing"
 fi
