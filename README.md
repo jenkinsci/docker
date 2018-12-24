@@ -7,22 +7,6 @@ This is a fully functional Jenkins server.
 
 <img src="https://jenkins.io/sites/default/files/jenkins_logo.png"/>
 
-* [Usage](#usage)
-  * [Backing up data](#backing-up-data)
-* [Setting the number of executors](#setting-the-number-of-executors)
-* [Attaching build executors](#attaching-build-executors)
-* [Passing JVM parameters](#passing-jvm-parameters)
-* [Configure logging](#configuring-logging)
-* [Configuring reverse proxy](#configuring-reverse-proxy)
-* [Passing Jenkins launcher parameters](#passing-jenkins-launcher-parameters)
-* [Installing more tools](#installing-more-tools)
-  * [Preinstalling plugins](#preinstalling-plugins)
-* [Upgrading](#upgrading)
-  * [Upgrading plugins](#upgrading-plugins)
-* [Building](#building)
-* [Multiarch support](#multiarch-support)
-* [Debugging](#debugging)
-* [Questions](#questions)
 
 # Usage
 
@@ -277,53 +261,9 @@ By default, plugins will be upgraded if they haven't been upgraded manually and 
 
 The default behaviour when upgrading from a docker image that didn't write marker files is to leave existing plugins in place. If you want to upgrade existing plugins without marker you may run the docker image with `-e TRY_UPGRADE_IF_NO_MARKER=true`. Then plugins will be upgraded if the version provided by the docker image is newer.
 
-# Building
+## Hacking
 
-Build with the usual
-
-    docker build -t jenkins/jenkins .
-
-Tests are written using [bats](https://github.com/sstephenson/bats) under the `tests` dir
-
-    DOCKERFILE=Dockerfile bats tests
-    DOCKERFILE=Dockerfile-alpine bats tests
-
-Download the test helpers by updating the submodules
-    
-    git submodule update --init --recursive
-
-Bats can be easily installed with `brew install bats` on OS X
-
-# Multiarch support
-
-Multiarch support is added via the `publish-experimental.sh` script, which
-relies on QEMU for emulating the architecture being built as well as the Docker
-[manifest-tool](https://github.com/estesp/manifest-tool) for creating registry
-v2.2 "thick" manifests.
-
-When changes are pushed to the upstream Jenkins project, a Jenkins job is
-triggered via the `Jenkinfile` from this repo, which then runs the
-`publish-experimental.sh` script.  Multiarch images created by the script are
-built/tagged/pushed to the Docker Hub
-[`jenkins4eval/jenkins-multiarch-qemu`](https://hub.docker.com/r/jenkins4eval/jenkins-multiarch-qemu/)
-repo.
-
-Currently supported architectures:
-
-* amd64
-* arm32
-* arm64
-* s390x
-* ppc64le
-
-NOTE: This functionality may change/move at some point in the
-future.
-
-# Debugging
-
-In order to debug the master, use the `-e DEBUG=true -p 5005:5005` when starting the container. 
-Jenkins will be suspended on the startup in such case,
-and then it will be possible to attach a debugger from IDE to it.
+If you wish to contribute fixes to this repository, please refer to the [dedicated documentation](HACKING.adoc).
 
 # Questions?
 

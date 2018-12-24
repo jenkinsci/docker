@@ -5,9 +5,7 @@ properties([
     pipelineTriggers([cron('H H/6 * * *')]),
 ])
 
-timeout(20) {
-
-node('docker') {
+nodeWithTimeout('docker') {
     deleteDir()
 
     stage('Checkout') {
@@ -71,4 +69,10 @@ node('docker') {
     }
 }
 
+void nodeWithTimeout(String label, def body) {
+    timeout(time: 40, unit: 'MINUTES') {
+        node(label) {
+            body.call()
+        }
+    }
 }

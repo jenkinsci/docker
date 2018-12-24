@@ -53,10 +53,10 @@ RUN mkdir ${JAVA_LIB_DIR} \
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION ${JENKINS_VERSION:-2.128}
+ENV JENKINS_VERSION ${JENKINS_VERSION:-2.154}
 
 # jenkins.war checksum, download will be validated using it
-ARG JENKINS_SHA=e9288b78093507953550214c395bb6f1baf7a23c172a6cb9c035e5a7305ae7a2
+ARG JENKINS_SHA=2d12418c2e482eaf2cf1d13ad2b25f58e801b80c46cbd6dd3bae4c6df308d98e
 
 # Can be used to customize where jenkins.war get downloaded from
 ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war
@@ -68,7 +68,8 @@ RUN sha256sum /usr/share/jenkins/jenkins.war
 RUN echo "${JENKINS_SHA}  /usr/share/jenkins/jenkins.war" | sha256sum -c -
 
 ENV JENKINS_UC https://updates.jenkins.io
-ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
+# TODO: revert before the GA release of Java 11 support (JENKINS-55087)
+ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/temporary-experimental-java11
 ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 RUN chown -R ${user} "$JENKINS_HOME" /usr/share/jenkins/ref
 

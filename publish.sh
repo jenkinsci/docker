@@ -9,13 +9,14 @@ set -o pipefail
 
 . jenkins-support
 
-: "${JENKINS_REPO:=jenkins/jenkins}"
-: "${JENKINSCI_REPO:=jenkinsci/jenkins}"
+: "${DOCKERHUB_ORGANISATION:=jenkins}"
+: "${DOCKERHUB_REPO:=jenkins}"
+
+JENKINS_REPO="${DOCKERHUB_ORGANISATION}/${DOCKERHUB_REPO}"
 
 cat <<EOF
-Docker repositories in Use:
+Docker repository in Use:
 * JENKINS_REPO: ${JENKINS_REPO}
-* JENKINSCI_REPO: ${JENKINSCI_REPO}
 EOF
 
 sort-versions() {
@@ -29,7 +30,7 @@ sort-versions() {
 # Try tagging with and without -f to support all versions of docker
 docker-tag() {
     local from="${JENKINS_REPO}:$1"
-    local to="$2/jenkins:$3"
+    local to="$2/${DOCKERHUB_REPO}:$3"
     local out
 
     docker pull "$from"
@@ -103,13 +104,11 @@ publish() {
                  --build-arg "JENKINS_VERSION=$version" \
                  --build-arg "JENKINS_SHA=$sha" \
                  --tag "${JENKINS_REPO}:${tag}" \
-                 --tag "${JENKINSCI_REPO}:${tag}" \
                  "${build_opts[@]+"${build_opts[@]}"}" .
 
     # " line to fix syntax highlightning
     if [ ! "$dry_run" = true ]; then
         docker push "${JENKINS_REPO}:${tag}"
-        docker push "${JENKINSCI_REPO}:${tag}"
     else
         echo "Dry run mode: no docker push"
     fi
@@ -126,7 +125,7 @@ tag-and-push() {
     fi
     # if tag doesn't exist yet, ie. dry run
     if ! digest_source=$(get-digest "${source}"); then
-        echo "Unable to get digest for ${source} ${digest_source}"
+        echo "Unable to get source digest for '${source} ${digest_source}'"
         digest_source=""
     fi
 
@@ -134,7 +133,7 @@ tag-and-push() {
         >&2 echo "DEBUG: Getting digest for ${target}"
     fi
     if ! digest_target=$(get-digest "${target}"); then
-        echo "Unable to get digest for ${target} ${digest_target}"
+        echo "Unable to get target digest for '${target} ${digest_target}'"
         digest_target=""
     fi
 
@@ -142,12 +141,10 @@ tag-and-push() {
         echo "Images ${source} [$digest_source] and ${target} [$digest_target] are already the same, not updating tags"
     else
         echo "Creating tag ${target} pointing to ${source}"
-        docker-tag "${source}" "jenkins" "${target}"
-        docker-tag "${source}" "jenkinsci" "${target}"
+        docker-tag "${source}" "${DOCKERHUB_ORGANISATION}" "${target}"
         destination="${REPO:-${JENKINS_REPO}}:${target}"
         if [ ! "$dry_run" = true ]; then
             echo "Pushing ${destination}"
-            docker push "${destination}"
             docker push "${destination}"
         else
             echo "Would push ${destination}"
@@ -158,6 +155,7 @@ tag-and-push() {
 publish-latest() {
     local version=$1
     local variant=$2
+    echo "publishing latest: $version$variant"
 
     # push latest (for master) or the name of the branch (for other branches)
     if [ -z "${variant}" ]; then
@@ -218,6 +216,7 @@ for version in $(get-latest-versions); do
     if is-published "$version$variant"; then
         echo "Tag is already published: $version$variant"
     else
+        echo "$version$variant not published yet"
         if versionLT "$start_after" "$version"; then # if start_after < version
             echo "Version $version higher than $start_after: publishing $version$variant"
             publish "$version" "$variant"
@@ -226,13 +225,16 @@ for version in $(get-latest-versions); do
         fi
     fi
 
-    # Update lts tag
-    if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    # Update lts tag (if we have an LTS version depending on $start_after)
+    if versionLT "$start_after" "$version" && [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         lts_version="${version}"
     fi
 done
 
 publish-latest "${version}" "${variant}"
+
 if [ -n "${lts_version}" ]; then
     publish-lts "${lts_version}" "${variant}"
+else
+    echo "No LTS publishing"
 fi
