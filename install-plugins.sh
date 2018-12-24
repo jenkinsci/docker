@@ -153,9 +153,7 @@ bundledPlugins() {
         done
         rm -fr $TEMP_PLUGIN_DIR
     else
-        rm -f "$TEMP_ALREADY_INSTALLED"
-        echo "ERROR file not found: $JENKINS_WAR"
-        exit 1
+        echo "war not found, installing all plugins: $JENKINS_WAR"
     fi
 }
 
