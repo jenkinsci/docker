@@ -24,8 +24,9 @@ ENV JENKINS_SLAVE_AGENT_PORT ${agent_port}
 # If you bind mount a volume from the host or a data container,
 # ensure you use the same uid
 RUN mkdir -p $JENKINS_HOME \
-  && mkdir -P ${JENKINS_CERTS} \
   && chown ${uid}:${gid} $JENKINS_HOME \
+  && mkdir -P ${JENKINS_CERTS} \
+  && chown ${uid}:${gid} $JENKINS_CERTS \
   && groupadd -g ${gid} ${group} \
   && useradd -d "$JENKINS_HOME" -u ${uid} -g ${gid} -m -s /bin/bash ${user}
 
