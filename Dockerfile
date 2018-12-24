@@ -1,29 +1,38 @@
 FROM openjdk:8-jdk
 
-RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y git curl && \ 
+    rm -rf /var/lib/apt/lists/*
 
 ARG user=jenkins
 ARG group=jenkins
 ARG uid=1000
 ARG gid=1000
-ARG http_port=8080
-ARG agent_port=50000
-ARG JENKINS_HOME=/var/jenkins_home
 
-ENV JENKINS_HOME $JENKINS_HOME
+ARG http_port=8080
+ARG https_port=8443
+
+ARG agent_port=50000
+
+ARG JENKINS_HOME=/var/jenkins_home
+ARG JENKINS_KEYSTORE=/etc/jenkins/
+
+ENV JENKINS_HOME ${JENKINS_HOME}
 ENV JENKINS_SLAVE_AGENT_PORT ${agent_port}
 
 # Jenkins is run with user `jenkins`, uid = 1000
 # If you bind mount a volume from the host or a data container,
 # ensure you use the same uid
 RUN mkdir -p $JENKINS_HOME \
+  && mkdir -P ${JENKINS_CERTS} \
   && chown ${uid}:${gid} $JENKINS_HOME \
   && groupadd -g ${gid} ${group} \
   && useradd -d "$JENKINS_HOME" -u ${uid} -g ${gid} -m -s /bin/bash ${user}
 
 # Jenkins home directory is a volume, so configuration and build history
 # can be persisted and survive image upgrades
-VOLUME $JENKINS_HOME
+VOLUME [ ${JENKINS_HOME} ]
+VOLUME [ ${JENKINS_CERTS} ]
 
 # `/usr/share/jenkins/ref/` contains all reference configuration we want
 # to set on a fresh new installation. Use it to bundle additional plugins
@@ -64,6 +73,7 @@ RUN chown -R ${user} "$JENKINS_HOME" /usr/share/jenkins/ref
 
 # for main web interface:
 EXPOSE ${http_port}
+EXPOSE ${https_port}
 
 # will be used by attached slave agents:
 EXPOSE ${agent_port}
