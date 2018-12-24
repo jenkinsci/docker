@@ -153,3 +153,8 @@ SUT_IMAGE=$(sut_image)
 @test "clean work directory" {
     run bash -c "rm -rf $BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
 }
+
+@test "plugins are installed with install-plugins.sh and no war" {
+  run docker_build_child $SUT_IMAGE-install-plugins-no-war $BATS_TEST_DIRNAME/install-plugins/no-war
+  assert_success
+}

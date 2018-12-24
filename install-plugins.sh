@@ -183,8 +183,7 @@ jenkinsMajorMinorVersion() {
         minor="$(echo "$version" | cut -d '.' -f 2)"
         echo "$major.$minor"
     else
-        echo "ERROR file not found: $JENKINS_WAR"
-        return 1
+        echo ""
     fi
 }
 

@@ -1,0 +1,24 @@
+# comment line should be skipped
+
+# simple case
+ant:1.3
+
+# trailing spaces
+maven-plugin:2.7.1   
+
+# leading spaces
+  mesos:0.13.0
+
+# leading spaces, and trailing spaces
+  git:latest  
+
+# with comments at the end
+filesystem_scm:experimental  # comment at the end
+
+# empty line
+ 
+    #  
+     # empty line
+
+# Incrementals (JENKINS-52028)
+workflow-support:incrementals;org.jenkins-ci.plugins.workflow;2.19-rc289.d09828a05a74
