@@ -33,7 +33,7 @@ RUN mkdir -p ${JENKINS_HOME} \
 # Jenkins home directory is a volume, so configuration and build history
 # can be persisted and survive image upgrades
 VOLUME [ ${JENKINS_HOME} ]
-VOLUME [ ${JENKINS_CERTS} ]
+VOLUME [ ${JENKINS_KEYSTORE}} ]
 
 # `/usr/share/jenkins/ref/` contains all reference configuration we want
 # to set on a fresh new installation. Use it to bundle additional plugins
