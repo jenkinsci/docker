@@ -56,8 +56,7 @@ publish:
 publish-experimental:
 	./publish-experimental.sh ; \
 	./publish-experimental.sh --variant alpine ; \
-	./publish-experimental.sh --variant slim ; \
-	./publish-experimental.sh --variant jdk11 --start-after 2.151 ;
+	./publish-experimental.sh --variant slim ; 
 
 clean:
 	rm -rf tests/test_helper/bats-*; \
