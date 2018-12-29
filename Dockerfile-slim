@@ -1,7 +1,7 @@
 FROM debian:buster-slim
 
 RUN mkdir -p /usr/share/man/man1 # Workaround for Debian packaging bug
-RUN apt-get update && apt-get install -y openjdk-11-jdk git curl gpg tini unzip && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y openjdk-11-jdk git git-lfs curl gpg tini unzip && rm -rf /var/lib/apt/lists/*
 
 ARG user=jenkins
 ARG group=jenkins
