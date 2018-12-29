@@ -1,6 +1,6 @@
 FROM debian:buster
 
-RUN apt-get update && apt-get install -y openjdk-11-jdk git curl tini unzip && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y openjdk-11-jdk git git-lfs curl tini unzip && rm -rf /var/lib/apt/lists/*
 
 ARG user=jenkins
 ARG group=jenkins
