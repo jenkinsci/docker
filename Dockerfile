@@ -46,10 +46,10 @@ RUN mkdir ${JAVA_LIB_DIR} \
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION ${JENKINS_VERSION:-2.128}
+ENV JENKINS_VERSION ${JENKINS_VERSION:-2.156}
 
 # jenkins.war checksum, download will be validated using it
-ARG JENKINS_SHA=e9288b78093507953550214c395bb6f1baf7a23c172a6cb9c035e5a7305ae7a2
+ARG JENKINS_SHA=f68d2d930118cd731ad7b35c16a6482205c0be17a99a380065b0f6c729f5736a
 
 # Can be used to customize where jenkins.war get downloaded from
 ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war
