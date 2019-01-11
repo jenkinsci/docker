@@ -259,7 +259,10 @@ main() {
     fi
 
     echo "Cleaning up locks"
-    rm -r "$REF_DIR"/*.lock
+    find "$REF_DIR" -regex ".*.lock" | while read -r filepath; do
+        rm -r "$filepath"
+    done
+
 }
 
 main "$@"
