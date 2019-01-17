@@ -47,31 +47,23 @@ copy_reference_file() {
     local reason;
     local container_version;
     local image_version;
-    local marker_version;
     local log; log=false
     if [[ ${rel} == plugins/*.jpi ]]; then
         container_version=$(get_plugin_version "$JENKINS_HOME/${rel}")
         image_version=$(get_plugin_version "${f}")
         if [[ -e $JENKINS_HOME/${version_marker} ]]; then
-            marker_version=$(cat "$JENKINS_HOME/${version_marker}")
-            if versionLT "$marker_version" "$container_version"; then
+            if [[ "$image_version" == "$container_version" ]]; then
                 action="SKIPPED"
-                reason="Installed version ($container_version) has been manually upgraded from initial version ($marker_version)"
-                log=true
+                reason="Version from image is the same as the installed version $image_version"
             else
-                if [[ "$image_version" == "$container_version" ]]; then
+                if versionLT "$image_version" "$container_version"; then
                     action="SKIPPED"
-                    reason="Version from image is the same as the installed version $image_version"
+                    log=true
+                    reason="Image version ($image_version) is older than installed version ($container_version)"
                 else
-                    if versionLT "$image_version" "$container_version"; then
-                        action="SKIPPED"
-                        log=true
-                        reason="Image version ($image_version) is older than installed version ($container_version)"
-                    else
-                        action="UPGRADED"
-                        log=true
-                        reason="Image version ($image_version) is newer than installed version ($container_version)"
-                    fi
+                    action="UPGRADED"
+                    log=true
+                    reason="Image version ($image_version) is newer than installed version ($container_version)"
                 fi
             fi
         else

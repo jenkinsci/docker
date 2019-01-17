@@ -129,27 +129,6 @@ SUT_IMAGE=$(sut_image)
     run bash -c "rm -rf $BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
 }
 
-@test "do not upgrade if plugin has been manually updated" {
-  run docker_build_child $SUT_IMAGE-install-plugins $BATS_TEST_DIRNAME/install-plugins
-  assert_success
-  local work; work="$BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
-  mkdir -p $work
-  # Image contains maven-plugin 2.7.1 and ant-plugin 1.3
-  run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-install-plugins curl --connect-timeout 20 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L https://updates.jenkins.io/download/plugins/maven-plugin/2.12.1/maven-plugin.hpi -o /var/jenkins_home/plugins/maven-plugin.jpi"
-  assert_success
-  run unzip_manifest maven-plugin.jpi $work
-  assert_line 'Plugin-Version: 2.12.1'
-  run docker_build_child $SUT_IMAGE-upgrade-plugins $BATS_TEST_DIRNAME/upgrade-plugins
-  assert_success
-  # Images contains maven-plugin 2.13 and ant-plugin 1.2
-  run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-upgrade-plugins true"
-  assert_success
-  run unzip_manifest maven-plugin.jpi $work
-  assert_success
-  # Shouldn't be updated
-  refute_line 'Plugin-Version: 2.13'
-}
-
 @test "clean work directory" {
     run bash -c "rm -rf $BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
 }
