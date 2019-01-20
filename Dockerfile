@@ -15,10 +15,11 @@ ARG https_port=8443
 ARG agent_port=50000
 
 ARG JENKINS_HOME=/var/jenkins_home
-ARG JENKINS_KEYSTORE=/etc/jenkins/
 
 ENV JENKINS_HOME ${JENKINS_HOME}
 ENV JENKINS_SLAVE_AGENT_PORT ${agent_port}
+ENV JENKINS_KEYSTORE_PASSWORD jenkins
+
 
 # Jenkins is run with user `jenkins`, uid = 1000
 # If you bind mount a volume from the host or a data container,
@@ -71,6 +72,10 @@ ENV JENKINS_UC https://updates.jenkins.io
 ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
 ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 RUN chown -R ${user} "$JENKINS_HOME" /usr/share/jenkins/ref
+
+# Added self-signed-certificate for init
+COPY jenkins.jks /var/jenkins_home/jenkins.jks
+ENV JENKINS_OPTS="--httpPort=${http_port} --httpsPort=${https_port} --httpsKeyStore=/var/jenkins_home/jenkins.jks --httpsKeyStorePassword=${JENKINS_KEYSTORE_PASSWORD}"
 
 # for main web interface:
 EXPOSE ${http_port}
