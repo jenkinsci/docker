@@ -1,5 +1,6 @@
 #!/usr/bin/env groovy
 
+// fake to force usage
 properties([
     buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '5')),
     pipelineTriggers([cron('H H/6 * * *')]),
@@ -15,6 +16,7 @@ nodeWithTimeout('docker') {
     if (!infra.isTrusted()) {
 
         stage('shellcheck') {
+            echo "Helloooooo"
             // run shellcheck ignoring error SC1091
             // Not following: /usr/local/bin/jenkins-support was not specified as input
             sh 'make shellcheck'
