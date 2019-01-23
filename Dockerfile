@@ -1,5 +1,7 @@
 FROM openjdk:8-jdk-stretch
 
+RUN sed -i -e 's/HashKnownHosts yes/HashKnownHosts no/' /etc/ssh/ssh_config
+
 RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
 
 ARG user=jenkins
