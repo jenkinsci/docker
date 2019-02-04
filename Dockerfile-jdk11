@@ -69,6 +69,7 @@ EXPOSE ${http_port}
 EXPOSE ${agent_port}
 
 ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
+ENV JENKINS_OPTS --enable-future-java
 
 USER ${user}
 
