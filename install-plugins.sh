@@ -156,9 +156,7 @@ bundledPlugins() {
         done
         rm -fr $TEMP_PLUGIN_DIR
     else
-        rm -f "$TEMP_ALREADY_INSTALLED"
-        echo "ERROR file not found: $JENKINS_WAR"
-        exit 1
+        echo "war not found, installing all plugins: $JENKINS_WAR"
     fi
 }
 
@@ -188,8 +186,7 @@ jenkinsMajorMinorVersion() {
         minor="$(echo "$version" | cut -d '.' -f 2)"
         echo "$major.$minor"
     else
-        echo "ERROR file not found: $JENKINS_WAR"
-        return 1
+        echo ""
     fi
 }
 
