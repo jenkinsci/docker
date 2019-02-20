@@ -21,14 +21,15 @@ getArchiveFilename() {
 }
 
 download() {
-    local plugin originalPlugin version lock ignoreLockFile
+    local plugin originalPlugin version lock ignoreLockFile url
     plugin="$1"
     version="${2:-latest}"
     ignoreLockFile="${3:-}"
+    url="${4:-}"
     lock="$(getLockFile "$plugin")"
 
     if [[ $ignoreLockFile ]] || mkdir "$lock" &>/dev/null; then
-        if ! doDownload "$plugin" "$version"; then
+        if ! doDownload "$plugin" "$version" "$url"; then
             # some plugin don't follow the rules about artifact ID
             # typically: docker-plugin
             originalPlugin="$plugin"
@@ -54,6 +55,7 @@ doDownload() {
     local plugin version url jpi
     plugin="$1"
     version="$2"
+    url="$3"
     jpi="$(getArchiveFilename "$plugin")"
 
     # If plugin already exists and is the same version do not download
@@ -62,7 +64,9 @@ doDownload() {
         return 0
     fi
 
-    if [[ "$version" == "latest" && -n "$JENKINS_UC_LATEST" ]]; then
+    if [[ -n $url ]] ; then
+        echo "Will use url=$url"
+    elif [[ "$version" == "latest" && -n "$JENKINS_UC_LATEST" ]]; then
         # If version-specific Update Center is available, which is the case for LTS versions,
         # use it to resolve latest versions.
         url="$JENKINS_UC_LATEST/latest/${plugin}.hpi"
@@ -191,7 +195,7 @@ jenkinsMajorMinorVersion() {
 }
 
 main() {
-    local plugin pluginVersion jenkinsVersion
+    local plugin jenkinsVersion
     local plugins=()
 
     mkdir -p "$REF_DIR" || exit 1
@@ -235,14 +239,16 @@ main() {
 
     echo "Downloading plugins..."
     for plugin in "${plugins[@]}"; do
-        pluginVersion=""
-
-        if [[ $plugin =~ .*:.* ]]; then
-            pluginVersion=$(versionFromPlugin "${plugin}")
-            plugin="${plugin%%:*}"
+        local reg='^([^:]+):?([^:]+)?:?([^:]+)?:?(http.+)?'
+        if [[ $plugin =~ $reg ]]; then
+            local pluginId="${BASH_REMATCH[1]}"
+            local version="${BASH_REMATCH[2]}"
+            local lock="${BASH_REMATCH[3]}"
+            local url="${BASH_REMATCH[4]}"
+            download "$pluginId" "$version" "${lock:-true}" "${url}" &
+        else
+          echo "Skipping the line '${plugin}' as it does not look like a reference to a plugin"
         fi
-
-        download "$plugin" "$pluginVersion" "true" &
     done
     wait
 
