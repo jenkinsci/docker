@@ -1,6 +1,8 @@
 FROM openjdk:8-jdk-stretch
 
-RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
+RUN echo "deb http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/stretch-backports.list \
+  && apt-get update && apt-get install -y git git-lfs curl \
+  && rm -rf /etc/apt/sources.list.d/stretch-backports.list /var/lib/apt/lists/*
 
 ARG user=jenkins
 ARG group=jenkins
