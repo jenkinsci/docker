@@ -19,6 +19,12 @@ Docker repository in Use:
 * JENKINS_REPO: ${JENKINS_REPO}
 EOF
 
+#This is precautionary step to avoid accidental push to offical jenkins image
+if [[ "$DOCKERHUB_ORGANISATION" == "jenkins" ]]; then
+    echo "Experimental docker image should not published to jenkins organization , hence exiting with failure";
+    exit 1;
+fi
+
 ARCHS=(arm arm64 s390x ppc64le amd64)
 QEMUARCHS=(arm aarch64 s390x ppc64le x86_64)
 QEMUVER="v3.0.0"
