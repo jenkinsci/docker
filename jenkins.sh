@@ -15,6 +15,10 @@ if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
     java_opts_array+=( "$item" )
   done < <([[ $JAVA_OPTS ]] && xargs printf '%s\0' <<<"$JAVA_OPTS")
 
+  if [ -n "${JENKINS_SLAVE_AGENT_PORT:-}" ]; then
+    java_opts_array+=( "-Djenkins.model.Jenkins.slaveAgentPort=${JENKINS_SLAVE_AGENT_PORT}" )
+  fi
+
   if [[ "$DEBUG" ]] ; then
     java_opts_array+=( \
       '-Xdebug' \
