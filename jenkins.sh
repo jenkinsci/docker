@@ -15,8 +15,9 @@ if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
     java_opts_array+=( "$item" )
   done < <([[ $JAVA_OPTS ]] && xargs printf '%s\0' <<<"$JAVA_OPTS")
 
-  if [ -n "${JENKINS_SLAVE_AGENT_PORT:-}" ]; then
-    java_opts_array+=( "-Djenkins.model.Jenkins.slaveAgentPort=${JENKINS_SLAVE_AGENT_PORT}" )
+  readonly agent_port_property='jenkins.model.Jenkins.slaveAgentPort'
+  if [ -n "${JENKINS_SLAVE_AGENT_PORT:-}" ] && [[ "${JAVA_OPTS:-}" != *"${agent_port_property}"* ]]; then
+    java_opts_array+=( "-D${agent_port_property}=${JENKINS_SLAVE_AGENT_PORT}" )
   fi
 
   if [[ "$DEBUG" ]] ; then
