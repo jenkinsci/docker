@@ -29,14 +29,12 @@ ARCHS=(arm arm64 s390x ppc64le amd64)
 QEMUARCHS=(arm aarch64 s390x ppc64le x86_64)
 QEMUVER="v3.0.0"
 BASEIMAGE=
+MANIFEST_TOOL_VERSION="v0.9.0"
 
 get-manifest-tool() {
     if [[ ! -f manifest-tool ]]; then
-        local version
-        version=$(curl -s https://api.github.com/repos/estesp/manifest-tool/tags | jq -r '.[0].name')
-
         echo "Downloading manifest-tool"
-        if ! curl -OLs "https://github.com/estesp/manifest-tool/releases/download/$version/manifest-tool-linux-amd64"; then
+        if ! curl -OLs "https://github.com/estesp/manifest-tool/releases/download/$MANIFEST_TOOL_VERSION/manifest-tool-linux-amd64"; then
             echo "Error downloading manifest-tool"
             exit
         fi
