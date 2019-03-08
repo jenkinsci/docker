@@ -136,8 +136,8 @@ or as a parameter to docker,
 docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGENT_PORT=50001 jenkins/jenkins:lts
 ```
 
-**Note**: This environment variable will be used to set the port using the
-[system property][system-property] `jenkins.model.Jenkins.slaveAgentPort` in **JAVA_OPTS**.
+**Note**: This environment variable will be used to set the port adding the
+[system property][system-property] `jenkins.model.Jenkins.slaveAgentPort` to **JAVA_OPTS**.
 
 > If this property is already set in **JAVA_OPTS**, then the value of
 `JENKINS_SLAVE_AGENT_PORT` will be ignored.
