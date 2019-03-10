@@ -55,9 +55,15 @@ copy_reference_file() {
         if [[ -e $JENKINS_HOME/${version_marker} ]]; then
             marker_version=$(cat "$JENKINS_HOME/${version_marker}")
             if versionLT "$marker_version" "$container_version"; then
-                action="SKIPPED"
-                reason="Installed version ($container_version) has been manually upgraded from initial version ($marker_version)"
-                log=true
+                if [[ -n "$PLUGINS_FORCE_UPGRADE" ]]; then
+                    action="UPGRADED"
+                    reason="Installed version ($container_version) has been manually upgraded from initial version ($marker_version), forcing upgrade"
+                    log=true
+                else
+                    action="SKIPPED"
+                    reason="Installed version ($container_version) has been manually upgraded from initial version ($marker_version)"
+                    log=true
+                fi
             else
                 if [[ "$image_version" == "$container_version" ]]; then
                     action="SKIPPED"
