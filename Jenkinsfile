@@ -47,7 +47,7 @@ nodeWithTimeout('docker') {
         parallel builders
         
         def branchName = "${env.BRANCH_NAME}"
-        if (branchName ==~ 'master'){
+        if (branchName ==~ 'master' || branchName ==~ 'jenkins4eval'){
             stage('Publish Experimental') {
                 infra.withDockerCredentials {
                     sh 'make publish-experimental'
