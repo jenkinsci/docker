@@ -55,7 +55,7 @@ doDownload() {
     local plugin version url jpi
     plugin="$1"
     version="$2"
-    url="$3"
+    url="${3:-}"
     jpi="$(getArchiveFilename "$plugin")"
 
     # If plugin already exists and is the same version do not download
