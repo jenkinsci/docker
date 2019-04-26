@@ -50,6 +50,8 @@ SUT_IMAGE=$(sut_image)
   assert_line 'git.jpi.pinned'
   assert_line 'filesystem_scm.jpi'
   assert_line 'filesystem_scm.jpi.pinned'
+  assert_line 'docker-plugin.jpi'
+  assert_line 'docker-plugin.jpi.pinned'
 }
 
 @test "plugins are installed with install-plugins.sh from a plugins file" {
