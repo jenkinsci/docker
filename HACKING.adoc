@@ -1,0 +1,82 @@
+# Hacking documentation
+
+This document explains how to develop on this repository.
+
+## Building
+
+Build with the usual
+
+    docker build -t jenkins/jenkins .
+
+Tests are written using `https://github.com/sstephenson/bats[bats]` under the `tests` dir
+
+    DOCKERFILE=Dockerfile bats tests
+    DOCKERFILE=Dockerfile-alpine bats tests
+
+Download the test helpers by updating the submodules
+
+    git submodule update --init --recursive
+
+Bats can be easily installed with `brew install bats` on OS X
+
+## Multiarch support
+
+Multiarch support is added via the `publish-experimental.sh` script, which relies on QEMU for emulating the architecture being built as well as the Docker `https://github.com/estesp/manifest-tool[manifest-tool]` for creating registry
+v2.2 "thick" manifests.
+
+When changes are pushed to the upstream Jenkins project, a job is triggered via the `Jenkinsfile` from this repo, which then runs the `publish-experimental.sh` script in parallel mode. Multiarch images created by the script are built/tagged/pushed to the Docker Hub `https://hub.docker.com/r/jenkins4eval/jenkins/[jenkins4eval/jenkins]` repo.
+
+Currently supported architectures:
+
+* amd64
+* arm32
+* arm64
+* s390x
+* ppc64le
+
+NOTE:This functionality may change/move at some point in the future.
+
+## Debugging
+
+In order to debug the master, use the `-e DEBUG=true -p 5005:5005` when starting the container.
+Jenkins will be suspended on the startup in such case,
+and then it will be possible to attach a debugger from IDE to it.
+
+## Test the publishing using an overridden target repository on Docker Hub
+
+Create a new dedicated target repository in your Docker Hub account, and use it like follows:
+
+[source]
+--
+export DOCKERHUB_ORGANISATION=batmat
+export DOCKERHUB_REPO=test-jenkins
+# The log below will help confirm this override was taken in account:
+./publish.sh --variant jdk11
+Docker repository in Use:
+* JENKINS_REPO: batmat/test-jenkins
+...
+--
+
+## Test the publishing of Multi-arch image using an overridden target repository
+
+Create a new dedicated target repository in your Docker Hub account, and use it like follows:
+
+[source]
+--
+export DOCKERHUB_ORGANISATION=durgadas
+export DOCKERHUB_REPO=jenkins
+
+./publish-experimental.sh --variant alpine 
+
+# The log below will help confirm this override was taken in account:
+Docker repository in Use:
+* JENKINS_REPO: durgadas/jenkins
+...
+--
+
+Also, one can execute the publish-experimental.sh using:
+
+[source]
+--  
+make publish-experimental
+--

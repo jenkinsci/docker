@@ -1,4 +1,11 @@
-FROM openjdk:8-jdk-alpine
+# Placeholder for the specified arch that gets parsed in the publish-experimental.sh script.
+FROM BASEIMAGE
+
+# If we're building for another architecture than amd64, the CROSS_BUILD_
+# placeholder is removed so
+# e.g. CROSS_BUILD_COPY turns into COPY
+# If we're building normally, for amd64, CROSS_BUILD lines are removed
+CROSS_BUILD_COPY multiarch/qemu-ARCH-static /usr/bin/
 
 RUN apk add --no-cache git openssh-client curl unzip bash ttf-dejavu coreutils tini
 
