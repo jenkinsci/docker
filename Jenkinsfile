@@ -50,6 +50,7 @@ nodeWithTimeout('docker') {
         if (branchName ==~ 'master' || branchName ==~ 'jenkins4eval'){
             stage('Publish Experimental') {
                 infra.withDockerCredentials {
+                    // Invoke the experimental deployment script
                     sh 'make publish-experimental'
                 }
             }                 
