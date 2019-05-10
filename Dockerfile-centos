@@ -1,6 +1,6 @@
 FROM centos
 
-RUN yum update -y && yum install -y epel-release && yum install -y git curl dpkg java && yum clean all
+RUN yum update -y && yum install -y epel-release && yum install -y git curl dpkg java java-devel unzip && yum clean all
 
 ARG user=jenkins
 ARG group=jenkins
