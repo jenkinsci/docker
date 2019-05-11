@@ -219,7 +219,7 @@ publish() {
 
         # " line to fix syntax highlightning
         if [ ! "$dry_run" = true ]; then
-            docker push "${JENKINS_REPO}:${tag}-${arch}"
+            docker --log-level debug push "${JENKINS_REPO}:${tag}-${arch}"
         fi
     done
 }
