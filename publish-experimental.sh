@@ -257,7 +257,7 @@ tag-and-push() {
 
         if [ ! "$dry_run" = true ]; then
             echo "Pushing ${JENKINS_REPO}:${target}-${arch}"
-            docker push "${JENKINS_REPO}:${target}-${arch}"
+            docker --log-level debug push "${JENKINS_REPO}:${target}-${arch}"
         else
             echo "Would push ${JENKINS_REPO}:${target}-${arch}"
         fi
