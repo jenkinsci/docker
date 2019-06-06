@@ -37,6 +37,14 @@ docker run -d -v jenkins_home:/var/jenkins_home -p 8080:8080 -p 50000:50000 jenk
 
 this will run Jenkins in detached mode with port forwarding and volume added. You can access logs with command 'docker logs CONTAINER_ID' in order to check first login token. ID of container will be returned from output of command above.
 
+## Logging in
+
+To access the new Jenkins instance visit http://localhost:8080/ .
+
+You will be presented with an "unlock Jenkins" page prompting for the generated admin password. You can find this printed in the container log (see `docker logs $yourcontainerid`) or with:
+
+    docker exec $yourcontainerid cat /var/jenkins_home/secrets/initialAdminPassword
+
 ## Backing up data
 
 If you bind mount in a volume - you can simply back up that directory
@@ -164,6 +172,10 @@ FROM jenkins/jenkins:lts
 COPY custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
 ```
 
+# Automated configuration
+
+Some deployments may wish to minimise manual configuration of their Jenkins instances by preinstalling plugins, preconfiguring environment variables and tools, etc.
+
 ## Preinstalling plugins
 
 You can rely on the `install-plugins.sh` script to pass a set of plugins to download with their dependencies.
@@ -251,13 +263,27 @@ script-security:1.13
 ...
 ```
 
-For 2.x-derived images, you may also want to
+## Disabling the setup wizard
 
-    RUN echo 2.0 > /usr/share/jenkins/ref/jenkins.install.UpgradeWizard.state
+By default Jenkins runs a setup wizard prompting the user to "unlock Jenkins" with a generated admin password then install plugins. This isn't always desired, particularly if a deployment is intended to be fully automated.
 
-to indicate that this Jenkins installation is fully configured.
-Otherwise a banner will appear prompting the user to install additional plugins,
-which may be inappropriate.
+The initial configuration tool may be disabled by passing the system property `-Djenkins.install.runSetupWizard=false`, usually to `docker run` e.g. 
+
+    docker run ..otheroptions... --env JAVA_OPTS="-Djenkins.install.runSetupWizard=false" jenkins/jenkins:lts`
+    
+This will disable creation of the default admin user and password, and will leave Jenkins in an unsecured configuration where anyone who can connect has full admin rights. So it should generally be coupled with automation to install plugins and to configure the server.
+
+Note: Some documentation suggested creating `jenkins.install.UpgradeWizard.state` and/or `jenkins.install.InstallUtil.lastExecVersion`. Using the system property is simpler and more reliable.
+
+## Applying an initial server configuration
+
+Jenkins may be pre-configured in a number of ways:
+
+* A partial jenkins XML configuration may be copied into the Docker image's `/usr/share/jenkins/ref/config.xml` to serve as a base configuration.
+* A tool like the [Configuration as Code plugin](https://github.com/jenkinsci/configuration-as-code-plugin) may be used to manage the configuration declaratively
+* Groovy scripts may be automatically executed during deployment as mentioned above
+
+It's very strongly recommended that you configure the server to enable security using one of these methods if you disable the initial setup wizard.
 
 # Upgrading
 
@@ -272,6 +298,8 @@ By default, plugins will be upgraded if they haven't been upgraded manually and 
 To force upgrades of plugins that have been manually upgraded, run the docker image with `-e PLUGINS_FORCE_UPGRADE=true`.
 
 The default behaviour when upgrading from a docker image that didn't write marker files is to leave existing plugins in place. If you want to upgrade existing plugins without marker you may run the docker image with `-e TRY_UPGRADE_IF_NO_MARKER=true`. Then plugins will be upgraded if the version provided by the docker image is newer.
+
+
 
 ## Hacking
 
