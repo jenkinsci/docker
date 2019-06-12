@@ -8,7 +8,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y git curl gpg && r
 # Seems like a configuration error in openjdk:8-jdk-slim, headless JDK inconsistent with assistive technologies.
 # Upstream OpenJDK pull request: https://github.com/docker-library/openjdk/pull/189
 # Upstream Debian slim bug report: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=896907
-RUN sed -i 's/assistive_technologies=.*/assistive_technologies=/g' /etc/java-8-openjdk/accessibility.properties
+RUN if [ -e /etc/java-8-openjdk/accessibility.properties ] ; then sed -i 's/assistive_technologies=.*/assistive_technologies=/g' /etc/java-8-openjdk/accessibility.properties ; fi
 
 ARG user=jenkins
 ARG group=jenkins
