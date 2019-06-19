@@ -58,7 +58,7 @@ publish:
 	./publish.sh --variant alpine ; \
 	./publish.sh --variant slim ; \
 	./publish.sh --variant jdk11 --start-after 2.151 ; \
-	./publish.sh --variant centos ;
+	./publish.sh --variant centos --start-after 2.181 ;
 
 publish-experimental:
 	./publish-experimental.sh ; \
