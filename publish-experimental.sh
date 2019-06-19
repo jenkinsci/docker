@@ -219,6 +219,8 @@ publish() {
 
         # " line to fix syntax highlightning
         if [ ! "$dry_run" = true ]; then
+	    # login prior to push
+	    docker login
             docker push "${JENKINS_REPO}:${tag}-${arch}"
         fi
     done
@@ -257,6 +259,8 @@ tag-and-push() {
 
         if [ ! "$dry_run" = true ]; then
             echo "Pushing ${JENKINS_REPO}:${target}-${arch}"
+	    # login prior to push
+	    docker login
             docker push "${JENKINS_REPO}:${target}-${arch}"
         else
             echo "Would push ${JENKINS_REPO}:${target}-${arch}"
