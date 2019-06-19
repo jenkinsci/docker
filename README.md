@@ -35,7 +35,7 @@ NOTE: Avoid using a [bind mount](https://docs.docker.com/storage/bind-mounts/) f
 docker run -d -v jenkins_home:/var/jenkins_home -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts
 ```
 
-this will run Jenkins in detached mode with port forwarding and volume added. You can access logs with command 'docker logs CONTAINER_ID' in order to check first login token. ID of container will be returned from output of command above. 
+this will run Jenkins in detached mode with port forwarding and volume added. You can access logs with command 'docker logs CONTAINER_ID' in order to check first login token. ID of container will be returned from output of command above.
 
 ## Backing up data
 
@@ -106,7 +106,7 @@ If you want to install Jenkins behind a reverse proxy with prefix, example: mysi
 
 # Passing Jenkins launcher parameters
 
-Argument you pass to docker running the jenkins image are passed to jenkins launcher, so you can run for sample :
+Argument you pass to docker running the jenkins image are passed to jenkins launcher, so you can run for sample:
 ```
 docker run jenkins/jenkins:lts --version
 ```
@@ -135,6 +135,12 @@ or as a parameter to docker,
 ```
 docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGENT_PORT=50001 jenkins/jenkins:lts
 ```
+
+**Note**: This environment variable will be used to set the port adding the
+[system property][system-property] `jenkins.model.Jenkins.slaveAgentPort` to **JAVA_OPTS**.
+
+> If this property is already set in **JAVA_OPTS**, then the value of
+`JENKINS_SLAVE_AGENT_PORT` will be ignored.
 
 # Installing more tools
 
@@ -263,6 +269,8 @@ As always - please ensure that you know how to drive docker - especially volume 
 
 By default, plugins will be upgraded if they haven't been upgraded manually and if the version from the docker image is newer than the version in the container. Versions installed by the docker image are tracked through a marker file.
 
+To force upgrades of plugins that have been manually upgraded, run the docker image with `-e PLUGINS_FORCE_UPGRADE=true`.
+
 The default behaviour when upgrading from a docker image that didn't write marker files is to leave existing plugins in place. If you want to upgrade existing plugins without marker you may run the docker image with `-e TRY_UPGRADE_IF_NO_MARKER=true`. Then plugins will be upgraded if the version provided by the docker image is newer.
 
 ## Hacking
@@ -272,3 +280,5 @@ If you wish to contribute fixes to this repository, please refer to the [dedicat
 # Questions?
 
 Jump on irc.freenode.net and the #jenkins room. Ask!
+
+[system-property]: https://wiki.jenkins.io/display/JENKINS/Features+controlled+by+system+properties
