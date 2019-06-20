@@ -251,9 +251,9 @@ script-security:1.13
 ...
 ```
 
-For 2.x-derived images, you may also want to
+You may also want to add the following to your Dockerfile
 
-    RUN echo 2.0 > /usr/share/jenkins/ref/jenkins.install.UpgradeWizard.state
+    ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
 
 to indicate that this Jenkins installation is fully configured.
 Otherwise a banner will appear prompting the user to install additional plugins,
