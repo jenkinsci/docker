@@ -77,7 +77,9 @@ doDownload() {
         # Download from Incrementals repo: https://jenkins.io/blog/2018/05/15/incremental-deployment/
         # Example URL: https://repo.jenkins-ci.org/incrementals/org/jenkins-ci/plugins/workflow/workflow-support/2.19-rc289.d09828a05a74/workflow-support-2.19-rc289.d09828a05a74.hpi
         local groupId incrementalsVersion
-        arrIN=("${version//;/ }")
+        # add a trailing ; so the \n gets added to the end
+        readarray -t "-d;" arrIN <<<"${version};";
+        unset 'arrIN[-1]';
         groupId=${arrIN[1]}
         incrementalsVersion=${arrIN[2]}
         url="${JENKINS_INCREMENTALS_REPO_MIRROR}/$(echo "${groupId}" | tr '.' '/')/${plugin}/${incrementalsVersion}/${plugin}-${incrementalsVersion}.hpi"
