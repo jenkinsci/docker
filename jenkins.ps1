@@ -2,16 +2,17 @@ Import-Module -Force -DisableNameChecking C:/ProgramData/Jenkins/jenkins-support
 
 $JENKINS_WAR = Get-EnvOrDefault 'JENKINS_WAR' 'C:/ProgramData/Jenkins/jenkins.war'
 $JENKINS_HOME = Get-EnvOrDefault 'JENKINS_HOME' 'C:/ProgramData/Jenkins/JenkinsHome'
+$COPY_REFERENCE_FILE_LOG = Get-EnvOrDefault 'COPY_REFERENCE_FILE_LOG' "$($JENKINS_HOME)/copy_reference_file.log"
 
 try { 
-  [System.IO.File]::OpenWrite($env:COPY_REFERENCE_FILE_LOG).Close() 
+  [System.IO.File]::OpenWrite($COPY_REFERENCE_FILE_LOG).Close() 
 } catch {
-  Write-Error "Can not write to $env:COPY_REFERENCE_FILE_LOG. Wrong volume permissions?"
+  Write-Error "Can not write to $COPY_REFERENCE_FILE_LOG. Wrong volume permissions?"
   exit 1
 }
 
-Add-Content -Path $env:COPY_REFERENCE_FILE_LOG -Value "--- Copying files at $(date)"
-gci -Recurse -File -Path C:/ProgramData/Jenkins/Ref | %{ Import-Module -Force -DisableNameChecking C:/ProgramData/Jenkins/jenkins-support.psm1 ; Copy-ReferenceFile $_ }
+Add-Content -Path $COPY_REFERENCE_FILE_LOG -Value "--- Copying files at $(Get-Date)"
+gci -Recurse -File -Path C:/ProgramData/Jenkins/Ref | %{ Copy-ReferenceFile $_ }
 
 # if `docker run` first argument start with `--` the user is passing jenkins launcher arguments
 if(($args.Count -eq 0) -or ($args[0] -match "^--.*")) {
