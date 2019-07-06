@@ -1,0 +1,4 @@
+FROM bats-jenkins
+
+COPY plugins.txt C:/ProgramData/Jenkins/Ref/plugins.txt
+RUN java -jar C:/ProgramData/Jenkins/plugin-management-cli.jar -pluginTxtPath C:/ProgramData/Jenkins/Ref/plugins.txt -war C:/ProgramData/Jenkins/jenkins.war -pluginDirPath C:/ProgramData/Jenkins/Ref/plugins
