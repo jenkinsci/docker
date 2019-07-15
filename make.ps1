@@ -35,14 +35,14 @@ function Test($Target='all') {
             pushd tests
             Invoke-Pester 
             popd 
-            rm $env:DOCKERFILE
+            Remove-Item env:\DOCKERFILE
         }
     } else {
         $env:DOCKERFILE="Dockerfile-$Target"
         pushd tests
         Invoke-Pester 
         popd 
-        rm $env:DOCKERFILE
+        Remove-Item env:\DOCKERFILE
     }
 }
 
