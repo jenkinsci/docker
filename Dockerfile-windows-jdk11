@@ -1,5 +1,5 @@
 # escape=`
-FROM openjdk:8-jdk-windowsservercore-1809
+FROM openjdk:11-jdk-windowsservercore-1809
 
 #ARG user=jenkins
 #ARG group=jenkins

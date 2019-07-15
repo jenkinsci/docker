@@ -12,7 +12,7 @@ try {
 }
 
 Add-Content -Path $COPY_REFERENCE_FILE_LOG -Value "--- Copying files at $(Get-Date)"
-gci -Recurse -File -Path C:/ProgramData/Jenkins/Ref | %{ Copy-ReferenceFile $_ }
+gci -Recurse -File -Path 'C:/ProgramData/Jenkins/Reference' | %{ Copy-ReferenceFile $_.FullName }
 
 # if `docker run` first argument start with `--` the user is passing jenkins launcher arguments
 if(($args.Count -eq 0) -or ($args[0] -match "^--.*")) {
