@@ -1,8 +1,8 @@
+Import-Module -DisableNameChecking -Force $PSScriptRoot/../jenkins-support.psm1
 Import-Module -DisableNameChecking -Force $PSScriptRoot/test_helpers.psm1
 
 $SUT_IMAGE=Get-SutImage
-
-Import-Module -DisableNameChecking -Force $PSScriptRoot/../jenkins-support.psm1
+$SUT_CONTAINER=Get-SutImage
 
 Describe 'build image' {
   BeforeEach {
@@ -58,5 +58,40 @@ Describe 'Check-VersionLessThan' {
   It 'has left beta and right alpha' {
     docker run --rm $SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '1.0-beta-1' '1.0-alpha-1')) { exit 0 } else { exit -1 }"
     $LastExitCode | Should -Be -1
+  }
+}
+
+Describe 'Copy-ReferenceFile' {
+  It 'build test image' {
+    $exitCode, $stdout, $stderr = Build-DockerChild $SUT_IMAGE $PSScriptRoot/functions
+    $exitCode | Should -Be 0
+  }
+
+  It 'start container' {
+    $exitCode, $stdout, $stderr = Run-Program 'docker' "run -d --name $SUT_CONTAINER -P $SUT_IMAGE"
+    $exitCode | Should -Be 0
+  }
+
+  It 'wait for running' {
+    # give time to eventually fail to initialize
+    Sleep -Seconds 5
+    Retry-Command -RetryCount 3 -Delay 1 -ScriptBlock { docker inspect -f "{{.State.Running}}" $SUT_CONTAINER ; if($lastExitCode -ne 0) { throw('Docker inspect failed') } } -Verbose | Should -BeTrue
+  }
+
+  It 'is initialized' {
+    Retry-Command -RetryCount 30 -Delay 5 -ScriptBlock { Test-Url $SUT_CONTAINER "/api/json" } -Verbose | Should -BeTrue
+  }
+
+  It 'check files in JENKINS_HOME' {
+    $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $SUT_CONTAINER powershell -C `"gci `$env:JENKINS_HOME`" | Select-Object -Property 'Name'"
+    $exitCode | Should -Be 0
+    $stdout | Should -Match "pester"
+    $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $SUT_CONTAINER powershell -C `"gci `$env:JENKINS_HOME/pester`" | Select-Object -Property 'Name'"
+    $exitCode | Should -Be 0
+    $stdout | Should -Match "test.override"
+  }
+
+  It 'cleanup container' {
+    Cleanup $SUT_CONTAINER | Out-Null
   }
 }
