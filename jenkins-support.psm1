@@ -67,99 +67,118 @@ function Get-PluginVersion($archive) {
     return Unzip-File $archive "META-INF/MANIFEST.MF" | Select-String -Pattern "^Plugin-Version: " | %{$_ -replace "^Plugin-Version: ", ""}.Trim()
 }
 
-# Copy files from /usr/share/jenkins/ref into $JENKINS_HOME
+# Copy files from C:/ProgramData/Jenkins/Reference/ into $JENKINS_HOME
 # So the initial JENKINS-HOME is set with expected content.
 # Don't override, as this is just a reference setup, and use from UI
 # can then change this, upgrade plugins, etc.
 function Copy-ReferenceFile($file) {
-    Write-Host "Copy-ReferenceFile - $file"
-    # f="${1%/}"
-    # b="${f%.override}"
-    # rel="${b:23}"
-    # version_marker="${rel}.version_from_image"
-    # dir=$(dirname "${b}")
-    # $log=$false
-    # if [[ ${rel} == plugins/*.jpi ]]; then
-    #     container_version=$(get_plugin_version "$JENKINS_HOME/${rel}")
-    #     image_version=$(get_plugin_version "${f}")
-    #     if [[ -e $JENKINS_HOME/${version_marker} ]]; then
-    #         marker_version=$(cat "$JENKINS_HOME/${version_marker}")
-    #         if versionLT "$marker_version" "$container_version"; then
-    #             if ( versionLT "$container_version" "$image_version" && [[ -n $PLUGINS_FORCE_UPGRADE ]]); then
-    #                 action="UPGRADED"
-    #                 reason="Manually upgraded version ($container_version) is older than image version $image_version"
-    #                 log=true
-    #             else
-    #                 action="SKIPPED"
-    #                 reason="Installed version ($container_version) has been manually upgraded from initial version ($marker_version)"
-    #                 log=true
-    #             fi
-    #         else
-    #             if [[ "$image_version" == "$container_version" ]]; then
-    #                 action="SKIPPED"
-    #                 reason="Version from image is the same as the installed version $image_version"
-    #             else
-    #                 if versionLT "$image_version" "$container_version"; then
-    #                     action="SKIPPED"
-    #                     log=true
-    #                     reason="Image version ($image_version) is older than installed version ($container_version)"
-    #                 else
-    #                     action="UPGRADED"
-    #                     log=true
-    #                     reason="Image version ($image_version) is newer than installed version ($container_version)"
-    #                 fi
-    #             fi
-    #         fi
-    #     else
-    #         if [[ -n "$TRY_UPGRADE_IF_NO_MARKER" ]]; then
-    #             if [[ "$image_version" == "$container_version" ]]; then
-    #                 action="SKIPPED"
-    #                 reason="Version from image is the same as the installed version $image_version (no marker found)"
-    #                 # Add marker for next time
-    #                 echo "$image_version" > "$JENKINS_HOME/${version_marker}"
-    #             else
-    #                 if versionLT "$image_version" "$container_version"; then
-    #                     action="SKIPPED"
-    #                     log=true
-    #                     reason="Image version ($image_version) is older than installed version ($container_version) (no marker found)"
-    #                 else
-    #                     action="UPGRADED"
-    #                     log=true
-    #                     reason="Image version ($image_version) is newer than installed version ($container_version) (no marker found)"
-    #                 fi
-    #             fi
-    #         fi
-    #     fi
-    #     if [[ ! -e $JENKINS_HOME/${rel} || "$action" == "UPGRADED" || $f = *.override ]]; then
-    #         action=${action:-"INSTALLED"}
-    #         log=true
-    #         mkdir -p "$JENKINS_HOME/${dir:23}"
-    #         cp -pr "${f}" "$JENKINS_HOME/${rel}";
-    #         # pin plugins on initial copy
-    #         touch "$JENKINS_HOME/${rel}.pinned"
-    #         echo "$image_version" > "$JENKINS_HOME/${version_marker}"
-    #         reason=${reason:-$image_version}
-    #     else
-    #         action=${action:-"SKIPPED"}
-    #     fi
-    # else
-    #     if [[ ! -e $JENKINS_HOME/${rel} || $f = *.override ]]
-    #     then
-    #         action="INSTALLED"
-    #         log=true
-    #         mkdir -p "$JENKINS_HOME/${dir:23}"
-    #         cp -pr "$(realpath "${f}")" "$JENKINS_HOME/${rel}";
-    #     else
-    #         action="SKIPPED"
-    #     fi
-    # fi
-    # if [[ -n "$VERBOSE" || "$log" == "true" ]]; then
-    #     if [ -z "$reason" ]; then
-    #         echo "$action $rel" >> "$COPY_REFERENCE_FILE_LOG"
-    #     else
-    #         echo "$action $rel : $reason" >> "$COPY_REFERENCE_FILE_LOG"
-    #     fi
-    # fi
+    $action = ""
+    $reason = ""
+    $log = $false
+    $refDir = Get-EnvOrDefault 'REF' 'C:/ProgramData/Jenkins/Reference'
+
+    if(-not (Test-Path $refDir)) {
+        return
+    }
+
+    Write-Host "Copy-ReferenceFile $file"
+    pushd $refDir
+    $rel = Resolve-Path -Relative -Path $file
+    popd
+    $dir = Split-Path -Parent $rel
+
+    if($file -match "plugins[\\/].*\.jpi") {
+        $fileName = Split-Path -Leaf $file
+        $versionMarker = Join-Path "plugins" "$($fileName).version_from_image"
+        $containerVersion = Get-PluginVersion (Join-Path $env:JENKINS_HOME (Join-Path "plugins" $fileName))
+        $imageVersion = Get-PluginVersion $file
+        if(Test-Path (Join-Path $env:JENKINS_HOME $versionMarker)) {
+            $markerVersion = Get-Content $versionMarker
+            if(Compare-VersionLessThan $markerVersion $containerVersion) {
+                if((Compare-VersionLessThan $containerVersion $imageVersion) -and ![System.String]::IsNullOrWhiteSpace($env:PLUGINS_FORCE_UPGRADE)) {
+                    $action = "UPGRADED"
+                    $reason="Manually upgraded version ($containerVersion) is older than image version $imageVersion"
+                    $log=$true
+                } else {
+                    $action="SKIPPED"
+                    $reason="Installed version ($containerVersion) has been manually upgraded from initial version ($markerVersion)"
+                    $log=$true
+                }
+            } else {
+                if($imageVersion -eq $containerVersion) {
+                    $action = "SKIPPED"
+                    $reason = "Version from image is the same as the installed version $imageVersion"
+                } else {
+                    if(Compare-VersionLessThan $imageVersion $containerVersion) {
+                        $action = "SKIPPED"
+                        $log = $true
+                        $reason = "Image version ($imageVersion) is older than installed version ($containerVersion)"
+                    } else {
+                        $action="UPGRADED"
+                        $log=$true
+                        $reason="Image version ($imageVersion) is newer than installed version ($containerVersion)"
+                    }
+                }
+            }
+         } else {
+            if(![System.String]::IsNullOrWhiteSpace($env:TRY_UPGRADE_IF_NO_MARKER)) {
+                if($imageVersion -eq $containerVersion) {
+                    $action = "SKIPPED"
+                    $reason = "Version from image is the same as the installed version $imageVersion (no marker found)"
+                    # Add marker for next time
+                    Add-Content -Path (Join-Path $env:JENKINS_HOME $versionMarker) -Value $imageVersion
+                } else {
+                    if(Compare-VersionLessThan $imageVersion $containerVersion) {
+                        $action = "SKIPPED"
+                        $log = $true
+                        $reason = "Image version ($imageVersion) is older than installed version ($containerVersion) (no marker found)"
+                    } else {
+                        $action = "UPGRADED"
+                        $log = $true
+                        $reason = "Image version ($imageVersion) is newer than installed version ($containerVersion) (no marker found)"
+                    }
+                }
+            }
+        }
+
+        if((-not (Test-Path (Join-Path $env:JENKINS_HOME $rel))) -or ($action -eq "UPGRADED") -or ($file -match "\.override")) {
+            if([System.String]::IsNullOrWhiteSpace($action)) {
+                $action = "INSTALLED"
+            }
+            $log=$true
+
+            mkdir (Join-Path $env:JENKINS_HOME $dir)
+            cp $file (Join-Path $env:JENKINS_HOME $rel)
+            # pin plugins on initial copy
+
+            touch (Join-Path $env:JENKINS_HOME "$($rel).pinned")
+            Add-Content -Path (Join-Path $env:JENKINS_HOME $versionMarker) -Value $imageVersion
+            if([System.String]::IsNullOrWhiteSpace($reason)) {
+                $reason = $imageVersion
+            }
+        } else {
+            if([System.String]::IsNullOrWhiteSpace($action)) {
+                $action = "SKIPPED"
+            }
+        }
+    } else {
+        if((-not (Test-Path (Join-Path $env:JENKINS_HOME $rel))) -or ($file -match "\.override")) {
+            $action = "INSTALLED"
+            $log = $true
+            mkdir (Join-Path $env:JENKINS_HOME (Split-Path -Parent $rel))
+            cp $file (Join-Path $env:JENKINS_HOME $rel)
+        } else {
+            $action="SKIPPED"
+        }
+    }
+
+    if(![System.String]::IsNullOrWhiteSpace($env:VERBOSE) -or $log) {
+        if([System.String]::IsNullOrWhiteSpace($reason)) {
+            Add-Content -Path $COPY_REFERENCE_FILE_LOG -Value "$action $rel"
+        } else {
+            Add-Content -Path $COPY_REFERENCE_FILE_LOG -Value "$action $rel : $reason"
+        }
+    }
 }
 
 function Get-DateUTC() {

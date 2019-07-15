@@ -1,4 +1,6 @@
 
+Import-Module -DisableNameChecking -Force $PSScriptRoot/../jenkins-support.psm1
+
 function Test-CommandExists($command) {
   $oldPreference = $ErrorActionPreference
   $ErrorActionPreference = 'stop'
@@ -19,20 +21,6 @@ function Test-CommandExists($command) {
 if(-Not (Test-CommandExists docker)) {
     Write-Error "docker is not available"
 }
-
-# # Assert that $1 is the outputof a command $2
-# function assert {
-#     local expected_output=$1
-#     shift
-#     local actual_output
-#     actual_output=$("$@")
-#     actual_output="${actual_output//[$'\t\r\n']}" # remove newlines
-#     if ! [ "$actual_output" = "$expected_output" ]; then
-#         echo "expected: \"$expected_output\""
-#         echo "actual:   \"$actual_output\""
-#         false
-#     fi
-# }
 
 function Retry-Command {
     [CmdletBinding()]
@@ -84,7 +72,7 @@ function Get-SutImage {
 }
 
 function Run-Program($cmd, $params) {
-    $psi = New-object System.Diagnostics.ProcessStartInfo 
+    $psi = New-Object System.Diagnostics.ProcessStartInfo 
     $psi.CreateNoWindow = $true 
     $psi.UseShellExecute = $false 
     $psi.RedirectStandardOutput = $true 
@@ -122,30 +110,56 @@ function Build-DockerChild($tag, $dir) {
 
 function Get-JenkinsUrl($Container) {
     $DOCKER_IP=(Get-EnvOrDefault 'DOCKER_HOST' 'localhost') | %{$_ -replace 'tcp://(.*):[0-9]*','$1'} | Select-Object -First 1
-    return "http://$($DOCKER_IP):$(docker port "$CONTAINER" 8080 | %{$_ -split ':',2})"
+    $port = (docker port "$CONTAINER" 8080 | %{$_ -split ':'})[1]
+    return "http://$($DOCKER_IP):$($port)"
 }
 
 function Get-JenkinsPassword($Container) {
-    return $(docker logs $Container 2>&1 | Select-String -Context 0,2 -Pattern "Please use the following password to proceed to installation").Context.PostContext[1]
+    $res = docker exec $Container powershell.exe -c 'if(Test-Path "C:\ProgramData\Jenkins\JenkinsHome\secrets\initialAdminPassword") { Get-Content "C:\ProgramData\Jenkins\JenkinsHome\secrets\initialAdminPassword" ; exit 0 } else { exit -1 }'
+    if($lastExitCode -eq 0) {
+        return $res
+    }
+    return $null
+}
+
+function Get-JenkinsWebpage($Container, $Url) {
+    $jenkinsPassword = Get-JenkinsPassword $Container
+    $jenkinsUrl = Get-JenkinsUrl $Container
+    if($null -ne $jenkinsPassword) {
+        $pair = "admin:$($jenkinsPassword)"
+        $encodedCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($pair))
+        $basicAuthValue = "Basic $encodedCreds"
+        $Headers = @{ Authorization = $basicAuthValue }
+
+        $res = Invoke-WebRequest -Uri $('{0}{1}' -f $jenkinsUrl, $Url) -Headers $Headers -TimeoutSec 60 -Method Get -UseBasicParsing
+        if($res.StatusCode -eq 200) {
+            return $res.Content
+        } 
+    }
+    return $null    
 }
 
 function Test-Url($Container, $Url) {
-    Write-Output "Jenkins password = $(Get-JenkinsPassword $Container)"
-    Write-Output "Jenkins URL = $(Get-JenkinsUrl $Container)"
-    $pass = ConvertTo-SecureString $(Get-JenkinsPassword) -AsPlainText -Force
-    $cred = New-Object System.Management.Automation.PSCredential ("admin", $pass)
-    $res = Invoke-WebRequest -Uri "$(Get-JenkinsUrl)$Url" -Credential $cred -TimeoutSec 60 -Method Head
-    if($res.StatusCode -eq 200) {
-        return $true
-    } 
-    Write-Error "URL $(Get-JenkinsUrl $Container)$url failed"
+    $jenkinsPassword = Get-JenkinsPassword $Container
+    $jenkinsUrl = Get-JenkinsUrl $Container
+    if($null -ne $jenkinsPassword) {
+        $pair = "admin:$($jenkinsPassword)"
+        $encodedCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($pair))
+        $basicAuthValue = "Basic $encodedCreds"
+        $Headers = @{ Authorization = $basicAuthValue }
+
+        $res = Invoke-WebRequest -Uri $('{0}{1}' -f $jenkinsUrl, $Url) -Headers $Headers -TimeoutSec 60 -Method Head -UseBasicParsing
+        if($res.StatusCode -eq 200) {
+            return $true
+        } 
+    }
+    Write-Error "URL $(Get-JenkinsUrl $Container)$Url failed"
     return $false    
 }
 
 function Cleanup($image) {
-    Write-Host "match? $(docker ps | %{ $_ -match $image })"
-    docker kill "$image" | Out-Null
-    docker rm -fv "$image" | Out-Null
+    docker kill "$image" 2>&1 | Out-Null
+    docker rm -fv "$image" 2>&1 | Out-Null
 }
 
 function Unzip-Manifest($plugin, $work) {
