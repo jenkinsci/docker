@@ -74,7 +74,7 @@ Describe 'Copy-ReferenceFile' {
 
   It 'wait for running' {
     # give time to eventually fail to initialize
-    Sleep -Seconds 5
+    Start-Sleep -Seconds 5
     Retry-Command -RetryCount 3 -Delay 1 -ScriptBlock { docker inspect -f "{{.State.Running}}" $SUT_CONTAINER ; if($lastExitCode -ne 0) { throw('Docker inspect failed') } } -Verbose | Should -BeTrue
   }
 
