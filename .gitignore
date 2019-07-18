@@ -8,4 +8,5 @@ manifest-tool
 multiarch/qemu-*
 multiarch/Dockerfile-*
 /docker.iml
+work-pester-jenkins-windows/
 /.idea/

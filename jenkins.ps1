@@ -36,6 +36,7 @@ if(($args.Count -eq 0) -or ($args[0] -match "^--.*")) {
     $proc.WaitForExit()
   }
 } else {
-  # As argument is not jenkins, assume user wants to run their own process, for example a `powershell` shell to explore this image\
+  # As argument is not jenkins, assume user wants to run their own process, for example a `powershell` shell to explore this image
   Invoke-Expression "$args"
+  exit $lastExitCode
 }
