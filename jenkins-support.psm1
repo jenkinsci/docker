@@ -45,26 +45,40 @@ function Unzip-File($archive, $file) {
     # load ZIP methods
     Add-Type -AssemblyName System.IO.Compression.FileSystem
 
-    # open ZIP archive for reading
-    $zip = [System.IO.Compression.ZipFile]::OpenRead($archive)
-    $entry = $zip.GetEntry($file)
-    $contents = $null
-    if($null -ne $entry) {
-        $reader = New-Object -TypeName System.IO.BinaryReader -ArgumentList $entry.Open()
-        $length = $reader.BaseStream.Length
-        $content = $reader.ReadBytes($length)
-        $reader.Dispose()
-    }
+    Write-Verbose "Unzipping $file from $archive"
 
-    # close ZIP file
-    $zip.Dispose()
+    $contents = ""
+
+    if(Test-Path $archive) {
+        # open ZIP archive for reading
+        $zip = [System.IO.Compression.ZipFile]::OpenRead($archive)
+
+        if($null -ne $zip) {
+            $entry = $zip.GetEntry($file)
+            if($null -ne $entry) {
+                $reader = New-Object -TypeName System.IO.StreamReader -ArgumentList $entry.Open()
+                $contents = $reader.ReadToEnd()
+                $reader.Dispose()
+            }
+
+            # close ZIP file
+            $zip.Dispose()
+        }
+    }
 
     return $contents
 }
 
 # returns a plugin version from a plugin archive
 function Get-PluginVersion($archive) {
-    return Unzip-File $archive "META-INF/MANIFEST.MF" | Select-String -Pattern "^Plugin-Version: " | %{$_ -replace "^Plugin-Version: ", ""}.Trim()
+    $archive = $archive.Trim()
+    Write-Verbose "Getting plugin version for $archive"
+    if(-not (Test-Path $archive)) {
+        return ""
+    }
+
+    $version = Unzip-File $archive "META-INF/MANIFEST.MF" | ForEach-Object {$_ -split "`n"} | Select-String -Pattern "^Plugin-Version:\s+" | ForEach-Object {$_ -replace "^Plugin-Version:\s+(.*)", '$1'} | Select-Object -First 1
+    return $version.Trim()
 }
 
 # Copy files from C:/ProgramData/Jenkins/Reference/ into $JENKINS_HOME
@@ -81,7 +95,6 @@ function Copy-ReferenceFile($file) {
         return
     }
 
-    Write-Host "Copy-ReferenceFile $file"
     pushd $refDir
     $rel = Resolve-Path -Relative -Path $file
     popd
@@ -89,10 +102,10 @@ function Copy-ReferenceFile($file) {
 
     if($file -match "plugins[\\/].*\.jpi") {
         $fileName = Split-Path -Leaf $file
-        $versionMarker = Join-Path "plugins" "$($fileName).version_from_image"
+        $versionMarker = (Join-Path $env:JENKINS_HOME (Join-Path "plugins" "$($fileName).version_from_image"))
         $containerVersion = Get-PluginVersion (Join-Path $env:JENKINS_HOME (Join-Path "plugins" $fileName))
         $imageVersion = Get-PluginVersion $file
-        if(Test-Path (Join-Path $env:JENKINS_HOME $versionMarker)) {
+        if(Test-Path $versionMarker) {
             $markerVersion = Get-Content $versionMarker
             if(Compare-VersionLessThan $markerVersion $containerVersion) {
                 if((Compare-VersionLessThan $containerVersion $imageVersion) -and ![System.String]::IsNullOrWhiteSpace($env:PLUGINS_FORCE_UPGRADE)) {
@@ -126,7 +139,7 @@ function Copy-ReferenceFile($file) {
                     $action = "SKIPPED"
                     $reason = "Version from image is the same as the installed version $imageVersion (no marker found)"
                     # Add marker for next time
-                    Add-Content -Path (Join-Path $env:JENKINS_HOME $versionMarker) -Value $imageVersion
+                    Add-Content -Path $versionMarker -Value $imageVersion
                 } else {
                     if(Compare-VersionLessThan $imageVersion $containerVersion) {
                         $action = "SKIPPED"
@@ -147,12 +160,13 @@ function Copy-ReferenceFile($file) {
             }
             $log=$true
 
-            mkdir (Join-Path $env:JENKINS_HOME $dir)
-            cp $file (Join-Path $env:JENKINS_HOME $rel)
+            if(-not (Test-Path (Join-Path $env:JENKINS_HOME $dir))) {
+                New-Item -ItemType Directory -Path (Join-Path $env:JENKINS_HOME $dir)
+            }
+            Copy-Item $file (Join-Path $env:JENKINS_HOME $rel)
             # pin plugins on initial copy
-
-            touch (Join-Path $env:JENKINS_HOME "$($rel).pinned")
-            Add-Content -Path (Join-Path $env:JENKINS_HOME $versionMarker) -Value $imageVersion
+            Write-Output $null >> (Join-Path $env:JENKINS_HOME "$($rel).pinned")
+            Add-Content -Path $versionMarker -Value $imageVersion
             if([System.String]::IsNullOrWhiteSpace($reason)) {
                 $reason = $imageVersion
             }
@@ -165,7 +179,9 @@ function Copy-ReferenceFile($file) {
         if((-not (Test-Path (Join-Path $env:JENKINS_HOME $rel))) -or ($file -match "\.override")) {
             $action = "INSTALLED"
             $log = $true
-            mkdir (Join-Path $env:JENKINS_HOME (Split-Path -Parent $rel))
+            if(-not (Test-Path (Join-Path $env:JENKINS_HOME (Split-Path -Parent $rel)))) {
+                mkdir (Join-Path $env:JENKINS_HOME (Split-Path -Parent $rel))
+            }
             cp $file (Join-Path $env:JENKINS_HOME $rel)
         } else {
             $action="SKIPPED"

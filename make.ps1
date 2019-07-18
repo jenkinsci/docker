@@ -7,7 +7,8 @@ Param(
 
 $builds = @{
     'windows' = 'Dockerfile-windows';
-    'windows-jdk11' = 'Dockerfile-windows-jdk11';
+    # currently does not work because awt.dll depends on Direct2D which is not included in windowsservercore
+    #'windows-jdk11' = 'Dockerfile-windows-jdk11'; 
 }
 
 function Build($Target='all') {
@@ -32,23 +33,19 @@ function Test($Target='all') {
     if($Target -eq "all") {
         foreach($build in $builds.Keys) {
             $env:DOCKERFILE="Dockerfile-$build"
-            pushd tests
-            Invoke-Pester 
-            popd 
+            Invoke-Pester -Path tests
             Remove-Item env:\DOCKERFILE
         }
     } else {
         $env:DOCKERFILE="Dockerfile-$Target"
-        pushd tests
-        Invoke-Pester 
-        popd 
+        Invoke-Pester -Path tests
         Remove-Item env:\DOCKERFILE
     }
 }
 
 switch -wildcard ($Target) {
     # release targets
-    "all"       { Build }
+    "all"       { Build ; Test }
     "publish"   { Publish }
     "build-*"   { Build $Target.Substring(6) }
     "test"      { Test }

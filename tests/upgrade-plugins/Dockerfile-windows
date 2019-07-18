@@ -1,0 +1,3 @@
+FROM bats-jenkins
+
+RUN java -jar C:/ProgramData/Jenkins/plugin-management-cli.jar --plugins maven-plugin:2.13 ant:1.2

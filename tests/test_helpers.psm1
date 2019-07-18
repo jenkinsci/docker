@@ -162,6 +162,6 @@ function Cleanup($image) {
     docker rm -fv "$image" 2>&1 | Out-Null
 }
 
-function Unzip-Manifest($plugin, $work) {
-    bash -c "docker run --rm -v $work:C:/ProgramData/jenkins_home --entrypoint unzip $SUT_IMAGE -p C:/ProgramData/jenkins_home/plugins/$plugin META-INF/MANIFEST.MF"
+function Unzip-Manifest($Container, $Plugin, $Work) {
+    return (Run-Program "docker.exe" "run --rm -v ${Work}:C:/ProgramData/Jenkins/JenkinsHome $Container mkdir C:/ProgramData/Jenkins/temp | Out-Null ; Copy-Item C:/ProgramData/Jenkins/JenkinsHome/plugins/$Plugin C:/ProgramData/Jenkins/temp/$Plugin.zip ; Expand-Archive C:/ProgramData/Jenkins/temp/$Plugin.zip -Destinationpath C:/ProgramData/Jenkins/temp ; `$content = Get-Content C:/ProgramData/Jenkins/temp/META-INF/MANIFEST.MF ; Remove-Item -Force -Recurse C:/ProgramData/Jenkins/temp ; Write-Host `$content ; exit 0")
 }

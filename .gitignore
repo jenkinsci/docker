@@ -6,3 +6,4 @@ tests/functions/copy_reference_file.log
 manifest-tool
 multiarch/qemu-*
 multiarch/Dockerfile-*
+work-pester-jenkins-windows/
