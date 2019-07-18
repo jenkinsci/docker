@@ -95,9 +95,9 @@ function Copy-ReferenceFile($file) {
         return
     }
 
-    pushd $refDir
+    Push-Location $refDir
     $rel = Resolve-Path -Relative -Path $file
-    popd
+    Pop-Location
     $dir = Split-Path -Parent $rel
 
     if($file -match "plugins[\\/].*\.jpi") {
@@ -180,9 +180,9 @@ function Copy-ReferenceFile($file) {
             $action = "INSTALLED"
             $log = $true
             if(-not (Test-Path (Join-Path $env:JENKINS_HOME (Split-Path -Parent $rel)))) {
-                mkdir (Join-Path $env:JENKINS_HOME (Split-Path -Parent $rel))
+                New-Item -ItemType Directory (Join-Path $env:JENKINS_HOME (Split-Path -Parent $rel))
             }
-            cp $file (Join-Path $env:JENKINS_HOME $rel)
+            Copy-Item $file (Join-Path $env:JENKINS_HOME $rel)
         } else {
             $action="SKIPPED"
         }
@@ -201,40 +201,3 @@ function Get-DateUTC() {
     $now = (Get-Date).ToUniversalTime()
     return (Get-Date $now -UFormat '%T')
 }
-
-# Retries a command a configurable number of times with backoff.
-#
-# The retry count is given by ATTEMPTS (default 60), the initial backoff
-# timeout is given by TIMEOUT in seconds (default 1.)
-#
-# function Retry-Command($cmd, $attempts=3, $timeout=1, $successTimeout=1, $successAttempts=1) {
-#   $attempt=0
-#   $success_attempt=0
-#   $exitCode=0
-
-#   while($attempt -lt $max_attempts) {
-#     & $cmd
-#     $exitCode=$lastExitCode
-
-#     if($exitCode -eq 0) {
-#       $success_attempt += 1
-#       if($success_attempt -ge $max_success_attempt) {
-#         break
-#       } else {
-#         Start-Sleep -Seconds $success_timeout
-#         continue
-#       }
-#     }
-
-#     Write-Warning "$(Get-DateUTC) Failure ($exitCode) Retrying in $timeout seconds..."
-#     Start-Sleep -Seconds $timeout
-#     $success_attempt=0
-#     $attempt += 1
-#   }
-  
-#   if($exitCode -ne 0) {
-#     Write-Warning "$(Get-DateUTC) Failed in the last attempt ($cmd)"
-#   }
-
-#   return $exitCode
-# }
