@@ -42,7 +42,8 @@ ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-w
 
 # could use ADD but this one does not check Last-Modified header neither does it allow to control checksum
 # see https://github.com/docker/docker/issues/8331
-RUN Invoke-WebRequest "$env:JENKINS_URL" -OutFile C:/ProgramData/Jenkins/jenkins.war -UseBasicParsing ;`
+RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
+    Invoke-WebRequest "$env:JENKINS_URL" -OutFile C:/ProgramData/Jenkins/jenkins.war -UseBasicParsing ; `
     if ((Get-FileHash C:/ProgramData/Jenkins/jenkins.war -Algorithm SHA256).Hash -ne $env:JENKINS_SHA) {exit 1}
 
 ENV JENKINS_UC https://updates.jenkins.io
@@ -64,7 +65,7 @@ COPY jenkins-support.psm1 C:/ProgramData/Jenkins
 COPY jenkins.ps1 C:/ProgramData/Jenkins
 ENTRYPOINT ["powershell.exe", "-f", "C:/ProgramData/Jenkins/jenkins.ps1"]
 
-# from a derived Dockerfile, can use `RUN C:/ProgramData/Jenkins/plugin-management-cli.jar -pluginTxtPath active.txt -pluginDirPath C:/ProgramData/Jenkins/Reference/plugins -war C:/ProgramData/Jenkins/jenkins.war` to setup C:/ProgramData/Jenkins/Reference/plugins from a support bundle
+# from a derived Dockerfile, can use `RUN C:/ProgramData/Jenkins/plugin-management-cli.jar --plugin-file active.txt` to setup C:/ProgramData/Jenkins/Reference/plugins from a support bundle
 
 ENV PLUGIN_INSTALLATION_TOOL_VERSION 0.1-alpha-2
 
