@@ -219,6 +219,7 @@ publish() {
 
         # " line to fix syntax highlightning
         if [ ! "$dry_run" = true ]; then
+            echo "DOCKER_CONFIG = $DOCKER_CONFIG"
             docker --log-level debug push "${JENKINS_REPO}:${tag}-${arch}"
         fi
     done
