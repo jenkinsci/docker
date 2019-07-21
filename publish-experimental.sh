@@ -65,7 +65,7 @@ set-base-image() {
     local arch=$2
     local dockerfile
 
-    if [[ ! -z "$variant" ]]; then
+    if [[ -n "$variant" ]]; then
         dockerfile="./multiarch/Dockerfile${variant}-${arch}"
     else
         dockerfile="./multiarch/Dockerfile-${arch}"
