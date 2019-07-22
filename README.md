@@ -77,7 +77,7 @@ If you are only using [SSH slaves](https://wiki.jenkins-ci.org/display/JENKINS/S
 
 # Passing JVM parameters
 
-You might need to customize the JVM running Jenkins, typically to pass system properties or tweak heap memory settings. Use JAVA_OPTS environment
+You might need to customize the JVM running Jenkins, typically to pass system properties ([list of props](https://wiki.jenkins.io/display/JENKINS/Features+controlled+by+system+properties)) or tweak heap memory settings. Use JAVA_OPTS environment
 variable for this purpose :
 
 ```
