@@ -54,7 +54,7 @@ publish:
 	./publish.sh --variant jdk11 --start-after 2.151 ;
 
 publish-experimental:
-	./publish-experimental.sh ; \
+	./publish-experimental.sh -d ; \
 	./publish-experimental.sh --variant alpine ; \
 	./publish-experimental.sh --variant slim ; 
 
