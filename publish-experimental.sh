@@ -219,7 +219,7 @@ publish() {
 
         # " line to fix syntax highlightning
         if [ ! "$dry_run" = true ]; then
-            docker --log-level debug push "${JENKINS_REPO}:${tag}-${arch}"
+            docker -D --log-level debug push "${JENKINS_REPO}:${tag}-${arch}"
         fi
     done
 }
@@ -257,7 +257,7 @@ tag-and-push() {
 
         if [ ! "$dry_run" = true ]; then
             echo "Pushing ${JENKINS_REPO}:${target}-${arch}"
-            docker --log-level debug push "${JENKINS_REPO}:${target}-${arch}"
+            docker -D --log-level debug push "${JENKINS_REPO}:${target}-${arch}"
         else
             echo "Would push ${JENKINS_REPO}:${target}-${arch}"
         fi
