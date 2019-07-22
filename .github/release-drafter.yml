@@ -1,0 +1,3 @@
+_extends: .github
+# We are using semver here
+version-template: $MAJOR.$MINOR.$PATCH
