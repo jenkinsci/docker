@@ -256,7 +256,7 @@ tag-and-push() {
         docker-tag "${source}-${arch}" "${DOCKERHUB_ORGANISATION}" "${target}-${arch}"
 
         if [ ! "$dry_run" = true ]; then
-            if [ ! -e $DOCKER_CONFIG ]; then
+            if [ ! -e "$DOCKER_CONFIG" ]; then
                 echo "DOCKER_CONFIG ($DOCKER_CONFIG) does not exist"
                 exit -1
             fi
