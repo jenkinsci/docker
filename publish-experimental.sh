@@ -256,7 +256,11 @@ tag-and-push() {
         docker-tag "${source}-${arch}" "${DOCKERHUB_ORGANISATION}" "${target}-${arch}"
 
         if [ ! "$dry_run" = true ]; then
-            echo "Pushing ${JENKINS_REPO}:${target}-${arch}"
+            if [ ! -e $DOCKER_CONFIG ]; then
+                echo "DOCKER_CONFIG ($DOCKER_CONFIG) does not exist"
+                exit -1
+            fi
+            echo "Pushing ${JENKINS_REPO}:${target}-${arch}"            
             docker -D --log-level debug push "${JENKINS_REPO}:${target}-${arch}"
         else
             echo "Would push ${JENKINS_REPO}:${target}-${arch}"
