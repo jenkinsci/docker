@@ -223,6 +223,7 @@ publish() {
                 echo "DOCKER_CONFIG ($DOCKER_CONFIG) does not exist"
                 exit -1
             fi
+            docker info
             docker -D --log-level debug push "${JENKINS_REPO}:${tag}-${arch}"
         fi
     done
