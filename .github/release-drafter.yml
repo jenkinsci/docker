@@ -2,3 +2,7 @@
 _extends: .github
 # We are using semver here. https://semver.org/
 version-template: $MAJOR.$MINOR.$PATCH
+template: |
+  <!-- Optional: add a release summary here -->
+  $CHANGES
+  NOTE: This is an experimental changelog. See [this page](https://github.com/jenkinsci/docker/blob/master/CHANGELOG.md) for more info
