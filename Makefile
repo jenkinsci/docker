@@ -55,8 +55,8 @@ publish:
 
 publish-experimental:
 	./publish-experimental.sh -d ; \
-	./publish-experimental.sh --variant alpine ; \
-	./publish-experimental.sh --variant slim ; 
+	./publish-experimental.sh -d --variant alpine ; \
+	./publish-experimental.sh -d --variant slim ; 
 
 clean:
 	rm -rf tests/test_helper/bats-*; \
