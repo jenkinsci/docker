@@ -219,12 +219,7 @@ publish() {
 
         # " line to fix syntax highlightning
         if [ ! "$dry_run" = true ]; then
-            if [ ! -e "$DOCKER_CONFIG" ]; then
-                echo "DOCKER_CONFIG ($DOCKER_CONFIG) does not exist"
-                exit -1
-            fi
-            docker info
-            docker -D --log-level debug push "${JENKINS_REPO}:${tag}-${arch}"
+            docker --config $DOCKER_CONFIG push "${JENKINS_REPO}:${tag}-${arch}"
         fi
     done
 }
@@ -261,12 +256,8 @@ tag-and-push() {
         docker-tag "${source}-${arch}" "${DOCKERHUB_ORGANISATION}" "${target}-${arch}"
 
         if [ ! "$dry_run" = true ]; then
-            if [ ! -e "$DOCKER_CONFIG" ]; then
-                echo "DOCKER_CONFIG ($DOCKER_CONFIG) does not exist"
-                exit -1
-            fi
             echo "Pushing ${JENKINS_REPO}:${target}-${arch}"            
-            docker -D --log-level debug push "${JENKINS_REPO}:${target}-${arch}"
+            docker --config $DOCKER_CONFIG push "${JENKINS_REPO}:${target}-${arch}"
         else
             echo "Would push ${JENKINS_REPO}:${target}-${arch}"
         fi
@@ -324,6 +315,7 @@ push-manifest() {
     local variant=$2
 
     ./manifest-tool push from-args \
+        --docker-cfg $DOCKER_CONFIG \
         --platforms "$(parse-manifest-platforms)" \
         --template "${JENKINS_REPO}:${version}${variant}-ARCH" \
         --target "${JENKINS_REPO}:${version}${variant}"
