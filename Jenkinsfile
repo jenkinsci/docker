@@ -67,8 +67,8 @@ nodeWithTimeout('docker') {
 }
 
 void nodeWithTimeout(String label, def body) {
-    timeout(time: 40, unit: 'MINUTES') {
-        node(label) {
+    node(label) {
+        timeout(time: 40, unit: 'MINUTES') {
             body.call()
         }
     }
