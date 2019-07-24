@@ -219,7 +219,7 @@ publish() {
 
         # " line to fix syntax highlightning
         if [ ! "$dry_run" = true ]; then
-            docker --config $DOCKER_CONFIG push "${JENKINS_REPO}:${tag}-${arch}"
+            docker --config "$DOCKER_CONFIG" push "${JENKINS_REPO}:${tag}-${arch}"
         fi
     done
 }
@@ -257,7 +257,7 @@ tag-and-push() {
 
         if [ ! "$dry_run" = true ]; then
             echo "Pushing ${JENKINS_REPO}:${target}-${arch}"            
-            docker --config $DOCKER_CONFIG push "${JENKINS_REPO}:${target}-${arch}"
+            docker --config "$DOCKER_CONFIG" push "${JENKINS_REPO}:${target}-${arch}"
         else
             echo "Would push ${JENKINS_REPO}:${target}-${arch}"
         fi
@@ -315,7 +315,7 @@ push-manifest() {
     local variant=$2
 
     ./manifest-tool push from-args \
-        --docker-cfg $DOCKER_CONFIG \
+        --docker-cfg "$DOCKER_CONFIG" \
         --platforms "$(parse-manifest-platforms)" \
         --template "${JENKINS_REPO}:${version}${variant}-ARCH" \
         --target "${JENKINS_REPO}:${version}${variant}"
