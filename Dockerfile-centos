@@ -1,6 +1,7 @@
 FROM centos
 
-RUN yum update -y && yum install -y epel-release && yum install -y git curl dpkg java java-devel unzip && yum clean all
+RUN yum update -y && yum install -y epel-release && yum install -y git curl dpkg java java-devel unzip which && yum clean all
+ENV JAVA_HOME /etc/alternatives/jre_openjdk
 
 ARG user=jenkins
 ARG group=jenkins
