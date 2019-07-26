@@ -6,7 +6,8 @@ CHANGELOG
 
 ## Status
 
-We are doing experimental changelogs for Jenkins master Docker packaging. 
+We are doing experimental changelogs for Jenkins master Docker packaging
+([discussion in the developer list](https://groups.google.com/forum/#!topic/jenkinsci-dev/KvV_UjU02gE)). 
 This release notes represent changes in in the packaging, but not in the bundled WAR files. 
 Please refer to https://jenkins.io/changelog/ and https://jenkins.io/changelog-stable/ for WAR file changelogs.
 
