@@ -380,8 +380,10 @@ while [[ $# -gt 0 ]]; do
         shift
         ;;
         -a|--arch)
-        ARCHS=($(echo "$2" | cut -d':' -f1))
-        QEMUARCHS=($(echo "$2" | cut -d':' -f2))
+        arch=$(echo "$2" | cut -d':' -f1)
+        qemuarch=$(echo "$2" | cut -d':' -f2)
+        ARCHS=("$arch")
+        QEMUARCHS=("$qemuarch")
         if [[ ${#QEMUARCHS[@]} -eq 0 ]]; then
             QEMUARCHS=("${ARCHS[@]}")
         fi
