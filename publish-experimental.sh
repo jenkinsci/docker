@@ -157,7 +157,7 @@ is-published() {
     local http_code;
     while [ $retries -lt 10 ]; do
         http_code=$(curl $opts -q -fsL -o /dev/null -w "%{http_code}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/${JENKINS_REPO}/manifests/$tag")
-        if [ "$http_code" -eq "404" -o "$http_code" -eq "200" ]; then
+        if [ "$http_code" -eq "404" ] || [ "$http_code" -eq "200" ]; then
             break
         fi
         # get a new token
@@ -186,11 +186,13 @@ get-manifest() {
     local retries=0
     local manifest=''
     while [ $retries -lt 10 ]; do
-        local output=$(curl $opts -q -fsSL -w "|%{http_code}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/${JENKINS_REPO}/manifests/$tag")
-        local http_code=$(echo "$output" | cut -d'|' -f2)
+        local output;
+	local http_code;
+	output=$(curl $opts -q -fsSL -w "|%{http_code}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/${JENKINS_REPO}/manifests/$tag")
+        http_code=$(echo "$output" | cut -d'|' -f2)
         manifest=$(echo "$output" | cut -d'|' -f1)
 
-        if [ "$http_code" -eq "404" -o "$http_code" -eq "200" ]; then
+        if [ "$http_code" -eq "404" ] || [ "$http_code" -eq "200" ]; then
             break
         fi
 
@@ -377,15 +379,15 @@ while [[ $# -gt 0 ]]; do
         variant="-"$2
         shift
         ;;
-	-a|--arch)
-	ARCHS=($(echo $2 | cut -d':' -f1))
-        QEMUARCHS=($(echo $2 | cut -d':' -f2))
+        -a|--arch)
+        ARCHS=($(echo "$2" | cut -d':' -f1))
+        QEMUARCHS=($(echo "$2" | cut -d':' -f2))
         if [[ ${#QEMUARCHS[@]} -eq 0 ]]; then
-          QEMUARCHS=$ARCHS
+            QEMUARCHS=("${ARCHS[@]}")
         fi
         shift
-	;;
-	*)
+        ;;
+        *)
         echo "Unknown option: $key"
         return 1
         ;;
