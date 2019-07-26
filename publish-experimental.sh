@@ -285,7 +285,7 @@ tag-and-push() {
         docker-tag "${source}-${arch}" "${DOCKERHUB_ORGANISATION}" "${target}-${arch}"
 
         if [ ! "$dry_run" = true ]; then
-            echo "Pushing ${JENKINS_REPO}:${target}-${arch}"            
+            echo "Pushing ${JENKINS_REPO}:${target}-${arch}"
             docker push "${JENKINS_REPO}:${target}-${arch}"
         else
             echo "Would push ${JENKINS_REPO}:${target}-${arch}"
