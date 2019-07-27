@@ -160,8 +160,7 @@ is-published() {
         if [ "$http_code" -eq "404" ] || [ "$http_code" -eq "200" ]; then
             break
         fi
-        # get a new token
-        echo "Trying to get a new token..."
+        echo "Requesting new auth token..."
         TOKEN=$(login-token)
         retries=$((retries + 1))
     done
@@ -191,12 +190,10 @@ get-manifest() {
 	output=$(curl $opts -q -fsSL -w "|%{http_code}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/${JENKINS_REPO}/manifests/$tag")
         http_code=$(echo "$output" | cut -d'|' -f2)
         manifest=$(echo "$output" | cut -d'|' -f1)
-
         if [ "$http_code" -eq "404" ] || [ "$http_code" -eq "200" ]; then
             break
         fi
-
-        # the token may have expired at this point
+        echo "Requesting new auth token..."
         TOKEN=$(login-token)
         retries=$((retries + 1))
     done
