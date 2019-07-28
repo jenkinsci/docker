@@ -4,6 +4,8 @@
 # Arguments:
 #   -n dry run, do not build or publish images
 #   -d debug
+#   -v|--variant the variant to build (slim, alpine)
+#   -a|--arch the architecture to build, should match ARCHS below, with a : you can also specify the QEMUARCH
 
 set -eou pipefail
 
@@ -83,13 +85,13 @@ set-base-image() {
     if [[ $arch == amd64 ]]; then
         BASEIMAGE="openjdk:8-jdk"
     elif [[ $arch == arm ]]; then
-        BASEIMAGE="arm32v7/openjdk:8-jdk"
+        BASEIMAGE="arm32v7/openjdk:8-jdk-stretch"
     elif [[ $arch == arm64 ]]; then
-        BASEIMAGE="arm64v8/openjdk:8-jdk"
+        BASEIMAGE="arm64v8/openjdk:8-jdk-stretch"
     elif [[ $arch == s390x ]]; then
-        BASEIMAGE="s390x/openjdk:8-jdk"
+        BASEIMAGE="s390x/openjdk:8-jdk-stretch"
     elif [[ $arch == ppc64le ]]; then
-        BASEIMAGE="ppc64le/openjdk:8-jdk"
+        BASEIMAGE="ppc64le/openjdk:8-jdk-stretch"
     fi
 
     # The Alpine image only supports arm32v6 but should work fine on arm32v7
@@ -97,9 +99,9 @@ set-base-image() {
     if [[ $variant =~ alpine && $arch == arm ]]; then
         BASEIMAGE="arm32v6/openjdk:8-jdk-alpine"
     elif [[ $variant =~ alpine ]]; then
-        BASEIMAGE="$BASEIMAGE-alpine"
+        BASEIMAGE="${BASEIMAGE/-stretch/}-alpine"
     elif [[ $variant =~ slim ]]; then
-        BASEIMAGE="$BASEIMAGE-slim"
+        BASEIMAGE="${BASEIMAGE/-stretch/}-slim"
     fi
 
     # Make the Dockerfile after we set the base image
@@ -150,9 +152,20 @@ is-published() {
     if [ "$debug" = true ]; then
         opts="-v"
     fi
+    local retries=0
+
     local http_code;
-    http_code=$(curl $opts -q -fsL -o /dev/null -w "%{http_code}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/${JENKINS_REPO}/manifests/$tag")
+    while [ $retries -lt 10 ]; do
+        http_code=$(curl $opts -q -fsL -o /dev/null -w "%{http_code}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/${JENKINS_REPO}/manifests/$tag")
+        if [ "$http_code" -eq "404" ] || [ "$http_code" -eq "200" ]; then
+            break
+        fi
+        echo "Requesting new auth token..."
+        TOKEN=$(login-token)
+        retries=$((retries + 1))
+    done
     
+
     if [ "$http_code" -eq "404" ]; then
         false
     elif [ "$http_code" -eq "200" ]; then
@@ -169,7 +182,22 @@ get-manifest() {
     if [ "$debug" = true ]; then
         opts="-v"
     fi
-    curl $opts -q -fsSL -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/${JENKINS_REPO}/manifests/$tag"
+    local retries=0
+    local manifest=''
+    while [ $retries -lt 10 ]; do
+        local output;
+	local http_code;
+	output=$(curl $opts -q -fsSL -w "|%{http_code}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/${JENKINS_REPO}/manifests/$tag")
+        http_code=$(echo "$output" | cut -d'|' -f2)
+        manifest=$(echo "$output" | cut -d'|' -f1)
+        if [ "$http_code" -eq "404" ] || [ "$http_code" -eq "200" ]; then
+            break
+        fi
+        echo "Requesting new auth token..."
+        TOKEN=$(login-token)
+        retries=$((retries + 1))
+    done
+    echo "$manifest"
 }
 
 get-digest() {
@@ -314,10 +342,12 @@ push-manifest() {
     local version=$1
     local variant=$2
 
-    ./manifest-tool push from-args \
-        --platforms "$(parse-manifest-platforms)" \
-        --template "${JENKINS_REPO}:${version}${variant}-ARCH" \
-        --target "${JENKINS_REPO}:${version}${variant}"
+    if [ ! "$dry_run" = true ]; then
+      ./manifest-tool push from-args \
+          --platforms "$(parse-manifest-platforms)" \
+          --template "${JENKINS_REPO}:${version}${variant}-ARCH" \
+          --target "${JENKINS_REPO}:${version}${variant}"
+    fi
 }
 
 cleanup() {
@@ -344,6 +374,16 @@ while [[ $# -gt 0 ]]; do
         ;;
         -v|--variant)
         variant="-"$2
+        shift
+        ;;
+        -a|--arch)
+        arch=$(echo "$2" | cut -d':' -f1)
+        qemuarch=$(echo "$2" | cut -d':' -f2)
+        ARCHS=("$arch")
+        QEMUARCHS=("$qemuarch")
+        if [[ ${#QEMUARCHS[@]} -eq 0 ]]; then
+            QEMUARCHS=("${ARCHS[@]}")
+        fi
         shift
         ;;
         *)
