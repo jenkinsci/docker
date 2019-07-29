@@ -13,13 +13,14 @@ Please refer to https://jenkins.io/changelog/ and https://jenkins.io/changelog-s
 
 ## Version scheme
 
-The repository follows the [Semantic Versioning 2.0.0](https://semver.org/) specification.
+The repository follows the 3-digit scheme of [Jenkins LTS releases](https://jenkins.io/download/lts/).
 
 ## Mapping of Docker packaging to Jenkins releases
 
-Currently there is no direct mapping of Docker packaging versions to Docker packages used in the official [jenkins/jenkins](https://hub.docker.com/r/jenkins/jenkins) image.
 Both Weekly and LTS distributions follow the Continuous Delivery approach and pick up the most recent versions available by the time of the release Pipeline execution.
-It is subject to change in the future.
+In this repository we follow the Jenkins LTS releases and release packaging changelogs for them.
+There is no version mapping for Weekly releases, users should be using chnagelogs to track down the changes
+(see also [Issue #865](https://github.com/jenkinsci/docker/issues/865)).
 
 ## Notable changes in Jenkins versions
 
