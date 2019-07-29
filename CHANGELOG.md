@@ -19,7 +19,7 @@ The repository follows the 3-digit scheme of [Jenkins LTS releases](https://jenk
 
 Both Weekly and LTS distributions follow the Continuous Delivery approach and pick up the most recent versions available by the time of the release Pipeline execution.
 In this repository we follow the Jenkins LTS releases and release packaging changelogs for them.
-There is no version mapping for Weekly releases, users should be using chnagelogs to track down the changes
+There is no version mapping for Weekly releases, users should be using changelogs to track down the changes
 (see also [Issue #865](https://github.com/jenkinsci/docker/issues/865)).
 
 ## Notable changes in Jenkins versions
