@@ -6,9 +6,10 @@ tag-template: jenkins-docker-packaging-$NEXT_PATCH_VERSION
 name-template: Jenkins Docker Image $NEXT_PATCH_VERSION
 template: |
   <!-- Optional: add a release summary here -->
-  ## Jenkins Core updates  
+  ## 📦 Jenkins Core updates  
   
   * Update to Jenkins $NEXT_PATCH_VERSION ([chanelog](https://jenkins.io/changelog-stable/#v$NEXT_PATCH_VERSION)) 
   
   $CHANGES
-  NOTE: This is an experimental changelog. See [this page](https://github.com/jenkinsci/docker/blob/master/CHANGELOG.md) for more info
+  
+  **NOTE:** This is an experimental changelog. See [this page](https://github.com/jenkinsci/docker/blob/master/CHANGELOG.md) for more info
