@@ -8,7 +8,7 @@ template: |
   <!-- Optional: add a release summary here -->
   ## 📦 Jenkins Core updates  
   
-  * Update to Jenkins $NEXT_PATCH_VERSION ([chanelog](https://jenkins.io/changelog-stable/#v$NEXT_PATCH_VERSION)) 
+  * Update to Jenkins $NEXT_PATCH_VERSION ([changelog](https://jenkins.io/changelog-stable/#v$NEXT_PATCH_VERSION)) 
   
   $CHANGES
   
