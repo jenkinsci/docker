@@ -22,10 +22,10 @@ In this repository we follow the Jenkins LTS releases and release packaging chan
 There is no version mapping for Weekly releases, users should be using changelogs to track down the changes
 (see also [Issue #865](https://github.com/jenkinsci/docker/issues/865)).
 
-## Notable changes in Jenkins versions
+## Notable changes in Jenkins versions before 2.164.1
 
 Below you can find incomplete list of changes in Docker packaging for Jenkins releases
 
-2.99
------
+### 2.99
+
 *  `/bin/tini` has been relocated to `/sbin/tini`, location defined by alpine
