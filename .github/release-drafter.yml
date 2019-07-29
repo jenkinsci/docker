@@ -3,7 +3,7 @@ _extends: .github
 # We are using 3-digit LTS versioning here
 version-template: $MAJOR.$MINOR.$PATCH
 tag-template: jenkins-docker-packaging-$NEXT_PATCH_VERSION
-name-template: Role Strategy Plugin $NEXT_PATCH_VERSION
+name-template: Jenkins Docker Image $NEXT_PATCH_VERSION
 template: |
   <!-- Optional: add a release summary here -->
   ## Jenkins Core updates  
