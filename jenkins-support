@@ -1,5 +1,7 @@
 #!/bin/bash -eu
 
+: "${REF:="/usr/share/jenkins/ref"}"
+
 # compare if version1 < version2
 versionLT() {
     local v1; v1=$(echo "$1" | cut -d '-' -f 1 )
@@ -40,7 +42,7 @@ get_plugin_version() {
 copy_reference_file() {
     f="${1%/}"
     b="${f%.override}"
-    rel="${b:23}"
+    rel="${b#"$REF/"}"
     version_marker="${rel}.version_from_image"
     dir=$(dirname "${b}")
     local action;
