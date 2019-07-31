@@ -31,7 +31,7 @@ nodeWithTimeout('docker') {
             sh "make prepare-test"
         }
 
-        def labels = ['debian', 'slim', 'alpine', 'jdk11']
+        def labels = ['debian', 'slim', 'alpine', 'jdk11', 'centos']
         def builders = [:]
         for (x in labels) {
             def label = x
@@ -68,8 +68,8 @@ nodeWithTimeout('docker') {
 }
 
 void nodeWithTimeout(String label, def body) {
-    timeout(time: 40, unit: 'MINUTES') {
-        node(label) {
+    node(label) {
+        timeout(time: 40, unit: 'MINUTES') {
             body.call()
         }
     }
