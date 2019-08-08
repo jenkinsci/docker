@@ -35,7 +35,7 @@ SUT_IMAGE=$(sut_image)
   assert_success
 
   # replace DOS line endings \r\n
-  run bash -c "docker run -v $BATS_TEST_DIRNAME/functions:/var/jenkins_home --rm $SUT_IMAGE-functions stat -c '%a' /var/jenkins_home/.ssh/config"
+  run bash -c "docker run -u root -v $BATS_TEST_DIRNAME/functions:/var/jenkins_home --rm $SUT_IMAGE-functions stat -c '%a' /var/jenkins_home/.ssh/config"
   assert_success
   assert_line '600'
 }
