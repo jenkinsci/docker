@@ -201,3 +201,15 @@ SUT_IMAGE=$(sut_image)
   run docker_build_child $SUT_IMAGE-install-plugins-no-war $BATS_TEST_DIRNAME/install-plugins/no-war
   assert_success
 }
+
+@test "Use a custom jenkins.war" {
+  # Build the image using the right Dockerfile setting a new war with JENKINS_WAR env and with a weird plugin inside
+  run docker_build_child $SUT_IMAGE-install-plugins-custom-war $BATS_TEST_DIRNAME/install-plugins/custom-war --no-cache
+  assert_success
+  # Assert the weird plugin is there
+  assert_output --partial 'my-happy-plugin:1.1'
+}
+
+@test "clean work directory" {
+    run bash -c "rm -rf $BATS_TEST_DIRNAME/custom-war/work-${SUT_IMAGE}"
+}

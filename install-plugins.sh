@@ -4,11 +4,26 @@
 #
 # FROM jenkins
 # RUN install-plugins.sh docker-slaves github-branch-source
+#
+# Environment variables:
+# REF: directory with preinstalled plugins. Default: /usr/share/jenkins/ref/plugins
+# JENKINS_WAR: full path to the jenkins.war. Default: /usr/share/jenkins/jenkins.war
+# JENKINS_UC: url of the Update Center. Default: ""
+# JENKINS_UC_EXPERIMENTAL: url of the Experimental Update Center for "experimental" versions of plugins. Default: ""
+# JENKINS_INCREMENTALS_REPO_MIRROR: url of the incrementals repo mirror. Default: ""
+# JENKINS_UC_DOWNLOAD: downloado url of the Update Center. Default: JENKINS_UC/download
+# CURL_OPTIONS When downloading the plugins with curl. Curl options. Default: -sSfL
+# CURL_CONNECTION_TIMEOUT When downloading the plugins with curl. <seconds> Maximum time allowed for connection. Default: 20
+# CURL_RETRY When downloading the plugins with curl. Retry request if transient problems occur. Default: 3
+# CURL_RETRY_DELAY When downloading the plugins with curl. <seconds> Wait time between retries. Default: 0
+# CURL_RETRY_MAX_TIME When downloading the plugins with curl. <seconds> Retry only within this period. Default: 60
 
 set -o pipefail
 
 REF_DIR=${REF:-/usr/share/jenkins/ref/plugins}
 FAILED="$REF_DIR/failed-plugins.txt"
+
+JENKINS_WAR=${JENKINS_WAR:-/usr/share/jenkins/jenkins.war}
 
 . /usr/local/bin/jenkins-support
 
@@ -147,7 +162,6 @@ resolveDependencies() {
 }
 
 bundledPlugins() {
-    local JENKINS_WAR=/usr/share/jenkins/jenkins.war
     if [ -f $JENKINS_WAR ]
     then
         TEMP_PLUGIN_DIR=/tmp/plugintemp.$$
@@ -183,8 +197,6 @@ installedPlugins() {
 }
 
 jenkinsMajorMinorVersion() {
-    local JENKINS_WAR
-    JENKINS_WAR=/usr/share/jenkins/jenkins.war
     if [[ -f "$JENKINS_WAR" ]]; then
         local version major minor
         version="$(java -jar $JENKINS_WAR --version)"
@@ -224,7 +236,7 @@ main() {
         mkdir "$(getLockFile "${plugin%%:*}")"
     done
 
-    echo "Analyzing war..."
+    echo "Analyzing war $JENKINS_WAR..."
     bundledPlugins="$(bundledPlugins)"
 
     echo "Registering preinstalled plugins..."

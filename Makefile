@@ -51,6 +51,9 @@ test-centos: prepare-test
 
 test: test-debian test-alpine test-slim test-jdk11 test-centos
 
+test-install-plugins: prepare-test
+	DOCKERFILE=Dockerfile-alpine bats/bin/bats tests/install-plugins.bats
+
 publish:
 	./publish.sh ; \
 	./publish.sh --variant alpine ; \
