@@ -9,9 +9,9 @@
 # REF: directory with preinstalled plugins. Default: /usr/share/jenkins/ref/plugins
 # JENKINS_WAR: full path to the jenkins.war. Default: /usr/share/jenkins/jenkins.war
 # JENKINS_UC: url of the Update Center. Default: ""
-# JENKINS_UC_EXPERIMENTAL: url of the Experimental Update Center for "experimental" versions of plugins. Default: ""
+# JENKINS_UC_EXPERIMENTAL: url of the Experimental Update Center for experimental versions of plugins. Default: ""
 # JENKINS_INCREMENTALS_REPO_MIRROR: url of the incrementals repo mirror. Default: ""
-# JENKINS_UC_DOWNLOAD: downloado url of the Update Center. Default: JENKINS_UC/download
+# JENKINS_UC_DOWNLOAD: download url of the Update Center. Default: JENKINS_UC/download
 # CURL_OPTIONS When downloading the plugins with curl. Curl options. Default: -sSfL
 # CURL_CONNECTION_TIMEOUT When downloading the plugins with curl. <seconds> Maximum time allowed for connection. Default: 20
 # CURL_RETRY When downloading the plugins with curl. Retry request if transient problems occur. Default: 3
@@ -162,10 +162,10 @@ resolveDependencies() {
 }
 
 bundledPlugins() {
-    if [ -f $JENKINS_WAR ]
+    if [ -f "$JENKINS_WAR" ]
     then
         TEMP_PLUGIN_DIR=/tmp/plugintemp.$$
-        for i in $(jar tf $JENKINS_WAR | grep -E '[^detached-]plugins.*\..pi' | sort)
+        for i in $(jar tf "$JENKINS_WAR" | grep -E '[^detached-]plugins.*\..pi' | sort)
         do
             rm -fr $TEMP_PLUGIN_DIR
             mkdir -p $TEMP_PLUGIN_DIR
@@ -199,7 +199,7 @@ installedPlugins() {
 jenkinsMajorMinorVersion() {
     if [[ -f "$JENKINS_WAR" ]]; then
         local version major minor
-        version="$(java -jar $JENKINS_WAR --version)"
+        version="$(java -jar "$JENKINS_WAR" --version)"
         major="$(echo "$version" | cut -d '.' -f 1)"
         minor="$(echo "$version" | cut -d '.' -f 2)"
         echo "$major.$minor"

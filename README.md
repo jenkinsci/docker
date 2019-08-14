@@ -169,6 +169,21 @@ COPY custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
 You can rely on the `install-plugins.sh` script to pass a set of plugins to download with their dependencies.
 This script will perform downloads from update centers, and internet access is required for the default update centers.
 
+### Environment variables
+The script relies on a bunch of environment variables to fine-tune its behavior.
+
+* `REF`: directory with preinstalled plugins. Default: /usr/share/jenkins/ref/plugins
+* `JENKINS_WAR`: full path to the jenkins.war. Default: /usr/share/jenkins/jenkins.war
+* `JENKINS_UC`: url of the Update Center. Default: ""
+* `JENKINS_UC_EXPERIMENTAL`: url of the Experimental Update Center for experimental versions of plugins. Default: ""
+* `JENKINS_INCREMENTALS_REPO_MIRROR`: url of the incrementals repo mirror. Default: ""
+* `JENKINS_UC_DOWNLOAD`: download url of the Update Center. Default: JENKINS_UC/download
+* `CURL_OPTIONS`: When downloading the plugins with curl. Curl options. Default: -sSfL
+* `CURL_CONNECTION_TIMEOUT`: When downloading the plugins with curl. <seconds> Maximum time allowed for connection. Default: 20
+* `CURL_RETRY`: When downloading the plugins with curl. Retry request if transient problems occur. Default: 3
+* `CURL_RETRY_DELAY`: When downloading the plugins with curl. <seconds> Wait time between retries. Default: 0
+* `CURL_RETRY_MAX_TIME`: When downloading the plugins with curl. <seconds> Retry only within this period. Default: 60
+
 ### Setting update centers
 
 During the download, the script will use update centers defined by the following environment variables:

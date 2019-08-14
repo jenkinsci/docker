@@ -11,7 +11,7 @@ RUN chown jenkins:jenkins /test-custom-dockerfile
 USER jenkins
 
 # Copy the original jenkins.war to the custom location 
-RUN cp /usr/share/jenkins/jenkins.war /test-custom-dockerfile/my-custom-jenkins.war && \
+RUN cp /usr/share/jenkins/jenkins.war $JENKINS_WAR && \
     chown jenkins:jenkins $JENKINS_WAR
 
 # Add the weird plugin to the new custom war
