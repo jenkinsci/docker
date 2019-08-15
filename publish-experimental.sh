@@ -355,6 +355,7 @@ cleanup() {
     rm -f manifest-tool
     rm -f ./multiarch/qemu-*
     rm -rf ./multiarch/Dockerfile-*
+    docker system prune --all --force
 }
 
 # Process arguments
