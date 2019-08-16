@@ -355,6 +355,7 @@ cleanup() {
     rm -f manifest-tool
     rm -f ./multiarch/qemu-*
     rm -rf ./multiarch/Dockerfile-*
+    docker system prune --all --force
 }
 
 # Process arguments
@@ -403,6 +404,9 @@ if [ "$debug" = true ]; then
     set -x
 fi
 
+# setup cleanup to run on EXIT or ERR signals
+trap "cleanup" EXIT ERR
+
 get-manifest-tool
 get-qemu-handlers
 
@@ -436,5 +440,3 @@ publish-latest "${version}" "${variant}"
 if [ -n "${lts_version}" ]; then
     publish-lts "${lts_version}" "${variant}"
 fi
-
-cleanup
