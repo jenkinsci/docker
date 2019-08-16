@@ -54,6 +54,39 @@ SUT_IMAGE=$(sut_image)
   assert_line 'docker-plugin.jpi.pinned'
 }
 
+@test "plugins are installed with install-plugins.sh with non-default REF" {
+  run docker_build_child $SUT_IMAGE-install-plugins-ref $BATS_TEST_DIRNAME/install-plugins/ref
+  assert_success
+  refute_line --partial 'Skipping already installed dependency'
+  docker run --rm $SUT_IMAGE-install-plugins-ref -e REF=/var/lib/jenkins/ref ls --color=never -1 /var/lib/jenkins/ref | tr -d '\r'
+
+  # replace DOS line endings \r\n
+  run bash -c "docker run --rm $SUT_IMAGE-install-plugins ls --color=never -1 /var/jenkins_home/plugins | tr -d '\r'"
+  assert_success
+  assert_line 'maven-plugin.jpi'
+  assert_line 'maven-plugin.jpi.pinned'
+  assert_line 'ant.jpi'
+  assert_line 'ant.jpi.pinned'
+  assert_line 'credentials.jpi'
+  assert_line 'credentials.jpi.pinned'
+  assert_line 'mesos.jpi'
+  assert_line 'mesos.jpi.pinned'
+  # optional dependencies
+  refute_line 'metrics.jpi'
+  refute_line 'metrics.jpi.pinned'
+  # plugins bundled but under detached-plugins, so need to be installed
+  assert_line 'javadoc.jpi'
+  assert_line 'javadoc.jpi.pinned'
+  assert_line 'mailer.jpi'
+  assert_line 'mailer.jpi.pinned'
+  assert_line 'git.jpi'
+  assert_line 'git.jpi.pinned'
+  assert_line 'filesystem_scm.jpi'
+  assert_line 'filesystem_scm.jpi.pinned'
+  assert_line 'docker-plugin.jpi'
+  assert_line 'docker-plugin.jpi.pinned'
+}
+
 @test "plugins are installed with install-plugins.sh from a plugins file" {
   run docker_build_child $SUT_IMAGE-install-plugins $BATS_TEST_DIRNAME/install-plugins
   assert_success

@@ -20,12 +20,13 @@
 
 set -o pipefail
 
-REF_DIR=${REF:-/usr/share/jenkins/ref/plugins}
-FAILED="$REF_DIR/failed-plugins.txt"
 
 JENKINS_WAR=${JENKINS_WAR:-/usr/share/jenkins/jenkins.war}
 
 . /usr/local/bin/jenkins-support
+
+REF_DIR="${REF}/plugins"
+FAILED="$REF_DIR/failed-plugins.txt"
 
 getLockFile() {
     printf '%s' "$REF_DIR/${1}.lock"

@@ -1,5 +1,7 @@
 #!/bin/bash -eu
 
+: "${REF:="/usr/share/jenkins/ref"}"
+
 # compare if version1 < version2
 versionLT() {
     local v1; v1=$(echo "$1" | cut -d '-' -f 1 )
@@ -40,9 +42,9 @@ get_plugin_version() {
 copy_reference_file() {
     f="${1%/}"
     b="${f%.override}"
-    rel="${b:23}"
+    rel="${b#"$REF/"}"
     version_marker="${rel}.version_from_image"
-    dir=$(dirname "${b}")
+    dir=$(dirname "${rel}")
     local action;
     local reason;
     local container_version;
@@ -103,7 +105,7 @@ copy_reference_file() {
         if [[ ! -e $JENKINS_HOME/${rel} || "$action" == "UPGRADED" || $f = *.override ]]; then
             action=${action:-"INSTALLED"}
             log=true
-            mkdir -p "$JENKINS_HOME/${dir:23}"
+            mkdir -p "$JENKINS_HOME/${dir}"
             cp -pr "${f}" "$JENKINS_HOME/${rel}";
             # pin plugins on initial copy
             touch "$JENKINS_HOME/${rel}.pinned"
@@ -117,7 +119,7 @@ copy_reference_file() {
         then
             action="INSTALLED"
             log=true
-            mkdir -p "$JENKINS_HOME/${dir:23}"
+            mkdir -p "$JENKINS_HOME/${dir}"
             cp -pr "$(realpath "${f}")" "$JENKINS_HOME/${rel}";
         else
             action="SKIPPED"
