@@ -183,7 +183,9 @@ During the download, the script will use update centers defined by the following
   Defines Maven mirror to be used to download plugins from the
   [Incrementals repo](https://jenkins.io/blog/2018/05/15/incremental-deployment/).
   Default value: https://repo.jenkins-ci.org/incrementals
-
+* `JENKINS_UC_DOWNLOAD` - Download url of the Update Center. 
+  Default value: `$JENKINS_UC/download`
+  
 It is possible to override the environment variables in images.
 
 :exclamation: Note that changing this variables **will not** change the Update Center being used by Jenkins runtime.
@@ -207,6 +209,20 @@ There are also custom version specifiers:
     `mvn incrementals:updatePluginsTxt -DpluginsFile=plugins.txt`.
     [More Info](https://github.com/jenkinsci/incrementals-tools#updating-versions-for-jenkins-docker-images)
 
+### Fine-tune the downloads
+
+The script uses `curl` to download the plugins. You can configure the options with some environment variables:
+* `CURL_OPTIONS`: When downloading the plugins with curl. Curl options. Default value: `-sSfL`
+* `CURL_CONNECTION_TIMEOUT`: When downloading the plugins with curl. <seconds> Maximum time allowed for connection. Default value: `20`
+* `CURL_RETRY`: When downloading the plugins with curl. Retry request if transient problems occur. Default value: `3`
+* `CURL_RETRY_DELAY`: When downloading the plugins with curl. <seconds> Wait time between retries. Default value: `0`
+* `CURL_RETRY_MAX_TIME`: When downloading the plugins with curl. <seconds> Retry only within this period. Default value: `60`
+ 
+### Other environment variables
+In case you have changed some default paths in the image, you can modify their values with these environment variables:
+* `REF`: directory with preinstalled plugins. Default value: `/usr/share/jenkins/ref/plugins`
+* `JENKINS_WAR`: full path to the jenkins.war. Default value: `/usr/share/jenkins/jenkins.war`
+ 
 ### Script usage
 
 You can run the script manually in Dockerfile:
