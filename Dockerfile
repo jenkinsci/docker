@@ -1,6 +1,7 @@
 FROM openjdk:8-jdk-stretch
 
-RUN apt-get update && apt-get upgrade -y && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
+RUN printf "deb http://httpredir.debian.org/debian stretch-backports main non-free\ndeb-src http://httpredir.debian.org/debian stretch-backports main non-free" > /etc/apt/sources.list.d/backports.list
+RUN apt-get update && apt-get upgrade -y && apt-get install -y git git-lfs curl && rm -rf /var/lib/apt/lists/*
 
 ARG user=jenkins
 ARG group=jenkins
