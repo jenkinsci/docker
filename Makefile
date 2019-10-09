@@ -1,4 +1,5 @@
 ROOT_DIR="$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))/"
+COMMIT_ID="$(shell git rev-parse HEAD)"
 
 all: shellcheck build test
 
@@ -10,19 +11,19 @@ shellcheck:
 build: build-debian build-alpine build-slim build-jdk11 build-centos
 
 build-debian:
-	docker build --file Dockerfile .
+	docker build --label "commitID=$(COMMIT_ID)"--file Dockerfile .
 
 build-alpine:
-	docker build --file Dockerfile-alpine .
+	docker build --label "commitID=$(COMMIT_ID)" --file Dockerfile-alpine .
 
 build-slim:
-	docker build --file Dockerfile-slim .
+	docker build --label "commitID=$(COMMIT_ID)" --file Dockerfile-slim .
 
 build-jdk11:
-	docker build --file Dockerfile-jdk11 .
+	docker build --label "commitID=$(COMMIT_ID)" --file Dockerfile-jdk11 .
 
 build-centos:
-	docker build --file Dockerfile-centos .
+	docker build --label "commitID=$(COMMIT_ID)" --file Dockerfile-centos .
 
 bats:
 	# Latest tag is unfortunately 0.4.0 which is quite older than the latest master tip.
