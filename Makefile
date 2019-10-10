@@ -1,5 +1,5 @@
 ROOT_DIR="$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))/"
-COMMIT_ID="$(shell git rev-parse HEAD)"
+COMMIT_ID=$(shell git rev-parse HEAD)
 
 all: shellcheck build test
 
