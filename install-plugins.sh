@@ -254,7 +254,7 @@ main() {
 
     echo "Downloading plugins..."
     for plugin in "${plugins[@]}"; do
-        local reg='^([^:]+):?([^:]+)?:?([^:]+)?:?(http.+)?'
+        local reg='^([^:]+):?([^:]+)?:?([^:]+)?:?(https?:\/.+)?'
         if [[ $plugin =~ $reg ]]; then
             local pluginId="${BASH_REMATCH[1]}"
             local version="${BASH_REMATCH[2]}"
