@@ -7,7 +7,7 @@ shellcheck:
 	                             jenkins-support \
 	                             *.sh
 
-build: build-debian build-alpine build-slim build-jdk11 build-centos
+build: build-debian build-alpine build-slim build-jdk11 build-jdk13 build-centos
 
 build-debian:
 	docker build --file Dockerfile .
@@ -20,6 +20,9 @@ build-slim:
 
 build-jdk11:
 	docker build --file Dockerfile-jdk11 .
+
+build-jdk13:
+	docker build --file Dockerfile-jdk13 .
 
 build-centos:
 	docker build --file Dockerfile-centos .
@@ -46,10 +49,13 @@ test-slim: prepare-test
 test-jdk11: prepare-test
 	DOCKERFILE=Dockerfile-jdk11 bats/bin/bats tests
 
+test-jdk13: prepare-test
+	DOCKERFILE=Dockerfile-jdk13 bats/bin/bats tests
+
 test-centos: prepare-test
 	DOCKERFILE=Dockerfile-centos bats/bin/bats tests
 
-test: test-debian test-alpine test-slim test-jdk11 test-centos
+test: test-debian test-alpine test-slim test-jdk11 test-jdk13 test-centos
 
 test-install-plugins: prepare-test
 	DOCKERFILE=Dockerfile-alpine bats/bin/bats tests/install-plugins.bats
@@ -59,6 +65,7 @@ publish:
 	./publish.sh --variant alpine ; \
 	./publish.sh --variant slim ; \
 	./publish.sh --variant jdk11 --start-after 2.151 ; \
+	./publish.sh --variant jdk13 --start-after 2.151 ; \
 	./publish.sh --variant centos --start-after 2.181 ;
 
 publish-experimental:
