@@ -12,6 +12,9 @@ build: build-debian build-alpine build-slim build-jdk11 build-centos
 build-debian:
 	docker build --file Dockerfile .
 
+build-ubuntu1804:
+	docker build --file Dockerfile-ubuntu1804 .
+
 build-alpine:
 	docker build --file Dockerfile-alpine .
 
@@ -37,6 +40,9 @@ prepare-test: bats
 test-debian: prepare-test
 	DOCKERFILE=Dockerfile bats/bin/bats tests
 
+test-ubuntu1804: prepare-test
+	DOCKERFILE=Dockerfile-ubuntu1804 bats/bin/bats tests
+
 test-alpine: prepare-test
 	DOCKERFILE=Dockerfile-alpine bats/bin/bats tests
 
@@ -49,13 +55,14 @@ test-jdk11: prepare-test
 test-centos: prepare-test
 	DOCKERFILE=Dockerfile-centos bats/bin/bats tests
 
-test: test-debian test-alpine test-slim test-jdk11 test-centos
+test: test-debian test-ubuntu1804 test-alpine test-slim test-jdk11 test-centos
 
 test-install-plugins: prepare-test
 	DOCKERFILE=Dockerfile-alpine bats/bin/bats tests/install-plugins.bats
 
 publish:
 	./publish.sh ; \
+	./publish.sh --variant ubuntu1804 ; \
 	./publish.sh --variant alpine ; \
 	./publish.sh --variant slim ; \
 	./publish.sh --variant jdk11 --start-after 2.151 ; \
@@ -64,7 +71,7 @@ publish:
 publish-experimental:
 	./publish-experimental.sh ; \
 	./publish-experimental.sh --variant alpine ; \
-	./publish-experimental.sh --variant slim ; 
+	./publish-experimental.sh --variant slim ;
 
 clean:
 	rm -rf tests/test_helper/bats-*; \

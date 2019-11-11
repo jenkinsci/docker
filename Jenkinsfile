@@ -31,7 +31,7 @@ nodeWithTimeout('docker') {
             sh "make prepare-test"
         }
 
-        def labels = ['debian', 'slim', 'alpine', 'jdk11', 'centos']
+        def labels = ['debian', 'ubuntu1804', 'slim', 'alpine', 'jdk11', 'centos']
         def builders = [:]
         for (x in labels) {
             def label = x
@@ -45,14 +45,14 @@ nodeWithTimeout('docker') {
         }
 
         parallel builders
-        
+
         def branchName = "${env.BRANCH_NAME}"
         if (branchName ==~ 'master'){
             stage('Publish Experimental') {
                 infra.withDockerCredentials {
                     sh 'make publish-experimental'
                 }
-            }                 
+            }
         }
     } else {
         /* In our trusted.ci environment we only want to be publishing our
