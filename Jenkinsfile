@@ -31,7 +31,7 @@ nodeWithTimeout('docker') {
             sh "make prepare-test"
         }
 
-        def labels = ['debian', 'slim', 'alpine', 'jdk11', 'centos']
+        def labels = ['debian', 'slim', 'alpine', 'jdk11', 'centos', 'centos7']
         def builders = [:]
         for (x in labels) {
             def label = x

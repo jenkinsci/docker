@@ -7,7 +7,7 @@ shellcheck:
 	                             jenkins-support \
 	                             *.sh
 
-build: build-debian build-alpine build-slim build-jdk11 build-centos
+build: build-debian build-alpine build-slim build-jdk11 build-centos build-centos7
 
 build-debian:
 	docker build --file Dockerfile .
@@ -23,6 +23,9 @@ build-jdk11:
 
 build-centos:
 	docker build --file Dockerfile-centos .
+
+build-centos7:
+	docker build --file Dockerfile-centos7 .
 
 bats:
 	# Latest tag is unfortunately 0.4.0 which is quite older than the latest master tip.
@@ -49,7 +52,10 @@ test-jdk11: prepare-test
 test-centos: prepare-test
 	DOCKERFILE=Dockerfile-centos bats/bin/bats tests
 
-test: test-debian test-alpine test-slim test-jdk11 test-centos
+test-centos7: prepare-test
+	DOCKERFILE=Dockerfile-centos7 bats/bin/bats tests
+
+test: test-debian test-alpine test-slim test-jdk11 test-centos test-centos7
 
 test-install-plugins: prepare-test
 	DOCKERFILE=Dockerfile-alpine bats/bin/bats tests/install-plugins.bats
@@ -59,7 +65,8 @@ publish:
 	./publish.sh --variant alpine ; \
 	./publish.sh --variant slim ; \
 	./publish.sh --variant jdk11 --start-after 2.151 ; \
-	./publish.sh --variant centos --start-after 2.181 ;
+	./publish.sh --variant centos --start-after 2.181 ; \
+	./publish.sh --variant centos7 --start-after 2.199 ;
 
 publish-experimental:
 	./publish-experimental.sh ; \
