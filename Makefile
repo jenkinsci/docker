@@ -10,19 +10,19 @@ shellcheck:
 build: build-debian build-alpine build-slim build-jdk11 build-centos
 
 build-debian:
-	docker build --file Dockerfile .
+	docker build -t jenkins-docker:debian --file Dockerfile .
 
 build-alpine:
-	docker build --file Dockerfile-alpine .
+	docker build -t jenkins-docker:alpine --file Dockerfile-alpine .
 
 build-slim:
-	docker build --file Dockerfile-slim .
+	docker build -t jenkins-docker:slim --file Dockerfile-slim .
 
 build-jdk11:
-	docker build --file Dockerfile-jdk11 .
+	docker build -t jenkins-docker:jdk11 --file Dockerfile-jdk11 .
 
 build-centos:
-	docker build --file Dockerfile-centos .
+	docker build -t jenkins-docker:centos --file Dockerfile-centos .
 
 bats:
 	# Latest tag is unfortunately 0.4.0 which is quite older than the latest master tip.
