@@ -126,11 +126,11 @@ SUT_IMAGE=$(sut_image)
 }
 
 @test "clean work directory" {
-    run bash -c "rm -rf $BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
+  run bash -c "ls -la $BATS_TEST_DIRNAME/upgrade-plugins ; rm -rf $BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
+  assert_success
 }
 
 @test "plugins are getting upgraded but not downgraded" {
-  sleep 20
   # Initial execution
   run docker_build_child $SUT_IMAGE-install-plugins $BATS_TEST_DIRNAME/install-plugins
   assert_success
@@ -160,7 +160,8 @@ SUT_IMAGE=$(sut_image)
 }
 
 @test "clean work directory" {
-    run bash -c "rm -rf $BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
+  run bash -c "ls -la $BATS_TEST_DIRNAME/upgrade-plugins ; rm -rf $BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
+  assert_success
 }
 
 @test "do not upgrade if plugin has been manually updated" {
@@ -191,7 +192,8 @@ SUT_IMAGE=$(sut_image)
 }
 
 @test "clean work directory" {
-    run bash -c "rm -rf $BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
+  run bash -c "ls -la $BATS_TEST_DIRNAME/upgrade-plugins ; rm -rf $BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
+  assert_success
 }
 
 @test "upgrade plugin even if it has been manually updated when PLUGINS_FORCE_UPGRADE=true" {
@@ -200,10 +202,10 @@ SUT_IMAGE=$(sut_image)
   local work; work="$BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
   mkdir -p $work
   # Image contains junit 1.6 and ant-plugin 1.3
-  run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-install-plugins curl --connect-timeout 20 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L https://updates.jenkins.io/download/plugins/junit/1.6/junit.hpi -o /var/jenkins_home/plugins/junit.jpi"
+  run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-install-plugins curl --connect-timeout 20 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L https://updates.jenkins.io/download/plugins/junit/1.8/junit.hpi -o /var/jenkins_home/plugins/junit.jpi"
   assert_success
   run unzip_manifest junit.jpi $work
-  assert_line 'Plugin-Version: 1.6'
+  assert_line 'Plugin-Version: 1.8'
   run docker_build_child $SUT_IMAGE-upgrade-plugins $BATS_TEST_DIRNAME/upgrade-plugins
   assert_success
   # Images contains junit 1.28 and ant-plugin 1.2
@@ -212,7 +214,7 @@ SUT_IMAGE=$(sut_image)
   # junit should be upgraded
   run unzip_manifest junit.jpi $work
   assert_success
-  refute_line 'Plugin-Version: 1.6'
+  refute_line 'Plugin-Version: 1.8'
   assert_line 'Plugin-Version: 1.28'
   # ant shouldn't be downgraded
   run unzip_manifest ant.jpi $work
@@ -222,7 +224,8 @@ SUT_IMAGE=$(sut_image)
 }
 
 @test "clean work directory" {
-    run bash -c "rm -rf $BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
+  run bash -c "ls -la $BATS_TEST_DIRNAME/upgrade-plugins ; rm -rf $BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
+  assert_success
 }
 
 @test "plugins are installed with install-plugins.sh and no war" {
@@ -239,5 +242,6 @@ SUT_IMAGE=$(sut_image)
 }
 
 @test "clean work directory" {
-    run bash -c "rm -rf $BATS_TEST_DIRNAME/custom-war/work-${SUT_IMAGE}"
+  run bash -c "ls -la $BATS_TEST_DIRNAME/upgrade-plugins ; rm -rf $BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
+  assert_success
 }
