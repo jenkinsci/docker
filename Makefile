@@ -6,8 +6,7 @@ shellcheck:
 	$(ROOT_DIR)/tools/shellcheck -e SC1091 \
 	                             jenkins-support \
 	                             *.sh
-
-build: build-debian build-alpine build-slim build-jdk11 build-centos build-centos7
+build: build-debian build-alpine build-slim build-jdk11 build-centos build-centos7 build-openj9 build-openj9-jdk11
 
 build-debian:
 	docker build --file Dockerfile .
@@ -26,6 +25,12 @@ build-centos:
 
 build-centos7:
 	docker build --file Dockerfile-centos7 .
+
+build-openj9:
+	docker build --file Dockerfile-openj9 .
+
+build-openj9-jdk11:
+	docker build --file Dockerfile-openj9-jdk11 .
 
 bats:
 	# Latest tag is unfortunately 0.4.0 which is quite older than the latest master tip.
@@ -55,7 +60,13 @@ test-centos: prepare-test
 test-centos7: prepare-test
 	DOCKERFILE=Dockerfile-centos7 bats/bin/bats tests
 
-test: test-debian test-alpine test-slim test-jdk11 test-centos test-centos7
+test-openj9:
+	DOCKERFILE=Dockerfile-openj9 bats/bin/bats tests
+
+test-openj9-jdk11:
+	DOCKERFILE=Dockerfile-openj9-jdk11 bats/bin/bats tests
+
+test: test-debian test-alpine test-slim test-jdk11 test-centos test-centos7 test-openj9 test-openj9-jdk11
 
 test-install-plugins: prepare-test
 	DOCKERFILE=Dockerfile-alpine bats/bin/bats tests/install-plugins.bats
@@ -71,7 +82,9 @@ publish:
 publish-experimental:
 	./publish-experimental.sh ; \
 	./publish-experimental.sh --variant alpine ; \
-	./publish-experimental.sh --variant slim ; 
+	./publish-experimental.sh --variant slim ; \
+	./publish-experimental.sh --variant openj9 ; \
+	./publish-experimental.sh --variant openj9-jdk11 ;
 
 clean:
 	rm -rf tests/test_helper/bats-*; \

@@ -18,4 +18,4 @@ RUN cp /usr/share/jenkins/jenkins.war $JENKINS_WAR && \
 RUN jar -uf my-custom-jenkins.war WEB-INF/* 
 
 # Run the install-plugins.sh script
-RUN /usr/local/bin/install-plugins.sh maven-plugin:2.7.1
+RUN /usr/local/bin/install-plugins.sh junit:1.6

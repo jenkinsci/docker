@@ -1,2 +1,2 @@
-maven-plugin:2.7.1
+junit:1.6
 ant:1.3
