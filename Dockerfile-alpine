@@ -1,6 +1,6 @@
 FROM openjdk:8-jdk-alpine
 
-RUN apk add --no-cache git openssh-client curl unzip bash ttf-dejavu coreutils tini
+RUN apk add --no-cache git git-lfs openssh-client curl unzip bash ttf-dejavu coreutils tini
 
 ARG user=jenkins
 ARG group=jenkins
