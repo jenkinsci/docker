@@ -9,53 +9,53 @@ jobs:
     os: linux
     arch: s390x
     env: architecture=${TRAVIS_CPU_ARCH}
-    script: "./make publish-images-debian"
+    script: "make publish-images-debian"
   - os: linux
     arch: ppc64le
     env: architecture=${TRAVIS_CPU_ARCH}
-    script: "./make publish-images-debian"
+    script: "make publish-images-debian"
   - os: linux
     arch: amd64
     env: architecture=${TRAVIS_CPU_ARCH}
-    script: "./make publish-images-debian"
+    script: "make publish-images-debian"
   - os: linux
     arch: arm64
     env: architecture=${TRAVIS_CPU_ARCH}
-    script: "./make publish-images-debian"
+    script: "make publish-images-debian"
   - stage: Build Alpine
     os: linux
     arch: s390x
     env: architecture=${TRAVIS_CPU_ARCH}
-    script: "./make publish-images-alpine"
+    script: "make publish-images-alpine"
   - os: linux
     arch: ppc64le
     env: architecture=${TRAVIS_CPU_ARCH}
-    script: "./make publish-images-alpine"
+    script: "make publish-images-alpine"
   - os: linux
     arch: amd64
     env: architecture=${TRAVIS_CPU_ARCH}
-    script: "./make publish-images-alpine"
+    script: "make publish-images-alpine"
   - os: linux
     arch: arm64
     env: architecture=${TRAVIS_CPU_ARCH}
-    script: "./make publish-images-alpine"
+    script: "make publish-images-alpine"
   - stage: Build Slim
     os: linux
     arch: s390x
     env: architecture=${TRAVIS_CPU_ARCH}
-    script: "./make publish-images-slim"
+    script: "make publish-images-slim"
   - os: linux
     arch: ppc64le
     env: architecture=${TRAVIS_CPU_ARCH}
-    script: "./make publish-images-slim"
+    script: "make publish-images-slim"
   - os: linux
     arch: amd64
     env: architecture=${TRAVIS_CPU_ARCH}
-    script: "./make publish-images-slim"
+    script: "make publish-images-slim"
   - os: linux
     arch: arm64
     env: architecture=${TRAVIS_CPU_ARCH}
-    script: "./make publish-images-slim"
+    script: "make publish-images-slim"
 env:
   global:
   - DOCKERHUB_ORGANISATION=jenkins4eval
