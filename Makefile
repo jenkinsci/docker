@@ -67,18 +67,28 @@ test-install-plugins: prepare-test
 	DOCKERFILE=Dockerfile-alpine bats/bin/bats tests/install-plugins.bats
 
 publish:
-	./publish.sh ; \
-	./publish.sh --variant alpine ; \
-	./publish.sh --variant slim ; \
-	./publish.sh --variant jdk11 --start-after 2.151 ; \
-	./publish.sh --variant centos --start-after 2.181 ;
+	./.ci/publish.sh ; \
+	./.ci/publish.sh --variant alpine ; \
+	./.ci/publish.sh --variant slim ; \
+	./.ci/publish.sh --variant jdk11 --start-after 2.151 ; \
+	./.ci/publish.sh --variant centos --start-after 2.181 ;
 
-publish-experimental:
-	./publish-experimental.sh ; \
-	./publish-experimental.sh --variant alpine ; \
-	./publish-experimental.sh --variant slim ; \
-	./publish-experimental.sh --variant openj9 ; \
-	./publish-experimental.sh --variant openj9-jdk11 ;
+publish-images-debian:
+	./.ci/publish-images.sh --variant debian --arch ${architecture} ;
+
+publish-images-alpine:
+	./.ci/publish-images.sh --variant alpine --arch ${architecture} ;
+
+publish-images-slim:
+	./.ci/publish-images.sh --variant slim --arch ${architecture} ;
+
+publish-images-openj9:
+	./.ci/publish-images.sh --variant openj9 --arch ${architecture} ;
+
+publish-images-openj9-jdk11:
+	./.ci/publish-images.sh --variant openj9-jdk11 --arch ${architecture} ;
+
+publish-images: publish-images-debian publish-images-alpine publish-images-slim publish-images-openj9 publish-images-openj9-jdk11
 
 clean:
 	rm -rf tests/test_helper/bats-*; \
