@@ -4,10 +4,10 @@ FROM golang:1.13.6-buster AS GIT_LFS
 ARG GIT_LFS_VERSION
 ENV GIT_LFS_VERSION=$GIT_LFS_VERSION
 
-RUN git clone https://github.com/git-lfs/git-lfs.git \
+WORKDIR $GOPATH/src/github.com/git-lfs/git-lfs/
+RUN git clone https://github.com/git-lfs/git-lfs.git ./ \
     && git checkout v${GIT_LFS_VERSION}
 
-WORKDIR /go/src/github.com/git-lfs/git-lfs/
 RUN make
 
 # Placeholder for the specified arch that gets parsed in the publish-experimental.sh script.
