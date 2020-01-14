@@ -132,6 +132,7 @@ publish() {
     docker build --file "multiarch/Dockerfile$variant-$arch" \
                  --build-arg "JENKINS_VERSION=$version" \
                  --build-arg "JENKINS_SHA=$sha" \
+                 --build-arg "GIT_LFS_VERSION=2.9.2" \
                  --tag "${JENKINS_REPO}:${tag}-${arch}" \
                  "${build_opts[@]+"${build_opts[@]}"}" .
 
