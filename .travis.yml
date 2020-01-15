@@ -54,28 +54,28 @@ jobs:
     arch: arm64
     env: architecture=${TRAVIS_CPU_ARCH} VARIANT=slim
     script: "make publish-images-variant"
- - stage: Publish Tags
-   os: linux
-   arch: amd64
-   script: "make publish-tags-debian"
- - os: linux
-   arch: amd64
-   script: "make publish-tag-alpine"
- - os: linux
-   arch: amd64
-   script: "make publish-tags-slim"
- - os: linux
-   arch: amd64
-   script: "make publish-tags-lts-debian"
- - os: linux
-   arch: amd64
-   script: "make publish-tag-lts-alpine"
- - os: linux
-   arch: amd64
-   script: "make publish-tags-lts-slim"
- - os: linux
-   arch: amd64
-   script: "make publish-tag-latest"
+  - stage: Publish Tags
+    os: linux
+    arch: amd64
+    script: "make publish-tags-debian"
+  - os: linux
+    arch: amd64
+    script: "make publish-tag-alpine"
+  - os: linux
+    arch: amd64
+    script: "make publish-tags-slim"
+  - os: linux
+    arch: amd64
+    script: "make publish-tags-lts-debian"
+  - os: linux
+    arch: amd64
+    script: "make publish-tag-lts-alpine"
+  - os: linux
+    arch: amd64
+    script: "make publish-tags-lts-slim"
+  - os: linux
+    arch: amd64
+    script: "make publish-tag-latest"
 env:
   global:
   - DOCKERHUB_ORGANISATION=jamescrowleyibm
