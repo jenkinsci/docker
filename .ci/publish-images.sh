@@ -25,12 +25,15 @@ if [[ "$DOCKERHUB_ORGANISATION" == "jenkins" ]]; then
     exit 1;
 fi
 
-#ARCHS=(arm arm64 s390x ppc64le amd64)
 BASEIMAGE=
 
-login-token() {
-    # could use jq .token
-    curl -q -sSL "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${JENKINS_REPO}:pull" | grep -o '"token":"[^"]*"' | cut -d':' -f 2 | xargs echo
+#login-token() {
+#    # could use jq .token
+#    curl -q -sSL "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${JENKINS_REPO}:pull" | grep -o '"token":"[^"]*"' | cut -d':' -f 2 | xargs echo
+#}
+
+docker-login() {
+    docker login "--username ${DOCKER_USERNAME} --password ${DOCKER_PASSWORD}"
 }
 
 sort-versions() {
@@ -138,8 +141,7 @@ publish() {
 
     # " line to fix syntax highlightning
     if [ ! "$dry_run" = true ]; then
-        true
-        #docker push "${JENKINS_REPO}:${tag}-${arch}"
+        docker push "${JENKINS_REPO}:${tag}-${arch}"
     fi
 }
 
@@ -192,6 +194,7 @@ fi
 
 
 #TOKEN=$(login-token)
+docker-login
 
 version=""
 for version in $(get-latest-versions); do

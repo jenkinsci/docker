@@ -73,22 +73,42 @@ publish:
 	./.ci/publish.sh --variant jdk11 --start-after 2.151 ; \
 	./.ci/publish.sh --variant centos --start-after 2.181 ;
 
+publish-images-variant:
+	./.ci/publish-images.sh --variant ${VARIANT} --arch ${ARCH} ;
+
 publish-images-debian:
-	./.ci/publish-images.sh --variant debian --arch ${architecture} ;
+	./.ci/publish-images.sh --variant debian --arch ${ARCH} ;
 
 publish-images-alpine:
-	./.ci/publish-images.sh --variant alpine --arch ${architecture} ;
+	./.ci/publish-images.sh --variant alpine --arch ${ARCH} ;
 
 publish-images-slim:
-	./.ci/publish-images.sh --variant slim --arch ${architecture} ;
+	./.ci/publish-images.sh --variant slim --arch ${ARCH} ;
 
-publish-images-openj9:
-	./.ci/publish-images.sh --variant openj9 --arch ${architecture} ;
+publish-images: publish-images-debian publish-images-alpine publish-images-slim
 
-publish-images-openj9-jdk11:
-	./.ci/publish-images.sh --variant openj9-jdk11 --arch ${architecture} ;
+publish-tags-debian:
+	./.ci/publish-tags.sh --tag debian ;
 
-publish-images: publish-images-debian publish-images-alpine publish-images-slim publish-images-openj9 publish-images-openj9-jdk11
+publish-tag-alpine:
+	./.ci/publish-images.sh --tag alpine ;
+
+publish-tags-slim:
+	./.ci/publish-images.sh --tag slim ;
+
+publish-tags-lts-debian:
+	./.ci/publish-tags.sh --tag lts-debian ;
+
+publish-tag-lts-alpine:
+	./.ci/publish-images.sh --tag lts-alpine ;
+
+publish-tags-lts-slim:
+	./.ci/publish-images.sh --tag lts-slim ;
+
+publish-tag-latest:
+	./.ci/publish-images.sh --tag latest ;
+
+publish-tags: publish-tags-debian publish-tag-alpine publish-tags-slim publish-tags-lts-debian publish-tag-lts-alpine publish-tags-lts-slim publish-tags-latest
 
 clean:
 	rm -rf tests/test_helper/bats-*; \
