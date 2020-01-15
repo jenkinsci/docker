@@ -8,51 +8,51 @@ jobs:
   - stage: Build & Publish Images
     os: linux
     arch: s390x
-    env: architecture=${TRAVIS_CPU_ARCH} VARIANT=debian
+    env: ARCH=${TRAVIS_CPU_ARCH} VARIANT=debian
     script: "make publish-images-variant"
   - os: linux
     arch: ppc64le
-    env: architecture=${TRAVIS_CPU_ARCH} VARIANT=debian
+    env: ARCH=${TRAVIS_CPU_ARCH} VARIANT=debian
     script: "make publish-images-variant"
   - os: linux
     arch: amd64
-    env: architecture=${TRAVIS_CPU_ARCH} VARIANT=debian
+    env: ARCH=${TRAVIS_CPU_ARCH} VARIANT=debian
     script: "make publish-images-variant"
   - os: linux
     arch: arm64
-    env: architecture=${TRAVIS_CPU_ARCH} VARIANT=debian
+    env: ARCH=${TRAVIS_CPU_ARCH} VARIANT=debian
     script: "make publish-images-variant"
   - os: linux
     arch: s390x
-    env: architecture=${TRAVIS_CPU_ARCH} VARIANT=alpine
+    env: ARCH=${TRAVIS_CPU_ARCH} VARIANT=alpine
     script: "make publish-images-variant"
   - os: linux
     arch: ppc64le
-    env: architecture=${TRAVIS_CPU_ARCH} VARIANT=alpine
+    env: ARCH=${TRAVIS_CPU_ARCH} VARIANT=alpine
     script: "make publish-images-variant"
   - os: linux
     arch: amd64
-    env: architecture=${TRAVIS_CPU_ARCH} VARIANT=alpine
+    env: ARCH=${TRAVIS_CPU_ARCH} VARIANT=alpine
     script: "make publish-images-variant"
   - os: linux
     arch: arm64
-    env: architecture=${TRAVIS_CPU_ARCH} VARIANT=alpine
+    env: ARCH=${TRAVIS_CPU_ARCH} VARIANT=alpine
     script: "make publish-images-variant"
   - os: linux
     arch: s390x
-    env: architecture=${TRAVIS_CPU_ARCH} VARIANT=slim
+    env: ARCH=${TRAVIS_CPU_ARCH} VARIANT=slim
     script: "make publish-images-variant"
   - os: linux
     arch: ppc64le
-    env: architecture=${TRAVIS_CPU_ARCH} VARIANT=slim
+    env: ARCH=${TRAVIS_CPU_ARCH} VARIANT=slim
     script: "make publish-images-variant"
   - os: linux
     arch: amd64
-    env: architecture=${TRAVIS_CPU_ARCH} VARIANT=slim
+    env: ARCH=${TRAVIS_CPU_ARCH} VARIANT=slim
     script: "make publish-images-variant"
   - os: linux
     arch: arm64
-    env: architecture=${TRAVIS_CPU_ARCH} VARIANT=slim
+    env: ARCH=${TRAVIS_CPU_ARCH} VARIANT=slim
     script: "make publish-images-variant"
   - stage: Publish Tags
     os: linux
