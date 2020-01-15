@@ -91,22 +91,22 @@ publish-tags-debian:
 	./.ci/publish-tags.sh --tag debian ;
 
 publish-tag-alpine:
-	./.ci/publish-images.sh --tag alpine ;
+	./.ci/publish-tags.sh --tag alpine ;
 
 publish-tags-slim:
-	./.ci/publish-images.sh --tag slim ;
+	./.ci/publish-tags.sh --tag slim ;
 
 publish-tags-lts-debian:
 	./.ci/publish-tags.sh --tag lts-debian ;
 
 publish-tag-lts-alpine:
-	./.ci/publish-images.sh --tag lts-alpine ;
+	./.ci/publish-tags.sh --tag lts-alpine ;
 
 publish-tags-lts-slim:
-	./.ci/publish-images.sh --tag lts-slim ;
+	./.ci/publish-tags.sh --tag lts-slim ;
 
 publish-tag-latest:
-	./.ci/publish-images.sh --tag latest ;
+	./.ci/publish-tags.sh --tag latest ;
 
 publish-tags: publish-tags-debian publish-tag-alpine publish-tags-slim publish-tags-lts-debian publish-tag-lts-alpine publish-tags-lts-slim publish-tags-latest
 

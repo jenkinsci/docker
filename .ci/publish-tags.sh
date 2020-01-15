@@ -26,7 +26,7 @@ if [[ "$DOCKERHUB_ORGANISATION" == "jenkins" ]]; then
 fi
 
 docker-login() {
-    docker login --username ${DOCKER_USERNAME} --password-stdin ${DOCKER_PASSWORD}
+    docker login --username ${DOCKER_USERNAME} --password ${DOCKER_PASSWORD}
 }
 
 
