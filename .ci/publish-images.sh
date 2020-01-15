@@ -33,7 +33,7 @@ BASEIMAGE=
 #}
 
 docker-login() {
-    docker login "--username ${DOCKER_USERNAME} --password ${DOCKER_PASSWORD}"
+    docker login --username ${DOCKER_USERNAME} --password-stdin ${DOCKER_PASSWORD}
 }
 
 sort-versions() {
