@@ -42,13 +42,15 @@ get-latest-versions() {
 }
 
 is-published() {
-    local tag=$1
+    local version_variant=$1
+    local arch=$2
+    local tag="${version_variant}-${arch}"
     local opts=""
     if [ "$debug" = true ]; then
         opts="-v"
     fi
     local http_code;
-    http_code=$(curl $opts -q -fsL -o /dev/null -w "%{http_code}" "https://hub.docker.com/v2/repositories/${JENKINS_REPO}/tags/$1")
+    http_code=$(curl $opts -q -fsL -o /dev/null -w "%{http_code}" "https://hub.docker.com/v2/repositories/${JENKINS_REPO}/tags/${tag}")
     false
     if [ "$http_code" -eq "404" ]; then
         false
@@ -193,12 +195,12 @@ docker-login
 version=""
 for version in $(get-latest-versions); do
     if [ "$force" = true ]; then
-        echo "Publishing version($arch): $version$variant"
+        echo "Force Publishing version(${arch}): ${version}${variant}"
         publish "$version" "$variant" "$arch"
-    elif is-published "$version$variant"; then
+    elif is-published "$version$variant" "$arch"; then
         echo "Tag is already published: $version$variant"
     else
-        echo "Publishing version($arch): $version$variant"
+        echo "Publishing version(${arch}): ${version}${variant}"
         publish "$version" "$variant" "$arch"
     fi
 done
