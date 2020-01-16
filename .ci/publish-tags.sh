@@ -29,7 +29,6 @@ docker-login() {
     docker login --username ${DOCKER_USERNAME} --password ${DOCKER_PASSWORD}
 }
 
-
 # Try tagging with and without -f to support all versions of docker
 docker-tag() {
     local from="$1"
@@ -181,7 +180,6 @@ if [ "$debug" = true ]; then
     set -x
 fi
 
-#TOKEN=$(login-token)
 docker-login
 
 # Get LTS and Latest Version of Jenkins

@@ -198,7 +198,7 @@ for version in $(get-latest-versions); do
         echo "Force Publishing version(${arch}): ${version}${variant}"
         publish "$version" "$variant" "$arch"
     elif is-published "$version$variant" "$arch"; then
-        echo "Tag is already published: $version$variant"
+        echo "Tag is already published: ${version}${variant}-${arch}"
     else
         echo "Publishing version(${arch}): ${version}${variant}"
         publish "$version" "$variant" "$arch"
