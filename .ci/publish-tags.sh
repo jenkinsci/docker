@@ -205,19 +205,19 @@ elif [[ $tag == slim ]]; then
 elif [[ $tag == debian ]]; then
     publish-debian "${version}"
 elif [[ $tag == lts-alpine ]]; then
-    if [[ -z "lts_version" ]]; then
+    if [[ -z ${lts_version} ]]; then
         echo "No LTS Version to process!"
     else
         publish-lts-alpine "${lts_version}"
     fi
 elif [[ $tag == lts-slim ]]; then
-    if [[ -z "lts_version" ]]; then
+    if [[ -z ${lts_version} ]]; then
         echo "No LTS Version to process!"
     else
         publish-lts-slim "${lts_version}"
     fi
 elif [[ $tag == lts-debian ]]; then
-    if [[ -z "lts_version" ]]; then
+    if [[ -z ${lts_version} ]]; then
         echo "No LTS Version to process!"
     else
         publish-lts-debian "${lts_version}"
