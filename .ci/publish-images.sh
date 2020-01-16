@@ -19,18 +19,11 @@ Docker repository in Use:
 * JENKINS_REPO: ${JENKINS_REPO}
 EOF
 
-#This is precautionary step to avoid accidental push to offical jenkins image
+#This is precautionary step to avoid accidental push to official jenkins image
 if [[ "$DOCKERHUB_ORGANISATION" == "jenkins" ]]; then
     echo "Experimental docker image should not published to jenkins organization , hence exiting with failure";
     exit 1;
 fi
-
-BASEIMAGE=
-
-#login-token() {
-#    # could use jq .token
-#    curl -q -sSL "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${JENKINS_REPO}:pull" | grep -o '"token":"[^"]*"' | cut -d':' -f 2 | xargs echo
-#}
 
 docker-login() {
     docker login --username ${DOCKER_USERNAME} --password ${DOCKER_PASSWORD}
@@ -49,28 +42,28 @@ get-latest-versions() {
 }
 
 is-published() {
-    local tag=$1
     local opts=""
     if [ "$debug" = true ]; then
         opts="-v"
     fi
     local http_code;
-    #http_code=$(curl $opts -q -fsL -o /dev/null -w "%{http_code}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/${JENKINS_REPO}/manifests/$tag")
+    http_code=$(curl $opts -q -fsL -o /dev/null -w "%{http_code}" "https://hub.docker.com/v2/repositories/$1/tags/$2")
     false
-#    if [ "$http_code" -eq "404" ]; then
-#        false
-#    elif [ "$http_code" -eq "200" ]; then
-#        true
-#    else
-#        echo "Received unexpected http code from Docker hub: $http_code"
-#        exit 1
-#    fi
+    if [ "$http_code" -eq "404" ]; then
+        false
+    elif [ "$http_code" -eq "200" ]; then
+        true
+    else
+        echo "Received unexpected http code from Docker hub: $http_code"
+        exit 1
+    fi
 }
 
 set-base-image() {
     local variant=$1
     local arch=$2
     local dockerfile
+    local BASEIMAGE
 
     dockerfile="./multiarch/Dockerfile${variant}-${arch}"
 
@@ -147,14 +140,13 @@ publish() {
 
 cleanup() {
     echo "Cleaning up"
-#    rm -f manifest-tool
-#    rm -f ./multiarch/qemu-*
     rm -rf ./multiarch/Dockerfile-*
 }
 
 # Process arguments
 dry_run=false
 debug=false
+force=false
 variant=""
 arch=""
 
@@ -166,6 +158,9 @@ while [[ $# -gt 0 ]]; do
         ;;
         -d)
         debug=true
+        ;;
+        -f)
+        force=true
         ;;
         -v|--variant)
         variant="-"$2
@@ -192,13 +187,14 @@ if [ "$debug" = true ]; then
     set -x
 fi
 
-
-#TOKEN=$(login-token)
 docker-login
 
 version=""
 for version in $(get-latest-versions); do
-    if is-published "$version$variant"; then
+    if [ "$force" = true ]; then
+        echo "Publishing version($arch): $version$variant"
+        publish "$version" "$variant" "$arch"
+    elif is-published "$version$variant"; then
         echo "Tag is already published: $version$variant"
     else
         echo "Publishing version($arch): $version$variant"
