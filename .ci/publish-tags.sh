@@ -206,5 +206,6 @@ elif [[ $tag == lts-slim ]]; then
 elif [[ $tag == lts-debian ]]; then
     publish-lts-debian "${lts_version}"
 elif [[ $tag == latest ]]; then
-    publish-latest "${version}"
+    archs=(arm64 s390x ppc64le amd64)
+    publish-latest "${version}"  "debian"  "${archs}"
 fi
