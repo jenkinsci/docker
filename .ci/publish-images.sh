@@ -42,12 +42,13 @@ get-latest-versions() {
 }
 
 is-published() {
+    local tag=$1
     local opts=""
     if [ "$debug" = true ]; then
         opts="-v"
     fi
     local http_code;
-    http_code=$(curl $opts -q -fsL -o /dev/null -w "%{http_code}" "https://hub.docker.com/v2/repositories/$1/tags/$2")
+    http_code=$(curl $opts -q -fsL -o /dev/null -w "%{http_code}" "https://hub.docker.com/v2/repositories/${JENKINS_REPO}/tags/$1")
     false
     if [ "$http_code" -eq "404" ]; then
         false
