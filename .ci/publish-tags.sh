@@ -60,11 +60,14 @@ publish-variant() {
     local variant=$2
     local archs=$3
 	echo "publishing ${variant} tag to point to ${version}"
+	echo "${archs}"
 
-    for arch in ${archs[*]}; do
+    for arch in ${archs}; do
+        echo "Pulling ${version}-${variant}-${arch}"
         # Pull down images to be re-tagged
         docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
 
+        echo "Re-tagging Image from ${version}-${variant}-${arch} to ${JENKINS_REPO}:${variant}-${arch}"
         docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:${variant}-${arch}"
         docker push "${JENKINS_REPO}:${variant}-${arch}"
     done
@@ -77,7 +80,7 @@ publish-lts-variant() {
     local base_image=$4
 	echo "publishing lts ${variant} tag to point to ${version}"
 
-    for arch in ${archs[*]}; do
+    for arch in ${archs}; do
         # Pull down images to be re-tagged
         docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
 
@@ -85,7 +88,7 @@ publish-lts-variant() {
         docker push "${JENKINS_REPO}:lts-${variant}-${arch}"
 
         # Will push the LTS tag without variant aka default image
-        if [[ -n "$base_image" ]]; then
+        if [[ -z "$base_image" ]]; then
             docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:lts-${arch}"
             docker push "${JENKINS_REPO}:lts-${arch}"
         fi
@@ -94,37 +97,37 @@ publish-lts-variant() {
 
 publish-alpine() {
     local version=$1
-    local archs=(arm64 s390x ppc64le amd64)
+    local archs="arm64 s390x ppc64le amd64"
     publish-variant "${version}"  "alpine"  "${archs}"
 }
 
 publish-slim() {
     local version=$1
-    local archs=(arm64 s390x ppc64le amd64)
+    local archs="arm64 s390x ppc64le amd64"
     publish-variant "${version}"  "slim"  "${archs}"
 }
 
 publish-debian() {
     local version=$1
-    local archs=(arm64 s390x ppc64le amd64)
+    local archs="arm64 s390x ppc64le amd64"
     publish-variant "${version}"  "debian"  "${archs}"
 }
 
 publish-lts-alpine() {
     local version=$1
-    local archs=(arm64 s390x ppc64le amd64)
-    publish-lts-variant "${version}"  "alpine"  "${archs}"
+    local archs="arm64 s390x ppc64le amd64"
+    publish-lts-variant "${version}"  "alpine"  "${archs}"  ""
 }
 
 publish-lts-slim() {
     local version=$1
-    local archs=(arm64 s390x ppc64le amd64)
-    publish-lts-variant "${version}"  "slim"  "${archs}"
+    local archs="arm64 s390x ppc64le amd64"
+    publish-lts-variant "${version}"  "slim"  "${archs}"  ""
 }
 
 publish-lts-debian() {
     local version=$1
-    local archs=(arm64 s390x ppc64le amd64)
+    local archs="arm64 s390x ppc64le amd64"
     publish-lts-variant "${version}"  "debian"  "${archs}"  "true"
 }
 
@@ -148,7 +151,6 @@ publish-latest() {
 dry_run=false
 debug=false
 variant=""
-arch=""
 
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -206,6 +208,5 @@ elif [[ $tag == lts-slim ]]; then
 elif [[ $tag == lts-debian ]]; then
     publish-lts-debian "${lts_version}"
 elif [[ $tag == latest ]]; then
-    archs=(arm64 s390x ppc64le amd64)
-    publish-latest "${version}"  "debian"  "${archs}"
+    publish-latest "${version}"  "debian"  "arm64 s390x ppc64le amd64"
 fi
