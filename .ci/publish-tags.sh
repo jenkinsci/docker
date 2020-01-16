@@ -194,6 +194,9 @@ for version in $(get-latest-versions); do
     fi
 done
 
+echo "Latest Version of Jenkins: ${version}"
+echo "Latest LTS Version of Jenkins: ${lts_version}"
+
 # Parse tag options
 if [[ $tag == alpine ]]; then
     publish-alpine "${version}"
@@ -202,11 +205,23 @@ elif [[ $tag == slim ]]; then
 elif [[ $tag == debian ]]; then
     publish-debian "${version}"
 elif [[ $tag == lts-alpine ]]; then
-    publish-lts-alpine "${lts_version}"
+    if [[ -z "lts_version" ]]; then
+        echo "No LTS Version to process!"
+    else
+        publish-lts-alpine "${lts_version}"
+    fi
 elif [[ $tag == lts-slim ]]; then
-    publish-lts-slim "${lts_version}"
+    if [[ -z "lts_version" ]]; then
+        echo "No LTS Version to process!"
+    else
+        publish-lts-slim "${lts_version}"
+    fi
 elif [[ $tag == lts-debian ]]; then
-    publish-lts-debian "${lts_version}"
+    if [[ -z "lts_version" ]]; then
+        echo "No LTS Version to process!"
+    else
+        publish-lts-debian "${lts_version}"
+    fi
 elif [[ $tag == latest ]]; then
     publish-latest "${version}"  "debian"  "arm64 s390x ppc64le amd64"
 fi
