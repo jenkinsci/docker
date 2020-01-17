@@ -122,7 +122,8 @@ publish-latest() {
 }
 
 publish-versions() {
-
+    local version=$1
+    echo "Test ${version}"
 }
 
 # Process arguments
@@ -192,7 +193,7 @@ elif [[ ${variant} == latest ]]; then
     publish-latest
 elif [[ ${variant} == versions ]]; then
     for version in $(get-latest-versions); do
-        # Update lts tag
+        publish-versions ${version}
         if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             lts_version="${version}"
         fi
