@@ -29,6 +29,36 @@ docker-login() {
     docker login --username ${DOCKER_USERNAME} --password ${DOCKER_PASSWORD}
 }
 
+docker-enable-experimental() {
+    echo '{"experimental": "enabled"}' > ~/.docker/config.json
+}
+
+get-remote-digest() {
+    local tag=$1
+    docker manifest inspect ${JENKINS_REPO}:${tag} | grep -A 10 -o '"config".*' | grep digest | head -1 | cut -d':' -f 2,3 | xargs echo
+}
+
+compare-digests() {
+    local tag_1=$1
+    local tag_2=$2
+
+    remote_digest_1=$(get-remote-digest "${tag_1}")
+    remote_digest_2=$(get-remote-digest "${tag_2}")
+
+    if [ "$debug" = true ]; then
+        >&2 echo "DEBUG: Remote Digest 1 for ${tag_1}: ${remote_digest_1}"
+        >&2 echo "DEBUG: Remote Digest 2 for ${tag_2}: ${remote_digest_2}"
+    fi
+
+    if [ "${remote_digest_1}" == "${remote_digest_2}" ]; then
+        echo "Images are already the same"
+        true
+    else
+        echo "Images are different!"
+        false
+    fi
+}
+
 # Try tagging with and without -f to support all versions of docker
 docker-tag() {
     local from="$1"
@@ -62,13 +92,27 @@ publish-variant() {
 	echo "${archs}"
 
     for arch in ${archs}; do
-        echo "Pulling ${version}-${variant}-${arch}"
-        # Pull down images to be re-tagged
-        docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
+        if [ "$force" = true ]; then
+            echo "Pulling ${version}-${variant}-${arch}"
+            # Pull down images to be re-tagged
+            docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
 
-        echo "Re-tagging Image from ${version}-${variant}-${arch} to ${JENKINS_REPO}:${variant}-${arch}"
-        docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:${variant}-${arch}"
-        docker push "${JENKINS_REPO}:${variant}-${arch}"
+            echo "Re-tagging Image from ${version}-${variant}-${arch} to ${JENKINS_REPO}:${variant}-${arch}"
+            docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:${variant}-${arch}"
+            docker push "${JENKINS_REPO}:${variant}-${arch}"
+        else
+            if [ ! digest_check=$(compare-digests "${version}-${variant}-${arch}" "${variant}-${arch}") ]; then
+                echo "Pulling ${version}-${variant}-${arch}"
+                # Pull down images to be re-tagged
+                docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
+
+                echo "Re-tagging Image from ${version}-${variant}-${arch} to ${JENKINS_REPO}:${variant}-${arch}"
+                docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:${variant}-${arch}"
+                docker push "${JENKINS_REPO}:${variant}-${arch}"
+            else
+                echo "Image ${version}-${variant}-${arch} and ${variant}-${arch} are already the same, not updating tags"
+            fi
+        fi
     done
 }
 
@@ -80,17 +124,37 @@ publish-lts-variant() {
 	echo "publishing lts ${variant} tag to point to ${version}"
 
     for arch in ${archs}; do
-        # Pull down images to be re-tagged
-        docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
+        if [ "$force" = true ]; then
+            # Pull down images to be re-tagged
+            docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
 
-        docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:lts-${variant}-${arch}"
-        docker push "${JENKINS_REPO}:lts-${variant}-${arch}"
+            docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:lts-${variant}-${arch}"
+            docker push "${JENKINS_REPO}:lts-${variant}-${arch}"
 
-        # Will push the LTS tag without variant aka default image
-        if [[ -z "$base_image" ]]; then
-            docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:lts-${arch}"
-            docker push "${JENKINS_REPO}:lts-${arch}"
-        fi
+            # Will push the LTS tag without variant aka default image
+            if [[ -z "$base_image" ]]; then
+                docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:lts-${arch}"
+                docker push "${JENKINS_REPO}:lts-${arch}"
+            fi
+        else
+            if [ ! digest_check=$(compare-digests "${version}-${variant}-${arch}" "lts-${variant}-${arch}") ]; then
+                # Pull down images to be re-tagged
+                docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
+
+                docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:lts-${variant}-${arch}"
+                docker push "${JENKINS_REPO}:lts-${variant}-${arch}"
+
+                # Will push the LTS tag without variant aka default image
+                if [[ -z "$base_image" ]] && [ ! digest_check=$(compare-digests "${version}-${variant}-${arch}" "lts-${arch}") ]; then
+                    docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:lts-${arch}"
+                    docker push "${JENKINS_REPO}:lts-${arch}"
+                else
+                    echo "Image ${version}-${variant}-${arch} and lts-${arch} are already the same, not updating tags"
+                fi
+            else
+                echo "Image ${version}-${variant}-${arch} and lts-${variant}-${arch} are already the same, not updating tags"
+            fi
+         fi
     done
 }
 
@@ -136,12 +200,24 @@ publish-latest() {
     local archs=$3
 	echo "publishing latest tag to point to ${version} for ${variant}"
 
-    for arch in ${archs[*]}; do
-        # Pull down images to be re-tagged
-        docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
+    for arch in ${archs}; do
+        if [ "$force" = true ]; then
+            # Pull down images to be re-tagged
+            docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
 
-        docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:latest-${arch}"
-        docker push "${JENKINS_REPO}:latest-${arch}"
+            docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:latest-${arch}"
+            docker push "${JENKINS_REPO}:latest-${arch}"
+        else
+            if [ ! digest_check=$(compare-digests "${version}-${variant}-${arch}" "latest-${arch}") ]; then
+                # Pull down images to be re-tagged
+                docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
+
+                docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:latest-${arch}"
+                docker push "${JENKINS_REPO}:latest-${arch}"
+            else
+                echo "Image ${version}-${variant}-${arch} and latest-${arch} are already the same, not updating tags"
+            fi
+        fi
     done
 }
 
@@ -149,6 +225,7 @@ publish-latest() {
 # Process arguments
 dry_run=false
 debug=false
+force=false
 variant=""
 
 while [[ $# -gt 0 ]]; do
@@ -159,6 +236,9 @@ while [[ $# -gt 0 ]]; do
         ;;
         -d)
         debug=true
+        ;;
+        -f)
+        force=true
         ;;
         -t|--tag)
         tag=$2
@@ -181,6 +261,7 @@ if [ "$debug" = true ]; then
 fi
 
 docker-login
+docker-enable-experimental
 
 # Get LTS and Latest Version of Jenkins
 lts_version=""

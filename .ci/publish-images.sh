@@ -2,8 +2,9 @@
 
 # Publish any versions of the docker image not yet pushed to jenkins/jenkins
 # Arguments:
-#   -n dry run, do not build or publish images
+#   -n dry run, do not publish images
 #   -d debug
+#   -f force, will publish images no matter what
 
 set -eou pipefail
 
@@ -26,7 +27,41 @@ if [[ "$DOCKERHUB_ORGANISATION" == "jenkins" ]]; then
 fi
 
 docker-login() {
-    docker login --username ${DOCKER_USERNAME} --password ${DOCKER_PASSWORD}
+    docker login --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_PASSWORD}
+}
+
+docker-enable-experimental() {
+    echo '{"experimental": "enabled"}' > ~/.docker/config.json
+}
+
+get-local-digest() {
+    local tag=$1
+    docker inspect --format="{{.Id}}" ${JENKINS_REPO}:${tag}
+}
+
+get-remote-digest() {
+    local tag=$1
+    docker manifest inspect ${JENKINS_REPO}:${tag} | grep -A 10 -o '"config".*' | grep digest | head -1 | cut -d':' -f 2,3 | xargs echo
+}
+
+compare-digests() {
+    local tag=$1
+
+    local_digest=$(get-local-digest "${tag}")
+    remote_digest=$(get-remote-digest "${tag}")
+
+    if [ "$debug" = true ]; then
+        >&2 echo "DEBUG: Local Digest for ${tag}: ${local_digest}"
+        >&2 echo "DEBUG: Remote Digest for ${tag}: ${remote_digest}"
+    fi
+
+    if [ "${local_digest}" == "${remote_digest}" ]; then
+        echo "Images are already the same"
+        true
+    else
+        echo "Images are different!"
+        false
+    fi
 }
 
 sort-versions() {
@@ -115,7 +150,7 @@ publish() {
     local version=$1
     local variant=$2
     local arch=$3
-    local tag="${version}${variant}"
+    local tag="${version}${variant}-${arch}"
     local sha
     build_opts=(--no-cache --pull)
 
@@ -132,12 +167,20 @@ publish() {
                  --build-arg "JENKINS_VERSION=$version" \
                  --build-arg "JENKINS_SHA=$sha" \
                  --build-arg "GIT_LFS_VERSION=2.9.2" \
-                 --tag "${JENKINS_REPO}:${tag}-${arch}" \
+                 --tag "${JENKINS_REPO}:${tag}" \
                  "${build_opts[@]+"${build_opts[@]}"}" .
 
     # " line to fix syntax highlightning
     if [ ! "$dry_run" = true ]; then
-        docker push "${JENKINS_REPO}:${tag}-${arch}"
+        if [ "$force" = true ]; then
+            docker push "${JENKINS_REPO}:${tag}"
+        else
+            if [ ! digest_check=$(compare-digests "${tag}") ]; then
+                docker push "${JENKINS_REPO}:${tag}"
+            else
+                echo "No pushing image because Image already exist in DockerHub!"
+            fi
+        fi
     fi
 }
 
@@ -191,14 +234,15 @@ if [ "$debug" = true ]; then
 fi
 
 docker-login
+docker-enable-experimental
 
 version=""
 for version in $(get-latest-versions); do
     if [ "$force" = true ]; then
         echo "Force Publishing version(${arch}): ${version}${variant}"
         publish "$version" "$variant" "$arch"
-    elif is-published "$version$variant" "$arch"; then
-        echo "Tag is already published: ${version}${variant}-${arch}"
+#    elif is-published "$version$variant" "$arch"; then
+#        echo "Tag is already published: ${version}${variant}-${arch}"
     else
         echo "Publishing version(${arch}): ${version}${variant}"
         publish "$version" "$variant" "$arch"
