@@ -110,6 +110,27 @@ publish-tag-latest:
 
 publish-tags: publish-tags-debian publish-tag-alpine publish-tags-slim publish-tags-lts-debian publish-tag-lts-alpine publish-tags-lts-slim publish-tags-latest
 
+publish-manifests-debian:
+	./.ci/publish-manifests.sh --variant debian ;
+
+publish-manifests-alpine:
+	./.ci/publish-manifests.sh --variant alpine ;
+
+publish-manifests-slim:
+	./.ci/publish-manifests.sh --variant slim ;
+
+publish-manifests-lts-debian:
+	./.ci/publish-manifests.sh --variant lts-debian ;
+
+publish-manifests-lts-alpine:
+	./.ci/publish-manifests.sh --variant lts-alpine ;
+
+publish-manifests-lts-slim:
+	./.ci/publish-manifests.sh --variant lts-slim ;
+
+publish-manifests-latest:
+	./.ci/publish-manifests.sh --variant latest ;
+
 clean:
 	rm -rf tests/test_helper/bats-*; \
 	rm -rf bats

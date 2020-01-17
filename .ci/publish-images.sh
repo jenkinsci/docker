@@ -50,12 +50,12 @@ compare-digests() {
     local_digest=$(get-local-digest "${tag}")
     remote_digest=$(get-remote-digest "${tag}")
 
-    if [ "$debug" = true ]; then
+    if [[ "$debug" = true ]]; then
         >&2 echo "DEBUG: Local Digest for ${tag}: ${local_digest}"
         >&2 echo "DEBUG: Remote Digest for ${tag}: ${remote_digest}"
     fi
 
-    if [ "${local_digest}" == "${remote_digest}" ]; then
+    if [[ "${local_digest}" == "${remote_digest}" ]]; then
         echo "Images are already the same"
         true
     else
@@ -65,7 +65,7 @@ compare-digests() {
 }
 
 sort-versions() {
-    if [ "$(uname)" == 'Darwin' ]; then
+    if [[ "$(uname)" == 'Darwin' ]]; then
         gsort --version-sort
     else
         sort --version-sort
@@ -138,7 +138,7 @@ set-base-image() {
     fi
 
     # Make the Dockerfile after we set the base image
-    if [ "$(uname)" == 'Darwin' ]; then
+    if [[ "$(uname)" == 'Darwin' ]]; then
         sed -i '' "s|BASEIMAGE|${BASEIMAGE}|g" "$dockerfile"
     else
         sed -i "s|BASEIMAGE|${BASEIMAGE}|g" "$dockerfile"
@@ -154,7 +154,7 @@ publish() {
     local sha
     build_opts=(--no-cache --pull)
 
-    if [ "$dry_run" = true ]; then
+    if [[ "$dry_run" = true ]]; then
         build_opts=()
     fi
 
@@ -171,11 +171,11 @@ publish() {
                  "${build_opts[@]+"${build_opts[@]}"}" .
 
     # " line to fix syntax highlightning
-    if [ ! "$dry_run" = true ]; then
-        if [ "$force" = true ]; then
+    if [[ ! "$dry_run" = true ]]; then
+        if [[ "$force" = true ]]; then
             docker push "${JENKINS_REPO}:${tag}"
         else
-            if [ ! digest_check=$(compare-digests "${tag}") ]; then
+            if [[ ! digest_check=$(compare-digests "${tag}") ]]; then
                 docker push "${JENKINS_REPO}:${tag}"
             else
                 echo "No pushing image because Image already exist in DockerHub!"
@@ -225,11 +225,11 @@ while [[ $# -gt 0 ]]; do
 done
 
 
-if [ "$dry_run" = true ]; then
+if [[ "$dry_run" = true ]]; then
     echo "Dry run, will not publish images"
 fi
 
-if [ "$debug" = true ]; then
+if [[ "$debug" = true ]]; then
     set -x
 fi
 
@@ -238,7 +238,7 @@ docker-enable-experimental
 
 version=""
 for version in $(get-latest-versions); do
-    if [ "$force" = true ]; then
+    if [[ "$force" = true ]]; then
         echo "Force Publishing version(${arch}): ${version}${variant}"
         publish "$version" "$variant" "$arch"
 #    elif is-published "$version$variant" "$arch"; then

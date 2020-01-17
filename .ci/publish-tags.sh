@@ -26,7 +26,7 @@ if [[ "$DOCKERHUB_ORGANISATION" == "jenkins" ]]; then
 fi
 
 docker-login() {
-    docker login --username ${DOCKER_USERNAME} --password ${DOCKER_PASSWORD}
+    docker login --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_PASSWORD}
 }
 
 docker-enable-experimental() {
@@ -45,12 +45,12 @@ compare-digests() {
     remote_digest_1=$(get-remote-digest "${tag_1}")
     remote_digest_2=$(get-remote-digest "${tag_2}")
 
-    if [ "$debug" = true ]; then
+    if [[ "$debug" = true ]]; then
         >&2 echo "DEBUG: Remote Digest 1 for ${tag_1}: ${remote_digest_1}"
         >&2 echo "DEBUG: Remote Digest 2 for ${tag_2}: ${remote_digest_2}"
     fi
 
-    if [ "${remote_digest_1}" == "${remote_digest_2}" ]; then
+    if [[ "${remote_digest_1}" == "${remote_digest_2}" ]]; then
         echo "Images are already the same"
         true
     else
@@ -73,7 +73,7 @@ docker-tag() {
 }
 
 sort-versions() {
-    if [ "$(uname)" == 'Darwin' ]; then
+    if [[ "$(uname)" == 'Darwin' ]]; then
         gsort --version-sort
     else
         sort --version-sort
@@ -92,7 +92,7 @@ publish-variant() {
 	echo "${archs}"
 
     for arch in ${archs}; do
-        if [ "$force" = true ]; then
+        if [[ "$force" = true ]]; then
             echo "Pulling ${version}-${variant}-${arch}"
             # Pull down images to be re-tagged
             docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
@@ -101,7 +101,7 @@ publish-variant() {
             docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:${variant}-${arch}"
             docker push "${JENKINS_REPO}:${variant}-${arch}"
         else
-            if [ ! digest_check=$(compare-digests "${version}-${variant}-${arch}" "${variant}-${arch}") ]; then
+            if [[ ! digest_check=$(compare-digests "${version}-${variant}-${arch}" "${variant}-${arch}") ]]; then
                 echo "Pulling ${version}-${variant}-${arch}"
                 # Pull down images to be re-tagged
                 docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
@@ -124,7 +124,7 @@ publish-lts-variant() {
 	echo "publishing lts ${variant} tag to point to ${version}"
 
     for arch in ${archs}; do
-        if [ "$force" = true ]; then
+        if [[ "$force" = true ]]; then
             # Pull down images to be re-tagged
             docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
 
@@ -137,7 +137,7 @@ publish-lts-variant() {
                 docker push "${JENKINS_REPO}:lts-${arch}"
             fi
         else
-            if [ ! digest_check=$(compare-digests "${version}-${variant}-${arch}" "lts-${variant}-${arch}") ]; then
+            if [[ ! digest_check=$(compare-digests "${version}-${variant}-${arch}" "lts-${variant}-${arch}") ]]; then
                 # Pull down images to be re-tagged
                 docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
 
@@ -145,7 +145,7 @@ publish-lts-variant() {
                 docker push "${JENKINS_REPO}:lts-${variant}-${arch}"
 
                 # Will push the LTS tag without variant aka default image
-                if [[ -z "$base_image" ]] && [ ! digest_check=$(compare-digests "${version}-${variant}-${arch}" "lts-${arch}") ]; then
+                if [[ -z "$base_image" ]] && [[ ! digest_check=$(compare-digests "${version}-${variant}-${arch}" "lts-${arch}") ]]; then
                     docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:lts-${arch}"
                     docker push "${JENKINS_REPO}:lts-${arch}"
                 else
@@ -201,14 +201,14 @@ publish-latest() {
 	echo "publishing latest tag to point to ${version} for ${variant}"
 
     for arch in ${archs}; do
-        if [ "$force" = true ]; then
+        if [[ "$force" = true ]]; then
             # Pull down images to be re-tagged
             docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
 
             docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:latest-${arch}"
             docker push "${JENKINS_REPO}:latest-${arch}"
         else
-            if [ ! digest_check=$(compare-digests "${version}-${variant}-${arch}" "latest-${arch}") ]; then
+            if [[ ! digest_check=$(compare-digests "${version}-${variant}-${arch}" "latest-${arch}") ]]; then
                 # Pull down images to be re-tagged
                 docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
 
@@ -252,11 +252,11 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-if [ "$dry_run" = true ]; then
+if [[ "$dry_run" = true ]]; then
     echo "Dry run, will not publish images"
 fi
 
-if [ "$debug" = true ]; then
+if [[ "$debug" = true ]]; then
     set -x
 fi
 
@@ -277,30 +277,30 @@ echo "Latest Version of Jenkins: ${version}"
 echo "Latest LTS Version of Jenkins: ${lts_version}"
 
 # Parse tag options
-if [[ $tag == alpine ]]; then
+if [[ ${tag} == alpine ]]; then
     publish-alpine "${version}"
-elif [[ $tag == slim ]]; then
+elif [[ ${tag} == slim ]]; then
     publish-slim "${version}"
-elif [[ $tag == debian ]]; then
+elif [[ ${tag} == debian ]]; then
     publish-debian "${version}"
-elif [[ $tag == lts-alpine ]]; then
+elif [[ ${tag} == lts-alpine ]]; then
     if [[ -z ${lts_version} ]]; then
         echo "No LTS Version to process!"
     else
         publish-lts-alpine "${lts_version}"
     fi
-elif [[ $tag == lts-slim ]]; then
+elif [[ ${tag} == lts-slim ]]; then
     if [[ -z ${lts_version} ]]; then
         echo "No LTS Version to process!"
     else
         publish-lts-slim "${lts_version}"
     fi
-elif [[ $tag == lts-debian ]]; then
+elif [[ ${tag} == lts-debian ]]; then
     if [[ -z ${lts_version} ]]; then
         echo "No LTS Version to process!"
     else
         publish-lts-debian "${lts_version}"
     fi
-elif [[ $tag == latest ]]; then
+elif [[ ${tag} == latest ]]; then
     publish-latest "${version}"  "debian"  "arm64 s390x ppc64le amd64"
 fi

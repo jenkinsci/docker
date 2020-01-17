@@ -13,8 +13,6 @@ set -eou pipefail
 : "${DOCKERHUB_REPO:=jenkins}"
 
 JENKINS_REPO="${DOCKERHUB_ORGANISATION}/${DOCKERHUB_REPO}"
-ARCHS=(arm arm64 s390x ppc64le amd64)
-
 
 cat <<EOF
 Docker repository in Use:
@@ -27,16 +25,16 @@ if [[ "$DOCKERHUB_ORGANISATION" == "jenkins" ]]; then
     exit 1;
 fi
 
-#ARCHS=(arm arm64 s390x ppc64le amd64)
-BASEIMAGE=
+docker-login() {
+    docker login --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_PASSWORD}
+}
 
-login-token() {
-    # could use jq .token
-    curl -q -sSL "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${JENKINS_REPO}:pull" | grep -o '"token":"[^"]*"' | cut -d':' -f 2 | xargs echo
+docker-enable-experimental() {
+    echo '{"experimental": "enabled"}' > ~/.docker/config.json
 }
 
 sort-versions() {
-    if [ "$(uname)" == 'Darwin' ]; then
+    if [[ "$(uname)" == 'Darwin' ]]; then
         gsort --version-sort
     else
         sort --version-sort
@@ -47,148 +45,84 @@ get-latest-versions() {
     curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 5
 }
 
+docker-pull() {
+    local variant=$1
+    local archs=$2
 
-# Make a list of platforms for manifest-tool to publish
-parse-manifest-platforms() {
-    local platforms=()
-    for arch in ${ARCHS[*]}; do
-        platforms+=("linux/$arch")
+    for arch in ${archs}; do
+        docker pull ${JENKINS_REPO}:${variant}-${arch}
     done
-    IFS=,;printf "%s" "${platforms[*]}"
-}
-
-# Try tagging with and without -f to support all versions of docker
-docker-tag() {
-    local from="${JENKINS_REPO}:$1"
-    local to="$2/${DOCKERHUB_REPO}:$3"
-    local out
-
-    docker pull "$from"
-    if out=$(docker tag -f "$from" "$to" 2>&1); then
-        echo "$out"
-    else
-        docker tag "$from" "$to"
-    fi
-}
-
-get-manifest() {
-    local tag=$1
-    local opts=""
-    if [ "$debug" = true ]; then
-        opts="-v"
-    fi
-    curl $opts -q -fsSL -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/${JENKINS_REPO}/manifests/$tag"
-}
-
-get-digest() {
-    local manifest
-    manifest=$(get-manifest "$1")
-    #get-manifest "$1" | jq .config.digest
-    if [ "$debug" = true ]; then
-        >&2 echo "DEBUG: Manifest for $1: $manifest"
-    fi
-    echo "$manifest" | grep -A 10 -o '"config".*' | grep digest | head -1 | cut -d':' -f 2,3 | xargs echo
-}
-
-tag-and-push() {
-    local source=$1
-    local target=$2
-    local arch=$3
-    local digest_source
-    local digest_target
-
-    if [ "$debug" = true ]; then
-        >&2 echo "DEBUG: Getting digest for ${source}-${arch}"
-    fi
-
-    # if tag doesn't exist yet, ie. dry run
-    if ! digest_source=$(get-digest "${source}-${arch}"); then
-        echo "Unable to get source digest for ${source}-${arch} ${digest_source}"
-        digest_source=""
-    fi
-
-    if [ "$debug" = true ]; then
-        >&2 echo "DEBUG: Getting digest for ${target}-${arch}"
-    fi
-    if ! digest_target=$(get-digest "${target}-${arch}"); then
-        echo "Unable to get target digest for ${target}-${arch} ${digest_target}"
-        digest_target=""
-    fi
-
-    if [ "$digest_source" == "$digest_target" ] && [ -n "${digest_target}" ]; then
-        echo "Images ${source}-${arch} [$digest_source] and ${target}-${arch} [$digest_target] are already the same, not updating tags"
-    else
-        echo "Creating tag ${target}-${arch} pointing to ${source}-${arch}"
-        docker-tag "${source}-${arch}" "${DOCKERHUB_ORGANISATION}" "${target}-${arch}"
-
-        if [ ! "$dry_run" = true ]; then
-            echo "Pushing ${JENKINS_REPO}:${target}-${arch}"
-            docker push "${JENKINS_REPO}:${target}-${arch}"
-        else
-            echo "Would push ${JENKINS_REPO}:${target}-${arch}"
-        fi
-    fi
 }
 
 publish-variant() {
-    local version=$1
-    local variant=$2
+    local variant=$1
+    local archs=$2
 
-    for arch in ${ARCHS[*]}; do
-        if [[ "$variant" =~ slim ]]; then
-            tag-and-push "${version}${variant}" "slim" "${arch}"
-        elif [[ "$variant" =~ alpine ]]; then
-            tag-and-push "${version}${variant}" "alpine" "${arch}"
-        fi
+    # Pull down all images need for manifest
+    docker-pull "${variant}" "${archs}"
+
+    docker_manifest="docker manifest create ${JENKINS_REPO}:${variant}"
+
+    for arch in ${archs}; do
+        docker_manifest="${docker_manifest} \ \n${JENKINS_REPO}:${variant}-${arch}"
     done
 
-    if [[ "$variant" =~ slim ]]; then
-        push-manifest "slim" ""
-    elif [[ "$variant" =~ alpine ]]; then
-        push-manifest "alpine" ""
+    if [[ "$debug" = true ]]; then
+        echo "DEBUG: Docker Manifest command for ${variant}: \n ${docker_manifest}"
     fi
+
+    # Run the docker_manifest string
+    eval "${docker_manifest}"
+
+    # Annotate the manifest
+    for arch in ${archs}; do
+        docker manifest annotate ${JENKINS_REPO}:${variant} ${JENKINS_REPO}:${variant}-${arch} --arch ${arch}
+    done
+
+    # Push the manifest
+    docker manifest push ${JENKINS_REPO}:${variant}
+}
+
+publish-alpine() {
+    local archs="arm64 s390x ppc64le amd64"
+    publish-variant "alpine"  "${archs}"
+}
+
+publish-slim() {
+    local archs="arm64 s390x ppc64le amd64"
+    publish-variant "slim"  "${archs}"
+}
+
+publish-debian() {
+    local archs="arm64 s390x ppc64le amd64"
+    publish-variant "debian"  "${archs}"
+}
+
+publish-lts-alpine() {
+    local archs="arm64 s390x ppc64le amd64"
+    publish-variant "lts-alpine"  "${archs}"
+}
+
+publish-lts-slim() {
+    local archs="arm64 s390x ppc64le amd64"
+    publish-variant "lts-slim"  "${archs}"
+}
+
+publish-lts-debian() {
+    local archs="arm64 s390x ppc64le amd64"
+    publish-variant "lts-debian"  "${archs}"
+
+    # Default LTS
+    publish-variant "lts"  "${archs}"
 }
 
 publish-latest() {
-    local version=$1
-    local variant=$2
-	echo "publishing latest: $version$variant"
-	
-    for arch in ${ARCHS[*]}; do
-        # push latest (for master) or the name of the branch (for other branches)
-        if [ -z "$variant" ]; then
-            tag-and-push "${version}${variant}" "latest" "${arch}"
-        fi
-    done
-
-    # Only push latest when there is no variant
-    if [[ -z "$variant" ]]; then
-        push-manifest "latest" ""
-    fi
+    local archs="arm64 s390x ppc64le amd64"
+    publish-variant "latest"  "${archs}"
 }
 
-publish-lts() {
-    local version=$1
-    local variant=$2
-    for arch in ${ARCHS[*]}; do
-        tag-and-push "${version}${variant}" "lts${variant}" "${arch}"
-    done
-    push-manifest "lts" "${variant}"
-}
+publish-versions() {
 
-push-manifest() {
-    local version=$1
-    local variant=$2
-    local archs=$3
-    local manifest_tag=$4
-    local tag="${version}${variant}"
-
-    for arch in ${archs}; do
-        docker pull "${JENKINS_REPO}:${tag}-${arch}"
-    done
-
-    docker manifest create ${JENKINS_REPO}:${manifest_tag} \
-    $DOCKER_REGISTRY/$DOCKER_IMAGE-s390x:$DOCKER_TAG \
 }
 
 # Process arguments
@@ -226,14 +160,41 @@ if [ "$debug" = true ]; then
     set -x
 fi
 
+docker-login
+docker-enable-experimental
 
-#TOKEN=$(login-token)
-
-lts_version=""
-version=""
-for version in $(get-latest-versions); do
-    # Update lts tag
-    if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-        lts_version="${version}"
+# Parse variant options
+if [[ ${variant} == alpine ]]; then
+    publish-alpine
+elif [[ ${variant} == slim ]]; then
+    publish-slim
+elif [[ ${variant} == debian ]]; then
+        publish-debian
+elif [[ ${variant} == lts-alpine ]]; then
+    if [[ -z ${lts_version} ]]; then
+        echo "No LTS Version to process!"
+    else
+        publish-lts-alpine
     fi
-done
+elif [[ ${variant} == lts-slim ]]; then
+    if [[ -z ${lts_version} ]]; then
+        echo "No LTS Version to process!"
+    else
+        publish-lts-slim
+    fi
+elif [[ ${variant} == lts-debian ]]; then
+    if [[ -z ${lts_version} ]]; then
+        echo "No LTS Version to process!"
+    else
+        publish-lts-debian
+    fi
+elif [[ ${variant} == latest ]]; then
+    publish-latest
+elif [[ ${variant} == versions ]]; then
+    for version in $(get-latest-versions); do
+        # Update lts tag
+        if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            lts_version="${version}"
+        fi
+    done
+fi
