@@ -44,11 +44,11 @@ sort-versions() {
 }
 
 get-latest-versions() {
-    curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 5
+    curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 20
 }
 
 get-latest-lts-version() {
-    local lts_version
+    local lts_version=""
 
     for version in $(get-latest-versions); do
         if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
