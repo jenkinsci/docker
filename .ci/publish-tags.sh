@@ -101,6 +101,7 @@ publish-variant() {
             docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:${variant}-${arch}"
             docker push "${JENKINS_REPO}:${variant}-${arch}"
         else
+            echo "Compare and force off"
             if ! compare-digests "${version}-${variant}-${arch}" "${variant}-${arch}"; then
                 echo "Pulling ${version}-${variant}-${arch}"
                 # Pull down images to be re-tagged
@@ -226,7 +227,7 @@ publish-latest() {
 dry_run=false
 debug=true
 force=false
-variant=""
+tag=""
 
 while [[ $# -gt 0 ]]; do
     key="$1"
