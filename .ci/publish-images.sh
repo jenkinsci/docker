@@ -176,7 +176,7 @@ publish() {
             docker push "${JENKINS_REPO}:${tag}"
         else
             test_value=$(compare-digests "${tag}")
-            echp "Test Value: ${test_value} end"
+            echo "Test Value: ${test_value} end"
             if [[ digest_check=$(compare-digests "${tag}") == false ]]; then
                 docker push "${JENKINS_REPO}:${tag}"
             else
