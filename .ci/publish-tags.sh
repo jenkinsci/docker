@@ -224,7 +224,7 @@ publish-latest() {
 
 # Process arguments
 dry_run=false
-debug=false
+debug=true
 force=false
 variant=""
 
