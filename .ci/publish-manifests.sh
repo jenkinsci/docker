@@ -27,10 +27,12 @@ fi
 
 docker-login() {
     docker login --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_PASSWORD}
+    echo "Docker logged in successfully"
 }
 
 docker-enable-experimental() {
     echo '{"experimental": "enabled"}' > ~/.docker/config.json
+    echo "Docker experimental enabled successfully"
 }
 
 sort-versions() {
@@ -51,6 +53,7 @@ docker-pull() {
 
     for arch in ${archs}; do
         docker pull ${JENKINS_REPO}:${variant}-${arch}
+        echo "Pulled ${JENKINS_REPO}:${variant}-${arch}"
     done
 }
 
@@ -73,14 +76,17 @@ publish-variant() {
 
     # Run the docker_manifest string
     eval "${docker_manifest}"
+    echo "Docker Manifest for ${JENKINS_REPO}:${variant} created"
 
     # Annotate the manifest
     for arch in ${archs}; do
         docker manifest annotate ${JENKINS_REPO}:${variant} ${JENKINS_REPO}:${variant}-${arch} --arch ${arch}
+        echo "Annotated ${JENKINS_REPO}:${variant}-${arch} to be ${arch} for manifest"
     done
 
     # Push the manifest
     docker manifest push ${JENKINS_REPO}:${variant}
+    echo "Pushed ${JENKINS_REPO}:${variant}"
 }
 
 publish-alpine() {
@@ -170,7 +176,7 @@ if [[ ${variant} == alpine ]]; then
 elif [[ ${variant} == slim ]]; then
     publish-slim
 elif [[ ${variant} == debian ]]; then
-        publish-debian
+    publish-debian
 elif [[ ${variant} == lts-alpine ]]; then
     if [[ -z ${lts_version} ]]; then
         echo "No LTS Version to process!"

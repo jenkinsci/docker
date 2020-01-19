@@ -98,6 +98,9 @@ jobs:
   - os: linux
     arch: amd64
     script: "make publish-manifests-latest"
+  - os: linux
+    arch: amd64
+    script: "make publish-manifests-versions"
 env:
   global:
   - DOCKERHUB_ORGANISATION=jamescrowleyibm

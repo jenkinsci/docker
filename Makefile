@@ -131,6 +131,11 @@ publish-manifests-lts-slim:
 publish-manifests-latest:
 	./.ci/publish-manifests.sh --variant latest ;
 
+publish-manifests-versions:
+	./.ci/publish-manifests.sh --variant versions ;
+
+publish-manifests: publish-manifests-debian publish-manifests-alpine publish-manifests-slim publish-manifests-lts-debian publish-manifests-lts-alpine publish-manifests-lts-slim publish-manifests-latest publish-manifests-versions
+
 clean:
 	rm -rf tests/test_helper/bats-*; \
 	rm -rf bats

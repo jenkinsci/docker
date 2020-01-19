@@ -28,10 +28,12 @@ fi
 
 docker-login() {
     docker login --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_PASSWORD}
+    echo "Docker logged in successfully"
 }
 
 docker-enable-experimental() {
     echo '{"experimental": "enabled"}' > ~/.docker/config.json
+    echo "Docker experimental enabled successfully"
 }
 
 get-local-digest() {
