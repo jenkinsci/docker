@@ -235,8 +235,8 @@ if [[ "$debug" = true ]]; then
     set -x
 fi
 
-docker-login
 docker-enable-experimental
+docker-login
 
 version=""
 for version in $(get-latest-versions); do

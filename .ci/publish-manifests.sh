@@ -47,6 +47,17 @@ get-latest-versions() {
     curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 5
 }
 
+get-latest-lts-version() {
+    local lts_version
+
+    for version in $(get-latest-versions); do
+        if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            lts_version="${version}"
+        fi
+    done
+    echo "${lts_version}"
+}
+
 docker-pull() {
     local variant=$1
     local archs=$2
@@ -134,7 +145,7 @@ publish-versions() {
 
 # Process arguments
 dry_run=false
-debug=true
+debug=false
 variant=""
 
 while [[ $# -gt 0 ]]; do
@@ -167,8 +178,8 @@ if [ "$debug" = true ]; then
     set -x
 fi
 
-docker-login
 docker-enable-experimental
+docker-login
 
 # Parse variant options
 if [[ ${variant} == alpine ]]; then
@@ -178,18 +189,21 @@ elif [[ ${variant} == slim ]]; then
 elif [[ ${variant} == debian ]]; then
     publish-debian
 elif [[ ${variant} == lts-alpine ]]; then
+    lts_version=$(get-latest-lts-version)
     if [[ -z ${lts_version} ]]; then
         echo "No LTS Version to process!"
     else
         publish-lts-alpine
     fi
 elif [[ ${variant} == lts-slim ]]; then
+    lts_version=$(get-latest-lts-version)
     if [[ -z ${lts_version} ]]; then
         echo "No LTS Version to process!"
     else
         publish-lts-slim
     fi
 elif [[ ${variant} == lts-debian ]]; then
+    lts_version=$(get-latest-lts-version)
     if [[ -z ${lts_version} ]]; then
         echo "No LTS Version to process!"
     else
