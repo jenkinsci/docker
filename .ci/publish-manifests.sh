@@ -134,7 +134,7 @@ publish-versions() {
 
 # Process arguments
 dry_run=false
-debug=false
+debug=true
 variant=""
 
 while [[ $# -gt 0 ]]; do
