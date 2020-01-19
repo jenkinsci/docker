@@ -52,16 +52,14 @@ compare-digests() {
     local_digest=$(get-local-digest "${tag}")
     remote_digest=$(get-remote-digest "${tag}")
 
-    if [[ "$debug" = false ]]; then
+    if [[ "$debug" = true ]]; then
         echo "DEBUG: Local Digest for ${tag}: ${local_digest}"
         echo "DEBUG: Remote Digest for ${tag}: ${remote_digest}"
     fi
 
     if [[ "${local_digest}" == "${remote_digest}" ]]; then
-        echo "Images are already the same"
         true
     else
-        echo "Images are different!"
         false
     fi
 }
@@ -88,7 +86,7 @@ is-published() {
     fi
     local http_code;
     http_code=$(curl $opts -q -fsL -o /dev/null -w "%{http_code}" "https://hub.docker.com/v2/repositories/${JENKINS_REPO}/tags/${tag}")
-    false
+
     if [ "$http_code" -eq "404" ]; then
         false
     elif [ "$http_code" -eq "200" ]; then
@@ -177,7 +175,8 @@ publish() {
         if [[ "$force" = true ]]; then
             docker push "${JENKINS_REPO}:${tag}"
         else
-            echo "Test Value: $(compare-digests "${tag}")"
+            test_value=$(compare-digests "${tag}")
+            echp "Test Value: ${test_value} end"
             if [[ digest_check=$(compare-digests "${tag}") == false ]]; then
                 docker push "${JENKINS_REPO}:${tag}"
             else
