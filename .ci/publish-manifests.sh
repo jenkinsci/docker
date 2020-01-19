@@ -67,11 +67,11 @@ publish-variant() {
     docker_manifest="docker manifest create ${JENKINS_REPO}:${variant}"
 
     for arch in ${archs}; do
-        docker_manifest="${docker_manifest} \ \n${JENKINS_REPO}:${variant}-${arch}"
+        docker_manifest="${docker_manifest} ${JENKINS_REPO}:${variant}-${arch}"
     done
 
     if [[ "$debug" = true ]]; then
-        echo "DEBUG: Docker Manifest command for ${variant}: \n ${docker_manifest}"
+        echo "DEBUG: Docker Manifest command for ${variant}: ${docker_manifest}"
     fi
 
     # Run the docker_manifest string
