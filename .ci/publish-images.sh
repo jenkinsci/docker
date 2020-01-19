@@ -53,17 +53,21 @@ compare-digests() {
     remote_digest=$(get-remote-digest "${tag}")
 
     if [[ "$debug" = false ]]; then
-        >&2 echo "DEBUG: Local Digest for ${tag}: ${local_digest}"
-        >&2 echo "DEBUG: Remote Digest for ${tag}: ${remote_digest}"
+        echo "DEBUG: Local Digest for ${tag}: ${local_digest}"
+        echo "DEBUG: Remote Digest for ${tag}: ${remote_digest}"
     fi
 
     if [[ "${local_digest}" == "${remote_digest}" ]]; then
         echo "Images are already the same"
+        echo "????"
         true
     else
+        echo "!!!!"
         echo "Images are different!"
         false
     fi
+
+    echo "xxxxx"
 }
 
 sort-versions() {
@@ -177,10 +181,11 @@ publish() {
         if [[ "$force" = true ]]; then
             docker push "${JENKINS_REPO}:${tag}"
         else
+            echo "Test Value: $(compare-digests "${tag}")"
             if [[ ! digest_check=$(compare-digests "${tag}") ]]; then
                 docker push "${JENKINS_REPO}:${tag}"
             else
-                echo "No pushing image because Image already exist in DockerHub!"
+                echo "Not pushing image because Image already exist in DockerHub!"
             fi
         fi
     fi
