@@ -53,8 +53,8 @@ compare-digests() {
     remote_digest=$(get-remote-digest "${tag}")
 
     if [[ "$debug" = true ]]; then
-        echo "DEBUG: Local Digest for ${tag}: ${local_digest}"
-        echo "DEBUG: Remote Digest for ${tag}: ${remote_digest}"
+        >&2 echo "DEBUG: Local Digest for ${tag}: ${local_digest}"
+        >&2 echo "DEBUG: Remote Digest for ${tag}: ${remote_digest}"
     fi
 
     if [[ "${local_digest}" == "${remote_digest}" ]]; then
@@ -175,9 +175,7 @@ publish() {
         if [[ "$force" = true ]]; then
             docker push "${JENKINS_REPO}:${tag}"
         else
-            test_value=$(compare-digests "${tag}")
-            echo "Test Value: ${test_value} end"
-            if [[ digest_check=$(compare-digests "${tag}") == false ]]; then
+            if ! compare-digests "${tag}"; then
                 docker push "${JENKINS_REPO}:${tag}"
             else
                 echo "Not pushing image because Image already exist in DockerHub!"
