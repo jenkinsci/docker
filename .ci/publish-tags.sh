@@ -262,8 +262,8 @@ if [[ "$debug" = true ]]; then
     set -x
 fi
 
-docker-enable-experimental
 docker-login
+docker-enable-experimental
 
 # Get LTS and Latest Version of Jenkins
 lts_version=""

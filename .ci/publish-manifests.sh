@@ -178,6 +178,7 @@ if [ "$debug" = true ]; then
     set -x
 fi
 
+docker-login
 docker-enable-experimental
 docker-login
 
