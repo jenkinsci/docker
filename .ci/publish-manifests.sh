@@ -147,7 +147,7 @@ while [[ $# -gt 0 ]]; do
         debug=true
         ;;
         -v|--variant)
-        variant="-"$2
+        variant=$2
         shift
         ;;
         *)
