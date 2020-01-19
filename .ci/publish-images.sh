@@ -52,7 +52,7 @@ compare-digests() {
     local_digest=$(get-local-digest "${tag}")
     remote_digest=$(get-remote-digest "${tag}")
 
-    if [[ "$debug" = true ]]; then
+    if [[ "$debug" = false ]]; then
         >&2 echo "DEBUG: Local Digest for ${tag}: ${local_digest}"
         >&2 echo "DEBUG: Remote Digest for ${tag}: ${remote_digest}"
     fi
