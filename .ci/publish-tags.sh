@@ -89,8 +89,8 @@ publish-variant() {
     local version=$1
     local variant=$2
     local archs=$3
-	echo "publishing ${variant} tag to point to ${version}"
-	echo "${archs}"
+    local tag=$4
+	echo "Publishing ${tag} on these architectures: ${archs}"
 
     for arch in ${archs}; do
         if [[ "$force" = true ]]; then
@@ -98,128 +98,69 @@ publish-variant() {
             # Pull down images to be re-tagged
             docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
 
-            echo "Re-tagging Image from ${version}-${variant}-${arch} to ${JENKINS_REPO}:${variant}-${arch}"
-            docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:${variant}-${arch}"
+            echo "Re-tagging Image from ${version}-${variant}-${arch} to ${JENKINS_REPO}:${tag}-${arch}"
+            docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:${tag}-${arch}"
             docker push "${JENKINS_REPO}:${variant}-${arch}"
         else
-            if ! compare-digests "${version}-${variant}-${arch}" "${variant}-${arch}"; then
+            if ! compare-digests "${version}-${variant}-${arch}" "${tag}-${arch}"; then
                 echo "Pulling ${version}-${variant}-${arch}"
                 # Pull down images to be re-tagged
                 docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
 
-                echo "Re-tagging Image from ${version}-${variant}-${arch} to ${JENKINS_REPO}:${variant}-${arch}"
-                docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:${variant}-${arch}"
+                echo "Re-tagging Image from ${version}-${variant}-${arch} to ${JENKINS_REPO}:${tag}-${arch}"
+                docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:${tag}-${arch}"
                 docker push "${JENKINS_REPO}:${variant}-${arch}"
             else
-                echo "Image ${version}-${variant}-${arch} and ${variant}-${arch} are already the same, not updating tags"
+                echo "Image ${version}-${variant}-${arch} and ${tag}-${arch} are already the same, not updating tags"
             fi
         fi
-    done
-}
-
-publish-lts-variant() {
-    local version=$1
-    local variant=$2
-    local archs=$3
-    local base_image=$4
-	echo "publishing lts ${variant} tag to point to ${version}"
-
-    for arch in ${archs}; do
-        if [[ "$force" = true ]]; then
-            # Pull down images to be re-tagged
-            docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
-
-            docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:lts-${variant}-${arch}"
-            docker push "${JENKINS_REPO}:lts-${variant}-${arch}"
-
-            # Will push the LTS tag without variant aka default image
-            if [[ -z "$base_image" ]]; then
-                docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:lts-${arch}"
-                docker push "${JENKINS_REPO}:lts-${arch}"
-            fi
-        else
-            if ! compare-digests "${version}-${variant}-${arch}" "lts-${variant}-${arch}"; then
-                # Pull down images to be re-tagged
-                docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
-
-                docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:lts-${variant}-${arch}"
-                docker push "${JENKINS_REPO}:lts-${variant}-${arch}"
-
-                # Will push the LTS tag without variant aka default image
-                if [[ -n "$base_image" ]] && ! compare-digests "${version}-${variant}-${arch}" "lts-${arch}"; then
-                    docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:lts-${arch}"
-                    docker push "${JENKINS_REPO}:lts-${arch}"
-                else
-                    echo "Image ${version}-${variant}-${arch} and lts-${arch} are already the same, not updating tags"
-                fi
-            else
-                echo "Image ${version}-${variant}-${arch} and lts-${variant}-${arch} are already the same, not updating tags"
-            fi
-         fi
     done
 }
 
 publish-alpine() {
     local version=$1
     local archs="arm64 s390x ppc64le amd64"
-    publish-variant "${version}"  "alpine"  "${archs}"
+    publish-variant "${version}"  "alpine"  "${archs}" "alpine"
 }
 
 publish-slim() {
     local version=$1
     local archs="arm64 s390x ppc64le amd64"
-    publish-variant "${version}"  "slim"  "${archs}"
+    publish-variant "${version}"  "slim"  "${archs}" "slim"
 }
 
 publish-debian() {
     local version=$1
     local archs="arm64 s390x ppc64le amd64"
-    publish-variant "${version}"  "debian"  "${archs}"
+    publish-variant "${version}"  "debian"  "${archs}" "debian"
 }
 
 publish-lts-alpine() {
     local version=$1
     local archs="arm64 s390x ppc64le amd64"
-    publish-lts-variant "${version}"  "alpine"  "${archs}"  ""
+    publish-variant "${version}"  "alpine"  "${archs}"  "lts-alpine"
 }
 
 publish-lts-slim() {
     local version=$1
     local archs="arm64 s390x ppc64le amd64"
-    publish-lts-variant "${version}"  "slim"  "${archs}"  ""
+    publish-variant "${version}"  "slim"  "${archs}"  "lts-slim"
 }
 
 publish-lts-debian() {
     local version=$1
     local archs="arm64 s390x ppc64le amd64"
-    publish-lts-variant "${version}"  "debian"  "${archs}"  "true"
+    publish-variant "${version}"  "debian"  "${archs}"  "lts-debian"
+
+    # Handles processing default lts tag
+    publish-variant "${version}"  "debian"  "${archs}"  "lts"
 }
 
 publish-latest() {
     local version=$1
-    local variant=$2
-    local archs=$3
-	echo "publishing latest tag to point to ${version} for ${variant}"
-
-    for arch in ${archs}; do
-        if [[ "$force" = true ]]; then
-            # Pull down images to be re-tagged
-            docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
-
-            docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:latest-${arch}"
-            docker push "${JENKINS_REPO}:latest-${arch}"
-        else
-            if ! compare-digests "${version}-${variant}-${arch}" "latest-${arch}"; then
-                # Pull down images to be re-tagged
-                docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
-
-                docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:latest-${arch}"
-                docker push "${JENKINS_REPO}:latest-${arch}"
-            else
-                echo "Image ${version}-${variant}-${arch} and latest-${arch} are already the same, not updating tags"
-            fi
-        fi
-    done
+    local variant="debian"
+	local archs="arm64 s390x ppc64le amd64"
+    publish-variant "${version}"  "${variant}"  "${archs}"  "latest"
 }
 
 
@@ -303,5 +244,5 @@ elif [[ ${tag} == lts-debian ]]; then
         publish-lts-debian "${lts_version}"
     fi
 elif [[ ${tag} == latest ]]; then
-    publish-latest "${version}"  "debian"  "arm64 s390x ppc64le amd64"
+    publish-latest "${version}"
 fi
