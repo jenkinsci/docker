@@ -38,7 +38,7 @@ docker-enable-experimental() {
 
 get-remote-digest() {
     local tag=$1
-    docker manifest inspect ${JENKINS_REPO}:${tag} | grep -A 10 -o '"config".*' | grep digest | head -1 | cut -d':' -f 2,3 | xargs echo
+    docker manifest inspect ${JENKINS_REPO}:${tag} | grep -A 10 "config.*" | grep digest | head -1 | cut -d':' -f 2,3 | xargs echo
 }
 
 compare-digests() {
