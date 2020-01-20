@@ -1,4 +1,5 @@
 language: shell
+sudo: required
 services:
 - docker
 dist: xenial
