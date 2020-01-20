@@ -82,15 +82,15 @@ is-published() {
     local arch=$2
     local tag="${version_variant}-${arch}"
     local opts=""
-    if [ "$debug" = true ]; then
+    if [[ "$debug" = true ]]; then
         opts="-v"
     fi
     local http_code;
     http_code=$(curl $opts -q -fsL -o /dev/null -w "%{http_code}" "https://hub.docker.com/v2/repositories/${JENKINS_REPO}/tags/${tag}")
 
-    if [ "$http_code" -eq "404" ]; then
+    if [[ "$http_code" -eq "404" ]]; then
         false
-    elif [ "$http_code" -eq "200" ]; then
+    elif [[ "$http_code" -eq "200" ]]; then
         true
     else
         echo "Received unexpected http code from Docker hub: $http_code"
