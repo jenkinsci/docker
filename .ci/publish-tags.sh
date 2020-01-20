@@ -138,7 +138,6 @@ publish-lts-variant() {
                 docker push "${JENKINS_REPO}:lts-${arch}"
             fi
         else
-            echo "Compare and force off"
             if ! compare-digests "${version}-${variant}-${arch}" "lts-${variant}-${arch}"; then
                 # Pull down images to be re-tagged
                 docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
@@ -147,7 +146,7 @@ publish-lts-variant() {
                 docker push "${JENKINS_REPO}:lts-${variant}-${arch}"
 
                 # Will push the LTS tag without variant aka default image
-                if [[ ! -n "$base_image" ]] && ! compare-digests "${version}-${variant}-${arch}" "lts-${arch}"; then
+                if [[ -n "$base_image" ]] && ! compare-digests "${version}-${variant}-${arch}" "lts-${arch}"; then
                     docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:lts-${arch}"
                     docker push "${JENKINS_REPO}:lts-${arch}"
                 else
