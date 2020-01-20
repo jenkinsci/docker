@@ -31,7 +31,10 @@ docker-login() {
 }
 
 docker-enable-experimental() {
-    echo '{"experimental": "enabled"}' > ~/.docker/config.json
+    mkdir -p $HOME/.docker;
+	echo $'{\n    "experimental": true\n}' | tee /etc/docker/daemon.json;
+	echo $'{\n    "experimental": "enabled"\n}' | tee $HOME/.docker/config.json;
+	sudo service docker restart;
     echo "Docker experimental enabled successfully"
 }
 
@@ -178,7 +181,6 @@ if [ "$debug" = true ]; then
     set -x
 fi
 
-docker-login
 docker-enable-experimental
 docker-login
 

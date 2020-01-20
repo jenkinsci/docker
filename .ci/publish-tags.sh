@@ -31,7 +31,10 @@ docker-login() {
 }
 
 docker-enable-experimental() {
-    echo '{"experimental": "enabled"}' > ~/.docker/config.json
+    mkdir -p $HOME/.docker;
+	echo $'{\n    "experimental": true\n}' | tee /etc/docker/daemon.json;
+	echo $'{\n    "experimental": "enabled"\n}' | tee $HOME/.docker/config.json;
+	sudo service docker restart;
     echo "Docker experimental enabled successfully"
 }
 
@@ -101,7 +104,6 @@ publish-variant() {
             docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:${variant}-${arch}"
             docker push "${JENKINS_REPO}:${variant}-${arch}"
         else
-            echo "Compare and force off"
             if ! compare-digests "${version}-${variant}-${arch}" "${variant}-${arch}"; then
                 echo "Pulling ${version}-${variant}-${arch}"
                 # Pull down images to be re-tagged
@@ -138,6 +140,7 @@ publish-lts-variant() {
                 docker push "${JENKINS_REPO}:lts-${arch}"
             fi
         else
+            echo "Compare and force off"
             if ! compare-digests "${version}-${variant}-${arch}" "lts-${variant}-${arch}"; then
                 # Pull down images to be re-tagged
                 docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
@@ -261,7 +264,6 @@ if [[ "$debug" = true ]]; then
     set -x
 fi
 
-docker-login
 docker-enable-experimental
 docker-login
 
