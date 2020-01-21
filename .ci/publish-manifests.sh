@@ -60,88 +60,106 @@ get-latest-lts-version() {
 }
 
 docker-pull() {
-    local variant=$1
+    local tag=$1
     local archs=$2
 
     for arch in ${archs}; do
-        docker pull ${JENKINS_REPO}:${variant}-${arch}
-        echo "Pulled ${JENKINS_REPO}:${variant}-${arch}"
+        docker pull ${JENKINS_REPO}:${tag}-${arch}
+        echo "Pulled ${JENKINS_REPO}:${tag}-${arch}"
     done
 }
 
 publish-variant() {
-    local variant=$1
+    local tag=$1
     local archs=$2
+    local manifest_tag=$3
 
     # Pull down all images need for manifest
-    docker-pull "${variant}" "${archs}"
+    docker-pull "${tag}" "${archs}"
 
-    docker_manifest="docker manifest create ${JENKINS_REPO}:${variant}"
+    docker_manifest="docker manifest create ${JENKINS_REPO}:${manifest_tag}"
 
     for arch in ${archs}; do
-        docker_manifest="${docker_manifest} ${JENKINS_REPO}:${variant}-${arch}"
+        docker_manifest="${docker_manifest} ${JENKINS_REPO}:${tag}-${arch}"
     done
 
     if [[ "$debug" = true ]]; then
-        echo "DEBUG: Docker Manifest command for ${variant}: ${docker_manifest}"
+        echo "DEBUG: Docker Manifest command for ${manifest_tag}: ${docker_manifest}"
     fi
 
     # Run the docker_manifest string
     eval "${docker_manifest}"
-    echo "Docker Manifest for ${JENKINS_REPO}:${variant} created"
+    echo "Docker Manifest for ${JENKINS_REPO}:${manifest_tag} created"
 
     # Annotate the manifest
     for arch in ${archs}; do
-        docker manifest annotate ${JENKINS_REPO}:${variant} ${JENKINS_REPO}:${variant}-${arch} --arch ${arch}
-        echo "Annotated ${JENKINS_REPO}:${variant}-${arch} to be ${arch} for manifest"
+        docker manifest annotate ${JENKINS_REPO}:${manifest_tag} ${JENKINS_REPO}:${tag}-${arch} --arch ${arch}
+        echo "Annotated ${JENKINS_REPO}:${manifest_tag}: ${JENKINS_REPO}:${tag}-${arch} to be ${arch} for manifest"
     done
 
     # Push the manifest
-    docker manifest push ${JENKINS_REPO}:${variant}
-    echo "Pushed ${JENKINS_REPO}:${variant}"
+    docker manifest push ${JENKINS_REPO}:${manifest_tag}
+    echo "Pushed ${JENKINS_REPO}:${manifest_tag}"
 }
 
 publish-alpine() {
     local archs="arm64 s390x ppc64le amd64"
-    publish-variant "alpine"  "${archs}"
+    publish-variant "alpine"  "${archs}"  "alpine"
 }
 
 publish-slim() {
     local archs="arm64 s390x ppc64le amd64"
-    publish-variant "slim"  "${archs}"
+    publish-variant "slim"  "${archs}"  "slim"
 }
 
 publish-debian() {
     local archs="arm64 s390x ppc64le amd64"
-    publish-variant "debian"  "${archs}"
+    publish-variant "debian"  "${archs}"  "debian"
 }
 
 publish-lts-alpine() {
     local archs="arm64 s390x ppc64le amd64"
-    publish-variant "lts-alpine"  "${archs}"
+    publish-variant "lts-alpine"  "${archs}"  "lts-alpine"
 }
 
 publish-lts-slim() {
     local archs="arm64 s390x ppc64le amd64"
-    publish-variant "lts-slim"  "${archs}"
+    publish-variant "lts-slim"  "${archs}"  "lts-slim"
 }
 
 publish-lts-debian() {
     local archs="arm64 s390x ppc64le amd64"
-    publish-variant "lts-debian"  "${archs}"
+    publish-variant "lts-debian"  "${archs}"  "lts-debian"
 
     # Default LTS
-    publish-variant "lts"  "${archs}"
+    publish-variant "lts"  "${archs}"  "lts"
 }
 
 publish-latest() {
     local archs="arm64 s390x ppc64le amd64"
-    publish-variant "latest"  "${archs}"
+    publish-variant "latest"  "${archs}"  "latest"
 }
 
-publish-versions() {
-    local version=$1
-    echo "Test ${version}"
+publish-versions-alpine() {
+    for version in $(get-latest-versions); do
+        local archs="arm64 s390x ppc64le amd64"
+        publish-variant "${version}-alpine"  "${archs}"  "${version}-alpine"
+    done
+}
+
+publish-versions-slim() {
+    for version in $(get-latest-versions); do
+        local archs="arm64 s390x ppc64le amd64"
+        publish-variant "${version}-slim"  "${archs}"  "${version}-slim"
+    done
+}
+
+publish-versions-debian() {
+    for version in $(get-latest-versions); do
+        local archs="arm64 s390x ppc64le amd64"
+        publish-variant "${version}-debian"  "${archs}"  "${version}-debian"
+        publish-variant "${version}-debian"  "${archs}"  "${version}"
+    done
 }
 
 # Process arguments
@@ -212,11 +230,10 @@ elif [[ ${variant} == lts-debian ]]; then
     fi
 elif [[ ${variant} == latest ]]; then
     publish-latest
-elif [[ ${variant} == versions ]]; then
-    for version in $(get-latest-versions); do
-        publish-versions ${version}
-        if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            lts_version="${version}"
-        fi
-    done
+elif [[ ${variant} == versions-alpine ]]; then
+    publish-versions-alpine
+elif [[ ${variant} == versions-debian ]]; then
+    publish-versions-debian
+elif [[ ${variant} == versions-slim ]]; then
+    publish-versions-slim
 fi

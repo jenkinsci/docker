@@ -99,7 +99,13 @@ jobs:
     script: "make publish-manifests-latest"
   - os: linux
     arch: amd64
-    script: "make publish-manifests-versions"
+    script: "make publish-manifests-versions-debian"
+  - os: linux
+    arch: amd64
+    script: "make publish-manifests-versions-alpine"
+  - os: linux
+    arch: amd64
+    script: "make publish-manifests-versions-slim"
 env:
   global:
   - DOCKERHUB_ORGANISATION=jamescrowleyibm
