@@ -45,7 +45,7 @@ sort-versions() {
 }
 
 get-latest-versions() {
-    curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 25
+    curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 30
 }
 
 get-latest-lts-version() {
@@ -100,6 +100,11 @@ publish-variant() {
     # Push the manifest
     docker manifest push ${JENKINS_REPO}:${manifest_tag}
     echo "Pushed ${JENKINS_REPO}:${manifest_tag}"
+
+    for arch in ${archs}; do
+        docker rmi "${JENKINS_REPO}:${tag}-${arch}"
+        echo "Removed  from ${JENKINS_REPO}:${tag}-${arch} local disk"
+    done
 }
 
 publish-alpine() {
@@ -201,6 +206,7 @@ docker-enable-experimental
 docker-login
 
 # Parse variant options
+echo "Processing manifest for ${variant}"
 if [[ ${variant} == alpine ]]; then
     publish-alpine
 elif [[ ${variant} == slim ]]; then

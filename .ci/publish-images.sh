@@ -32,17 +32,20 @@ docker-login() {
 }
 
 docker-enable-experimental() {
+    # Enables experimental to utilize `docker manifest` command
     mkdir -p $HOME/.docker;
     echo '{"experimental": "enabled"}' > $HOME/.docker/config.json;
     echo "Docker experimental enabled successfully"
 }
 
 get-local-digest() {
+    # Gets the SHA digest of a local image
     local tag=$1
     docker inspect --format="{{.Id}}" ${JENKINS_REPO}:${tag}
 }
 
 get-remote-digest() {
+    # Gets the SHA digest out of a manifest. Manifest can be remote(DockerHub)
     local tag=$1
     docker manifest inspect ${JENKINS_REPO}:${tag} | grep -A 10 "config.*" | grep digest | head -1 | cut -d':' -f 2,3 | xargs echo
 }
@@ -50,6 +53,7 @@ get-remote-digest() {
 compare-digests() {
     local tag=$1
 
+    # Grabs both digest SHAs
     local_digest=$(get-local-digest "${tag}")
     remote_digest=$(get-remote-digest "${tag}")
 
@@ -58,6 +62,7 @@ compare-digests() {
         >&2 echo "DEBUG: Remote Digest for ${tag}: ${remote_digest}"
     fi
 
+    # Compare digest SHAs
     if [[ "${local_digest}" == "${remote_digest}" ]]; then
         true
     else
@@ -74,7 +79,7 @@ sort-versions() {
 }
 
 get-latest-versions() {
-    curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 25
+    curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 30
 }
 
 is-published() {
@@ -82,9 +87,11 @@ is-published() {
     local arch=$2
     local tag="${version_variant}-${arch}"
     local opts=""
+
     if [[ "$debug" = true ]]; then
         opts="-v"
     fi
+
     local http_code;
     http_code=$(curl $opts -q -fsL -o /dev/null -w "%{http_code}" "https://hub.docker.com/v2/repositories/${JENKINS_REPO}/tags/${tag}")
 
@@ -175,11 +182,19 @@ publish() {
     if [[ ! "$dry_run" = true ]]; then
         if [[ "$force" = true ]]; then
             docker push "${JENKINS_REPO}:${tag}"
+            echo "Successfully pushed ${JENKINS_REPO}:${tag}"
+
+            docker rmi "${JENKINS_REPO}:${tag}"
+            echo "Removed ${JENKINS_REPO}:${tag} from local disk"
         else
             if ! compare-digests "${tag}"; then
                 docker push "${JENKINS_REPO}:${tag}"
+                echo "Successfully pushed ${JENKINS_REPO}:${tag}"
+
+                docker rmi "${JENKINS_REPO}:${tag}"
+                echo "Removed ${JENKINS_REPO}:${tag} from local disk"
             else
-                echo "Not pushing image because Image already exist in DockerHub!"
+                echo "Not pushing docker image because it already exist in DockerHub!"
             fi
         fi
     fi
@@ -240,13 +255,13 @@ docker-login
 version=""
 for version in $(get-latest-versions); do
     if [[ "$force" = true ]]; then
-        echo "Force Publishing version(${arch}): ${version}${variant}"
-        publish "$version" "$variant" "$arch"
+        echo "Force Processing version(${arch}): ${version}${variant}"
+        publish "${version}" "${variant}" "${arch}"
     elif is-published "$version$variant" "$arch"; then
         echo "Tag is already published: ${version}${variant}-${arch}"
     else
-        echo "Publishing version(${arch}): ${version}${variant}"
-        publish "$version" "$variant" "$arch"
+        echo "Processing version(${arch}): ${version}${variant}"
+        publish "${version}" "${variant}" "${arch}"
     fi
 done
 

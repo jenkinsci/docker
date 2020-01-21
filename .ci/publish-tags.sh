@@ -4,6 +4,7 @@
 # Arguments:
 #   -n dry run, do not build or publish images
 #   -d debug
+#   -f force, will publish tags no matter what
 
 set -eou pipefail
 
@@ -82,7 +83,7 @@ sort-versions() {
 }
 
 get-latest-versions() {
-    curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 25
+    curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 30
 }
 
 publish-variant() {
@@ -90,26 +91,40 @@ publish-variant() {
     local variant=$2
     local archs=$3
     local tag=$4
-	echo "Publishing ${tag} on these architectures: ${archs}"
+	echo "Processing ${tag} on these architectures: ${archs}"
 
     for arch in ${archs}; do
         if [[ "$force" = true ]]; then
+            echo "Force processing tag!"
+
             echo "Pulling ${version}-${variant}-${arch}"
             # Pull down images to be re-tagged
             docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
 
-            echo "Re-tagging Image from ${version}-${variant}-${arch} to ${JENKINS_REPO}:${tag}-${arch}"
+            echo "Re-tagging image from ${version}-${variant}-${arch} to ${JENKINS_REPO}:${tag}-${arch}"
             docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:${tag}-${arch}"
+
             docker push "${JENKINS_REPO}:${variant}-${arch}"
+            echo "Successfully pushed ${JENKINS_REPO}:${variant}-${arch}"
+
+            docker rmi "${JENKINS_REPO}:${tag}-${arch}"
+            docker rmi "${JENKINS_REPO}:${version}-${variant}-${arch}"
+            echo "Removed images from local disk"
         else
             if ! compare-digests "${version}-${variant}-${arch}" "${tag}-${arch}"; then
                 echo "Pulling ${version}-${variant}-${arch}"
                 # Pull down images to be re-tagged
                 docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
 
-                echo "Re-tagging Image from ${version}-${variant}-${arch} to ${JENKINS_REPO}:${tag}-${arch}"
+                echo "Re-tagging image from ${version}-${variant}-${arch} to ${JENKINS_REPO}:${tag}-${arch}"
                 docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:${tag}-${arch}"
+
                 docker push "${JENKINS_REPO}:${tag}-${arch}"
+                echo "Successfully pushed ${JENKINS_REPO}:${variant}-${arch}"
+
+                docker rmi "${JENKINS_REPO}:${tag}-${arch}"
+                docker rmi "${JENKINS_REPO}:${version}-${variant}-${arch}"
+                echo "Removed images from local disk"
             else
                 echo "Image ${version}-${variant}-${arch} and ${tag}-${arch} are already the same, not updating tags"
             fi
@@ -153,6 +168,7 @@ publish-lts-debian() {
     publish-variant "${version}"  "debian"  "${archs}"  "lts-debian"
 
     # Handles processing default lts tag
+    echo "Also processing tag for default LTS image"
     publish-variant "${version}"  "debian"  "${archs}"  "lts"
 }
 
@@ -215,10 +231,14 @@ for version in $(get-latest-versions); do
     fi
 done
 
-echo "Latest Version of Jenkins: ${version}"
-echo "Latest LTS Version of Jenkins: ${lts_version}"
+if [[ "$debug" = true ]]; then
+    >&2 echo "Latest Version of Jenkins: ${version}"
+    >&2 echo "Latest LTS Version of Jenkins: ${lts_version}"
+fi
+
 
 # Parse tag options
+echo "Processing tags for ${tag}"
 if [[ ${tag} == alpine ]]; then
     publish-alpine "${version}"
 elif [[ ${tag} == slim ]]; then
