@@ -109,7 +109,7 @@ publish-variant() {
 
                 echo "Re-tagging Image from ${version}-${variant}-${arch} to ${JENKINS_REPO}:${tag}-${arch}"
                 docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:${tag}-${arch}"
-                docker push "${JENKINS_REPO}:${variant}-${arch}"
+                docker push "${JENKINS_REPO}:${tag}-${arch}"
             else
                 echo "Image ${version}-${variant}-${arch} and ${tag}-${arch} are already the same, not updating tags"
             fi
