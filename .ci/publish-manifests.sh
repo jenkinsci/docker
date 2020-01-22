@@ -93,8 +93,14 @@ publish-variant() {
 
     # Annotate the manifest
     for arch in ${archs}; do
-        docker manifest annotate ${JENKINS_REPO}:${manifest_tag} ${JENKINS_REPO}:${tag}-${arch} --arch ${arch}
-        echo "Annotated ${JENKINS_REPO}:${manifest_tag}: ${JENKINS_REPO}:${tag}-${arch} to be ${arch} for manifest"
+        # Change nice arch name to Docker Official arch names
+        tag_arch=${arch}
+        if [[ $arch == arm64 ]]; then
+            tag_arch="arm64v8"
+        fi
+
+        docker manifest annotate ${JENKINS_REPO}:${manifest_tag} ${JENKINS_REPO}:${tag}-${arch} --arch ${tag_arch}
+        echo "Annotated ${JENKINS_REPO}:${manifest_tag}: ${JENKINS_REPO}:${tag}-${arch} to be ${tag_arch} for manifest"
     done
 
     # Push the manifest

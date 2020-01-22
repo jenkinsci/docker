@@ -255,12 +255,12 @@ docker-login
 version=""
 for version in $(get-latest-versions); do
     if [[ "$force" = true ]]; then
-        echo "Force Processing version(${arch}): ${version}${variant}"
+        echo "Force Processing version: ${version}${variant}-${arch}"
         publish "${version}" "${variant}" "${arch}"
     elif is-published "$version$variant" "$arch"; then
         echo "Tag is already published: ${version}${variant}-${arch}"
     else
-        echo "Processing version(${arch}): ${version}${variant}"
+        echo "Processing version: ${version}${variant}-${arch}"
         publish "${version}" "${variant}" "${arch}"
     fi
 done
