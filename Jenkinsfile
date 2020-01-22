@@ -2,7 +2,8 @@
 
 properties([
     buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '5')),
-    pipelineTriggers([cron('H H/6 * * *')]),
+    pipelineTriggers([cron('''H H/6 * * 0-2,4-6
+H 6,21 * * 3''')])
 ])
 
 nodeWithTimeout('docker') {
@@ -45,14 +46,14 @@ nodeWithTimeout('docker') {
         }
 
         parallel builders
-        
+
         def branchName = "${env.BRANCH_NAME}"
         if (branchName ==~ 'master'){
             stage('Publish Experimental') {
                 infra.withDockerCredentials {
                     sh 'make publish-experimental'
                 }
-            }                 
+            }
         }
     } else {
         /* In our trusted.ci environment we only want to be publishing our
