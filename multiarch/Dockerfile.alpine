@@ -1,13 +1,24 @@
+# Build Git LFS from source
+FROM golang:1.13.6-buster AS GIT_LFS
+
+ARG GIT_LFS_VERSION
+ENV GIT_LFS_VERSION=$GIT_LFS_VERSION
+
+WORKDIR $GOPATH/src/github.com/git-lfs/git-lfs/
+RUN git clone https://github.com/git-lfs/git-lfs.git ./ \
+    && git checkout v${GIT_LFS_VERSION}
+
+RUN make
+
 # Placeholder for the specified arch that gets parsed in the publish-experimental.sh script.
 FROM BASEIMAGE
 
-# If we're building for another architecture than amd64, the CROSS_BUILD_
-# placeholder is removed so
-# e.g. CROSS_BUILD_COPY turns into COPY
-# If we're building normally, for amd64, CROSS_BUILD lines are removed
-CROSS_BUILD_COPY multiarch/qemu-ARCH-static /usr/bin/
+# Copy compiled git-lfs and add it to path
+# https://github.com/git-lfs/git-lfs/pull/3983
+COPY --from=GIT_LFS /go/src/github.com/git-lfs/git-lfs/bin/git-lfs /bin/
+ENV PATH ${PATH}:/bin/
 
-RUN apk add --no-cache git git-lfs openssh-client curl unzip bash ttf-dejavu coreutils tini
+RUN apk add --no-cache git openssh-client curl unzip bash ttf-dejavu coreutils tini
 
 ARG user=jenkins
 ARG group=jenkins

@@ -1,15 +1,26 @@
+# Build Git LFS from source
+FROM golang:1.13.6-buster AS GIT_LFS
+
+ARG GIT_LFS_VERSION
+ENV GIT_LFS_VERSION=$GIT_LFS_VERSION
+
+WORKDIR $GOPATH/src/github.com/git-lfs/git-lfs/
+RUN git clone https://github.com/git-lfs/git-lfs.git ./ \
+    && git checkout v${GIT_LFS_VERSION}
+
+RUN make
+
 # Placeholder for the specified arch that gets parsed in the publish-experimental.sh script.
 FROM BASEIMAGE
 
-# If we're building for another architecture than amd64, the CROSS_BUILD_
-# placeholder is removed so
-# e.g. CROSS_BUILD_COPY turns into COPY
-# If we're building normally, for amd64, CROSS_BUILD lines are removed
-CROSS_BUILD_COPY multiarch/qemu-ARCH-static /usr/bin/
+# Copy compiled git-lfs and add it to path
+# https://github.com/git-lfs/git-lfs/pull/3983
+COPY --from=GIT_LFS /go/src/github.com/git-lfs/git-lfs/bin/git-lfs /bin/
+ENV PATH ${PATH}:/bin/
 
 # Install git lfs on Debian stretch per https://github.com/git-lfs/git-lfs/wiki/Installation#debian-and-ubuntu
 # Avoid JENKINS-59569 - git LFS 2.7.1 fails clone with reference repository
-RUN apt-get update && apt-get upgrade -y && apt-get install -y git curl gpg && curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash && apt-get install -y git-lfs && git lfs install && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get upgrade -y && apt-get install -y git curl gpg && git lfs install && rm -rf /var/lib/apt/lists/*
 
 ARG user=jenkins
 ARG group=jenkins
