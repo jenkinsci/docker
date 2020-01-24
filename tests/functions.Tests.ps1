@@ -6,7 +6,7 @@ $SUT_CONTAINER=Get-SutImage
 
 Describe 'build image' {
   BeforeEach {
-    Push-Location -StackName 'jenkins' -Path "$PSScriptRoot/.."    
+    Push-Location -StackName 'jenkins' -Path "$PSScriptRoot/.."
   }
 
   It 'builds image' {

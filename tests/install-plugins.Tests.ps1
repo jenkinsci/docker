@@ -119,11 +119,11 @@ Describe 'plugins are getting upgraded but not downgraded' {
     # Image contains maven-plugin 2.7.1 and ant-plugin 1.3
     $exitCode, $stdout, $stderr = Run-Program "docker.exe" "run -v ${work}:C:/ProgramData/Jenkins/JenkinsHome --rm $SUT_IMAGE-install-plugins exit 0"
     $exitCode | Should -Be 0
-    
+
     $exitCode, $stdout, $stderr = Unzip-Manifest "$SUT_IMAGE-install-plugins" "maven-plugin.jpi" $work
     $exitCode | Should -Be 0
     $stdout | Should -Match  'Plugin-Version: 2.7.1'
-    
+
     $exitCode, $stdout, $stderr = Unzip-Manifest "$SUT_IMAGE-install-plugins" "ant.jpi" $work
     $exitCode | Should -Be 0
     $stdout | Should -Match  'Plugin-Version: 1.3'

@@ -5,11 +5,11 @@ $SUT_CONTAINER=Get-SutImage
 
 Describe 'build image' {
   BeforeEach {
-    Push-Location -StackName 'jenkins' -Path "$PSScriptRoot/.."    
+    Push-Location -StackName 'jenkins' -Path "$PSScriptRoot/.."
   }
 
   It 'builds image' {
-    $exitCode, $stdout, $stderr = Build-Docker -t $SUT_IMAGE . 
+    $exitCode, $stdout, $stderr = Build-Docker -t $SUT_IMAGE .
     $exitCode | Should -Be 0
   }
 
