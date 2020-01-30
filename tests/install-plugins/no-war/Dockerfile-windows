@@ -1,6 +1,6 @@
 FROM bats-jenkins
 
 COPY plugins.txt C:/ProgramData/Jenkins/Reference/plugins.txt
-RUN rm -Force C:/ProgramData/Jenkins/jenkins.war
-RUN java -jar C:/ProgramData/Jenkins/plugin-management-cli.jar --plugin-file C:/ProgramData/Jenkins/Reference/plugins.txt
+RUN Remove-Item -Force C:/ProgramData/Jenkins/jenkins.war
+RUN & C:/ProgramData/Jenkins/install-plugins.ps1 -PluginFile C:/ProgramData/Jenkins/Reference/plugins.txt
 

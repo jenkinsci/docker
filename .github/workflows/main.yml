@@ -1,0 +1,15 @@
+name: Windows Docker Image CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build Images
+      run: |
+        Install-Module -Name Pester -Force -RequiredVersion 4.9.0
+        .\make.ps1 
+      shell: pwsh

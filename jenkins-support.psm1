@@ -16,6 +16,7 @@ function Compare-VersionLessThan($version1, $version2) {
     }
 
     if($v1 -eq $v2) {
+        # this works even if both sides are "latest"
         if($q1 -eq $q2) {
             return $false
         } else {
@@ -25,23 +26,30 @@ function Compare-VersionLessThan($version1, $version2) {
                 if([System.String]::IsNullOrWhiteSpace($q2)) {
                     return $true
                 } else {
-                    return ($q1 -eq $("$q1","$q2" | sort | select -first 1))
+                    return ($q1 -eq $("$q1","$q2" | Sort-Object | Select-Object -First 1))
                 }
             }
         }
     }
-    return ($v1 -eq $("$v1","$v2" | sort {[version] $_} | select -first 1))
+
+    if($v1 -eq "latest") {
+        return $false
+    } elseif($v2 -eq "latest") {
+        return $true
+    }
+
+    return ($v1 -eq $("$v1","$v2" | Sort-Object {[version] $_} | Select-Object -first 1))
 }
 
 function Get-EnvOrDefault($name, $def) {
-    $entry = gci env: | ?{ $_.Name -eq $name } | Select-Object -First 1
+    $entry = Get-ChildItem env: | Where-Object { $_.Name -eq $name } | Select-Object -First 1
     if(($null -ne $entry) -and ![System.String]::IsNullOrWhiteSpace($entry.Value)) {
         return $entry.Value
     }
     return $def
 }
 
-function Unzip-File($archive, $file) {
+function Expand-Zip($archive, $file) {
     # load ZIP methods
     Add-Type -AssemblyName System.IO.Compression.FileSystem
 
@@ -77,7 +85,7 @@ function Get-PluginVersion($archive) {
         return ""
     }
 
-    $version = Unzip-File $archive "META-INF/MANIFEST.MF" | ForEach-Object {$_ -split "`n"} | Select-String -Pattern "^Plugin-Version:\s+" | ForEach-Object {$_ -replace "^Plugin-Version:\s+(.*)", '$1'} | Select-Object -First 1
+    $version = Expand-Zip $archive "META-INF/MANIFEST.MF" | ForEach-Object {$_ -split "`n"} | Select-String -Pattern "^Plugin-Version:\s+" | ForEach-Object {$_ -replace "^Plugin-Version:\s+(.*)", '$1'} | Select-Object -First 1 | Out-String
     return $version.Trim()
 }
 
@@ -102,11 +110,11 @@ function Copy-ReferenceFile($file) {
 
     if($file -match "plugins[\\/].*\.jpi") {
         $fileName = Split-Path -Leaf $file
-        $versionMarker = (Join-Path $env:JENKINS_HOME (Join-Path "plugins" "$($fileName).version_from_image"))
-        $containerVersion = Get-PluginVersion (Join-Path $env:JENKINS_HOME (Join-Path "plugins" $fileName))
+        $versionMarker = (Join-Path $env:JENKINS_HOME (Join-Path "plugins" "${fileName}.version_from_image"))
+        $containerVersion = Get-PluginVersion (Join-Path $env:JENKINS_HOME $rel)
         $imageVersion = Get-PluginVersion $file
         if(Test-Path $versionMarker) {
-            $markerVersion = Get-Content $versionMarker
+            $markerVersion = (Get-Content -Raw $versionMarker).Trim()
             if(Compare-VersionLessThan $markerVersion $containerVersion) {
                 if((Compare-VersionLessThan $containerVersion $imageVersion) -and ![System.String]::IsNullOrWhiteSpace($env:PLUGINS_FORCE_UPGRADE)) {
                     $action = "UPGRADED"
@@ -133,7 +141,7 @@ function Copy-ReferenceFile($file) {
                     }
                 }
             }
-         } else {
+        } else {
             if(![System.String]::IsNullOrWhiteSpace($env:TRY_UPGRADE_IF_NO_MARKER)) {
                 if($imageVersion -eq $containerVersion) {
                     $action = "SKIPPED"
@@ -165,7 +173,7 @@ function Copy-ReferenceFile($file) {
             }
             Copy-Item $file (Join-Path $env:JENKINS_HOME $rel)
             # pin plugins on initial copy
-            Write-Output $null >> (Join-Path $env:JENKINS_HOME "$($rel).pinned")
+            Write-Output $null >> (Join-Path $env:JENKINS_HOME "${rel}.pinned")
             Add-Content -Path $versionMarker -Value $imageVersion
             if([System.String]::IsNullOrWhiteSpace($reason)) {
                 $reason = $imageVersion
@@ -195,9 +203,4 @@ function Copy-ReferenceFile($file) {
             Add-Content -Path $COPY_REFERENCE_FILE_LOG -Value "$action $rel : $reason"
         }
     }
-}
-
-function Get-DateUTC() {
-    $now = (Get-Date).ToUniversalTime()
-    return (Get-Date $now -UFormat '%T')
 }

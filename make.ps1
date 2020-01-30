@@ -7,8 +7,9 @@ Param(
 
 $builds = @{
     'windows' = 'Dockerfile-windows';
-    # currently does not work because awt.dll depends on Direct2D which is not included in windowsservercore
-    #'windows-jdk11' = 'Dockerfile-windows-jdk11'; 
+    'windows-jdk11' = 'Dockerfile-windows-jdk11';
+    'windows-openj9' = 'Dockerfile-windows-openj9';
+    'windows-jdk11-openj9' = 'Dockerfile-windows-jdk11-openj9';
 }
 
 function Build($Target='all') {
@@ -49,7 +50,7 @@ switch -wildcard ($Target) {
     "publish"   { Publish }
     "build-*"   { Build $Target.Substring(6) }
     "test"      { Test }
-    "test-*"    { Test $target.Substring(5) }
+    "test-*"    { Test $Target.Substring(5) }
 
     default { Write-Error "No target '$Target'" ; Exit -1 }
 }

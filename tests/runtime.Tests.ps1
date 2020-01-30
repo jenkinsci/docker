@@ -2,8 +2,9 @@ Import-Module -DisableNameChecking -Force $PSScriptRoot/../jenkins-support.psm1
 Import-Module -DisableNameChecking -Force $PSScriptRoot/test_helpers.psm1
 $SUT_IMAGE=Get-SutImage
 $SUT_CONTAINER=Get-SutImage
+$TEST_TAG=$SUT_IMAGE.Replace('pester-jenkins-', '')
 
-Describe 'build image' {
+Describe "[$TEST_TAG] build image" {
   BeforeEach {
     Push-Location -StackName 'jenkins' -Path "$PSScriptRoot/.."
   }
@@ -18,13 +19,13 @@ Describe 'build image' {
   }
 }
 
-Describe 'cleanup container' {
+Describe "[$TEST_TAG] cleanup container" {
   It 'cleanup' {
     Cleanup $SUT_CONTAINER | Out-Null
   }
 }
 
-Describe 'test multiple JENKINS_OPTS' {
+Describe "[$TEST_TAG] test multiple JENKINS_OPTS" {
   It '"--help --version" should return the version, not the help' {
     $dockerfile = Get-EnvOrDefault 'DOCKERFILE' 'Dockerfile-windows'
     $version=cat $PSScriptRoot/../$dockerFile | Select-String -Pattern 'ENV JENKINS_VERSION.*' | %{$_ -replace '.*:-(.*)}','$1'} | Select-Object -First 1
@@ -35,7 +36,7 @@ Describe 'test multiple JENKINS_OPTS' {
   }
 }
 
-Describe 'test jenkins arguments' {
+Describe "[$TEST_TAG] test jenkins arguments" {
   It 'running --help --version should return the version, not the help' {
     $dockerfile = Get-EnvOrDefault 'DOCKERFILE' 'Dockerfile-windows'
     $version=cat $PSScriptRoot/../$dockerFile | Select-String -Pattern 'ENV JENKINS_VERSION.*' | %{$_ -replace '.*:-(.*)}','$1'} | Select-Object -First 1
@@ -46,7 +47,7 @@ Describe 'test jenkins arguments' {
   }
 }
 
-Describe 'create test container' {
+Describe "[$TEST_TAG] create test container" {
   It 'start container' {
     $cmd = @"
 docker --% run -d -e JAVA_OPTS="-Duser.timezone=Europe/Madrid -Dhudson.model.DirectoryBrowserSupport.CSP=\"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';\"" --name $SUT_CONTAINER -P $SUT_IMAGE
@@ -56,22 +57,22 @@ docker --% run -d -e JAVA_OPTS="-Duser.timezone=Europe/Madrid -Dhudson.model.Dir
   }
 }
 
-Describe 'test container is running' {
+Describe "[$TEST_TAG] test container is running" {
   It 'is running' {
     # give time to eventually fail to initialize
-    Sleep -Seconds 5
+    Start-Sleep -Seconds 5
     Retry-Command -RetryCount 3 -Delay 1 -ScriptBlock { docker inspect -f "{{.State.Running}}" $SUT_CONTAINER ; if($lastExitCode -ne 0) { throw('Docker inspect failed') } } -Verbose | Should -BeTrue
   }
 }
 
-Describe 'Jenkins is initialized' {
+Describe "[$TEST_TAG] Jenkins is initialized" {
   It 'is initialized' {
     # it takes a while for jenkins to be up enough
     Retry-Command -RetryCount 30 -Delay 5 -ScriptBlock { Test-Url $SUT_CONTAINER "/api/json" } -Verbose | Should -BeTrue
   }
 }
 
-Describe 'JAVA_OPTS are set' {
+Describe "[$TEST_TAG] JAVA_OPTS are set" {
   It 'CSP value' {
     $content = (Get-JenkinsWebpage $SUT_CONTAINER "/systemInfo").Replace("</tr>","</tr>`n").Replace("<wbr>", "").Split("`n") | Select-String -Pattern '<td class="pane">hudson.model.DirectoryBrowserSupport.CSP</td>' 
     $content | Should -Match ([regex]::Escape("default-src &#039;self&#039;; script-src &#039;self&#039; &#039;unsafe-inline&#039; &#039;unsafe-eval&#039;; style-src &#039;self&#039; &#039;unsafe-inline&#039;;"))
@@ -83,7 +84,7 @@ Describe 'JAVA_OPTS are set' {
   }
 }
 
-Describe 'cleanup container' {
+Describe "[$TEST_TAG] cleanup container" {
   It 'cleanup' {
     Cleanup $SUT_CONTAINER | Out-Null
   }

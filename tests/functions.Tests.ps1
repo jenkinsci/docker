@@ -3,8 +3,9 @@ Import-Module -DisableNameChecking -Force $PSScriptRoot/test_helpers.psm1
 
 $SUT_IMAGE=Get-SutImage
 $SUT_CONTAINER=Get-SutImage
+$TEST_TAG=$SUT_IMAGE.Replace('pester-jenkins-', '')
 
-Describe 'build image' {
+Describe "[$TEST_TAG] build image" {
   BeforeEach {
     Push-Location -StackName 'jenkins' -Path "$PSScriptRoot/.."
   }
@@ -19,7 +20,7 @@ Describe 'build image' {
   }
 }
 
-Describe 'Check-VersionLessThan' {
+Describe "[$TEST_TAG] Check-VersionLessThan" {
   It 'exit codes work' {
     docker run --rm $SUT_IMAGE "exit -1"
     $LastExitCode | Should -Be -1
@@ -59,9 +60,19 @@ Describe 'Check-VersionLessThan' {
     docker run --rm $SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '1.0-beta-1' '1.0-alpha-1')) { exit 0 } else { exit -1 }"
     $LastExitCode | Should -Be -1
   }
+
+  It "has left 'latest' and right 1.0" {
+    docker run --rm $SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan 'latest' '1.0')) { exit -1 } else { exit 0 }"
+    $LastExitCode | Should -Be 0
+  }
+
+  It "has left 'latest' and right 'latest'" {
+    docker run --rm $SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan 'latest' 'latest')) { exit -1 } else { exit 0 }"
+    $LastExitCode | Should -Be 0
+  }
 }
 
-Describe 'Copy-ReferenceFile' {
+Describe "[$TEST_TAG] Copy-ReferenceFile" {
   It 'build test image' {
     $exitCode, $stdout, $stderr = Build-DockerChild $SUT_IMAGE $PSScriptRoot/functions
     $exitCode | Should -Be 0
@@ -83,10 +94,10 @@ Describe 'Copy-ReferenceFile' {
   }
 
   It 'check files in JENKINS_HOME' {
-    $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $SUT_CONTAINER powershell -C `"gci `$env:JENKINS_HOME`" | Select-Object -Property 'Name'"
+    $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $SUT_CONTAINER powershell -C `"Get-ChildItem `$env:JENKINS_HOME`" | Select-Object -Property 'Name'"
     $exitCode | Should -Be 0
     $stdout | Should -Match "pester"
-    $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $SUT_CONTAINER powershell -C `"gci `$env:JENKINS_HOME/pester`" | Select-Object -Property 'Name'"
+    $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $SUT_CONTAINER powershell -C `"Get-ChildItem `$env:JENKINS_HOME/pester`" | Select-Object -Property 'Name'"
     $exitCode | Should -Be 0
     $stdout | Should -Match "test.override"
   }

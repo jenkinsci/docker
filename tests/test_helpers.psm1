@@ -89,7 +89,7 @@ function Run-Program($cmd, $params) {
     if($proc.ExitCode -ne 0) {
         Write-Host "`n`nstdout:`n$stdout`n`nstderr:`n$stderr`n`n"
     }
-    
+
     return $proc.ExitCode, $stdout, $stderr
 }
 
