@@ -26,8 +26,8 @@ $JENKINS_UC_EXPERIMENTAL = Get-EnvOrDefault 'JENKINS_UC_EXPERIMENTAL' ''
 $JENKINS_INCREMENTALS_REPO_MIRROR = Get-EnvOrDefault 'JENKINS_INCREMENTALS_REPO_MIRROR' ''
 $JENKINS_UC_DOWNLOAD = Get-EnvOrDefault 'JENKINS_UC_DOWNLOAD' "$JENKINS_UC/download"
 
-$REF_DIR=Join-Path $(Get-EnvOrDefault 'REF' $ReferenceDir) "plugins"
-$FAILED=Join-path $REF_DIR "failed-plugins.txt"
+$REF_DIR = Join-Path $(Get-EnvOrDefault 'REF' $ReferenceDir) "plugins"
+$FAILED = Join-path $REF_DIR "failed-plugins.txt"
 
 function Get-LockFile($pluginName) {
     Join-Path $REF_DIR "$pluginName.lock"
@@ -51,7 +51,7 @@ function Download($plugin, $version='latest', $ignoreLockFile=$false, $url='') {
             }
         }
 
-        if(!(CheckIntegrity $plugin)) {
+        if(!(Verify-Integrity $plugin)) {
             Write-Host -ForegroundColor Red "Downloaded file is not a valid ZIP: $(Get-ArchiveFileName $plugin)"
             Add-Content -Path $FAILED -Value "Download integrity: ${plugin}"
             return $false
@@ -109,7 +109,7 @@ function DoDownload($plugin, $version, $url) {
     return $success
 }
 
-function CheckIntegrity($plugin) {
+function Verify-Integrity($plugin) {
     $jpi = Get-ArchiveFileName $plugin
 
     try {
