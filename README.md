@@ -1,5 +1,9 @@
 # Official Jenkins Docker image
 
+[![Docker Stars](https://img.shields.io/docker/stars/jenkins/jenkins.svg)](https://hub.docker.com/r/jenkins/jenkins/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/jenkins/jenkins.svg)](https://hub.docker.com/r/jenkins/jenkins/)
+[![Join the chat at https://gitter.im/jenkinsci/docker](https://badges.gitter.im/jenkinsci/docker.svg)](https://gitter.im/jenkinsci/docker?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 The Jenkins Continuous Integration and Delivery server [available on Docker Hub](https://hub.docker.com/r/jenkins/jenkins).
 
 This is a fully functional Jenkins server.
@@ -31,7 +35,7 @@ NOTE: Avoid using a [bind mount](https://docs.docker.com/storage/bind-mounts/) f
 docker run -d -v jenkins_home:/var/jenkins_home -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts
 ```
 
-this will run Jenkins in detached mode with port forwarding and volume added. You can access logs with command 'docker logs CONTAINER_ID' in order to check first login token. ID of container will be returned from output of command above. 
+this will run Jenkins in detached mode with port forwarding and volume added. You can access logs with command 'docker logs CONTAINER_ID' in order to check first login token. ID of container will be returned from output of command above.
 
 ## Backing up data
 
@@ -73,7 +77,7 @@ If you are only using [SSH slaves](https://wiki.jenkins-ci.org/display/JENKINS/S
 
 # Passing JVM parameters
 
-You might need to customize the JVM running Jenkins, typically to pass system properties or tweak heap memory settings. Use JAVA_OPTS environment
+You might need to customize the JVM running Jenkins, typically to pass system properties ([list of props](https://wiki.jenkins.io/display/JENKINS/Features+controlled+by+system+properties)) or tweak heap memory settings. Use JAVA_OPTS environment
 variable for this purpose :
 
 ```
@@ -102,7 +106,7 @@ If you want to install Jenkins behind a reverse proxy with prefix, example: mysi
 
 # Passing Jenkins launcher parameters
 
-Argument you pass to docker running the jenkins image are passed to jenkins launcher, so you can run for sample :
+Argument you pass to docker running the jenkins image are passed to jenkins launcher, so you can run for sample:
 ```
 docker run jenkins/jenkins:lts --version
 ```
@@ -131,6 +135,12 @@ or as a parameter to docker,
 ```
 docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGENT_PORT=50001 jenkins/jenkins:lts
 ```
+
+**Note**: This environment variable will be used to set the port adding the
+[system property][system-property] `jenkins.model.Jenkins.slaveAgentPort` to **JAVA_OPTS**.
+
+> If this property is already set in **JAVA_OPTS**, then the value of
+`JENKINS_SLAVE_AGENT_PORT` will be ignored.
 
 # Installing more tools
 
@@ -173,7 +183,9 @@ During the download, the script will use update centers defined by the following
   Defines Maven mirror to be used to download plugins from the
   [Incrementals repo](https://jenkins.io/blog/2018/05/15/incremental-deployment/).
   Default value: https://repo.jenkins-ci.org/incrementals
-
+* `JENKINS_UC_DOWNLOAD` - Download url of the Update Center. 
+  Default value: `$JENKINS_UC/download`
+  
 It is possible to override the environment variables in images.
 
 :exclamation: Note that changing this variables **will not** change the Update Center being used by Jenkins runtime.
@@ -197,6 +209,20 @@ There are also custom version specifiers:
     `mvn incrementals:updatePluginsTxt -DpluginsFile=plugins.txt`.
     [More Info](https://github.com/jenkinsci/incrementals-tools#updating-versions-for-jenkins-docker-images)
 
+### Fine-tune the downloads
+
+The script uses `curl` to download the plugins. You can configure the options with some environment variables:
+* `CURL_OPTIONS`: When downloading the plugins with curl. Curl options. Default value: `-sSfL`
+* `CURL_CONNECTION_TIMEOUT`: When downloading the plugins with curl. <seconds> Maximum time allowed for connection. Default value: `20`
+* `CURL_RETRY`: When downloading the plugins with curl. Retry request if transient problems occur. Default value: `3`
+* `CURL_RETRY_DELAY`: When downloading the plugins with curl. <seconds> Wait time between retries. Default value: `0`
+* `CURL_RETRY_MAX_TIME`: When downloading the plugins with curl. <seconds> Retry only within this period. Default value: `60`
+ 
+### Other environment variables
+In case you have changed some default paths in the image, you can modify their values with these environment variables:
+* `REF`: directory with preinstalled plugins. Default value: `/usr/share/jenkins/ref/plugins`
+* `JENKINS_WAR`: full path to the jenkins.war. Default value: `/usr/share/jenkins/jenkins.war`
+ 
 ### Script usage
 
 You can run the script manually in Dockerfile:
@@ -259,6 +285,8 @@ As always - please ensure that you know how to drive docker - especially volume 
 
 By default, plugins will be upgraded if they haven't been upgraded manually and if the version from the docker image is newer than the version in the container. Versions installed by the docker image are tracked through a marker file.
 
+To force upgrades of plugins that have been manually upgraded, run the docker image with `-e PLUGINS_FORCE_UPGRADE=true`.
+
 The default behaviour when upgrading from a docker image that didn't write marker files is to leave existing plugins in place. If you want to upgrade existing plugins without marker you may run the docker image with `-e TRY_UPGRADE_IF_NO_MARKER=true`. Then plugins will be upgraded if the version provided by the docker image is newer.
 
 ## Hacking
@@ -268,3 +296,5 @@ If you wish to contribute fixes to this repository, please refer to the [dedicat
 # Questions?
 
 Jump on irc.freenode.net and the #jenkins room. Ask!
+
+[system-property]: https://wiki.jenkins.io/display/JENKINS/Features+controlled+by+system+properties

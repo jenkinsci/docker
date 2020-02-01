@@ -7,20 +7,34 @@
 
 set -eou pipefail
 
+. jenkins-support
+
+: "${DOCKERHUB_ORGANISATION:=jenkins4eval}"
+: "${DOCKERHUB_REPO:=jenkins}"
+
+JENKINS_REPO="${DOCKERHUB_ORGANISATION}/${DOCKERHUB_REPO}"
+
+cat <<EOF
+Docker repository in Use:
+* JENKINS_REPO: ${JENKINS_REPO}
+EOF
+
+#This is precautionary step to avoid accidental push to offical jenkins image
+if [[ "$DOCKERHUB_ORGANISATION" == "jenkins" ]]; then
+    echo "Experimental docker image should not published to jenkins organization , hence exiting with failure";
+    exit 1;
+fi
+
 ARCHS=(arm arm64 s390x ppc64le amd64)
 QEMUARCHS=(arm aarch64 s390x ppc64le x86_64)
-QEMUVER="v2.12.0-1"
-REGISTRY="jenkins4eval"
-IMAGE="jenkins-multiarch-qemu"
+QEMUVER="v3.0.0"
 BASEIMAGE=
+MANIFEST_TOOL_VERSION="v0.9.0"
 
 get-manifest-tool() {
     if [[ ! -f manifest-tool ]]; then
-        local version
-        version=$(curl -s https://api.github.com/repos/estesp/manifest-tool/tags | jq -r '.[0].name')
-
         echo "Downloading manifest-tool"
-        if ! curl -OLs "https://github.com/estesp/manifest-tool/releases/download/$version/manifest-tool-linux-amd64"; then
+        if ! curl -OLs "https://github.com/estesp/manifest-tool/releases/download/$MANIFEST_TOOL_VERSION/manifest-tool-linux-amd64"; then
             echo "Error downloading manifest-tool"
             exit
         fi
@@ -51,7 +65,7 @@ set-base-image() {
     local arch=$2
     local dockerfile
 
-    if [[ ! -z "$variant" ]]; then
+    if [[ -n "$variant" ]]; then
         dockerfile="./multiarch/Dockerfile${variant}-${arch}"
     else
         dockerfile="./multiarch/Dockerfile-${arch}"
@@ -113,8 +127,8 @@ sort-versions() {
 
 # Try tagging with and without -f to support all versions of docker
 docker-tag() {
-    local from="$REGISTRY/$IMAGE:$1"
-    local to="$2/$IMAGE:$3"
+    local from="${JENKINS_REPO}:$1"
+    local to="$2/${DOCKERHUB_REPO}:$3"
     local out
 
     docker pull "$from"
@@ -127,7 +141,7 @@ docker-tag() {
 
 login-token() {
     # could use jq .token
-    curl -q -sSL "https://auth.docker.io/token?service=registry.docker.io&scope=repository:jmreicha/jenkins:pull" | grep -o '"token":"[^"]*"' | cut -d':' -f 2 | xargs echo
+    curl -q -sSL "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${JENKINS_REPO}:pull" | grep -o '"token":"[^"]*"' | cut -d':' -f 2 | xargs echo
 }
 
 is-published() {
@@ -137,7 +151,8 @@ is-published() {
         opts="-v"
     fi
     local http_code;
-    http_code=$(curl $opts -q -fsL -o /dev/null -w "%{http_code}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/jmreicha/jenkins/manifests/$tag")
+    http_code=$(curl $opts -q -fsL -o /dev/null -w "%{http_code}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/${JENKINS_REPO}/manifests/$tag")
+    
     if [ "$http_code" -eq "404" ]; then
         false
     elif [ "$http_code" -eq "200" ]; then
@@ -154,7 +169,7 @@ get-manifest() {
     if [ "$debug" = true ]; then
         opts="-v"
     fi
-    curl $opts -q -fsSL -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/jmreicha/jenkins/manifests/$tag"
+    curl $opts -q -fsSL -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/${JENKINS_REPO}/manifests/$tag"
 }
 
 get-digest() {
@@ -168,7 +183,7 @@ get-digest() {
 }
 
 get-latest-versions() {
-    curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 1
+    curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 5
 }
 
 # Make a list of platforms for manifest-tool to publish
@@ -199,12 +214,12 @@ publish() {
         docker build --file "multiarch/Dockerfile$variant-$arch" \
                      --build-arg "JENKINS_VERSION=$version" \
                      --build-arg "JENKINS_SHA=$sha" \
-                     --tag "$REGISTRY/$IMAGE:${tag}-${arch}" \
+                     --tag "${JENKINS_REPO}:${tag}-${arch}" \
                      "${build_opts[@]+"${build_opts[@]}"}" .
 
         # " line to fix syntax highlightning
         if [ ! "$dry_run" = true ]; then
-            docker push "$REGISTRY/$IMAGE:${tag}-${arch}"
+            docker push "${JENKINS_REPO}:${tag}-${arch}"
         fi
     done
 }
@@ -238,14 +253,13 @@ tag-and-push() {
         echo "Images ${source}-${arch} [$digest_source] and ${target}-${arch} [$digest_target] are already the same, not updating tags"
     else
         echo "Creating tag ${target}-${arch} pointing to ${source}-${arch}"
-        #docker-tag "${source}-${arch}" "jenkins" "${target}-${arch}"
-        docker-tag "${source}-${arch}" "$REGISTRY" "${target}-${arch}"
+        docker-tag "${source}-${arch}" "${DOCKERHUB_ORGANISATION}" "${target}-${arch}"
 
         if [ ! "$dry_run" = true ]; then
-            echo "Pushing $REGISTRY/$IMAGE:${target}-${arch}"
-            docker push "$REGISTRY/$IMAGE:${target}-${arch}"
+            echo "Pushing ${JENKINS_REPO}:${target}-${arch}"
+            docker push "${JENKINS_REPO}:${target}-${arch}"
         else
-            echo "Would push $REGISTRY/$IMAGE:${target}-${arch}"
+            echo "Would push ${JENKINS_REPO}:${target}-${arch}"
         fi
     fi
 }
@@ -272,7 +286,8 @@ publish-variant() {
 publish-latest() {
     local version=$1
     local variant=$2
-
+	echo "publishing latest: $version$variant"
+	
     for arch in ${ARCHS[*]}; do
         # push latest (for master) or the name of the branch (for other branches)
         if [ -z "$variant" ]; then
@@ -301,8 +316,8 @@ push-manifest() {
 
     ./manifest-tool push from-args \
         --platforms "$(parse-manifest-platforms)" \
-        --template "$REGISTRY/$IMAGE:${version}${variant}-ARCH" \
-        --target "$REGISTRY/$IMAGE:${version}${variant}"
+        --template "${JENKINS_REPO}:${version}${variant}-ARCH" \
+        --target "${JENKINS_REPO}:${version}${variant}"
 }
 
 cleanup() {

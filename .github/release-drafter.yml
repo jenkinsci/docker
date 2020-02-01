@@ -1,0 +1,15 @@
+# https://github.com/jenkinsci/.github/blob/master/.github/release-drafter.adoc
+_extends: .github
+# We are using 3-digit LTS versioning here
+version-template: $MAJOR.$MINOR.$PATCH
+tag-template: jenkins-docker-packaging-$NEXT_PATCH_VERSION
+name-template: Jenkins Docker Image $NEXT_PATCH_VERSION
+template: |
+  <!-- Optional: add a release summary here -->
+  ## 📦 Jenkins Core updates  
+  
+  * Update to Jenkins $NEXT_PATCH_VERSION ([changelog](https://jenkins.io/changelog-stable/#v$NEXT_PATCH_VERSION)) 
+  
+  $CHANGES
+  
+  **NOTE:** This is an experimental changelog. See [this page](https://github.com/jenkinsci/docker/blob/master/CHANGELOG.md) for more info

@@ -1,5 +1,7 @@
 #!/bin/bash -eu
 
+: "${REF:="/usr/share/jenkins/ref"}"
+
 # compare if version1 < version2
 versionLT() {
     local v1; v1=$(echo "$1" | cut -d '-' -f 1 )
@@ -40,9 +42,9 @@ get_plugin_version() {
 copy_reference_file() {
     f="${1%/}"
     b="${f%.override}"
-    rel="${b:23}"
+    rel="${b#"$REF/"}"
     version_marker="${rel}.version_from_image"
-    dir=$(dirname "${b}")
+    dir=$(dirname "${rel}")
     local action;
     local reason;
     local container_version;
@@ -55,9 +57,15 @@ copy_reference_file() {
         if [[ -e $JENKINS_HOME/${version_marker} ]]; then
             marker_version=$(cat "$JENKINS_HOME/${version_marker}")
             if versionLT "$marker_version" "$container_version"; then
-                action="SKIPPED"
-                reason="Installed version ($container_version) has been manually upgraded from initial version ($marker_version)"
-                log=true
+                if ( versionLT "$container_version" "$image_version" && [[ -n $PLUGINS_FORCE_UPGRADE ]]); then
+                    action="UPGRADED"
+                    reason="Manually upgraded version ($container_version) is older than image version $image_version"
+                    log=true
+                else
+                    action="SKIPPED"
+                    reason="Installed version ($container_version) has been manually upgraded from initial version ($marker_version)"
+                    log=true
+                fi
             else
                 if [[ "$image_version" == "$container_version" ]]; then
                     action="SKIPPED"
@@ -97,7 +105,7 @@ copy_reference_file() {
         if [[ ! -e $JENKINS_HOME/${rel} || "$action" == "UPGRADED" || $f = *.override ]]; then
             action=${action:-"INSTALLED"}
             log=true
-            mkdir -p "$JENKINS_HOME/${dir:23}"
+            mkdir -p "$JENKINS_HOME/${dir}"
             cp -pr "${f}" "$JENKINS_HOME/${rel}";
             # pin plugins on initial copy
             touch "$JENKINS_HOME/${rel}.pinned"
@@ -111,7 +119,7 @@ copy_reference_file() {
         then
             action="INSTALLED"
             log=true
-            mkdir -p "$JENKINS_HOME/${dir:23}"
+            mkdir -p "$JENKINS_HOME/${dir}"
             cp -pr "$(realpath "${f}")" "$JENKINS_HOME/${rel}";
         else
             action="SKIPPED"

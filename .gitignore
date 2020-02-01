@@ -3,6 +3,9 @@ bats/
 tests/functions/init.groovy.d/
 tests/functions/java_cp/
 tests/functions/copy_reference_file.log
+tests/**/work-*/
 manifest-tool
 multiarch/qemu-*
 multiarch/Dockerfile-*
+/docker.iml
+/.idea/
