@@ -245,8 +245,11 @@ main() {
 
     # Check if there's a version-specific update center, which is the case for LTS versions
     jenkinsVersion="$(jenkinsMajorMinorVersion)"
-    curl_opts=(${CURL_OPTIONS:--fsL})
-    if curl "${curl_opts[@]}" -o /dev/null "$JENKINS_UC/$jenkinsVersion"; then
+
+    # We actually want to allow variable value to be split into multiple options passed to curl.
+    # This is needed to allow long options and any options that take value.
+    # shellcheck disable=SC2086
+    if curl ${CURL_OPTIONS:--fsL} -o /dev/null "$JENKINS_UC/$jenkinsVersion"; then
         JENKINS_UC_LATEST="$JENKINS_UC/$jenkinsVersion"
         echo "Using version-specific update center: $JENKINS_UC_LATEST..."
     else
