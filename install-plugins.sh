@@ -245,7 +245,8 @@ main() {
 
     # Check if there's a version-specific update center, which is the case for LTS versions
     jenkinsVersion="$(jenkinsMajorMinorVersion)"
-    if curl ${CURL_OPTIONS:--fsL} -o /dev/null "$JENKINS_UC/$jenkinsVersion"; then
+    curl_opts=(${CURL_OPTIONS:--fsL})
+    if curl "${curl_opts[@]}" -o /dev/null "$JENKINS_UC/$jenkinsVersion"; then
         JENKINS_UC_LATEST="$JENKINS_UC/$jenkinsVersion"
         echo "Using version-specific update center: $JENKINS_UC_LATEST..."
     else
