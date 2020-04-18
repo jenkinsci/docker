@@ -7,6 +7,11 @@ load test_helpers
 SUT_IMAGE=$(sut_image)
 SUT_CONTAINER=$(sut_image)
 
+@test "Introduce random delay" {
+  sleep $(shuf -i 30-180 -n 1)
+  assert_equal "true" "true"
+}
+
 @test "build image" {
   cd $BATS_TEST_DIRNAME/..
   docker_build -t $SUT_IMAGE .
