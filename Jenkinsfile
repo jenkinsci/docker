@@ -2,7 +2,8 @@
 
 properties([
     buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '5')),
-    pipelineTriggers([cron('H H/6 * * *')]),
+    pipelineTriggers([cron('''H H/6 * * 0-2,4-6
+H 6,21 * * 3''')])
 ])
 
 nodeWithTimeout('docker') {
@@ -68,7 +69,7 @@ nodeWithTimeout('docker') {
 
 void nodeWithTimeout(String label, def body) {
     node(label) {
-        timeout(time: 40, unit: 'MINUTES') {
+        timeout(time: 60, unit: 'MINUTES') {
             body.call()
         }
     }
