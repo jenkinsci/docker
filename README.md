@@ -1,7 +1,7 @@
 # Official Jenkins Docker image
 
-[![Docker Stars](https://img.shields.io/docker/stars/jenkins/jenkins.svg)](https://hub.docker.com/r/jenkins/jenkins/)
-[![Docker Pulls](https://img.shields.io/docker/pulls/jenkins/jenkins.svg)](https://hub.docker.com/r/jenkins/jenkins/)
+[![Docker Stars](https://img.shields.io/docker/stars/codenest/jenkins.svg)](https://hub.docker.com/r/codenest/jenkins/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/codenest/jenkins.svg)](https://hub.docker.com/r/codenest/jenkins/)
 [![Join the chat at https://gitter.im/jenkinsci/docker](https://badges.gitter.im/jenkinsci/docker.svg)](https://gitter.im/jenkinsci/docker?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 The Jenkins Continuous Integration and Delivery server [available on Docker Hub](https://hub.docker.com/r/jenkins/jenkins).
@@ -15,7 +15,7 @@ This is a fully functional Jenkins server.
 # Usage
 
 ```
-docker run -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts
+docker run -p 8080:8080 -p 50000:50000 codenest/jenkins:lts
 ```
 
 NOTE: read below the _build executors_ part for the role of the `50000` port mapping.
@@ -24,7 +24,7 @@ This will store the workspace in /var/jenkins_home. All Jenkins data lives in th
 You will probably want to make that an explicit volume so you can manage it and attach to another container for upgrades :
 
 ```
-docker run -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts
+docker run -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home codenest/jenkins:lts
 ```
 
 this will automatically create a 'jenkins_home' [docker volume](https://docs.docker.com/storage/volumes/) on the host machine, that will survive the container stop/restart/deletion.
@@ -32,7 +32,7 @@ this will automatically create a 'jenkins_home' [docker volume](https://docs.doc
 NOTE: Avoid using a [bind mount](https://docs.docker.com/storage/bind-mounts/) from a folder on the host machine into `/var/jenkins_home`, as this might result in file permission issues (the user used inside the container might not have rights to the folder on the host machine). If you _really_ need to bind mount jenkins_home, ensure that the directory on the host is accessible by the jenkins user inside the container (jenkins user - uid 1000) or use `-u some_other_user` parameter with `docker run`.
 
 ```
-docker run -d -v jenkins_home:/var/jenkins_home -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts
+docker run -d -v jenkins_home:/var/jenkins_home -p 8080:8080 -p 50000:50000 codenest/jenkins:lts
 ```
 
 this will run Jenkins in detached mode with port forwarding and volume added. You can access logs with command 'docker logs CONTAINER_ID' in order to check first login token. ID of container will be returned from output of command above.
@@ -62,7 +62,7 @@ Jenkins.instance.setNumExecutors(5)
 and `Dockerfile`
 
 ```
-FROM jenkins/jenkins:lts
+FROM codenest/jenkins:lts
 COPY executors.groovy /usr/share/jenkins/ref/init.groovy.d/executors.groovy
 ```
 
@@ -81,7 +81,7 @@ You might need to customize the JVM running Jenkins, typically to pass system pr
 variable for this purpose :
 
 ```
-docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS=-Dhudson.footerURL=http://mycompany.com jenkins/jenkins:lts
+docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS=-Dhudson.footerURL=http://mycompany.com codenest/jenkins:lts
 ```
 
 # Configuring logging
@@ -96,7 +96,7 @@ handlers=java.util.logging.ConsoleHandler
 jenkins.level=FINEST
 java.util.logging.ConsoleHandler.level=FINEST
 EOF
-docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS="-Djava.util.logging.config.file=/var/jenkins_home/log.properties" -v `pwd`/data:/var/jenkins_home jenkins/jenkins:lts
+docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS="-Djava.util.logging.config.file=/var/jenkins_home/log.properties" -v `pwd`/data:/var/jenkins_home codenest/jenkins:lts
 ```
 
 # Configuring reverse proxy
@@ -108,7 +108,7 @@ If you want to install Jenkins behind a reverse proxy with prefix, example: mysi
 
 Arguments you pass to docker running the Jenkins image are passed to jenkins launcher, so for example you can run:
 ```
-docker run jenkins/jenkins:lts --version
+docker run codenest/jenkins:lts --version
 ```
 This will show the Jenkins version, the same as when you run Jenkins from an executable war.
 
@@ -117,7 +117,7 @@ You can also define Jenkins arguments via `JENKINS_OPTS`. This is useful for cus
 to force use of HTTPS with a certificate included in the image.
 
 ```
-FROM jenkins/jenkins:lts
+FROM codenest/jenkins:lts
 
 COPY https.pem /var/lib/jenkins/cert
 COPY https.key /var/lib/jenkins/pk
@@ -128,12 +128,12 @@ EXPOSE 8083
 You can also change the default slave agent port for jenkins by defining `JENKINS_SLAVE_AGENT_PORT` in a sample Dockerfile.
 
 ```
-FROM jenkins/jenkins:lts
+FROM codenest/jenkins:lts
 ENV JENKINS_SLAVE_AGENT_PORT 50001
 ```
 or as a parameter to docker,
 ```
-docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGENT_PORT=50001 jenkins/jenkins:lts
+docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGENT_PORT=50001 codenest/jenkins:lts
 ```
 
 **Note**: This environment variable will be used to set the port adding the
@@ -147,7 +147,7 @@ docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGEN
 You can run your container as root - and install via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile to customise, for example:
 
 ```
-FROM jenkins/jenkins:lts
+FROM codenest/jenkins:lts
 # if we want to install via apt
 USER root
 RUN apt-get update && apt-get install -y ruby make more-thing-here
@@ -160,7 +160,7 @@ For this purpose, use `/usr/share/jenkins/ref` as a place to define the default 
 wish the target installation to look like :
 
 ```
-FROM jenkins/jenkins:lts
+FROM codenest/jenkins:lts
 COPY custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
 ```
 
@@ -221,21 +221,21 @@ The script uses `curl` to download the plugins. You can configure the options wi
 ### Other environment variables
 In case you have changed some default paths in the image, you can modify their values with these environment variables:
 * `REF`: directory with preinstalled plugins. Default value: `/usr/share/jenkins/ref/plugins`
-* `JENKINS_WAR`: full path to the jenkins.war. Default value: `/usr/share/jenkins/jenkins.war`
+* `JENKINS_WAR`: full path to the jenkins.war. Default value: `/usr/share/codenest/jenkins.war`
  
 ### Script usage
 
 You can run the script manually in Dockerfile:
 
 ```Dockerfile
-FROM jenkins/jenkins:lts
+FROM codenest/jenkins:lts
 RUN /usr/local/bin/install-plugins.sh docker-slaves github-branch-source:1.8
 ```
 
 Furthermore it is possible to pass a file that contains this set of plugins (with or without line breaks).
 
 ```Dockerfile
-FROM jenkins/jenkins:lts
+FROM codenest/jenkins:lts
 COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
 RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
 ```

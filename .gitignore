@@ -9,3 +9,4 @@ multiarch/qemu-*
 multiarch/Dockerfile-*
 /docker.iml
 /.idea/
+*.iml
