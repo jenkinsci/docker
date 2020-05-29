@@ -1,11 +1,11 @@
 #!/bin/bash -eu
 
-# Publish any versions of the docker image not yet pushed to ${JENKINS_REPO}
+# Publish any versions of the docker image not yet pushed to jenkins/jenkins
 # Arguments:
 #   -n dry run, do not build or publish images
 #   -d debug
 
-set -o pipefail
+set -eou pipefail
 
 . jenkins-support
 
@@ -21,8 +21,6 @@ EOF
 
 sort-versions() {
     if [ "$(uname)" == 'Darwin' ]; then
-        gsort --version-sort
-    else
         sort --version-sort
     fi
 }
@@ -84,7 +82,7 @@ get-digest() {
 }
 
 get-latest-versions() {
-    curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 30
+    curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 20
 }
 
 publish() {
@@ -100,7 +98,12 @@ publish() {
 
     sha=$(curl -q -fsSL "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/${version}/jenkins-war-${version}.war.sha256" )
 
-    docker build --file "Dockerfile$variant" \
+    FILE="Dockerfile$variant"
+    if [[ $variant =~ slim ]]; then
+        FILE="Dockerfile$variant-$arch"
+    fi
+
+    docker build --file "$FILE" \
                  --build-arg "JENKINS_VERSION=$version" \
                  --build-arg "JENKINS_SHA=$sha" \
                  --tag "${JENKINS_REPO}:${tag}" \
