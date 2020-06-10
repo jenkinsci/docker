@@ -7,7 +7,7 @@ FROM BASEIMAGE
 # If we're building normally, for amd64, CROSS_BUILD lines are removed
 CROSS_BUILD_COPY multiarch/qemu-ARCH-static /usr/bin/
 
-RUN apk add --no-cache git openssh-client curl unzip bash ttf-dejavu coreutils tini
+RUN apk add --no-cache git git-lfs openssh-client curl unzip bash ttf-dejavu coreutils tini
 
 ARG user=jenkins
 ARG group=jenkins

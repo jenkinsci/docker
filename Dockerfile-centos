@@ -1,6 +1,6 @@
 FROM centos
 
-RUN yum update -y && yum install -y epel-release && yum install -y git curl dpkg java java-devel unzip which && yum clean all
+RUN yum update -y && yum install -y epel-release && yum install -y git curl dpkg java java-devel unzip which && curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.rpm.sh | bash && yum install -y git-lfs && yum clean all
 ENV JAVA_HOME /etc/alternatives/jre_openjdk
 
 ARG user=jenkins
