@@ -169,6 +169,7 @@ publish-lts() {
     local version=$1
     local variant=$2
     tag-and-push "${version}${variant}" "lts${variant}"
+    tag-and-push "${version}${variant}" "${version}-lts${variant}"
 }
 
 # Process arguments

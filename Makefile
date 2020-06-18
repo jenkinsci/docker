@@ -8,7 +8,6 @@ shellcheck:
 	$(ROOT_DIR)/tools/shellcheck -e SC1091 \
 	                             jenkins-support \
 	                             *.sh
-
 build:
 	@for d in ${DOCKERFILES} ; do \
 		dir=`dirname $$d` ; \
@@ -29,6 +28,9 @@ build-jdk11:
 
 build-centos:
 	docker build --file 8/centos/hotspot/Dockerfile .
+
+build-centos7:
+	docker build --file Dockerfile-centos7 .
 
 build-openj9:
 	docker build --file 8/ubuntu/bionic/openj9/Dockerfile .
@@ -61,6 +63,9 @@ test-jdk11: prepare-test
 test-centos: prepare-test
 	DIRECTORY="8/centos/hotspot" bats/bin/bats tests
 
+test-centos7: prepare-test
+	DOCKERFILE=Dockerfile-centos7 bats/bin/bats tests
+
 test-openj9:
 	DIRECTORY="8/ubuntu/bionic/openj9" bats/bin/bats tests
 
@@ -81,7 +86,8 @@ publish:
 	./publish.sh --variant alpine ; \
 	./publish.sh --variant slim ; \
 	./publish.sh --variant jdk11 --start-after 2.151 ; \
-	./publish.sh --variant centos --start-after 2.181 ;
+	./publish.sh --variant centos --start-after 2.181 ; \
+	./publish.sh --variant centos7 --start-after 2.199 ;
 
 publish-experimental:
 	./publish-experimental.sh ; \
