@@ -60,10 +60,10 @@ test-jdk11: prepare-test
 	DIRECTORY="11/debian/buster/hotspot" bats/bin/bats tests
 
 test-centos: prepare-test
-	DIRECTORY="8/centos/hotspot" bats/bin/bats tests
+	DIRECTORY="8/centos/centos8/hotspot" bats/bin/bats tests
 
 test-centos7: prepare-test
-	DOCKERFILE=Dockerfile-centos7 bats/bin/bats tests
+	DIRECTORU="8/entos/centos7/hotspot" bats/bin/bats tests
 
 test-openj9:
 	DIRECTORY="8/ubuntu/bionic/openj9" bats/bin/bats tests
