@@ -10,7 +10,6 @@ shellcheck:
 	                             *.sh
 build:
 	@for d in ${DOCKERFILES} ; do \
-		dir=`dirname $$d` ; \
 		docker build --file "$${d}" . ; \
 	done
 
@@ -27,10 +26,10 @@ build-jdk11:
 	docker build --file 11/debian/buster/hotspot/Dockerfile .
 
 build-centos:
-	docker build --file 8/centos/hotspot/Dockerfile .
+	docker build --file 8/centos/centos8/hotspot/Dockerfile .
 
 build-centos7:
-	docker build --file Dockerfile-centos7 .
+	docker build --file 8/centos/centos7/hotspot/Dockerfile .
 
 build-openj9:
 	docker build --file 8/ubuntu/bionic/openj9/Dockerfile .
