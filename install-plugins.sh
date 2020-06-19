@@ -243,7 +243,7 @@ main() {
     echo "Registering preinstalled plugins..."
     installedPlugins="$(installedPlugins)"
 
-    # Check if there's a version-specific update center, which is the case for LTS versions
+    # Get the update center URL based on the jenkins version
     jenkinsVersion="$(jenkinsMajorMinorVersion)"
     jenkinsUcJson=$(curl -Ls -o /dev/null -w "%{url_effective}" "${JENKINS_UC}/update-center.json?version=${jenkinsVersion}")
     if [ -n "${jenkinsUcJson}" ]; then
