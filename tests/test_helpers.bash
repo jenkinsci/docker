@@ -73,6 +73,11 @@ function get_jenkins_password {
     docker logs "$SUT_CONTAINER" 2>&1 | grep -A 2 "Please use the following password to proceed to installation" | tail -n 1
 }
 
+function get_version {
+    local from="${DOCKERFILE:-Dockerfile}"
+    grep 'ENV JENKINS_VERSION' "${from}" | sed -e 's/.*:-\(.*\)}/\1/'
+}
+
 function test_url {
     run curl --user "admin:$(get_jenkins_password)" --output /dev/null --silent --head --fail --connect-timeout 30 --max-time 60 "$(get_jenkins_url)$1"
     if [ "$status" -eq 0 ]; then

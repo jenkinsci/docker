@@ -12,20 +12,27 @@ SUT_CONTAINER=$(sut_image)
   docker_build -t $SUT_IMAGE .
 }
 
+@test "test version in docker metadata" {
+  # running --help --version should return the version, not the help
+  local version=$(get_version)
+  # need the last line of output
+  assert "${version}" docker inspect --format '{{ index .Config.Labels "org.label-schema.version"}}' $SUT_IMAGE
+}
+
 @test "clean test containers" {
     cleanup $SUT_CONTAINER
 }
 
 @test "test multiple JENKINS_OPTS" {
   # running --help --version should return the version, not the help
-  local version=$(grep 'ENV JENKINS_VERSION' Dockerfile | sed -e 's/.*:-\(.*\)}/\1/')
+  local version=$(get_version)
   # need the last line of output
   assert "${version}" docker run --rm -e JENKINS_OPTS="--help --version" --name $SUT_CONTAINER -P $SUT_IMAGE | tail -n 1
 }
 
 @test "test jenkins arguments" {
   # running --help --version should return the version, not the help
-  local version=$(grep 'ENV JENKINS_VERSION' Dockerfile | sed -e 's/.*:-\(.*\)}/\1/')
+  local version=$(get_version)
   # need the last line of output
   assert "${version}" docker run --rm --name $SUT_CONTAINER -P $SUT_IMAGE --help --version | tail -n 1
 }
