@@ -51,7 +51,7 @@ function docker_build {
     if [ -n "$JENKINS_VERSION" ]; then
         docker build $opts --build-arg JENKINS_VERSION=$JENKINS_VERSION --build-arg JENKINS_SHA=$JENKINS_SHA --build-arg BUILD_DATE="${BUILD_DATE}" "$@"
     else
-        docker build $opts "$@"
+        docker build $opts --build-arg BUILD_DATE="${BUILD_DATE}" "$@"
     fi
 }
 
