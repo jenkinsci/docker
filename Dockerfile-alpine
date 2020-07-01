@@ -81,8 +81,12 @@ ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
 COPY plugins.sh /usr/local/bin/plugins.sh
 COPY install-plugins.sh /usr/local/bin/install-plugins.sh
 
+# Build-time metadata as defined at http://label-schema.org
+ARG BUILD_DATE
+
 # metadata labels
 LABEL \
+    org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.schema-version="1.0" \
     org.label-schema.vendor="Jenkins" \
     org.label-schema.name="Official Jenkins Docker image" \

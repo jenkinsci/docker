@@ -1,5 +1,7 @@
 ROOT_DIR="$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))/"
 
+BUILD_DATE="$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")"
+
 all: shellcheck build test
 
 shellcheck:
@@ -9,28 +11,28 @@ shellcheck:
 build: build-debian build-alpine build-slim build-jdk11 build-centos build-centos7 build-openj9 build-openj9-jdk11
 
 build-debian:
-	docker build --file Dockerfile .
+	docker build --build-arg BUILD_DATE=$(BUILD_DATE) --file Dockerfile .
 
 build-alpine:
-	docker build --file Dockerfile-alpine .
+	docker build --build-arg BUILD_DATE=$(BUILD_DATE) --file Dockerfile-alpine .
 
 build-slim:
-	docker build --file Dockerfile-slim .
+	docker build --build-arg BUILD_DATE=$(BUILD_DATE) --file Dockerfile-slim .
 
 build-jdk11:
-	docker build --file Dockerfile-jdk11 .
+	docker build --build-arg BUILD_DATE=$(BUILD_DATE) --file Dockerfile-jdk11 .
 
 build-centos:
-	docker build --file Dockerfile-centos .
+	docker build --build-arg BUILD_DATE=$(BUILD_DATE) --file Dockerfile-centos .
 
 build-centos7:
-	docker build --file Dockerfile-centos7 .
+	docker build --build-arg BUILD_DATE=$(BUILD_DATE) --file Dockerfile-centos7 .
 
 build-openj9:
-	docker build --file Dockerfile-openj9 .
+	docker build --build-arg BUILD_DATE=$(BUILD_DATE) --file Dockerfile-openj9 .
 
 build-openj9-jdk11:
-	docker build --file Dockerfile-openj9-jdk11 .
+	docker build --build-arg BUILD_DATE=$(BUILD_DATE) --file Dockerfile-openj9-jdk11 .
 
 bats:
 	# Latest tag is unfortunately 0.4.0 which is quite older than the latest master tip.
