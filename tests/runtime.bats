@@ -13,9 +13,7 @@ SUT_CONTAINER=$(sut_image)
 }
 
 @test "test version in docker metadata" {
-  # running --help --version should return the version, not the help
   local version=$(get_version)
-  # need the last line of output
   assert "${version}" docker inspect --format '{{ index .Config.Labels "org.label-schema.version"}}' $SUT_IMAGE
 }
 

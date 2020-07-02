@@ -88,7 +88,7 @@ ARG BUILD_DATE
 LABEL \
     org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.schema-version="1.0" \
-    org.label-schema.vendor="Jenkins" \
+    org.label-schema.vendor="Jenkins project" \
     org.label-schema.name="Official Jenkins Docker image" \
     org.label-schema.description="The Jenkins Continuous Integration and Delivery server" \
     org.label-schema.version="${JENKINS_VERSION}" \
