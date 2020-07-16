@@ -1,27 +1,7 @@
-# Build Git LFS from source
-# https://github.com/git-lfs/git-lfs/pull/4026 - Once issued resolved can pull binary
-FROM golang:alpine AS GIT_LFS
-
-ARG GIT_LFS_VERSION=v2.10.0
-ENV GIT_LFS_VERSION=$GIT_LFS_VERSION
-
-WORKDIR $GOPATH/src/github.com/git-lfs/git-lfs/
-RUN apk add --no-cache git make gcc musl-dev \
-    && rm -rf /tmp/*.apk /var/cache/apk/* \
-    && git clone https://github.com/git-lfs/git-lfs.git ./ \
-    && git checkout ${GIT_LFS_VERSION}
-
-RUN make
-
 # Placeholder for the specified arch that gets parsed in the publish-experimental.sh script.
 FROM BASEIMAGE
 
-# Copy compiled git-lfs and add it to path
-# https://github.com/git-lfs/git-lfs/pull/3983
-COPY --from=GIT_LFS /go/src/github.com/git-lfs/git-lfs/bin/git-lfs /usr/bin/
-ENV PATH ${PATH}:/usr/bin/
-
-RUN apk add --no-cache git openssh-client curl unzip bash ttf-dejavu coreutils tini dpkg gnupg tar && rm -rf /tmp/*.apk /var/cache/apk/*
+RUN apk add --no-cache git openssh-client curl unzip bash ttf-dejavu coreutils dpkg gnupg tar && rm -rf /tmp/*.apk /var/cache/apk/*
 
 ARG user=jenkins
 ARG group=jenkins
@@ -33,6 +13,18 @@ ARG JENKINS_HOME=/var/jenkins_home
 
 ENV JENKINS_HOME $JENKINS_HOME
 ENV JENKINS_SLAVE_AGENT_PORT ${agent_port}
+
+# Install git lfs per https://github.com/git-lfs/git-lfs#from-binary
+# Avoid JENKINS-59569 - git LFS 2.7.1 fails clone with reference repository
+ARG GIT_LFS_VERSION=v2.11.0
+ENV GIT_LFS_VERSION $GIT_LFS_VERSION
+RUN curl -fsSLO https://github.com/git-lfs/git-lfs/releases/download/${GIT_LFS_VERSION}/git-lfs-linux-$(dpkg --print-architecture | tr '-' ' '| awk '{print $NF}')-${GIT_LFS_VERSION}.tar.gz \
+  && curl -fsSLO https://github.com/git-lfs/git-lfs/releases/download/${GIT_LFS_VERSION}/sha256sums.asc \
+  && curl -L https://github.com/bk2204.gpg | gpg --no-tty --import \
+  && gpg -d sha256sums.asc | grep git-lfs-linux-$(dpkg --print-architecture | tr '-' ' '| awk '{print $NF}')-${GIT_LFS_VERSION}.tar.gz | sha256sum -c \
+  && tar -zvxf git-lfs-linux-$(dpkg --print-architecture | tr '-' ' '| awk '{print $NF}')-${GIT_LFS_VERSION}.tar.gz git-lfs \
+  && mv git-lfs /usr/bin/ \
+  && rm -rf git-lfs-linux-$(dpkg --print-architecture | tr '-' ' '| awk '{print $NF}')-${GIT_LFS_VERSION}.tar.gz sha256sums.asc /root/.gnupg
 
 # Jenkins is run with user `jenkins`, uid = 1000
 # If you bind mount a volume from the host or a data container,
@@ -50,6 +42,16 @@ VOLUME $JENKINS_HOME
 # to set on a fresh new installation. Use it to bundle additional plugins
 # or config file with your custom jenkins Docker image.
 RUN mkdir -p /usr/share/jenkins/ref/init.groovy.d
+
+# Use tini as subreaper in Docker container to adopt zombie processes
+ARG TINI_VERSION=v0.16.1
+COPY tini_pub.gpg ${JENKINS_HOME}/tini_pub.gpg
+RUN curl -fsSL https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-$(dpkg --print-architecture | tr '-' ' '| awk '{print $NF}') -o /sbin/tini \
+  && curl -fsSL https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-$(dpkg --print-architecture | tr '-' ' '| awk '{print $NF}').asc -o /sbin/tini.asc \
+  && gpg --no-tty --import ${JENKINS_HOME}/tini_pub.gpg \
+  && gpg --verify /sbin/tini.asc \
+  && rm -rf /sbin/tini.asc /root/.gnupg \
+  && chmod +x /sbin/tini
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION

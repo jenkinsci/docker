@@ -20,21 +20,21 @@ Docker repository in Use:
 * JENKINS_REPO: ${JENKINS_REPO}
 EOF
 
-#This is precautionary step to avoid accidental push to official jenkins image
+# This is precautionary step to avoid accidental push to official jenkins image
 if [[ "$DOCKERHUB_ORGANISATION" == "jenkins" ]]; then
     echo "Experimental docker image should not published to jenkins organization , hence exiting with failure";
     exit 1;
 fi
 
 docker-login() {
-    docker login --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_PASSWORD}
+    # Making use of the credentials store in `config.json`
+    docker login
     echo "Docker logged in successfully"
 }
 
 docker-enable-experimental() {
     # Enables experimental to utilize `docker manifest` command
-    mkdir -p $HOME/.docker;
-    echo '{"experimental": "enabled"}' > $HOME/.docker/config.json;
+    export DOCKER_CLI_EXPERIMENTAL="enabled"
     echo "Docker experimental enabled successfully"
 }
 

@@ -16,7 +16,7 @@ ENV JENKINS_SLAVE_AGENT_PORT ${agent_port}
 
 # Install git lfs per https://github.com/git-lfs/git-lfs#from-binary
 # Avoid JENKINS-59569 - git LFS 2.7.1 fails clone with reference repository
-ARG GIT_LFS_VERSION=v2.10.0
+ARG GIT_LFS_VERSION=v2.11.0
 ENV GIT_LFS_VERSION $GIT_LFS_VERSION
 RUN curl -fsSLO https://github.com/git-lfs/git-lfs/releases/download/${GIT_LFS_VERSION}/git-lfs-linux-$(dpkg --print-architecture)-${GIT_LFS_VERSION}.tar.gz \
   && curl -fsSLO https://github.com/git-lfs/git-lfs/releases/download/${GIT_LFS_VERSION}/sha256sums.asc \
