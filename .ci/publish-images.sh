@@ -27,15 +27,15 @@ if [[ "$DOCKERHUB_ORGANISATION" == "jenkins" ]]; then
 fi
 
 docker-login() {
-    # Making use of the credentials store in `config.json`
+    # Making use of the credentials stored in `config.json`
     docker login
     echo "Docker logged in successfully"
 }
 
 docker-enable-experimental() {
     # Enables experimental to utilize `docker manifest` command
+    echo "Enabling Docker experimental...."
     export DOCKER_CLI_EXPERIMENTAL="enabled"
-    echo "Docker experimental enabled successfully"
 }
 
 get-local-digest() {

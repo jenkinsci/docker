@@ -30,6 +30,22 @@ SUT_CONTAINER=$(sut_image)
   assert "${version}" docker run --rm --name $SUT_CONTAINER -P $SUT_IMAGE --help --version | tail -n 1
 }
 
+@test "timezones are handled correctly" {
+    local timezone1
+    local timezone2
+
+    run docker run --rm --name $SUT_CONTAINER  $SUT_IMAGE bash -c "date +'%Z %z'"
+    timezone1="${output}"
+    assert_equal "${timezone1}" "UTC +0000"
+
+    run docker run --rm --name $SUT_CONTAINER -e "TZ=Europe/Luxembourg" $SUT_IMAGE bash -c "date +'%Z %z'"
+    timezone1="${output}"
+    run docker run --rm --name $SUT_CONTAINER -e "TZ=Australia/Sydney" $SUT_IMAGE bash -c "date +'%Z %z'"
+    timezone2="${output}"
+
+    refute [ "${timezone1}" = "${timezone2}" ]
+}
+
 @test "create test container" {
     docker run -d -e JAVA_OPTS="-Duser.timezone=Europe/Madrid -Dhudson.model.DirectoryBrowserSupport.CSP=\"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';\"" --name $SUT_CONTAINER -P $SUT_IMAGE
 }
