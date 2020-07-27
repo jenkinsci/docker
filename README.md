@@ -166,70 +166,21 @@ COPY custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
 
 ## Preinstalling plugins
 
-You can rely on the `install-plugins.sh` script to pass a set of plugins to download with their dependencies.
+You can rely on the `jenkins-plugin-cli` script to pass a set of plugins to download with their dependencies.
 This script will perform downloads from update centers, and internet access is required for the default update centers.
 
-### Setting update centers
-
-During the download, the script will use update centers defined by the following environment variables:
-
-* `JENKINS_UC` - Main update center.
-  This update center may offer plugin versions depending on the Jenkins LTS Core versions.
-  Default value: https://updates.jenkins.io
-* `JENKINS_UC_EXPERIMENTAL` - [Experimental Update Center](https://jenkins.io/blog/2013/09/23/experimental-plugins-update-center/).
-  This center offers Alpha and Beta versions of plugins.
-  Default value: https://updates.jenkins.io/experimental
-* `JENKINS_INCREMENTALS_REPO_MIRROR` -
-  Defines Maven mirror to be used to download plugins from the
-  [Incrementals repo](https://jenkins.io/blog/2018/05/15/incremental-deployment/).
-  Default value: https://repo.jenkins-ci.org/incrementals
-* `JENKINS_UC_DOWNLOAD` - Download url of the Update Center. 
-  Default value: `$JENKINS_UC/download`
+See the CLI's [documentation](https://github.com/jenkinsci/plugin-installation-manager-tool) for more information,
+or run `jenkins-plugin-cli --help` to see the available options.
   
-It is possible to override the environment variables in images.
-
-:exclamation: Note that changing this variables **will not** change the Update Center being used by Jenkins runtime.
-
-### Plugin version format
-
-Use plugin artifact ID, without `-plugin` extension, and append the version if needed separated by `:`.
-Dependencies that are already included in the Jenkins war will only be downloaded if their required version is newer than the one included.
-
-There are also custom version specifiers:
-
-* `latest` - download the latest version from the main update center.
-  For Jenkins LTS images
-  (example: `git:latest`)
-* `experimental` - download the latest version from the experimental update center defined by the `JENKINS_UC_EXPERIMENTAL` environment variable (example: `filesystem_scm:experimental`)
-* `incrementals;org.jenkins-ci.plugins.workflow;2.19-rc289.d09828a05a74[;githubUserId][;branchName]`
-- download the plugin from the [Incrementals repo](https://jenkins.io/blog/2018/05/15/incremental-deployment/).
-  * For this option you need to specify `groupId` of the plugin.
-    Note that this value may change between plugin versions without notice.
-  * In order to automatically update Incrementals in plugins.txt, it is possible to use the Incrementals Maven Plugin:
-    `mvn incrementals:updatePluginsTxt -DpluginsFile=plugins.txt`.
-    [More Info](https://github.com/jenkinsci/incrementals-tools#updating-versions-for-jenkins-docker-images)
-
-### Fine-tune the downloads
-
-The script uses `curl` to download the plugins. You can configure the options with some environment variables:
-* `CURL_OPTIONS`: When downloading the plugins with curl. Curl options. Default value: `-sSfL`
-* `CURL_CONNECTION_TIMEOUT`: When downloading the plugins with curl. <seconds> Maximum time allowed for connection. Default value: `20`
-* `CURL_RETRY`: When downloading the plugins with curl. Retry request if transient problems occur. Default value: `3`
-* `CURL_RETRY_DELAY`: When downloading the plugins with curl. <seconds> Wait time between retries. Default value: `0`
-* `CURL_RETRY_MAX_TIME`: When downloading the plugins with curl. <seconds> Retry only within this period. Default value: `60`
- 
-### Other environment variables
-In case you have changed some default paths in the image, you can modify their values with these environment variables:
-* `REF`: directory with preinstalled plugins. Default value: `/usr/share/jenkins/ref/plugins`
-* `JENKINS_WAR`: full path to the jenkins.war. Default value: `/usr/share/jenkins/jenkins.war`
+:exclamation: Note that changing update center variables **will not** change the Update Center being used by Jenkins runtime.
  
 ### Script usage
 
-You can run the script manually in Dockerfile:
+You can run the CLI manually in Dockerfile:
 
 ```Dockerfile
 FROM jenkins/jenkins:lts
-RUN /usr/local/bin/install-plugins.sh docker-slaves github-branch-source:1.8
+RUN jenkins-plugin-cli --plugins docker-slaves github-branch-source:1.8
 ```
 
 Furthermore it is possible to pass a file that contains this set of plugins (with or without line breaks).
@@ -237,7 +188,7 @@ Furthermore it is possible to pass a file that contains this set of plugins (wit
 ```Dockerfile
 FROM jenkins/jenkins:lts
 COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
-RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
+RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
 ```
 
 When jenkins container starts, it will check `JENKINS_HOME` has this reference content, and copy them
@@ -274,6 +225,18 @@ For 2.x-derived images, you may also want to
 to indicate that this Jenkins installation is fully configured.
 Otherwise a banner will appear prompting the user to install additional plugins,
 which may be inappropriate.
+
+### Updating plugins file
+
+The [plugin-installation-manager-tool](https://github.com/jenkinsci/plugin-installation-manager-tool) supports updating the plugin file for you.
+
+Example command:
+
+```command
+JENKINS_IMAGE=jenkins/jenkins
+docker run -it ${JENKINS_IMAGE} bash -c "stty -onlcr && jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt --available-updates --output txt" >  plugins2.txt
+mv plugins2.txt plugins.txt
+```
 
 # Upgrading
 
