@@ -166,17 +166,58 @@ COPY custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
 
 ## Preinstalling plugins
 
-You can rely on the `jenkins-plugin-cli` script to pass a set of plugins to download with their dependencies.
-This script will perform downloads from update centers, and internet access is required for the default update centers.
+### Install plugins script
+
+You can rely on the install-plugins.sh script to pass a set of plugins to download with their dependencies. This script will perform downloads from update centers, and internet access is required for the default update centers.
+
+### Setting update centers
+
+During the download, the script will use update centers defined by the following environment variables:
+
+* `JENKINS_UC` - Main update center.
+  This update center may offer plugin versions depending on the Jenkins LTS Core versions.
+  Default value: https://updates.jenkins.io
+* `JENKINS_UC_EXPERIMENTAL` - [Experimental Update Center](https://jenkins.io/blog/2013/09/23/experimental-plugins-update-center/).
+  This center offers Alpha and Beta versions of plugins.
+  Default value: https://updates.jenkins.io/experimental
+* `JENKINS_INCREMENTALS_REPO_MIRROR` -
+  Defines Maven mirror to be used to download plugins from the
+  [Incrementals repo](https://jenkins.io/blog/2018/05/15/incremental-deployment/).
+  Default value: https://repo.jenkins-ci.org/incrementals
+* `JENKINS_UC_DOWNLOAD` - Download url of the Update Center. 
+  Default value: `$JENKINS_UC/download`
+
+It is possible to override the environment variables in images.
+  
+:exclamation: Note that changing update center variables **will not** change the Update Center being used by Jenkins runtime.
+
+### Plugin installation manager CLI (Preview)
+
+You can also use the `jenkins-plugin-cli` tool to install plugins.
+This CLI will perform downloads from update centers, and internet access is required for the default update centers.
 
 See the CLI's [documentation](https://github.com/jenkinsci/plugin-installation-manager-tool) for more information,
 or run `jenkins-plugin-cli --help` to see the available options.
-  
-:exclamation: Note that changing update center variables **will not** change the Update Center being used by Jenkins runtime.
+
+### Setting update centers
+
+The Jenkins plugin CLI uses slightly different URLs to the install-plugins script, but the same environment variables.
+
+If you need to override an update center environment variable then append `_OVERRIDE`, i.e. `JENKINS_UC_OVERRIDE`.
+
  
-### Script usage
+### Usage
 
 You can run the CLI manually in Dockerfile:
+
+#### install-plugins script
+
+```Dockerfile
+FROM jenkins/jenkins:lts
+RUN /usr/local/bin/install-plugins.sh docker-slaves github-branch-source:1.8
+```
+
+#### Plugin installation manager CLI (Preview)
 
 ```Dockerfile
 FROM jenkins/jenkins:lts
@@ -184,6 +225,16 @@ RUN jenkins-plugin-cli --plugins docker-slaves github-branch-source:1.8
 ```
 
 Furthermore it is possible to pass a file that contains this set of plugins (with or without line breaks).
+
+#### install-plugins script
+
+```Dockerfile
+FROM jenkins/jenkins:lts
+COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
+RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
+```
+
+#### Plugin installation manager CLI (Preview)
 
 ```Dockerfile
 FROM jenkins/jenkins:lts
@@ -226,7 +277,7 @@ to indicate that this Jenkins installation is fully configured.
 Otherwise a banner will appear prompting the user to install additional plugins,
 which may be inappropriate.
 
-### Updating plugins file
+### Updating plugins file (Preview)
 
 The [plugin-installation-manager-tool](https://github.com/jenkinsci/plugin-installation-manager-tool) supports updating the plugin file for you.
 
