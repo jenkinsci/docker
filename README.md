@@ -198,13 +198,6 @@ This CLI will perform downloads from update centers, and internet access is requ
 
 See the CLI's [documentation](https://github.com/jenkinsci/plugin-installation-manager-tool) for more information,
 or run `jenkins-plugin-cli --help` to see the available options.
-
-### Setting update centers
-
-The Jenkins plugin CLI uses slightly different URLs to the install-plugins script, but the same environment variables.
-
-If you need to override an update center environment variable then append `_OVERRIDE`, i.e. `JENKINS_UC_OVERRIDE`.
-
  
 ### Usage
 
