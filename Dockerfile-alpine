@@ -36,7 +36,7 @@ ENV gid ${gid:-1000}
 RUN mkdir -p $JENKINS_HOME \
   && chown ${uid}:${gid} $JENKINS_HOME \
   && addgroup -g ${gid} ${group} \
-  && adduser -h "$JENKINS_HOME" -u ${uid} -G ${group} -s /bin/bash -D ${user}
+  && adduser -h "$JENKINS_HOME" -u ${uid} -G ${group} -G $(cat /etc/group | grep 999 | cut -d ':' -f 1) -s /bin/bash -D ${user}
 
 # Jenkins home directory is a volume, so configuration and build history
 # can be persisted and survive image upgrades
