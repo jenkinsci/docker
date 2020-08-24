@@ -69,7 +69,7 @@ test-openj9-jdk11:
 test: test-debian test-alpine test-slim test-jdk11 test-centos test-centos7 test-openj9 test-openj9-jdk11
 
 test-install-plugins: prepare-test
-	DOCKERFILE=Dockerfile-alpine bats/bin/bats tests/install-plugins.bats
+	DOCKERFILE=Dockerfile-alpine bats/bin/bats tests/install-plugins.bats tests/install-plugins-plugins-cli.bats
 
 publish:
 	./publish.sh ; \
