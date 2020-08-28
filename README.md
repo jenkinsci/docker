@@ -270,7 +270,7 @@ to indicate that this Jenkins installation is fully configured.
 Otherwise a banner will appear prompting the user to install additional plugins,
 which may be inappropriate.
 
-### Updating plugins file (Preview)
+### Updating plugins file (Preview)
 
 The [plugin-installation-manager-tool](https://github.com/jenkinsci/plugin-installation-manager-tool) supports updating the plugin file for you.
 
