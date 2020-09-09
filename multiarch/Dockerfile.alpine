@@ -1,13 +1,7 @@
 # Placeholder for the specified arch that gets parsed in the publish-experimental.sh script.
 FROM BASEIMAGE
 
-# If we're building for another architecture than amd64, the CROSS_BUILD_
-# placeholder is removed so
-# e.g. CROSS_BUILD_COPY turns into COPY
-# If we're building normally, for amd64, CROSS_BUILD lines are removed
-CROSS_BUILD_COPY multiarch/qemu-ARCH-static /usr/bin/
-
-RUN apk add --no-cache git git-lfs openssh-client curl unzip bash ttf-dejavu coreutils tini
+RUN apk add --no-cache git openssh-client curl unzip bash ttf-dejavu coreutils dpkg gnupg tar && rm -rf /tmp/*.apk /var/cache/apk/*
 
 ARG user=jenkins
 ARG group=jenkins
@@ -19,6 +13,18 @@ ARG JENKINS_HOME=/var/jenkins_home
 
 ENV JENKINS_HOME $JENKINS_HOME
 ENV JENKINS_SLAVE_AGENT_PORT ${agent_port}
+
+# Install git lfs per https://github.com/git-lfs/git-lfs#from-binary
+# Avoid JENKINS-59569 - git LFS 2.7.1 fails clone with reference repository
+ARG GIT_LFS_VERSION=v2.11.0
+ENV GIT_LFS_VERSION $GIT_LFS_VERSION
+RUN curl -fsSLO https://github.com/git-lfs/git-lfs/releases/download/${GIT_LFS_VERSION}/git-lfs-linux-$(dpkg --print-architecture | tr '-' ' '| awk '{print $NF}')-${GIT_LFS_VERSION}.tar.gz \
+  && curl -fsSLO https://github.com/git-lfs/git-lfs/releases/download/${GIT_LFS_VERSION}/sha256sums.asc \
+  && curl -L https://github.com/bk2204.gpg | gpg --no-tty --import \
+  && gpg -d sha256sums.asc | grep git-lfs-linux-$(dpkg --print-architecture | tr '-' ' '| awk '{print $NF}')-${GIT_LFS_VERSION}.tar.gz | sha256sum -c \
+  && tar -zvxf git-lfs-linux-$(dpkg --print-architecture | tr '-' ' '| awk '{print $NF}')-${GIT_LFS_VERSION}.tar.gz git-lfs \
+  && mv git-lfs /usr/bin/ \
+  && rm -rf git-lfs-linux-$(dpkg --print-architecture | tr '-' ' '| awk '{print $NF}')-${GIT_LFS_VERSION}.tar.gz sha256sums.asc /root/.gnupg
 
 # Jenkins is run with user `jenkins`, uid = 1000
 # If you bind mount a volume from the host or a data container,
@@ -36,6 +42,16 @@ VOLUME $JENKINS_HOME
 # to set on a fresh new installation. Use it to bundle additional plugins
 # or config file with your custom jenkins Docker image.
 RUN mkdir -p /usr/share/jenkins/ref/init.groovy.d
+
+# Use tini as subreaper in Docker container to adopt zombie processes
+ARG TINI_VERSION=v0.16.1
+COPY tini_pub.gpg ${JENKINS_HOME}/tini_pub.gpg
+RUN curl -fsSL https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-$(dpkg --print-architecture | tr '-' ' '| awk '{print $NF}') -o /sbin/tini \
+  && curl -fsSL https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-$(dpkg --print-architecture | tr '-' ' '| awk '{print $NF}').asc -o /sbin/tini.asc \
+  && gpg --no-tty --import ${JENKINS_HOME}/tini_pub.gpg \
+  && gpg --verify /sbin/tini.asc \
+  && rm -rf /sbin/tini.asc /root/.gnupg \
+  && chmod +x /sbin/tini
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
@@ -66,6 +82,9 @@ EXPOSE ${agent_port}
 ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 
 USER ${user}
+
+# Invoke Git LFS
+RUN git lfs install
 
 COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh

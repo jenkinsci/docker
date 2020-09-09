@@ -1,15 +1,7 @@
 # Placeholder for the specified arch that gets parsed in the publish-experimental.sh script.
 FROM BASEIMAGE
 
-# If we're building for another architecture than amd64, the CROSS_BUILD_
-# placeholder is removed so
-# e.g. CROSS_BUILD_COPY turns into COPY
-# If we're building normally, for amd64, CROSS_BUILD lines are removed
-CROSS_BUILD_COPY multiarch/qemu-ARCH-static /usr/bin/
-
-# Install git lfs on Debian stretch per https://github.com/git-lfs/git-lfs/wiki/Installation#debian-and-ubuntu
-# Avoid JENKINS-59569 - git LFS 2.7.1 fails clone with reference repository
-RUN apt-get update && apt-get upgrade -y && apt-get install -y git curl gpg && curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash && apt-get install -y git-lfs && git lfs install && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get upgrade -y && apt-get install -y git curl dpkg gpg tar && rm -rf /var/lib/apt/lists/*
 
 ARG user=jenkins
 ARG group=jenkins
@@ -21,6 +13,18 @@ ARG JENKINS_HOME=/var/jenkins_home
 
 ENV JENKINS_HOME $JENKINS_HOME
 ENV JENKINS_SLAVE_AGENT_PORT ${agent_port}
+
+# Install git lfs per https://github.com/git-lfs/git-lfs#from-binary
+# Avoid JENKINS-59569 - git LFS 2.7.1 fails clone with reference repository
+ARG GIT_LFS_VERSION=v2.11.0
+ENV GIT_LFS_VERSION $GIT_LFS_VERSION
+RUN curl -fsSLO https://github.com/git-lfs/git-lfs/releases/download/${GIT_LFS_VERSION}/git-lfs-linux-$(dpkg --print-architecture)-${GIT_LFS_VERSION}.tar.gz \
+  && curl -fsSLO https://github.com/git-lfs/git-lfs/releases/download/${GIT_LFS_VERSION}/sha256sums.asc \
+  && curl -L https://github.com/bk2204.gpg | gpg --no-tty --import \
+  && gpg -d sha256sums.asc | grep git-lfs-linux-$(dpkg --print-architecture)-${GIT_LFS_VERSION}.tar.gz | sha256sum -c \
+  && tar -zvxf git-lfs-linux-$(dpkg --print-architecture)-${GIT_LFS_VERSION}.tar.gz git-lfs \
+  && mv git-lfs /usr/bin/ \
+  && rm -rf git-lfs-linux-$(dpkg --print-architecture)-${GIT_LFS_VERSION}.tar.gz sha256sums.asc /root/.gnupg
 
 # Jenkins is run with user `jenkins`, uid = 1000
 # If you bind mount a volume from the host or a data container,
@@ -78,6 +82,9 @@ EXPOSE ${agent_port}
 ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 
 USER ${user}
+
+# Invoke Git LFS
+RUN git lfs install
 
 COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
