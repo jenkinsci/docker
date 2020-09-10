@@ -1,6 +1,6 @@
 FROM adoptopenjdk/openjdk11:debian-slim
 
-RUN apt-get update && apt-get upgrade -y && apt-get install -y git git-lfs curl gpg unzip && git lfs install && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get upgrade -y && apt-get install -y git git-lfs curl gpg unzip libfreetype6 libfontconfig1 && git lfs install && rm -rf /var/lib/apt/lists/*
 
 ARG user=jenkins
 ARG group=jenkins
