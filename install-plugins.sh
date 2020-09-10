@@ -20,7 +20,7 @@
 
 set -o pipefail
 
-echo "WARN: install-plugins.sh is deprecated, please switch to jenkins-plugins-cli.sh"
+echo "WARN: install-plugins.sh is deprecated, please switch to jenkins-plugin-cli.sh"
 
 JENKINS_WAR=${JENKINS_WAR:-/usr/share/jenkins/jenkins.war}
 
