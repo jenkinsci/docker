@@ -9,6 +9,7 @@
 # REF: directory with preinstalled plugins. Default: /usr/share/jenkins/ref/plugins
 # JENKINS_WAR: full path to the jenkins.war. Default: /usr/share/jenkins/jenkins.war
 # JENKINS_UC: url of the Update Center. Default: ""
+# JENKINS_UC_LATEST: jenkins version specific latest download url of the Update Center. Default: ""
 # JENKINS_UC_EXPERIMENTAL: url of the Experimental Update Center for experimental versions of plugins. Default: ""
 # JENKINS_INCREMENTALS_REPO_MIRROR: url of the incrementals repo mirror. Default: ""
 # JENKINS_UC_DOWNLOAD: download url of the Update Center. Default: JENKINS_UC/download
@@ -244,13 +245,15 @@ main() {
     installedPlugins="$(installedPlugins)"
 
     # Get the update center URL based on the jenkins version
-    jenkinsVersion="$(jenkinsMajorMinorVersion)"
-    jenkinsUcJson=$(curl -Ls -o /dev/null -w "%{url_effective}" "${JENKINS_UC}/update-center.json?version=${jenkinsVersion}")
-    if [ -n "${jenkinsUcJson}" ]; then
-        JENKINS_UC_LATEST=${jenkinsUcJson//update-center.json/}
-        echo "Using version-specific update center: $JENKINS_UC_LATEST..."
-    else
-        JENKINS_UC_LATEST=
+    if [ ! -v JENKINS_UC_LATEST ]; then
+        jenkinsVersion="$(jenkinsMajorMinorVersion)"
+        jenkinsUcJson=$(curl -Ls -o /dev/null -w "%{url_effective}" "${JENKINS_UC}/update-center.json?version=${jenkinsVersion}")
+        if [ -n "${jenkinsUcJson}" ]; then
+            JENKINS_UC_LATEST=${jenkinsUcJson//update-center.json/}
+            echo "Using version-specific update center: $JENKINS_UC_LATEST..."
+        else
+            JENKINS_UC_LATEST=
+        fi
     fi
 
     echo "Downloading plugins..."
