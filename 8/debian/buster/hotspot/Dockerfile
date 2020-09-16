@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk-slim
+FROM adoptopenjdk:8-hotspot
 
 # Install git lfs on Debian stretch per https://github.com/git-lfs/git-lfs/wiki/Installation#debian-and-ubuntu
 # Avoid JENKINS-59569 - git LFS 2.7.1 fails clone with reference repository
