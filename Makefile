@@ -71,7 +71,7 @@ test-openj9:
 test-openj9-jdk11:
 	DIRECTORY="11/ubuntu/bionic/openj9" bats/bin/bats tests
 
-test:
+test: build prepare-test
 	@for d in ${DOCKERFILES} ; do \
 		dir=`dirname $$d | sed -e "s_^\./__"` ; \
 		DIRECTORY=$${dir} bats/bin/bats tests ; \
