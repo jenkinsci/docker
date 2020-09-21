@@ -41,11 +41,11 @@ function retry {
 }
 
 function sut_image {
-    echo "bats-jenkins-${DOCKERFILE:-Dockerfile}" | tr '[:upper:]' '[:lower:]' | sed -e 's/dockerfile$/default/' | sed -e 's/dockerfile-//'
+    echo "bats-jenkins-${DIRECTORY//\//-}" | tr '[:upper:]' '[:lower:]' | sed -e 's/dockerfile$/default/' | sed -e 's/dockerfile-//'
 }
 
 function docker_build {
-    local opts="-f ${DOCKERFILE:-Dockerfile}"
+    local opts="-f ${DIRECTORY}/Dockerfile"
     if [ -n "$JENKINS_VERSION" ]; then
         docker build $opts --build-arg JENKINS_VERSION=$JENKINS_VERSION --build-arg JENKINS_SHA=$JENKINS_SHA "$@"
     else
