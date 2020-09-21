@@ -1,10 +1,8 @@
-FROM adoptopenjdk:11-jdk-openj9-bionic
+FROM openjdk:8-jdk-stretch
 
-RUN apt-get update \
-  && apt-get upgrade -y \
-  && apt-get install -y --no-install-recommends git curl gnupg fontconfig unzip nano \
-  && curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash && apt-get install -y git-lfs && git lfs install \
-  && rm -rf /var/lib/apt/lists/*
+# Install git lfs on Debian stretch per https://github.com/git-lfs/git-lfs/wiki/Installation#debian-and-ubuntu
+# Avoid JENKINS-59569 - git LFS 2.7.1 fails clone with reference repository
+RUN apt-get update && apt-get upgrade -y && apt-get install -y git curl && curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash && apt-get install -y git-lfs && git lfs install && rm -rf /var/lib/apt/lists/*
 
 ARG user=jenkins
 ARG group=jenkins
@@ -66,7 +64,7 @@ ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
 ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 RUN chown -R ${user} "$JENKINS_HOME" "$REF"
 
-ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/plugin-management-parent-pom-2.0.0/jenkins-plugin-manager-2.0.0.jar
+ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/2.1.0/jenkins-plugin-manager-2.1.0.jar
 RUN curl -fsSL ${PLUGIN_CLI_URL} -o /usr/lib/jenkins-plugin-manager.jar
 
 # for main web interface:
@@ -84,20 +82,7 @@ COPY jenkins.sh /usr/local/bin/jenkins.sh
 COPY tini-shim.sh /bin/tini
 COPY jenkins-plugin-cli.sh /bin/jenkins-plugin-cli
 
-# set variables to create shared class cache
-ENV JAVA_SCC_OPTS "-Xshareclasses:name=jenkins_scc,cacheDir=/tmp,enableBCI -Xscmx80M"
-ENV JAVA_OLD_OPTS ${JAVA_OPTS}
-ENV JAVA_OPTS "${JAVA_SCC_OPTS} ${JAVA_OPTS}"
-
-# create shared class cache
-RUN /sbin/tini -- /usr/local/bin/jenkins.sh > /dev/null & sleep 20
-
-# revert JAVA_OPTS to not have shared class cache
-ENV JAVA_SCC_OPTS "-Xshareclasses:name=jenkins_scc,cacheDir=/tmp,readonly"
-ENV JAVA_OPTS "${JAVA_SCC_OPTS} ${JAVA_OLD_OPTS}"
-
 ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
-# from a derived Dockerfile, can use `RUN plugins.sh active.txt` to setup ${REF}/plugins from a support bundle
-COPY plugins.sh /usr/local/bin/plugins.sh
+# from a derived Dockerfile, can use `RUN install-plugins.sh active.txt` to setup ${REF}/plugins from a support bundle
 COPY install-plugins.sh /usr/local/bin/install-plugins.sh
