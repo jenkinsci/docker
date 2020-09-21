@@ -2,35 +2,40 @@ ROOT_DIR="$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))/"
 
 all: shellcheck build test
 
+DOCKERFILES=$(shell find . -type f -not -path "./tests/*" -name Dockerfile)
+
 shellcheck:
 	$(ROOT_DIR)/tools/shellcheck -e SC1091 \
 	                             jenkins-support \
 	                             *.sh
-build: build-debian build-alpine build-slim build-jdk11 build-centos build-centos7 build-openj9 build-openj9-jdk11
+build:
+	@for d in ${DOCKERFILES} ; do \
+		docker build --file "$${d}" . ; \
+	done
 
 build-debian:
-	docker build --file Dockerfile .
+	docker build --file 8/debian/buster/hotspot/Dockerfile .
 
 build-alpine:
-	docker build --file Dockerfile-alpine .
+	docker build --file 8/alpine/hotspot/Dockerfile .
 
 build-slim:
-	docker build --file Dockerfile-slim .
+	docker build --file 8/debian/buster-slim/hotspot/Dockerfile .
 
 build-jdk11:
-	docker build --file Dockerfile-jdk11 .
+	docker build --file 11/debian/buster/hotspot/Dockerfile .
 
 build-centos:
-	docker build --file Dockerfile-centos .
+	docker build --file 8/centos/centos8/hotspot/Dockerfile .
 
 build-centos7:
-	docker build --file Dockerfile-centos7 .
+	docker build --file 8/centos/centos7/hotspot/Dockerfile .
 
 build-openj9:
-	docker build --file Dockerfile-openj9 .
+	docker build --file 8/ubuntu/bionic/openj9/Dockerfile .
 
 build-openj9-jdk11:
-	docker build --file Dockerfile-openj9-jdk11 .
+	docker build --file 11/ubuntu/bionic/openj9/Dockerfile .
 
 bats:
 	# Latest tag is unfortunately 0.4.0 which is quite older than the latest master tip.
@@ -43,33 +48,37 @@ prepare-test: bats
 	git submodule update --init --recursive
 
 test-debian: prepare-test
-	DOCKERFILE=Dockerfile bats/bin/bats tests
+	DIRECTORY="8/debian/buster/hotspot" bats/bin/bats tests
 
 test-alpine: prepare-test
-	DOCKERFILE=Dockerfile-alpine bats/bin/bats tests
+	DIRECTORY="8/alpine/hotspot" bats/bin/bats tests
 
 test-slim: prepare-test
-	DOCKERFILE=Dockerfile-slim bats/bin/bats tests
+	DIRECTORY="8/debian/buster-slim/hotspot" bats/bin/bats tests
 
 test-jdk11: prepare-test
-	DOCKERFILE=Dockerfile-jdk11 bats/bin/bats tests
+	DIRECTORY="11/debian/buster/hotspot" bats/bin/bats tests
 
 test-centos: prepare-test
-	DOCKERFILE=Dockerfile-centos bats/bin/bats tests
+	DIRECTORY="8/centos/centos8/hotspot" bats/bin/bats tests
 
 test-centos7: prepare-test
-	DOCKERFILE=Dockerfile-centos7 bats/bin/bats tests
+	DIRECTORY="8/centos/centos7/hotspot" bats/bin/bats tests
 
 test-openj9:
-	DOCKERFILE=Dockerfile-openj9 bats/bin/bats tests
+	DIRECTORY="8/ubuntu/bionic/openj9" bats/bin/bats tests
 
 test-openj9-jdk11:
-	DOCKERFILE=Dockerfile-openj9-jdk11 bats/bin/bats tests
+	DIRECTORY="11/ubuntu/bionic/openj9" bats/bin/bats tests
 
-test: test-debian test-alpine test-slim test-jdk11 test-centos test-centos7 test-openj9 test-openj9-jdk11
+test: build prepare-test
+	@for d in ${DOCKERFILES} ; do \
+		dir=`dirname $$d | sed -e "s_^\./__"` ; \
+		DIRECTORY=$${dir} bats/bin/bats tests ; \
+	done
 
 test-install-plugins: prepare-test
-	DOCKERFILE=Dockerfile-alpine bats/bin/bats tests/install-plugins.bats tests/install-plugins-plugins-cli.bats
+	DIRECTORY="8/alpine/hotspot" bats/bin/bats tests/install-plugins.bats tests/install-plugins-plugins-cli.bats
 
 publish:
 	./.ci/publish.sh ; \
