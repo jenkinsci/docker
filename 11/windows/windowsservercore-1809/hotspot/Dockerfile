@@ -1,6 +1,5 @@
 # escape=`
-ARG WINDOWS_DOCKER_TAG=1809
-FROM adoptopenjdk:8-openj9-windowsservercore-${WINDOWS_DOCKER_TAG}
+FROM adoptopenjdk:11-hotspot-windowsservercore-1809
 
 ARG user=jenkins
 ARG http_port=8080
@@ -8,7 +7,7 @@ ARG agent_port=50000
 ARG JENKINS_HOME=C:/ProgramData/Jenkins/JenkinsHome
 
 ENV JENKINS_HOME $JENKINS_HOME
-ENV JENKINS_SLAVE_AGENT_PORT ${agent_port}
+ENV JENKINS_AGENT_PORT ${agent_port}
 
 # Jenkins home directory is a volume, so configuration and build history
 # can be persisted and survive image upgrades
@@ -36,47 +35,37 @@ RUN New-Item -ItemType Directory -Force -Path C:/ProgramData/Jenkins/Reference/i
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION ${JENKINS_VERSION:-2.176.2}
+ENV JENKINS_VERSION ${JENKINS_VERSION:-2.235.4}
 
 # jenkins.war checksum, download will be validated using it
-ARG JENKINS_SHA=33a6c3161cf8de9c8729fd83914d781319fd1569acf487c7b1121681dba190a5
+ARG JENKINS_SHA=e5688a8f07cc3d79ba3afa3cab367d083dd90daab77cebd461ba8e83a1e3c177
 
 # Can be used to customize where jenkins.war get downloaded from
 ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war
 
 # could use ADD but this one does not check Last-Modified header neither does it allow to control checksum
 # see https://github.com/docker/docker/issues/8331
-RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
-    Invoke-WebRequest "$env:JENKINS_URL" -OutFile C:/ProgramData/Jenkins/jenkins.war -UseBasicParsing ; `
+RUN curl.exe -fsSL "$env:JENKINS_URL" -o C:/ProgramData/Jenkins/jenkins.war ; `
     if ((Get-FileHash C:/ProgramData/Jenkins/jenkins.war -Algorithm SHA256).Hash -ne $env:JENKINS_SHA) {exit 1}
 
 ENV JENKINS_UC https://updates.jenkins.io
 ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
 ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 
+ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/plugin-management-parent-pom-2.0.0/jenkins-plugin-manager-2.0.0.jar
+RUN curl.exe -fsSL "$env:PLUGIN_CLI_URL" -o C:/ProgramData/Jenkins/jenkins-plugin-manager.jar
+
 # for main web interface:
 EXPOSE ${http_port}
 
-# will be used by attached slave agents:
+# will be used by attached agents:
 EXPOSE ${agent_port}
 
 ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 
-# from a derived Dockerfile, can use `RUN & C:/ProgramData/Jenkins/install-plugins.ps1 -PluginFile active.txt` to setup C:/ProgramData/Jenkins/Reference/plugins from a support bundle
-COPY install-plugins.ps1 C:/ProgramData/Jenkins
 COPY jenkins-support.psm1 C:/ProgramData/Jenkins
 COPY jenkins.ps1 C:/ProgramData/Jenkins
-
-# set variables to create shared class cache
-ENV JAVA_SCC_OPTS "-Xshareclasses:name=jenkins_scc,cacheDir=C:/tmp,enableBCI -Xscmx80M"
-ENV JAVA_OLD_OPTS ${JAVA_OPTS}
-ENV JAVA_OPTS "${JAVA_SCC_OPTS} ${JAVA_OPTS}"
-
-# create shared class cache
-RUN $j = Start-Job -ScriptBlock { powershell -f C:/ProgramData/Jenkins/jenkins.ps1 } ; Start-Sleep -Seconds 30 ; Stop-Job $j
-
-# revert JAVA_OPTS to not have shared class cache
-ENV JAVA_SCC_OPTS "-Xshareclasses:name=jenkins_scc,cacheDir=C:/tmp,readonly"
-ENV JAVA_OPTS "${JAVA_SCC_OPTS} ${JAVA_OLD_OPTS}"
+# See https://github.com/jenkinsci/plugin-installation-manager-tool#cli-options for information on parameters for jenkins-plugin-cli.ps1 for installing plugins into the docker image
+COPY jenkins-plugin-cli.ps1 C:/ProgramData/Jenkins
 
 ENTRYPOINT ["powershell.exe", "-f", "C:/ProgramData/Jenkins/jenkins.ps1"]

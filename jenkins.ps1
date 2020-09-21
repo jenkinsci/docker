@@ -14,15 +14,15 @@ try {
 Add-Content -Path $COPY_REFERENCE_FILE_LOG -Value "--- Copying files at $(Get-Date)"
 Get-ChildItem -Recurse -File -Path 'C:/ProgramData/Jenkins/Reference' | ForEach-Object { Copy-ReferenceFile $_.FullName }
 
-# if `docker run` first argument start with `--` the user is passing jenkins launcher arguments
+# if `docker run` first argument starts with `--` the user is passing jenkins launcher arguments
 if(($args.Count -eq 0) -or ($args[0] -match "^--.*")) {
 
   # read JAVA_OPTS and JENKINS_OPTS into arrays to avoid need for eval (and associated vulnerabilities)
   $java_opts_array = $env:JAVA_OPTS -split ' '
 
   $agent_port_property='jenkins.model.Jenkins.slaveAgentPort'
-  if(![System.String]::IsNullOrWhiteSpace($env:JENKINS_SLAVE_AGENT_PORT) -and ($env:JAVA_OPTS -notmatch "$agent_port_property")) {
-    $java_opts_array += "-D`"$agent_port_property=$env:JENKINS_SLAVE_AGENT_PORT`""
+  if(![System.String]::IsNullOrWhiteSpace($env:JENKINS_AGENT_PORT) -and ($env:JAVA_OPTS -notmatch "$agent_port_property")) {
+    $java_opts_array += "-D`"$agent_port_property=$env:JENKINS_AGENT_PORT`""
   }
 
   if($null -ne $env:DEBUG) {

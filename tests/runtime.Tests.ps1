@@ -10,7 +10,7 @@ Describe "[$TEST_TAG] build image" {
   }
 
   It 'builds image' {
-    $exitCode, $stdout, $stderr = Build-Docker -t $SUT_IMAGE .
+    $exitCode, $stdout, $stderr = Build-Docker -t $SUT_IMAGE
     $exitCode | Should -Be 0
   }
 
@@ -27,8 +27,8 @@ Describe "[$TEST_TAG] cleanup container" {
 
 Describe "[$TEST_TAG] test multiple JENKINS_OPTS" {
   It '"--help --version" should return the version, not the help' {
-    $dockerfile = Get-EnvOrDefault 'DOCKERFILE' 'Dockerfile-windows'
-    $version=cat $PSScriptRoot/../$dockerFile | Select-String -Pattern 'ENV JENKINS_VERSION.*' | %{$_ -replace '.*:-(.*)}','$1'} | Select-Object -First 1
+    $folder = Get-EnvOrDefault 'FOLDER' ''
+    $version=Get-Content $(Join-Path $folder 'Dockerfile') | Select-String -Pattern 'ENV JENKINS_VERSION.*' | ForEach-Object {$_ -replace '.*:-(.*)}','$1'} | Select-Object -First 1
     # need the last line of output
     $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run --rm -e JENKINS_OPTS=`"--help --version`" --name $SUT_CONTAINER -P $SUT_IMAGE"
     $exitCode | Should -Be 0
@@ -38,8 +38,8 @@ Describe "[$TEST_TAG] test multiple JENKINS_OPTS" {
 
 Describe "[$TEST_TAG] test jenkins arguments" {
   It 'running --help --version should return the version, not the help' {
-    $dockerfile = Get-EnvOrDefault 'DOCKERFILE' 'Dockerfile-windows'
-    $version=cat $PSScriptRoot/../$dockerFile | Select-String -Pattern 'ENV JENKINS_VERSION.*' | %{$_ -replace '.*:-(.*)}','$1'} | Select-Object -First 1
+    $folder = Get-EnvOrDefault 'FOLDER' ''
+    $version=Get-Content $(Join-Path $folder 'Dockerfile') | Select-String -Pattern 'ENV JENKINS_VERSION.*' | %{$_ -replace '.*:-(.*)}','$1'} | Select-Object -First 1
     # need the last line of output
     $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run --rm --name $SUT_CONTAINER -P $SUT_IMAGE --help --version"
     $exitCode | Should -Be 0

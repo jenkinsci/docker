@@ -67,11 +67,26 @@ function Retry-Command {
 }
 
 function Get-SutImage {
-    $DOCKERFILE = Get-EnvOrDefault 'DOCKERFILE' 'Dockerfile-windows'
-    return "pester-jenkins-$DOCKERFILE".ToLower() | %{$_ -replace 'dockerfile$','default'} | %{$_ -replace 'dockerfile-',''} | Select-Object -First 1
+    $FOLDER = Get-EnvOrDefault 'FOLDER' ''
+
+    $REAL_FOLDER=Resolve-Path -Path "$PSScriptRoot/../${FOLDER}"
+
+    if(($FOLDER -match '^(?<jdk>[0-9]+)[\\/](?<os>.+)[\\/](?<flavor>.+)[\\/](?<jvm>.+)$') -and (Test-Path $REAL_FOLDER)) {
+        $JDK = $Matches['jdk']
+        $FLAVOR = $Matches['flavor']
+        $JVM = $Matches['jvm']
+    } else {
+        Write-Error "Wrong folder format or folder does not exist: $FOLDER"
+        exit 1
+    }
+
+    return "pester-jenkins-$JDK-$JVM-$FLAVOR".ToLower()
 }
 
-function Run-Program($cmd, $params) {
+function Run-Program($cmd, $params, $verbose=$false) {
+    if($verbose) {
+        Write-Host "$cmd $params"
+    }
     $psi = New-Object System.Diagnostics.ProcessStartInfo 
     $psi.CreateNoWindow = $true 
     $psi.UseShellExecute = $false 
@@ -94,17 +109,17 @@ function Run-Program($cmd, $params) {
 }
 
 function Build-Docker {
-    $DOCKERFILE = Get-EnvOrDefault 'DOCKERFILE' 'Dockerfile-windows'
-    $DOCKERFILE = $DOCKERFILE.Trim()
+    $FOLDER = Get-EnvOrDefault 'FOLDER' ''
+    $FOLDER = $FOLDER.Trim()
 
-    if(-Not [System.String]::IsNullOrWhiteSpace($env:JENKINS_VERSION)) {
-        return (Run-Program 'docker.exe' "build -f ./$DOCKERFILE --build-arg JENKINS_VERSION=$env:JENKINS_VERSION --build-arg JENKINS_SHA=$env:JENKINS_SHA $args")
+    if(-not [System.String]::IsNullOrWhiteSpace($env:JENKINS_VERSION)) {
+        return (Run-Program 'docker.exe' "build --build-arg JENKINS_VERSION=$env:JENKINS_VERSION --build-arg JENKINS_SHA=$env:JENKINS_SHA $args $FOLDER")
     } 
-    return (Run-Program 'docker.exe' "build -f ./$DOCKERFILE $args")
+    return (Run-Program 'docker.exe' "build $args $FOLDER")
 }
 
 function Build-DockerChild($tag, $dir) {
-    cat "$dir/Dockerfile-windows" | %{$_ -replace "FROM bats-jenkins","FROM $(Get-SutImage)" } | Out-File -FilePath "$dir/Dockerfile-windows.tmp" -Encoding ASCII
+    Get-Content "$dir/Dockerfile-windows" | ForEach-Object{$_ -replace "FROM bats-jenkins","FROM $(Get-SutImage)" } | Out-File -FilePath "$dir/Dockerfile-windows.tmp" -Encoding ASCII
     return (Run-Program 'docker.exe' "build -t `"$tag`" $args -f `"$dir/Dockerfile-windows.tmp`" `"$dir`"")
 }
 

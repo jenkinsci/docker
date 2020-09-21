@@ -11,7 +11,7 @@ Describe "[$TEST_TAG] build image" {
   }
 
   It 'builds image' {
-    $exitCode, $stdout, $stderr = Build-Docker -t $SUT_IMAGE .
+    $exitCode, $stdout, $stderr = Build-Docker -t $SUT_IMAGE
     $exitCode | Should -Be 0
   }
 
