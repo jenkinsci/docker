@@ -1,4 +1,0 @@
-FROM bats-jenkins
-
-COPY plugins.txt C:/ProgramData/Jenkins/Reference/plugins.txt
-RUN & C:/ProgramData/Jenkins/install-plugins.ps1 -PluginFile C:/ProgramData/Jenkins/Reference/plugins.txt
