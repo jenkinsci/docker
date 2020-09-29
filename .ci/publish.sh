@@ -93,7 +93,7 @@ publish() {
     local tag="${version}${variant}"
     local sha
     local build_opts=(--no-cache --pull)
-    local dockerfile="./8/debian/buster/hotspot/Dockerfile"
+    local dockerfile="./8/debian/stretch/hotspot/Dockerfile"
 
     if [ "$dry_run" = true ]; then
         build_opts=()
