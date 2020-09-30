@@ -13,11 +13,11 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
 }
 
 @test "[${SUT_DESCRIPTION}] plugins are installed with jenkins-plugin-cli" {
-  run docker_build_child $SUT_IMAGE-install-plugins-plugins-cli $BATS_TEST_DIRNAME/install-plugins-plugins-cli
+  run docker_build_child $SUT_IMAGE-plugins-cli $BATS_TEST_DIRNAME/plugins-cli
   assert_success
   refute_line --partial 'Skipping already installed dependency'
   # replace DOS line endings \r\n
-  run bash -c "docker run --rm $SUT_IMAGE-install-plugins ls --color=never -1 /var/jenkins_home/plugins | tr -d '\r'"
+  run bash -c "docker run --rm $SUT_IMAGE-plugins-cli ls --color=never -1 /var/jenkins_home/plugins | tr -d '\r'"
   assert_success
   assert_line 'junit.jpi'
   assert_line 'junit.jpi.pinned'
@@ -42,13 +42,13 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
 }
 
 @test "[${SUT_DESCRIPTION}] plugins are installed with jenkins-plugin-cli with non-default REF" {
-  run docker_build_child $SUT_IMAGE-install-plugins-plugins-cli-ref $BATS_TEST_DIRNAME/install-plugins-plugins-cli/ref
+  run docker_build_child $SUT_IMAGE-plugins-cli-ref $BATS_TEST_DIRNAME/plugins-cli/ref
   assert_success
   refute_line --partial 'Skipping already installed dependency'
-  docker run --rm $SUT_IMAGE-install-plugins-plugins-cli-ref -e REF=/var/lib/jenkins/ref ls --color=never -1 /var/lib/jenkins/ref | tr -d '\r'
+  docker run --rm $SUT_IMAGE-plugins-cli-ref -e REF=/var/lib/jenkins/ref ls --color=never -1 /var/lib/jenkins/ref | tr -d '\r'
 
   # replace DOS line endings \r\n
-  run bash -c "docker run --rm $SUT_IMAGE-install-plugins-plugins-cli ls --color=never -1 /var/jenkins_home/plugins | tr -d '\r'"
+  run bash -c "docker run --rm $SUT_IMAGE-plugins-cli ls --color=never -1 /var/jenkins_home/plugins | tr -d '\r'"
   assert_success
   assert_line 'junit.jpi'
   assert_line 'junit.jpi.pinned'
@@ -73,13 +73,13 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
 }
 
 @test "[${SUT_DESCRIPTION}] plugins are installed with jenkins-plugin-cli from a plugins file" {
-  run docker_build_child $SUT_IMAGE-install-plugins-plugins-cli $BATS_TEST_DIRNAME/install-plugins-plugins-cli
+  run docker_build_child $SUT_IMAGE-plugins-cli $BATS_TEST_DIRNAME/plugins-cli
   assert_success
-  run docker_build_child $SUT_IMAGE-install-plugins-plugins-cli-pluginsfile $BATS_TEST_DIRNAME/install-plugins-plugins-cli/pluginsfile
+  run docker_build_child $SUT_IMAGE-plugins-cli-pluginsfile $BATS_TEST_DIRNAME/plugins-cli/pluginsfile
   assert_success
   refute_line --partial 'Skipping already installed dependency'
   # replace DOS line endings \r\n
-  run bash -c "docker run --rm $SUT_IMAGE-install-plugins-plugins-cli ls --color=never -1 /var/jenkins_home/plugins | tr -d '\r'"
+  run bash -c "docker run --rm $SUT_IMAGE-plugins-cli ls --color=never -1 /var/jenkins_home/plugins | tr -d '\r'"
   assert_success
   assert_line 'junit.jpi'
   assert_line 'junit.jpi.pinned'
@@ -102,12 +102,12 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
 }
 
 @test "[${SUT_DESCRIPTION}] plugins are installed with jenkins-plugin-cli even when already exist" {
-  run docker_build_child $SUT_IMAGE-install-plugins-plugins-cli $BATS_TEST_DIRNAME/install-plugins-plugins-cli
+  run docker_build_child $SUT_IMAGE-plugins-cli $BATS_TEST_DIRNAME/plugins-cli
   assert_success
-  run docker_build_child $SUT_IMAGE-install-plugins-plugins-cli-update $BATS_TEST_DIRNAME/install-plugins-plugins-cli/update --no-cache
+  run docker_build_child $SUT_IMAGE-plugins-cli-update $BATS_TEST_DIRNAME/plugins-cli/update --no-cache
   assert_success
   # replace DOS line endings \r\n
-  run bash -c "docker run --rm $SUT_IMAGE-install-plugins-plugins-cli-update unzip -p /var/jenkins_home/plugins/junit.jpi META-INF/MANIFEST.MF | tr -d '\r'"
+  run bash -c "docker run --rm $SUT_IMAGE-plugins-cli-update unzip -p /var/jenkins_home/plugins/junit.jpi META-INF/MANIFEST.MF | tr -d '\r'"
   assert_success
   assert_line 'Plugin-Version: 1.28'
 }
@@ -119,12 +119,12 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
 
 @test "[${SUT_DESCRIPTION}] plugins are getting upgraded but not downgraded" {
   # Initial execution
-  run docker_build_child $SUT_IMAGE-install-plugins-plugins-cli $BATS_TEST_DIRNAME/install-plugins-plugins-cli
+  run docker_build_child $SUT_IMAGE-plugins-cli $BATS_TEST_DIRNAME/plugins-cli
   assert_success
   local work; work="$BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
   mkdir -p $work
   # Image contains junit 1.6 and ant-plugin 1.3
-  run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-install-plugins-plugins-cli true"
+  run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-plugins-cli true"
   assert_success
   run unzip_manifest junit.jpi $work
   assert_line 'Plugin-Version: 1.6'
@@ -152,12 +152,12 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
 }
 
 @test "[${SUT_DESCRIPTION}] do not upgrade if plugin has been manually updated" {
-  run docker_build_child $SUT_IMAGE-install-plugins-plugins-cli $BATS_TEST_DIRNAME/install-plugins-plugins-cli
+  run docker_build_child $SUT_IMAGE-plugins-cli $BATS_TEST_DIRNAME/plugins-cli
   assert_success
   local work; work="$BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
   mkdir -p $work
   # Image contains junit 1.6 and ant-plugin 1.3
-  run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-install-plugins-plugins-cli curl --connect-timeout 20 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L https://updates.jenkins.io/download/plugins/junit/1.8/junit.hpi -o /var/jenkins_home/plugins/junit.jpi"
+  run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-plugins-cli curl --connect-timeout 20 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L https://updates.jenkins.io/download/plugins/junit/1.8/junit.hpi -o /var/jenkins_home/plugins/junit.jpi"
   assert_success
   run unzip_manifest junit.jpi $work
   assert_line 'Plugin-Version: 1.8'
@@ -184,12 +184,12 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
 }
 
 @test "[${SUT_DESCRIPTION}] upgrade plugin even if it has been manually updated when PLUGINS_FORCE_UPGRADE=true" {
-  run docker_build_child $SUT_IMAGE-install-plugins-plugins-cli $BATS_TEST_DIRNAME/install-plugins-plugins-cli
+  run docker_build_child $SUT_IMAGE-plugins-cli $BATS_TEST_DIRNAME/plugins-cli
   assert_success
   local work; work="$BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
   mkdir -p $work
   # Image contains junit 1.6 and ant-plugin 1.3
-  run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-install-plugins-plugins-cli curl --connect-timeout 20 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L https://updates.jenkins.io/download/plugins/junit/1.8/junit.hpi -o /var/jenkins_home/plugins/junit.jpi"
+  run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-plugins-cli curl --connect-timeout 20 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L https://updates.jenkins.io/download/plugins/junit/1.8/junit.hpi -o /var/jenkins_home/plugins/junit.jpi"
   assert_success
   run unzip_manifest junit.jpi $work
   assert_line 'Plugin-Version: 1.8'
@@ -216,13 +216,13 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
 }
 
 @test "[${SUT_DESCRIPTION}] plugins are installed with jenkins-plugin-cli and no war" {
-  run docker_build_child $SUT_IMAGE-install-plugins-plugins-cli-no-war $BATS_TEST_DIRNAME/install-plugins-plugins-cli/no-war
+  run docker_build_child $SUT_IMAGE-plugins-cli-no-war $BATS_TEST_DIRNAME/plugins-cli/no-war
   assert_success
 }
 
 @test "[${SUT_DESCRIPTION}] Use a custom jenkins.war" {
   # Build the image using the right Dockerfile setting a new war with JENKINS_WAR env and with a weird plugin inside
-  run docker_build_child $SUT_IMAGE-install-plugins-plugins-cli-custom-war $BATS_TEST_DIRNAME/install-plugins-plugins-cli/custom-war --no-cache
+  run docker_build_child $SUT_IMAGE-plugins-cli-custom-war $BATS_TEST_DIRNAME/plugins-cli/custom-war --no-cache
   assert_success
   # Assert the weird plugin is there
   assert_output --partial 'my-happy-plugin 1.1'
