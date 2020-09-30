@@ -1,4 +1,4 @@
-# Placeholder for the specified arch that gets parsed in the publish-experimental.sh script.
+# Placeholder for the specified arch that gets parsed in the publish-images.sh script.
 FROM BASEIMAGE
 
 RUN apk add --no-cache git openssh-client curl unzip bash ttf-dejavu coreutils dpkg gnupg tar && rm -rf /tmp/*.apk /var/cache/apk/*

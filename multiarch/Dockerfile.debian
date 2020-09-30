@@ -1,4 +1,4 @@
-# Placeholder for the specified arch that gets parsed in the publish-experimental.sh script.
+# Placeholder for the specified arch that gets parsed in the publish-images.sh script.
 FROM BASEIMAGE
 
 RUN apt-get update && apt-get upgrade -y && apt-get install -y git curl dpkg gpg tar && rm -rf /var/lib/apt/lists/*
