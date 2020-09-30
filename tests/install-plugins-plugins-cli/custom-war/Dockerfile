@@ -17,5 +17,5 @@ RUN cp /usr/share/jenkins/jenkins.war $JENKINS_WAR && \
 # Add the weird plugin to the new custom war
 RUN jar -uf my-custom-jenkins.war WEB-INF/* 
 
-# Run the install-plugins.sh script
-RUN jenkins-plugin-cli --plugins junit:1.6
+# Run the jenkins-plugin-cli script
+RUN jenkins-plugin-cli --list --war $JENKINS_WAR --plugins junit:1.6
