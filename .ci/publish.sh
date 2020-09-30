@@ -99,15 +99,15 @@ publish() {
         build_opts=()
     fi
 
-    if [ "$variant" == "alpine" ] ; then
+    if [ "$variant" == "-alpine" ] ; then
 	dockerfile="./8/alpine/hotspot/Dockerfile"
-    elif [ "$variant" == "slim" ] ; then
+    elif [ "$variant" == "-slim" ] ; then
 	dockerfile="./8/debian/buster-slim/hotspot/Dockerfile"
-    elif [ "$variant" == "jdk11" ] ; then
+    elif [ "$variant" == "-jdk11" ] ; then
 	dockerfile="./11/debian/buster/hotspot/Dockerfile"
-    elif [ "$variant" == "centos" ] ; then
+    elif [ "$variant" == "-centos" ] ; then
 	dockerfile="./8/centos/centos8/hotspot/Dockerfile"
-    elif [ "$variant" == "centos7" ] ; then
+    elif [ "$variant" == "-centos7" ] ; then
 	dockerfile="./8/centos/centos7/hotspot/Dockerfile"
     fi
 
