@@ -33,19 +33,21 @@ nodeWithTimeout('docker') {
                 def nodeLabel = "${k}&&docker"
                 // Create a map to pass in to the 'parallel' step so we can fire all the builds at once
                 builders[nodeLabel] = {
-                    /* Outside of the trusted.ci environment, we're building and testing
-                     * the Dockerfile in this repository, but not publishing to docker hub
-                    */
-                    stage("Build ${nodeLabel}") {
-                        sh "make build-${label}"
-                    }
+                    node(nodeLabel) {
+                        /* Outside of the trusted.ci environment, we're building and testing
+                         * the Dockerfile in this repository, but not publishing to docker hub
+                        */
+                        stage("Build ${k} - ${label}") {
+                            sh "make build-${label}"
+                        }
 
-                    stage('Prepare Test') {
-                        sh "make prepare-test"
-                    }
+                        stage("Prepare Test ${k} - ${label}") {
+                            sh "make prepare-test"
+                        }
                   
-                    stage("Test ${nodeLabel}") {
-                        sh "make test-${label}"
+                        stage("Test ${k} - ${label}") {
+                            sh "make test-${label}"
+                        }
                     }
                 }
             }
