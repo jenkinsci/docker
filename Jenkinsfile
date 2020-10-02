@@ -34,7 +34,7 @@ nodeWithTimeout('docker') {
                 // Create a map to pass in to the 'parallel' step so we can fire all the builds at once
                 builders["${k}-${label}"] = {
                     nodeWithTimeout(nodeLabel) {
-                        stage("Checkout ${k} - ${lael}") {
+                        stage("Checkout ${k} - ${label}") {
                            checkout scm
                         }
 
