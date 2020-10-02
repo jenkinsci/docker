@@ -21,26 +21,32 @@ nodeWithTimeout('docker') {
             sh 'make shellcheck'
         }
 
-        /* Outside of the trusted.ci environment, we're building and testing
-         * the Dockerfile in this repository, but not publishing to docker hub
-         */
-        stage('Build') {
-            sh 'make build'
-        }
-
-        stage('Prepare Test') {
-            sh "make prepare-test"
-        }
-
-        def labels = ['debian', 'slim', 'alpine', 'jdk11', 'centos', 'centos7']
+        def configs = [
+                      'amd64' : ['debian', 'slim', 'alpine', 'jdk11', 'centos', 'centos7'],
+                      'arm64' : ['debian', 'slim', 'alpine', 'jdk11'],
+                      's390x' : ['debian', 'slim', 'alpine', 'jdk11'],
+                      'ppe64le' : ['debian', 'slim', 'alpine', 'jdk11']
+                      ]
         def builders = [:]
-        for (x in labels) {
-            def label = x
+        configs.each { k, v -> 
+            v.each { label -> 
+                def nodeLabel = "${k}&&docker"
+                // Create a map to pass in to the 'parallel' step so we can fire all the builds at once
+                builders[nodeLabel] = {
+                    /* Outside of the trusted.ci environment, we're building and testing
+                     * the Dockerfile in this repository, but not publishing to docker hub
+                    */
+                    stage("Build ${nodeLabel}") {
+                        sh "make build-${label}"
+                    }
 
-            // Create a map to pass in to the 'parallel' step so we can fire all the builds at once
-            builders[label] = {
-                stage("Test ${label}") {
-                    sh "make test-$label"
+                    stage('Prepare Test') {
+                        sh "make prepare-test"
+                    }
+                  
+                    stage("Test ${nodeLabel}") {
+                        sh "make test-${label}"
+                    }
                 }
             }
         }
@@ -51,7 +57,8 @@ nodeWithTimeout('docker') {
         if (branchName ==~ 'master'){
             stage('Publish Experimental') {
                 infra.withDockerCredentials {
-                    sh 'make publish-experimental'
+                    sh 'make publish-tags'
+                    sh 'make publish-manifests'
                 }
             }
         }
