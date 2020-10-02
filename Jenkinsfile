@@ -32,7 +32,7 @@ nodeWithTimeout('docker') {
             v.each { label -> 
                 def nodeLabel = "${k}&&docker"
                 // Create a map to pass in to the 'parallel' step so we can fire all the builds at once
-                builders["${k}-${label}] = {
+                builders["${k}-${label}"] = {
                     node(nodeLabel) {
                         /* Outside of the trusted.ci environment, we're building and testing
                          * the Dockerfile in this repository, but not publishing to docker hub
