@@ -30,10 +30,9 @@ nodeWithTimeout('docker') {
         def builders = [:]
         configs.each { k, v -> 
             v.each { label -> 
-                def nodeLabel = "${k}&&docker"
                 // Create a map to pass in to the 'parallel' step so we can fire all the builds at once
                 builders["${k}-${label}"] = {
-                    nodeWithTimeout(nodeLabel) {
+                    nodeWithTimeout("${k}&&docker") {
                         stage("Checkout ${k} - ${label}") {
                            checkout scm
                         }
