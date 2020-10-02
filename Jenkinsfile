@@ -33,7 +33,11 @@ nodeWithTimeout('docker') {
                 def nodeLabel = "${k}&&docker"
                 // Create a map to pass in to the 'parallel' step so we can fire all the builds at once
                 builders["${k}-${label}"] = {
-                    node(nodeLabel) {
+                    nodeWithTimeout(nodeLabel) {
+                        stage("Checkout ${k} - ${lael}") {
+                           checkout scm
+                        }
+
                         /* Outside of the trusted.ci environment, we're building and testing
                          * the Dockerfile in this repository, but not publishing to docker hub
                         */
