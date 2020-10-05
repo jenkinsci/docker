@@ -25,7 +25,8 @@ nodeWithTimeout('docker') {
                       'amd64' : ['debian', 'slim', 'alpine', 'jdk11', 'centos', 'centos7'],
                       'arm64' : ['debian', 'slim', 'jdk11'],
                       's390x' : ['debian', 'slim', 'jdk11'],
-                      'ppe64le' : ['debian', 'slim', 'jdk11']
+                      // re-enable once the ppc64le agent is back up
+                      //'ppe64le' : ['debian', 'slim', 'jdk11']
                       ]
         def builders = [:]
         configs.each { k, v -> 
