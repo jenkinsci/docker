@@ -1,0 +1,1 @@
+& java -jar C:/ProgramData/Jenkins/jenkins-plugin-manager.jar $args
