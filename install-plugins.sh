@@ -21,6 +21,7 @@
 
 set -o pipefail
 
+echo "WARN: install-plugins.sh is deprecated, please switch to jenkins-plugin-cli"
 
 JENKINS_WAR=${JENKINS_WAR:-/usr/share/jenkins/jenkins.war}
 
@@ -247,7 +248,7 @@ main() {
     # Get the update center URL based on the jenkins version
     if [ ! -v JENKINS_UC_LATEST ]; then
         jenkinsVersion="$(jenkinsMajorMinorVersion)"
-        jenkinsUcJson=$(curl -Ls -o /dev/null -w "%{url_effective}" "${JENKINS_UC}/update-center.json?version=${jenkinsVersion}")
+        jenkinsUcJson=$(curl "${CURL_OPTIONS:--sSfL}" -o /dev/null -w "%{url_effective}" "${JENKINS_UC}/update-center.json?version=${jenkinsVersion}")
         if [ -n "${jenkinsUcJson}" ]; then
             JENKINS_UC_LATEST=${jenkinsUcJson//update-center.json/}
             echo "Using version-specific update center: $JENKINS_UC_LATEST..."

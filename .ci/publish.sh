@@ -93,14 +93,27 @@ publish() {
     local tag="${version}${variant}"
     local sha
     local build_opts=(--no-cache --pull)
+    local dockerfile="./8/debian/stretch/hotspot/Dockerfile"
 
     if [ "$dry_run" = true ]; then
         build_opts=()
     fi
 
+    if [ "$variant" == "-alpine" ] ; then
+	dockerfile="./8/alpine/hotspot/Dockerfile"
+    elif [ "$variant" == "-slim" ] ; then
+	dockerfile="./8/debian/buster-slim/hotspot/Dockerfile"
+    elif [ "$variant" == "-jdk11" ] ; then
+	dockerfile="./11/debian/buster/hotspot/Dockerfile"
+    elif [ "$variant" == "-centos" ] ; then
+	dockerfile="./8/centos/centos8/hotspot/Dockerfile"
+    elif [ "$variant" == "-centos7" ] ; then
+	dockerfile="./8/centos/centos7/hotspot/Dockerfile"
+    fi
+
     sha=$(curl -q -fsSL "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/${version}/jenkins-war-${version}.war.sha256" )
 
-    docker build --file "Dockerfile$variant" \
+    docker build --file "${dockerfile}" \
                  --build-arg "JENKINS_VERSION=$version" \
                  --build-arg "JENKINS_SHA=$sha" \
                  --tag "${JENKINS_REPO}:${tag}" \
