@@ -15,46 +15,49 @@ stage('Build') {
                 checkout scm
             }
 
-            if (!infra.isTrusted()) {
+            try {
+                if (!infra.isTrusted()) {
+                    /* Outside of the trusted.ci environment, we're building and testing
+                     * the Dockerfile in this repository, but not publishing to docker hub
+                     */
+                    stage('Build') {
+                        powershell './make.ps1'
+                    }
 
-                /* Outside of the trusted.ci environment, we're building and testing
-                * the Dockerfile in this repository, but not publishing to docker hub
-                */
-                stage('Build') {
-                    powershell './make.ps1'
-                }
+                    stage('Test') {
+                        powershell './make.ps1 test'
+                    }
 
-                stage('Test') {
-                    powershell './make.ps1 test'
-                }
-
-                def branchName = "${env.BRANCH_NAME}"
-                if (branchName ==~ 'master'){
-                    stage('Publish Experimental') {
+                    def branchName = "${env.BRANCH_NAME}"
+                    if (branchName ==~ 'master'){
+                        stage('Publish Experimental') {
+                            infra.withDockerCredentials {
+                                withEnv(['DOCKERHUB_ORGANISATION=jenkins4eval','DOCKERHUB_REPO=jenkins']) {
+                                    powershell './make.ps1 publish'
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    /* In our trusted.ci environment we only want to be publishing our
+                     * containers from artifacts
+                     */
+                    stage('Publish') {
                         infra.withDockerCredentials {
-                            withEnv(['DOCKERHUB_ORGANISATION=jenkins4eval','DOCKERHUB_REPO=jenkins']) {
+                            withEnv(['DOCKERHUB_ORGANISATION=jenkins','DOCKERHUB_REPO=jenkins']) {
                                 powershell './make.ps1 publish'
                             }
                         }
                     }
                 }
-            } else {
-                /* In our trusted.ci environment we only want to be publishing our
-                * containers from artifacts
-                */
-                stage('Publish') {
-                    infra.withDockerCredentials {
-                        withEnv(['DOCKERHUB_ORGANISATION=jenkins','DOCKERHUB_REPO=jenkins']) {
-                            powershell './make.ps1 publish'
-                        }
-                    }
-                }
+            } finally {
+                powershell 'docker system prune --force --all || Write-Error "Failed to cleanup docker images"'
             }
         }
     }
 
     builds['linux'] = {
-        nodeWithTimeout('docker') {
+        nodeWithTimeout('') {
             deleteDir()
 
             stage('Checkout') {
@@ -102,6 +105,10 @@ stage('Build') {
                   
                                 stage("Test ${k} - ${label}") {
                                     sh "make test-${label}"
+                                }
+
+                                stage("Clean ${k} - ${label}") {
+                                    sh "docker system prune --force --all
                                 }
                             }
                         }
