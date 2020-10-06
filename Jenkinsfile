@@ -57,7 +57,7 @@ stage('Build') {
     }
 
     builds['linux'] = {
-        nodeWithTimeout('') {
+        nodeWithTimeout('docker') {
             deleteDir()
 
             stage('Checkout') {
