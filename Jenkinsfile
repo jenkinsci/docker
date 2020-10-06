@@ -51,7 +51,7 @@ stage('Build') {
                     }
                 }
             } finally {
-                powershell 'docker system prune --force --all || Write-Error "Failed to cleanup docker images"'
+                powershell 'docker system prune --force --all'
             }
         }
     }
