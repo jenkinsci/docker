@@ -107,7 +107,7 @@ stage('Build') {
                                 }
 
                                 stage("Clean ${k} - ${label}") {
-                                    sh "docker system prune --force --all
+                                    sh 'docker system prune --force --all'
                                 }
                             }
                         }
