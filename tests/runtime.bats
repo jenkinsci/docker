@@ -57,7 +57,7 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
 }
 
 @test "[${SUT_DESCRIPTION}] Jenkins is initialized" {
-    retry 60 5 test_url /api/json
+    retry 60 10 test_url /api/json
 }
 
 @test "[${SUT_DESCRIPTION}] JAVA_OPTS are set" {
