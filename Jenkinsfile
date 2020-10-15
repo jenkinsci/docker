@@ -74,7 +74,7 @@ stage('Build') {
                 def configs = [
                     'amd64' : ['debian', 'slim', 'alpine', 'jdk11', 'centos', 'centos7'],
                     'arm64' : ['debian', 'slim', 'jdk11'],
-                    's390x' : ['debian', 'slim', 'jdk11'],
+                    's390x' : ['jdk11'],
                     //'ppc64le' : ['debian', 'slim', 'jdk11']
                 ]
                 def builders = [:]
