@@ -1,10 +1,18 @@
 FROM adoptopenjdk:8-jdk-openj9-bionic
 
-RUN apt-get update \
+RUN set -eux \
+  && apt-get update \
   && apt-get upgrade -y \
-  && apt-get install -y --no-install-recommends git curl gnupg fontconfig unzip nano \
-  && curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash && apt-get install -y git-lfs && git lfs install \
-  && rm -rf /var/lib/apt/lists/*
+  && apt-get install -y --no-install-recommends software-properties-common curl gnupg fontconfig unzip nano \
+  && add-apt-repository -y ppa:git-core/ppa \
+  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A1715D88E1DF1F24 \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends git \
+  && curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash \
+  && apt-get install -y git-lfs \
+  && git lfs install \
+  && rm -rf /var/lib/apt/lists/* \
+  && git version
 
 ARG user=jenkins
 ARG group=jenkins

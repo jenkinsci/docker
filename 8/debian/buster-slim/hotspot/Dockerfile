@@ -1,6 +1,19 @@
 FROM adoptopenjdk/openjdk8:debianslim
 
-RUN apt-get update && apt-get upgrade -y && apt-get install -y git git-lfs curl gpg unzip libfreetype6 libfontconfig1 && git lfs install && rm -rf /var/lib/apt/lists/*
+RUN set -eux \
+  && apt-get update \
+  && apt-get upgrade -y \
+  && apt-get install -y software-properties-common curl gpg unzip libfreetype6 libfontconfig1 \
+  && add-apt-repository -y ppa:git-core/ppa \
+  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A1715D88E1DF1F24 \
+  && sed -i -e 's|hirsute|xenial|' /etc/apt/sources.list.d/git-core-ubuntu-ppa-hirsute.list \
+  && apt-get update \
+  && apt-get install -y git \
+  && curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash \
+  && apt-get install -y git-lfs \
+  && git lfs install \
+  && rm -rf /var/lib/apt/lists/* \
+  && git version
 
 ARG user=jenkins
 ARG group=jenkins
