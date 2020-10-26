@@ -2,7 +2,7 @@ ROOT_DIR="$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))/"
 
 all: shellcheck build test
 
-DOCKERFILES=$(shell find . -type f -not -path "./tests/*" -name Dockerfile)
+DOCKERFILES=$(shell find . -not -path '**/windows/*' -not -path './tests/*' -type f -name Dockerfile)
 
 shellcheck:
 	$(ROOT_DIR)/tools/shellcheck -e SC1091 \
