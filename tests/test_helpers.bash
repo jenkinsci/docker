@@ -41,11 +41,11 @@ function retry {
 }
 
 function sut_image {
-    echo "bats-jenkins-${DOCKERFILE:-Dockerfile}" | tr '[:upper:]' '[:lower:]' | sed -e 's/dockerfile$/default/' | sed -e 's/dockerfile-//'
+    echo "bats-jenkins-${DIRECTORY//\//-}" | tr '[:upper:]' '[:lower:]' | sed -e 's/dockerfile$/default/' | sed -e 's/dockerfile-//'
 }
 
 function docker_build {
-    local opts="-f ${DOCKERFILE:-Dockerfile}"
+    local opts="-f ${DIRECTORY}/Dockerfile"
     local BUILD_DATE
     BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
     if [ -n "$JENKINS_VERSION" ]; then
