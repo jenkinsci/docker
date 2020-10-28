@@ -1,7 +1,5 @@
 ROOT_DIR="$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))/"
 
-BUILD_DATE="$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")"
-
 all: shellcheck build test
 
 DOCKERFILES=$(shell find . -not -path '**/windows/*' -not -path './tests/*' -type f -name Dockerfile)
@@ -12,29 +10,29 @@ shellcheck:
 	                             *.sh
 build:
 	@for d in ${DOCKERFILES} ; do \
-		docker build --build-arg BUILD_DATE=$(BUILD_DATE) --file "$${d}" . ; \
+		docker build --file "$${d}" . ; \
 	done
 
 build-debian:
-	docker build --build-arg BUILD_DATE=$(BUILD_DATE) --file 8/debian/buster/hotspot/Dockerfile .
+	docker build --file 8/debian/buster/hotspot/Dockerfile .
 
 build-alpine:
-	docker build --build-arg BUILD_DATE=$(BUILD_DATE) --file 8/alpine/hotspot/Dockerfile .
+	docker build --file 8/alpine/hotspot/Dockerfile .
 
 build-slim:
-	docker build --build-arg BUILD_DATE=$(BUILD_DATE) --file 8/debian/buster-slim/hotspot/Dockerfile .
+	docker build --file 8/debian/buster-slim/hotspot/Dockerfile .
 
 build-jdk11:
-	docker build --build-arg BUILD_DATE=$(BUILD_DATE) --file 11/debian/buster/hotspot/Dockerfile .
+	docker build --file 11/debian/buster/hotspot/Dockerfile .
 
 build-centos:
-	docker build --build-arg BUILD_DATE=$(BUILD_DATE) --file 8/centos/centos8/hotspot/Dockerfile .
+	docker build --file 8/centos/centos8/hotspot/Dockerfile .
 
 build-centos7:
-	docker build --build-arg BUILD_DATE=$(BUILD_DATE) --file 8/centos/centos7/hotspot/Dockerfile .
+	docker build --file 8/centos/centos7/hotspot/Dockerfile .
 
 build-openj9:
-	docker build --build-arg BUILD_DATE=$(BUILD_DATE) --file 8/ubuntu/bionic/openj9/Dockerfile .
+	docker build --file 8/ubuntu/bionic/openj9/Dockerfile .
 
 build-openj9-jdk11:
 	docker build --file 11/ubuntu/bionic/openj9/Dockerfile .

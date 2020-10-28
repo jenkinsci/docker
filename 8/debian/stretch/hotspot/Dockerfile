@@ -87,12 +87,8 @@ ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
 # from a derived Dockerfile, can use `RUN install-plugins.sh active.txt` to setup ${REF}/plugins from a support bundle
 COPY install-plugins.sh /usr/local/bin/install-plugins.sh
 
-# Build-time metadata as defined at http://label-schema.org
-ARG BUILD_DATE
-
 # metadata labels
 LABEL \
-    org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.schema-version="1.0" \
     org.label-schema.vendor="Jenkins project" \
     org.label-schema.name="Official Jenkins Docker image" \

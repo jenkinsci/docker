@@ -46,12 +46,10 @@ function sut_image {
 
 function docker_build {
     local opts="-f ${DIRECTORY}/Dockerfile"
-    local BUILD_DATE
-    BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
     if [ -n "$JENKINS_VERSION" ]; then
-        docker build $opts --build-arg JENKINS_VERSION=$JENKINS_VERSION --build-arg JENKINS_SHA=$JENKINS_SHA --build-arg BUILD_DATE="${BUILD_DATE}" "$@"
+        docker build $opts --build-arg JENKINS_VERSION=$JENKINS_VERSION --build-arg JENKINS_SHA=$JENKINS_SHA "$@"
     else
-        docker build $opts --build-arg BUILD_DATE="${BUILD_DATE}" "$@"
+        docker build $opts "$@"
     fi
 }
 
