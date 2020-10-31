@@ -124,6 +124,9 @@ if($target -eq "publish") {
             Write-Host "Publishing $Build => tag=$tag"
             $cmd = "docker push {0}/{1}:{2}" -f $Organization, $Repository, $tag
             Invoke-Expression $cmd
+            if($lastExitCode -ne 0) {
+                $publishFailed = 1
+            }
 
             if($PushVersions) {
                 $buildTag = "$JenkinsVersion-$tag"
