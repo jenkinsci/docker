@@ -91,6 +91,8 @@ if($lastExitCode -ne 0) {
 }
 
 if($target -eq "test") {
+    # Only fail the run afterwards in case of any test failures
+    $testFailed = 0
     $mod = Get-InstalledModule -Name Pester -MinimumVersion 4.9.0 -MaximumVersion 4.99.99 -ErrorAction SilentlyContinue
     if($null -eq $mod) {
         $module = "c:\Program Files\WindowsPowerShell\Modules\Pester"
@@ -106,13 +108,24 @@ if($target -eq "test") {
     if(![System.String]::IsNullOrWhiteSpace($Build) -and $builds.ContainsKey($Build)) {
         $env:FOLDER = $builds[$Build]['Folder']
         Invoke-Pester -Path tests -EnableExit
+        if($lastExitCode -ne 0) {
+            testFailed = 1
+        }
         Remove-Item -Force env:\FOLDER
     } else {
         foreach($b in $builds.Keys) {
             $env:FOLDER = $builds[$b]['Folder']
             Invoke-Pester -Path tests -EnableExit
+            if($lastExitCode -ne 0) {
+                testFailed = 1
+            }
             Remove-Item -Force env:\FOLDER
         }
+    }
+
+    # Fail if any test failures
+    if($testFailed -ne 0) {
+        exit 1
     }
 }
 
