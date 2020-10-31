@@ -109,6 +109,7 @@ if($target -eq "test") {
         $env:FOLDER = $builds[$Build]['Folder']
         Invoke-Pester -Path tests -EnableExit
         if($lastExitCode -ne 0) {
+            Write-Host "Testing $Build failed"
             $testFailed = 1
         }
         Remove-Item -Force env:\FOLDER
@@ -117,6 +118,7 @@ if($target -eq "test") {
             $env:FOLDER = $builds[$b]['Folder']
             Invoke-Pester -Path tests -EnableExit
             if($lastExitCode -ne 0) {
+                Write-Host "Testing $b failed"
                 $testFailed = 1
             }
             Remove-Item -Force env:\FOLDER
