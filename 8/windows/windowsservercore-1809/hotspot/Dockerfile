@@ -68,3 +68,14 @@ COPY jenkins.ps1 C:/ProgramData/Jenkins
 # See https://github.com/jenkinsci/plugin-installation-manager-tool#cli-options for information on parameters for jenkins-plugin-cli.ps1 for installing plugins into the docker image
 COPY jenkins-plugin-cli.ps1 C:/ProgramData/Jenkins
 ENTRYPOINT ["powershell.exe", "-f", "C:/ProgramData/Jenkins/jenkins.ps1"]
+
+# metadata labels
+LABEL `
+    org.label-schema.schema-version="1.0" `
+    org.label-schema.vendor="Jenkins project" `
+    org.label-schema.name="Official Jenkins Docker image" `
+    org.label-schema.description="The Jenkins Continuous Integration and Delivery server" `
+    org.label-schema.version="${JENKINS_VERSION}" `
+    org.label-schema.url="https://jenkins.io/" `
+    org.label-schema.vcs-url="https://github.com/jenkinsci/jenkins" `
+    org.label-schema.license="MIT"

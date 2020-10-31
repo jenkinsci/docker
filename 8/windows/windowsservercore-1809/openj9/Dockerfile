@@ -81,3 +81,14 @@ ENV JAVA_SCC_OPTS "-Xshareclasses:name=jenkins_scc,cacheDir=C:/tmp,readonly"
 ENV JAVA_OPTS "${JAVA_SCC_OPTS} ${JAVA_OLD_OPTS}"
 
 ENTRYPOINT ["powershell.exe", "-f", "C:/ProgramData/Jenkins/jenkins.ps1"]
+
+# metadata labels
+LABEL `
+    org.label-schema.schema-version="1.0" `
+    org.label-schema.vendor="Jenkins project" `
+    org.label-schema.name="Official Jenkins Docker image" `
+    org.label-schema.description="The Jenkins Continuous Integration and Delivery server" `
+    org.label-schema.version="${JENKINS_VERSION}" `
+    org.label-schema.url="https://jenkins.io/" `
+    org.label-schema.vcs-url="https://github.com/jenkinsci/jenkins" `
+    org.label-schema.license="MIT"
