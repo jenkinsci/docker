@@ -28,7 +28,7 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
   # running --help --version should return the version, not the help
   local version=$(grep 'ENV JENKINS_VERSION' Dockerfile | sed -e 's/.*:-\(.*\)}/\1/')
   # need the last line of output
-  assert "${version}" docker run --rm --name $SUT_CONTAINER -P $SUT_IMAGE --help --version | tail -n 1
+  assert "${version}" docker run --rm --name $SUT_CONTAINER -P $SUT_IMAGE --help -version | tail -n 1
 }
 
 @test "[${SUT_DESCRIPTION}] timezones are handled correctly" {
