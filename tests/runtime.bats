@@ -71,8 +71,3 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
 @test "[${SUT_DESCRIPTION}] clean test containers" {
     cleanup $SUT_CONTAINER
 }
-
-@test "Force test failure" {
-  assert "true" echo 'false'
-  assert_failure
-}
