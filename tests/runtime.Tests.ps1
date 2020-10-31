@@ -22,9 +22,9 @@ Describe "[$TEST_TAG] build image" {
 Describe "[$TEST_TAG] test version in docker metadata" {
   It 'version in docker metadata' {
     $version=Get-Content $(Join-Path $folder 'Dockerfile') | Select-String -Pattern 'ENV JENKINS_VERSION.*' | ForEach-Object {$_ -replace '.*:-(.*)}','$1'} | Select-Object -First 1
-    $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "inspect -f '{{ index .Config.Labels `"org.label-schema.version`"}}' $SUT_IMAGE"
+    $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "inspect -f '{{index .Config.Labels `"org.label-schema.version`"}}' $SUT_IMAGE"
     $exitCode | Should -Be 0
-    $stdout -split '`n' | %{$_.Trim()} | Select-Object -Last 1 | Should -Be $version
+    $stdout.Trim() | Should -Match $version
   }
 }
 
