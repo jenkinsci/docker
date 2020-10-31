@@ -89,6 +89,7 @@ stage('Build') {
                     builders[label] = {
                         stage("Test ${label}") {
                             sh "make test-$label"
+                            junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/*.xml')
                         }
                     }
                 }
