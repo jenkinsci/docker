@@ -74,7 +74,7 @@ function get_jenkins_password {
 }
 
 function get_version {
-    local from="${DOCKERFILE:-Dockerfile}"
+    local from="${DIRECTORY}/Dockerfile"
     grep 'ENV JENKINS_VERSION' "${from}" | sed -e 's/.*:-\(.*\)}/\1/'
 }
 
