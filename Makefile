@@ -54,7 +54,7 @@ test-run-%: prepare-test
 					-w /usr/src/app node:12-alpine \
 					sh -c "npm install tap-xunit -g && cat target/results-$*.tap | tap-xunit --package='jenkinsci.docker.$*' > target/junit-results-$*.xml"
 
-test-debian: DIRECTORY=8/debian/buster/hotspot
+test-debian: DIRECTORY="8/debian/buster/hotspot"
 test-debian: test-run-debian
 
 test-alpine: DIRECTORY=8/alpine/hotspot
