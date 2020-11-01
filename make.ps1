@@ -111,6 +111,9 @@ if($target -eq "test") {
         if ("Failed" -eq $r.Result) {
             Write-Host "Testing $Build failed"
             $testFailed = $true
+        } else {
+            Write-Host ($r | Format-Table | Out-String)
+            Write-Host "Test passed for $b"
         }
         Remove-Item -Force env:\FOLDER
     } else {
@@ -120,6 +123,9 @@ if($target -eq "test") {
             if ("Failed" -eq $r.Result) {
                 Write-Host "Testing $b failed"
                 $testFailed = $true
+            } else {
+                Write-Host ($r | Format-Table | Out-String)
+                Write-Host "Test passed for $b"
             }
             Remove-Item -Force env:\FOLDER
         }
@@ -129,6 +135,8 @@ if($target -eq "test") {
     if($testFailed -ne $false) {
         Write-Error "Test failed!"
         exit 1
+    } else {
+        Write-Host "Test passed!"
     }
 }
 
