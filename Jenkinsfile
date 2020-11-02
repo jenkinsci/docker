@@ -25,7 +25,11 @@ stage('Build') {
                 }
 
                 stage('Test') {
-                    powershell './make.ps1 test'
+                    def windowsTestStatus = powershell('./make.ps1 test', returnStatus: true)
+                    junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
+                    if (windowsTestStatus > 0) {
+                        error('Windows test stage failed.')
+                    }
                 }
 
                 def branchName = "${env.BRANCH_NAME}"
