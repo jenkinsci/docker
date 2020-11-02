@@ -107,25 +107,23 @@ if($target -eq "test") {
 
     if(![System.String]::IsNullOrWhiteSpace($Build) -and $builds.ContainsKey($Build)) {
         $env:FOLDER = $builds[$Build]['Folder']
-        $r = Invoke-Pester -Path tests -EnableExit
-        if ("Failed" -eq $r.Result) {
-            Write-Host "Testing $Build failed"
+        $TestResults = Invoke-Pester -Path tests -PassThru
+        if ($TestResults.FailedCount -gt 0) {
+            Write-Host "There were $($TestResults.FailedCount) failed tests in $Build"
             $testFailed = $true
         } else {
-            Write-Host ($r | Format-Table | Out-String)
-            Write-Host "Test passed for $b"
+            Write-Host "There were $($TestResults.PassedCount) passed tests out of $($TestResults.TotalCount) in $Build"
         }
         Remove-Item -Force env:\FOLDER
     } else {
         foreach($b in $builds.Keys) {
             $env:FOLDER = $builds[$b]['Folder']
-            $r = Invoke-Pester -Path tests -EnableExit
-            if ("Failed" -eq $r.Result) {
-                Write-Host "Testing $b failed"
+            $TestResults = Invoke-Pester -Path tests -PassThru
+            if ($TestResults.FailedCount -gt 0) {
+                Write-Host "There were $($TestResults.FailedCount) failed tests in $b"
                 $testFailed = $true
             } else {
-                Write-Host ($r | Format-Table | Out-String)
-                Write-Host "Test passed for $b"
+                Write-Host "There were $($TestResults.PassedCount) passed tests out of $($TestResults.TotalCount) in $b"
             }
             Remove-Item -Force env:\FOLDER
         }
@@ -133,10 +131,10 @@ if($target -eq "test") {
 
     # Fail if any test failures
     if($testFailed -ne $false) {
-        Write-Error "Test failed!"
+        Write-Error "Test stage failed!"
         exit 1
     } else {
-        Write-Host "Test passed!"
+        Write-Host "Test stage passed!"
     }
 }
 
