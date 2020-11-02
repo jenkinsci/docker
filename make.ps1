@@ -120,10 +120,6 @@ if($target -eq "test") {
     }
 }
 
-## Debugging purposes
-Get-ChildItem -Recurse -Include junit-results.xml
-Get-ChildItem -Recurse -Include junit-results.xml | ForEach-Object {Write-Output $_; Get-Content $_}
-
 if($target -eq "publish") {
     if(![System.String]::IsNullOrWhiteSpace($Build) -and $builds.ContainsKey($Build)) {
         foreach($tag in $Builds[$Build]['Tags']) {
