@@ -104,13 +104,17 @@ if($target -eq "test") {
     }
 
     if(![System.String]::IsNullOrWhiteSpace($Build) -and $builds.ContainsKey($Build)) {
-        $env:FOLDER = $builds[$Build]['Folder']
-        Invoke-Pester -Path tests -EnableExit
+        $folder = $builds[$Build]['Folder']
+        $env:FOLDER = $folder
+        New-Item -Path ".\target\$folder" -Type Directory
+        Invoke-Pester -Path tests -EnableExit -OutputFile ".\target\$folder\junit-results.xml" -OutputFormat JUnitXml
         Remove-Item -Force env:\FOLDER
     } else {
         foreach($b in $builds.Keys) {
-            $env:FOLDER = $builds[$b]['Folder']
-            Invoke-Pester -Path tests -EnableExit
+            $folder = $builds[$b]['Folder']
+            $env:FOLDER = $folder
+            New-Item -Path ".\target\$folder" -Type Directory
+            Invoke-Pester -Path tests -EnableExit -OutputFile ".\target\$folder\junit-results.xml" -OutputFormat JUnitXml
             Remove-Item -Force env:\FOLDER
         }
     }
