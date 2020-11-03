@@ -106,8 +106,10 @@ if($target -eq "test") {
     }
 
     if(![System.String]::IsNullOrWhiteSpace($Build) -and $builds.ContainsKey($Build)) {
-        $env:FOLDER = $builds[$Build]['Folder']
-        $TestResults = Invoke-Pester -Path tests -PassThru
+        $folder = $builds[$Build]['Folder']
+        $env:FOLDER = $folder
+        New-Item -Path ".\target\$folder" -Type Directory
+        $TestResults = Invoke-Pester -Path tests -PassThru -OutputFile ".\target\$folder\junit-results.xml" -OutputFormat JUnitXml
         if ($TestResults.FailedCount -gt 0) {
             Write-Host "There were $($TestResults.FailedCount) failed tests in $Build"
             $testFailed = $true
@@ -117,8 +119,10 @@ if($target -eq "test") {
         Remove-Item -Force env:\FOLDER
     } else {
         foreach($b in $builds.Keys) {
-            $env:FOLDER = $builds[$b]['Folder']
-            $TestResults = Invoke-Pester -Path tests -PassThru
+            $folder = $builds[$b]['Folder']
+            $env:FOLDER = $folder
+            New-Item -Path ".\target\$folder" -Type Directory
+            $TestResults = Invoke-Pester -Path tests -PassThru -OutputFile ".\target\$folder\junit-results.xml" -OutputFormat JUnitXml
             if ($TestResults.FailedCount -gt 0) {
                 Write-Host "There were $($TestResults.FailedCount) failed tests in $b"
                 $testFailed = $true
@@ -139,11 +143,16 @@ if($target -eq "test") {
 }
 
 if($target -eq "publish") {
+    # Only fail the run afterwards in case of any issues when publishing the docker images
+    $publishFailed = 0
     if(![System.String]::IsNullOrWhiteSpace($Build) -and $builds.ContainsKey($Build)) {
         foreach($tag in $Builds[$Build]['Tags']) {
             Write-Host "Publishing $Build => tag=$tag"
             $cmd = "docker push {0}/{1}:{2}" -f $Organization, $Repository, $tag
             Invoke-Expression $cmd
+            if($lastExitCode -ne 0) {
+                $publishFailed = 1
+            }
 
             if($PushVersions) {
                 $buildTag = "$JenkinsVersion-$tag"
@@ -153,6 +162,9 @@ if($target -eq "publish") {
                 Write-Host "Publishing $Build => tag=$buildTag"
                 $cmd = "docker push {0}/{1}:{2}" -f $Organization, $Repository, $buildTag
                 Invoke-Expression $cmd
+                if($lastExitCode -ne 0) {
+                    $publishFailed = 1
+                }
             }
         }
     } else {
@@ -161,6 +173,9 @@ if($target -eq "publish") {
                 Write-Host "Publishing $b => tag=$tag"
                 $cmd = "docker push {0}/{1}:{2}" -f $Organization, $Repository, $tag
                 Invoke-Expression $cmd
+                if($lastExitCode -ne 0) {
+                    $publishFailed = 1
+                }
 
                 if($PushVersions) {
                     $buildTag = "$JenkinsVersion-$tag"
@@ -170,9 +185,18 @@ if($target -eq "publish") {
                     Write-Host "Publishing $Build => tag=$buildTag"
                     $cmd = "docker push {0}/{1}:{2}" -f $Organization, $Repository, $buildTag
                     Invoke-Expression $cmd
+                    if($lastExitCode -ne 0) {
+                        $publishFailed = 1
+                    }
                 }
             }
         }
+    }
+
+    # Fail if any issues when publising the docker images
+    if($publishFailed -ne 0) {
+        Write-Error "Publish failed!"
+        exit 1
     }
 }
 

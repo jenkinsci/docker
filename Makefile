@@ -46,30 +46,37 @@ bats:
 
 prepare-test: bats
 	git submodule update --init --recursive
+	mkdir -p target
 
-test-debian: prepare-test
-	DIRECTORY="8/debian/buster/hotspot" bats/bin/bats tests
+test-run-%: prepare-test
+	DIRECTORY="${DIRECTORY}" bats/bin/bats tests | tee target/results-$*.tap
+	docker run --rm -v "${PWD}":/usr/src/app \
+					-w /usr/src/app node:12-alpine \
+					sh -c "npm install tap-xunit -g && cat target/results-$*.tap | tap-xunit --package='jenkinsci.docker.$*' > target/junit-results-$*.xml"
 
-test-alpine: prepare-test
-	DIRECTORY="8/alpine/hotspot" bats/bin/bats tests
+test-debian: DIRECTORY="8/debian/buster/hotspot"
+test-debian: test-run-debian
 
-test-slim: prepare-test
-	DIRECTORY="8/debian/buster-slim/hotspot" bats/bin/bats tests
+test-alpine: DIRECTORY=8/alpine/hotspot
+test-alpine: test-run-alpine
 
-test-jdk11: prepare-test
-	DIRECTORY="11/debian/buster/hotspot" bats/bin/bats tests
+test-slim: DIRECTORY=8/debian/buster-slim/hotspot
+test-slim: test-run-slim
 
-test-centos: prepare-test
-	DIRECTORY="8/centos/centos8/hotspot" bats/bin/bats tests
+test-jdk11: DIRECTORY=11/debian/buster/hotspot
+test-jdk11: test-run-jdk11
 
-test-centos7: prepare-test
-	DIRECTORY="8/centos/centos7/hotspot" bats/bin/bats tests
+test-centos: DIRECTORY=8/centos/centos8/hotspot
+test-centos: test-run-centos
 
-test-openj9:
-	DIRECTORY="8/ubuntu/bionic/openj9" bats/bin/bats tests
+test-centos7: DIRECTORY=8/centos/centos7/hotspot
+test-centos7: test-run-centos7
 
-test-openj9-jdk11:
-	DIRECTORY="11/ubuntu/bionic/openj9" bats/bin/bats tests
+test-openj9: DIRECTORY=8/ubuntu/bionic/openj9
+test-openj9: test-run-openj9
+
+test-openj9-jdk11: DIRECTORY=11/ubuntu/bionic/openj9
+test-openj9-jdk11: test-run-openj9-jdk11
 
 test: build prepare-test
 	@for d in ${DOCKERFILES} ; do \
