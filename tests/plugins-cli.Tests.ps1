@@ -11,6 +11,8 @@ Describe "[$TEST_TAG] build image" {
 
   It 'builds image' {
     $exitCode, $stdout, $stderr = Build-Docker -t $SUT_IMAGE
+    Write-Host $stdout
+    Write-Host $stderr
     $exitCode | Should -Be 0
   }
 
@@ -27,10 +29,10 @@ Describe "[$TEST_TAG] cleanup container" {
 
 Describe "[$TEST_TAG] plugins are installed with jenkins-plugin-cli" {
   It 'build child image' {
-    $exitCode, $stdout, $stderr = Build-DockerChild $SUT_IMAGE-install-plugins-plugins-cli $PSScriptRoot/install-plugins-plugins-cli
+    $exitCode, $stdout, $stderr = Build-DockerChild $SUT_IMAGE-plugin-cli $PSScriptRoot/plugins-cli
     $exitCode | Should -Be 0
 
-    $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run --rm $SUT_IMAGE-install-plugins gci `$env:JENKINS_HOME/plugins | Select-Object -Property Name"
+    $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run --rm $SUT_IMAGE-plugin-cli gci `$env:JENKINS_HOME/plugins | Select-Object -Property Name"
     $exitCode | Should -Be 0
 
     $stdout | Should -Match 'junit.jpi'
@@ -57,15 +59,15 @@ Describe "[$TEST_TAG] plugins are installed with jenkins-plugin-cli" {
 }
 
 Describe "[$TEST_TAG] plugins are installed with jenkins-plugin-cli with non-default REF" {
-  $exitCode, $stdout, $stderr = Build-DockerChild $SUT_IMAGE-install-plugins-plugins-cli-ref $PSScriptRoot/install-plugins-plugins-cli/ref
-  $exitCode | Should -Be 0
+  $exitCode, $stdout, $stderr = Build-DockerChild $SUT_IMAGE-plugin-cli-ref $PSScriptRoot/plugins-cli/ref
   Write-Host $stdout
   Write-Host $stderr
+  $exitCode | Should -Be 0
 
-  $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run --rm $SUT_IMAGE-install-plugins-plugins-cli-ref gci `$env:JENKINS_HOME/plugins | Select-Object -Property Name"
-  $exitCode | Should -Be 0
+  $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run --rm $SUT_IMAGE-plugin-cli-ref gci `$env:JENKINS_HOME/plugins | Select-Object -Property Name"
   Write-Host $stdout
   Write-Host $stderr
+  $exitCode | Should -Be 0
 
   $stdout | Should -Match 'junit.jpi'
   $stdout | Should -Match 'junit.jpi.pinned'
