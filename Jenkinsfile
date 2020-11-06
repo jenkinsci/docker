@@ -79,9 +79,14 @@ H 6,21 * * 3''' : '')
                         not { expression { isTrusted() } }
                     }
                     stages {
-                        stage('Build-Test') {
+                        stage('Build') {
                             steps {
-                                sh 'make all'
+                                sh 'make build'
+                            }
+                        }
+                        stage('Test') {
+                            steps {
+                                sh 'make test-debian test-slim test-alpine test-jdk11 test-centos test-centos7'
                             }
                             post {
                                 always {
