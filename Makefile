@@ -81,7 +81,10 @@ test-openj9-jdk11: test-run-openj9-jdk11
 test: build prepare-test
 	@for d in ${DOCKERFILES} ; do \
 		dir=`dirname $$d | sed -e "s_^\./__"` ; \
-		DIRECTORY=$${dir} bats/bin/bats tests ; \
+		DIRECTORY=$${dir} bats/bin/bats tests | tee target/results-$${dir}.tap; \
+		docker run --rm -v "${PWD}":/usr/src/app \
+				-w /usr/src/app node:12-alpine \
+				sh -c "npm install tap-xunit -g && cat target/results-$${dir}.tap | tap-xunit --package='jenkinsci.docker.$${dir}' > target/junit-results-$${dir}.xml" ;
 	done
 
 test-install-plugins: prepare-test
