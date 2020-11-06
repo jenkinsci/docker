@@ -6,21 +6,26 @@ pipeline {
         timestamps()
     }
     triggers {
-        cron '''H H/6 * * 0-2,4-6
-H 6,21 * * 3'''
+        cron(env.BRANCH_NAME == 'master' ? '''H H/6 * * 0-2,4-6
+H 6,21 * * 3''' : '')
     }
     stages {
         stage('Build') {
             parallel {
                 stage('Windows') {
                     agent { label 'windock' }
+                    when {
+                        beforeAgent true
+                        not { expression { isTrusted() } }
+                    }
                     stages {
-                        stage('Build-Test') {
-                            when {
-                                not { expression { isTrusted() } }
-                            }
+                        stage('Build') {
                             steps {
                                 powershell './make.ps1'
+                            }
+                        }
+                        stage('Test') {
+                            steps {
                                 powershell './make.ps1 test'
                             }
                             post {
@@ -31,10 +36,7 @@ H 6,21 * * 3'''
                         }
                         stage('Publish Experimental') {
                             when {
-                                allOf {
-                                    not { expression { isTrusted() } }
-                                    branch 'master'
-                                }
+                                branch 'master'
                             }
                             steps {
                                 withDockerCredentials {
@@ -44,36 +46,40 @@ H 6,21 * * 3'''
                                 }
                             }
                         }
-                        stage('Publish') {
-                            when {
-                                expression { isTrusted() }
-                            }
-                            steps {
-                                // TODO transform to function to  avoid scripts{}
-                                withDockerCredentials {
-                                    withEnv(['DOCKERHUB_ORGANISATION=jenkins','DOCKERHUB_REPO=jenkins']) {
-                                        powershell './make.ps1 publish'
-                                    }
-                                }
+                    }
+                    post {
+                        always {
+                            dockerCleanup()
+                        }
+                    }
+                }
+                stage('Windows-Publish') {
+                    agent { label 'windock' }
+                    when {
+                        beforeAgent true
+                        expression { isTrusted() }
+                    }
+                    steps {
+                        withDockerCredentials {
+                            withEnv(['DOCKERHUB_ORGANISATION=jenkins','DOCKERHUB_REPO=jenkins']) {
+                                powershell './make.ps1 publish'
                             }
                         }
                     }
                     post {
                         always {
-                            powershell(script: '& docker system prune --force --all', returnStatus: true)
+                            dockerCleanup()
                         }
                     }
                 }
                 stage('Linux') {
                     agent { label 'docker&&linux' }
                     when {
+                        beforeAgent true
                         not { expression { isTrusted() } }
                     }
                     stages {
                         stage('Build-Test') {
-                            when {
-                                not { expression { isTrusted() } }
-                            }
                             steps {
                                 sh 'make all'
                             }
@@ -84,37 +90,48 @@ H 6,21 * * 3'''
                             }
                         }
                         stage('Publish Experimental') {
-                            when {
-                                allOf {
-                                    not { expression { isTrusted() } }
-                                    branch 'master'
-                                }
-                            }
+                            when { branch 'master' }
                             steps {
                                 withDockerCredentials {
                                     sh 'make publish-experimental'
                                 }
                             }
                         }
-                        stage('Publish') {
-                            when {
-                                expression { isTrusted() }
-                            }
-                            steps {
-                                withDockerCredentials {
-                                    sh 'make publish'
-                                }
-                            }
+                    }
+                    post {
+                        always {
+                            dockerCleanup()
+                        }
+                    }
+                }
+                stage('Linux-Publish') {
+                    agent { label 'docker&&linux' }
+                    when {
+                        beforeAgent true
+                        expression { isTrusted() }
+                    }
+                    steps {
+                        withDockerCredentials {
+                            sh 'make publish'
                         }
                     }
                     post {
                         always {
-                            sh(script: 'docker system prune --force --all', returnStatus: true)
+                            dockerCleanup()
                         }
                     }
                 }
             }
         }
+    }
+}
+
+// Wrapper to cleanup the docker images
+def dockerCleanup() {
+    if(isUnix()) {
+        sh(script: 'docker system prune --force --all', returnStatus: true)
+    } else {
+        powershell(script: '& docker system prune --force --all', returnStatus: true)
     }
 }
 
