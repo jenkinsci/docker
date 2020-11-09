@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-java -jar /usr/lib/jenkins-plugin-manager.jar "$@"
+java ${JAVA_OPTS:+"$JAVA_OPTS"} -jar /usr/lib/jenkins-plugin-manager.jar "$@"
