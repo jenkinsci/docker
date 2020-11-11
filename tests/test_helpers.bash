@@ -57,6 +57,7 @@ function docker_build_child {
     local tag=$1; shift
     local dir=$1; shift
     sed -e "s/FROM bats-jenkins/FROM $(sut_image)/" "$dir/Dockerfile" > "$dir/Dockerfile.tmp"
+    cat $dir/Dockerfile.tmp >&3
     docker build -t "$tag" "$@" -f "$dir/Dockerfile.tmp" "$dir"
 }
 
