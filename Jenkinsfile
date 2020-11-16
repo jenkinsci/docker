@@ -10,121 +10,113 @@ pipeline {
 H 6,21 * * 3''' : '')
     }
     stages {
-        stage('Build') {
-            parallel {
-                stage('Windows') {
-                    agent { label 'windock' }
-                    when {
-                        beforeAgent true
-                        not { expression { isTrusted() } }
+        stage('BuildAndTest') {
+            matrix {
+                agent { label "${PLATFORM.equals('windows') ? 'winlock' : 'linux'}" }
+                axes {
+                    axis {
+                        name 'PLATFORM'
+                        values 'amd64', 'arm64', 's390x', 'ppc64le', 'windows'
                     }
-                    stages {
-                        stage('Build') {
-                            steps {
-                                powershell './make.ps1'
-                            }
+                    axis {
+                        name 'FLAVOR'
+                        values 'debian', 'slim', 'alpine', 'jdk11', 'centos', 'centos7', 'windows'
+                    }
+                }
+                excludes {
+                    exclude {
+                        axis {
+                            name 'PLATFORM'
+                            notValues 'windows'
                         }
-                        stage('Test') {
-                            steps {
-                                powershell './make.ps1 test'
-                            }
-                            post {
-                                always {
-                                    junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
-                                }
-                            }
-                        }
-                        stage('Publish Experimental') {
-                            when {
-                                branch 'master'
-                            }
-                            steps {
-                                withDockerCredentials {
-                                    withEnv(['DOCKERHUB_ORGANISATION=jenkins4eval','DOCKERHUB_REPO=jenkins']) {
-                                        powershell './make.ps1 publish'
-                                    }
-                                }
-                            }
+                        axis {
+                            name 'FLAVOR'
+                            values 'windows'
                         }
                     }
-                    post {
-                        always {
-                            dockerCleanup()
+                    exclude {
+                        axis {
+                            name 'PLATFORM'
+                            values 'arm64'
+                        }
+                        axis {
+                            name 'FLAVOR'
+                            notValues 'debian', 'slim', 'jdk11'
+                        }
+                    }
+                    exclude {
+                        axis {
+                            name 'PLATFORM'
+                            values 's390x'
+                        }
+                        axis {
+                            name 'FLAVOR'
+                            notValues 'jdk11'
+                        }
+                    }
+                    exclude {
+                        axis {
+                            name 'PLATFORM'
+                            values 'ppc64le'
+                        }
+                        axis {
+                            name 'FLAVOR'
+                            notValues 'jdk11'
                         }
                     }
                 }
-                stage('Windows-Publish') {
-                    agent { label 'windock' }
-                    when {
-                        beforeAgent true
-                        expression { isTrusted() }
+                stages {
+                    stage('Build') {
+                        when {
+                            expression { !isTrusted() }
+                        }
+                        steps {
+                            cmd(linux: "make build-${FLAVOR}", windows: './make.ps1')
+                        }
                     }
-                    steps {
-                        withDockerCredentials {
-                            withEnv(['DOCKERHUB_ORGANISATION=jenkins','DOCKERHUB_REPO=jenkins']) {
-                                powershell './make.ps1 publish'
+                    stage('Test') {
+                        when {
+                            expression { !isTrusted() }
+                        }
+                        steps {
+                            cmd(linux: "make prepare-test test-${FLAVOR}", windows: './make.ps1 test')
+                        }
+                        post {
+                            always {
+                                junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
                             }
                         }
                     }
-                    post {
-                        always {
-                            dockerCleanup()
+                    stage('Publish Experimental') {
+                        when {
+                            branch 'master'
+                            expression { !isTrusted() }
                         }
-                    }
-                }
-                stage('Linux') {
-                    agent { label 'docker&&linux' }
-                    when {
-                        beforeAgent true
-                        not { expression { isTrusted() } }
-                    }
-                    stages {
-                        stage('Build') {
-                            steps {
-                                sh 'make build'
-                            }
-                        }
-                        stage('Test') {
-                            steps {
-                                sh 'make test-debian test-slim test-alpine test-jdk11 test-centos test-centos7'
-                            }
-                            post {
-                                always {
-                                    junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/*.xml')
-                                }
-                            }
-                        }
-                        stage('Publish Experimental') {
-                            when { branch 'master' }
-                            steps {
-                                withDockerCredentials {
-                                    sh 'make publish-tags'
-                                    sh 'make publish-manifests'
+                        steps {
+                            withDockerCredentials {
+                                withEnv(['DOCKERHUB_ORGANISATION=jenkins4eval','DOCKERHUB_REPO=jenkins']) {
+                                    cmd(linux: 'make publish-tags publish-manifests', windows: './make.ps1 publish')
                                 }
                             }
                         }
                     }
-                    post {
-                        always {
-                            dockerCleanup()
+                    stage('Publish') {
+                        when {
+                            beforeAgent true
+                            expression { isTrusted() }
+                        }
+                        steps {
+                            withDockerCredentials {
+                                withEnv(['DOCKERHUB_ORGANISATION=jenkins','DOCKERHUB_REPO=jenkins']) {
+                                    cmd(linux: 'make publish', windows: './make.ps1 publish')
+                                }
+                            }
                         }
                     }
                 }
-                stage('Linux-Publish') {
-                    agent { label 'docker&&linux' }
-                    when {
-                        beforeAgent true
-                        expression { isTrusted() }
-                    }
-                    steps {
-                        withDockerCredentials {
-                            sh 'make publish'
-                        }
-                    }
-                    post {
-                        always {
-                            dockerCleanup()
-                        }
+                post {
+                    always {
+                        dockerCleanup()
                     }
                 }
             }
@@ -132,13 +124,21 @@ H 6,21 * * 3''' : '')
     }
 }
 
+// Wrapper to call a command OS agnostic
+def cmd(args) {
+    def returnStatus = args.get('returnStatus', false)
+    if(isUnix) {
+        sh(script: args.linux, returnStatus: returnStatus)
+    } else {
+        powershell(script: args.windows, returnStatus: returnStatus)
+    }
+}
+
 // Wrapper to cleanup the docker images
 def dockerCleanup() {
-    if(isUnix()) {
-        sh(script: 'docker system prune --force --all', returnStatus: true)
-    } else {
-        powershell(script: '& docker system prune --force --all', returnStatus: true)
-    }
+    cmd(linux: 'docker system prune --force --all',
+        windows: '& docker system prune --force --all',
+        returnStatus: true)
 }
 
 // Wrapper to avoid the script closure in the declarative pipeline
