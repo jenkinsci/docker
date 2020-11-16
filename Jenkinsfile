@@ -99,8 +99,6 @@ stage('Build') {
                             try {
                                 sh "make test-$label"
                             } catch(err) {
-                                // If something bad happened let's clean up the docker images
-                                sh(script: 'docker system prune --force --all', returnStatus: true)
                                 error("${err.toString()}")
                             } finally {
                                 junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/*.xml')
