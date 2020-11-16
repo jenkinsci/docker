@@ -98,7 +98,8 @@ H 6,21 * * 3''' : '')
                             when { branch 'master' }
                             steps {
                                 withDockerCredentials {
-                                    sh 'make publish-experimental'
+                                    sh 'make publish-tags'
+                                    sh 'make publish-manifests'
                                 }
                             }
                         }

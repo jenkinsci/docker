@@ -178,5 +178,5 @@ function Cleanup($image) {
 }
 
 function Unzip-Manifest($Container, $Plugin, $Work) {
-    return (Run-Program "docker.exe" "run --rm -v ${Work}:C:/ProgramData/Jenkins/JenkinsHome $Container mkdir C:/ProgramData/Jenkins/temp | Out-Null ; Copy-Item C:/ProgramData/Jenkins/JenkinsHome/plugins/$Plugin C:/ProgramData/Jenkins/temp/$Plugin.zip ; Expand-Archive C:/ProgramData/Jenkins/temp/$Plugin.zip -Destinationpath C:/ProgramData/Jenkins/temp ; `$content = Get-Content C:/ProgramData/Jenkins/temp/META-INF/MANIFEST.MF ; Remove-Item -Force -Recurse C:/ProgramData/Jenkins/temp ; Write-Host `$content ; exit 0")
+    return (Run-Program "docker.exe" "run --rm -v `"${Work}:C:\ProgramData\Jenkins\JenkinsHome`" $Container mkdir C:/ProgramData/Jenkins/temp | Out-Null ; Copy-Item C:/ProgramData/Jenkins/JenkinsHome/plugins/$Plugin C:/ProgramData/Jenkins/temp/$Plugin.zip ; Expand-Archive C:/ProgramData/Jenkins/temp/$Plugin.zip -Destinationpath C:/ProgramData/Jenkins/temp ; `$content = Get-Content C:/ProgramData/Jenkins/temp/META-INF/MANIFEST.MF ; Remove-Item -Force -Recurse C:/ProgramData/Jenkins/temp ; Write-Host `$content ; exit 0")
 }

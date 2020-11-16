@@ -1,0 +1,4 @@
+FROM bats-jenkins
+
+COPY plugins.txt C:/ProgramData/Jenkins/Reference/plugins.txt
+RUN C:/ProgramData/Jenkins/jenkins-plugin-cli.ps1 --verbose -f C:/ProgramData/Jenkins/Reference/plugins.txt
