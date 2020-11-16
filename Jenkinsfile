@@ -115,7 +115,8 @@ stage('Build') {
                 if (branchName ==~ 'master'){
                     stage('Publish Experimental') {
                         infra.withDockerCredentials {
-                            sh 'make publish-experimental'
+                            sh 'make publish-tags'
+                            sh 'make publish-manifests'
                         }
                     }
                 }

@@ -156,7 +156,7 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
   assert_success
   local work; work="$BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
   mkdir -p $work
-  # Image contains junit 1.6 and ant-plugin 1.3
+  # Image contains junit 1.8 and ant-plugin 1.3
   run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-plugins-cli curl --connect-timeout 20 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L https://updates.jenkins.io/download/plugins/junit/1.8/junit.hpi -o /var/jenkins_home/plugins/junit.jpi"
   assert_success
   run unzip_manifest junit.jpi $work
