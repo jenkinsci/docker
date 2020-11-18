@@ -1,254 +1,342 @@
 #!/bin/bash -eu
+set -eou pipefail
 
-# Publish any versions of the docker image not yet pushed to ${JENKINS_REPO}
-# Arguments:
-#   -n dry run, do not build or publish images
-#   -d debug
+source ./.ci/common-functions.sh > /dev/null 2>&1
 
-set -o pipefail
+# Image Wrapper
+build_image() {
+    local file_path=$1
+    local jenkins_version=$2
+    local jenkins_sha=$3
+    local dry_run=$4
+    local force=$5
 
-. jenkins-support
-
-: "${DOCKERHUB_ORGANISATION:=jenkins}"
-: "${DOCKERHUB_REPO:=jenkins}"
-
-JENKINS_REPO="${DOCKERHUB_ORGANISATION}/${DOCKERHUB_REPO}"
-
-cat <<EOF
-Docker repository in Use:
-* JENKINS_REPO: ${JENKINS_REPO}
-EOF
-
-sort-versions() {
-    if [ "$(uname)" == 'Darwin' ]; then
-        gsort --version-sort
-    else
-        sort --version-sort
-    fi
-}
-
-# Try tagging with and without -f to support all versions of docker
-docker-tag() {
-    local from="${JENKINS_REPO}:$1"
-    local to="$2/${DOCKERHUB_REPO}:$3"
-    local out
-
-    docker pull "$from"
-    if out=$(docker tag -f "$from" "$to" 2>&1); then
-        echo "$out"
-    else
-        docker tag "$from" "$to"
-    fi
-}
-
-login-token() {
-    # could use jq .token
-    curl -q -sSL "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${JENKINS_REPO}:pull" | grep -o '"token":"[^"]*"' | cut -d':' -f 2 | xargs echo
-}
-
-is-published() {
-    local tag=$1
-    local opts=""
-    if [ "$debug" = true ]; then
-        opts="-v"
-    fi
-    local http_code;
-    http_code=$(curl $opts -q -fsL -o /dev/null -w "%{http_code}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/${JENKINS_REPO}/manifests/$tag")
-    if [ "$http_code" -eq "404" ]; then
-        false
-    elif [ "$http_code" -eq "200" ]; then
-        true
-    else
-        echo "Received unexpected http code from Docker hub: $http_code"
-        exit 1
-    fi
-}
-
-get-manifest() {
-    local tag=$1
-    local opts=""
-    if [ "$debug" = true ]; then
-        opts="-v"
-    fi
-    curl $opts -q -fsSL -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/${JENKINS_REPO}/manifests/$tag"
-}
-
-get-digest() {
-    local manifest
-    manifest=$(get-manifest "$1")
-    #get-manifest "$1" | jq .config.digest
-    if [ "$debug" = true ]; then
-        >&2 echo "DEBUG: Manifest for $1: $manifest"
-    fi
-    echo "$manifest" | grep -A 10 -o '"config".*' | grep digest | head -1 | cut -d':' -f 2,3 | xargs echo
-}
-
-get-latest-versions() {
-    curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 30
-}
-
-publish() {
-    local version=$1
-    local variant=$2
-    local tag="${version}${variant}"
-    local sha
-    local build_opts=(--no-cache --pull)
-    local dockerfile="./8/debian/stretch/hotspot/Dockerfile"
-
-    if [ "$dry_run" = true ]; then
-        build_opts=()
-    fi
-
-    if [ "$variant" == "-alpine" ] ; then
-	dockerfile="./8/alpine/hotspot/Dockerfile"
-    elif [ "$variant" == "-slim" ] ; then
-	dockerfile="./8/debian/buster-slim/hotspot/Dockerfile"
-    elif [ "$variant" == "-jdk11" ] ; then
-	dockerfile="./11/debian/buster/hotspot/Dockerfile"
-    elif [ "$variant" == "-centos" ] ; then
-	dockerfile="./8/centos/centos8/hotspot/Dockerfile"
-    elif [ "$variant" == "-centos7" ] ; then
-	dockerfile="./8/centos/centos7/hotspot/Dockerfile"
-    fi
-
-    sha=$(curl -q -fsSL "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/${version}/jenkins-war-${version}.war.sha256" )
-
-    docker build --file "${dockerfile}" \
-                 --build-arg "JENKINS_VERSION=$version" \
-                 --build-arg "JENKINS_SHA=$sha" \
-                 --tag "${JENKINS_REPO}:${tag}" \
-                 "${build_opts[@]+"${build_opts[@]}"}" .
-
-    # " line to fix syntax highlightning
     if [ ! "$dry_run" = true ]; then
-        docker push "${JENKINS_REPO}:${tag}"
+        dry_run=""
     else
-        echo "Dry run mode: no docker push"
+        dry_run="-n"
     fi
+
+    if [ ! "$force" = true ]; then
+        force=""
+    else
+        force="--force"
+    fi
+
+    echo "Calling publish-images.sh with the following command: publish-images.sh -f ${file_path} -i jenkins -t ${jenkins_version}-$(get_list_of_docker_images ${file_path}) -a "JENKINS_VERSION=${jenkins_version} JENKINS_SHA=${jenkins_sha}" -b "--no-cache --pull" -c . ${dry_run} ${force} ....."
+    .ci/publish-images.sh -f ${file_path} -i jenkins -t ${jenkins_version}-$(get_list_of_docker_images ${file_path}) -a "JENKINS_VERSION=${jenkins_version} JENKINS_SHA=${jenkins_sha}" -b "--no-cache --pull" -c . ${dry_run} ${force}
+    echo -e "\n\nFinished building jenkins:${jenkins_version}-$(get_list_of_docker_images ${file_path})!"
 }
 
-tag-and-push() {
-    local source=$1
-    local target=$2
-    local digest_source
-    local digest_target
+build_images() {
+    local os_name=$1
+    local jdk_version=$2
+    local jvm=$3
+    local start_after=$4
+    local dry_run=$5
+    local force=$6
 
-    if [ "$debug" = true ]; then
-        >&2 echo "DEBUG: Getting digest for ${source}"
-    fi
-    # if tag doesn't exist yet, ie. dry run
-    if ! digest_source=$(get-digest "${source}"); then
-        echo "Unable to get source digest for '${source} ${digest_source}'"
-        digest_source=""
-    fi
+    echo "Grabbing all Dockerfiles on disk....."
+    dockerfile_list=$(filter_dockerfile_list "${os_name}" "${jdk_version}" "${jvm}" "$(get_all_dockerfiles)")
+    echo "Dockerfiles that need to be processed: ${dockerfile_list}"
 
-    if [ "$debug" = true ]; then
-        >&2 echo "DEBUG: Getting digest for ${target}"
-    fi
-    if ! digest_target=$(get-digest "${target}"); then
-        echo "Unable to get target digest for '${target} ${digest_target}'"
-        digest_target=""
+    echo "Grabbing list of Jenkins versions...."
+    version_list=$(get-last-x-jenkins-versions ${JENKINS_VERSION_DEPTH})
+
+    # Filter the list if start after is set
+    if [ -n "${start_after}" ]; then
+        version_list=$(filter_version_list ${start_after} "${version_list}")
     fi
 
-    if [ "$digest_source" == "$digest_target" ] && [ -n "${digest_target}" ]; then
-        echo "Images ${source} [$digest_source] and ${target} [$digest_target] are already the same, not updating tags"
-    else
-        echo "Creating tag ${target} pointing to ${source}"
-        docker-tag "${source}" "${DOCKERHUB_ORGANISATION}" "${target}"
-        destination="${REPO:-${JENKINS_REPO}}:${target}"
-        if [ ! "$dry_run" = true ]; then
-            echo "Pushing ${destination}"
-            docker push "${destination}"
+    echo "Jenkins versions the need to be processed: ${version_list}"
+
+    # Loop through all the filtered Dockerfiles to be processed
+    for FILE in ${dockerfile_list}; do
+        echo "Processing Dockerfile: ${FILE}"
+        arch=$(docker-get-arch)
+        valid_os_and_arch=true
+
+        # Check if the current architecture and OS are valid
+        for OS in ${!arch}; do
+            if [[ ${FILE} == *"/${OS}/"* ]]; then
+                valid_os_and_arch=false
+            fi
+        done
+
+        if [[ ${valid_os_and_arch} = true ]]; then
+            echo "Dockerfile has a valid OS and arch combination!"
+            for VERSION in ${version_list}; do
+                jenkins_sha=$(get-jenkins-version-sha ${VERSION})
+
+                build_image ${FILE} ${VERSION} ${jenkins_sha} ${dry_run} ${force}
+            done
         else
-            echo "Would push ${destination}"
+            echo "The following Dockerfile was not a valid option for the OS and arch(${arch}): ${FILE}"
         fi
-    fi
+    done
 }
 
-publish-latest() {
-    local version=$1
-    local variant=$2
-    echo "publishing latest: $version$variant"
+# Tag Wrapper
+tag_image() {
+    local image_name=$1
+    local tags=$2
+    local dry_run=$3
+    local force=$4
 
-    # push latest (for master) or the name of the branch (for other branches)
-    if [ -z "${variant}" ]; then
-        tag-and-push "${version}${variant}" "latest"
+    if [ ! "$dry_run" = true ]; then
+        dry_run=""
     else
-        tag-and-push "${version}${variant}" "${variant#-}"
+        dry_run="-n"
     fi
+
+    if [ ! "$force" = true ]; then
+        force=""
+    else
+        force="--force"
+    fi
+
+    echo "Calling publish-tag.sh with the following command: .ci/publish-tag.sh -i "${image_name}" -t "${tags}" ${dry_run} ${force}"
+    .ci/publish-tags.sh -i "${image_name}" -t "${tags}" ${dry_run} ${force}
+    echo -e "\nFinished tagging ${image_name}!\n\n"
 }
 
-publish-lts() {
-    local version=$1
-    local variant=$2
-    tag-and-push "${version}${variant}" "lts${variant}"
-    tag-and-push "${version}${variant}" "${version}-lts${variant}"
+tag_images() {
+    local os_name=$1
+    local jdk_version=$2
+    local jvm=$3
+    local start_after=$4
+    local dry_run=$5
+    local force=$6
+
+    echo "Grabbing all Dockerfiles on disk....."
+    dockerfile_list=$(filter_dockerfile_list "${os_name}" "${jdk_version}" "${jvm}" "$(get_all_dockerfiles)")
+    echo "Dockerfiles that need to be processed: ${dockerfile_list}"
+
+    echo "Grabbing list of Jenkins versions...."
+    version_list=$(get-last-x-jenkins-versions ${JENKINS_VERSION_DEPTH})
+
+    # Filter the list if start after is set
+    if [ -n "${start_after}" ]; then
+        version_list=$(filter_version_list "${start_after}" "${version_list}")
+    fi
+
+    echo "Grabbing LTS version in list...."
+    lts_version=$(find-latest-lts-jenkins-version "${version_list}")
+    echo "Latest LTS version: ${lts_version}"
+
+    echo "Grabbing latest version in list..."
+    latest_version=$(find-latest-jenkins-version "${version_list}")
+    echo "Latest version: ${latest_version}"
+
+    echo "Jenkins versions the need to be processed: ${version_list}"
+
+    # Loop through all the filtered Dockerfiles to be processed
+    for FILE in ${dockerfile_list}; do
+        echo "Processing Dockerfile: ${FILE}"
+        arch=$(docker-get-arch)
+        valid_os_and_arch=true
+
+        # Check if the current architecture and OS are valid
+        for OS in ${!arch}; do
+            if [[ ${FILE} == *"/${OS}/"* ]]; then
+                valid_os_and_arch=false
+            fi
+        done
+
+        if [[ ${valid_os_and_arch} = true ]]; then
+            echo "Dockerfile has a valid OS and arch combination!"
+            for VERSION in ${version_list}; do
+                echo "Generating all the tags for the image......"
+                tags=$(get_tags "${FILE}" "${VERSION}" "${lts_version}" "${latest_version}" "${default_image}" "${jdk11_image}")
+                echo "Tags needing to be processed: ${tags}"
+
+                tag_image "jenkins:${VERSION}-$(get_list_of_docker_images ${FILE})" "${tags}" "${DRY_RUN}" "${FORCE}"
+            done
+        else
+            echo "The following Dockerfile was not a valid option for the OS and arch(${arch}): ${FILE}"
+        fi
+    done
 }
 
-# Process arguments
+# Manifest Wrapper
+build-manifest() {
+    local manifest_name=$1
+    local image_name=$2
+    local supported_archs=$3
+    local dry_run=$4
 
-dry_run=false
-debug=false
-variant=""
-start_after="1.0" # By default, we will publish anything missing (only the last 20 actually)
+    if [ ! "$dry_run" = true ]; then
+        dry_run=""
+    else
+        dry_run="-n"
+    fi
+
+    echo "Calling publish-manifest.sh with the following command: .ci/publish-manifest.sh -m "${manifest_name}" -i "${image_name}" -a "${supported_archs}" ${dry_run}"
+    .ci/publish-manifests.sh -m "${manifest_name}" -i "${image_name}" -a "${supported_archs}" ${dry_run}
+    echo -e "\nFinished building manifest for ${manifest_name}!\n\n"
+
+}
+
+build-manifests() {
+    local os_name=$1
+    local jdk_version=$2
+    local jvm=$3
+    local start_after=$4
+    local dry_run=$5
+
+    echo "Grabbing all Dockerfiles on disk....."
+    dockerfile_list=$(filter_dockerfile_list "${os_name}" "${jdk_version}" "${jvm}" "$(get_all_dockerfiles)")
+    echo "Dockerfiles that need to be processed: ${dockerfile_list}"
+
+    echo "Grabbing list of Jenkins versions...."
+    version_list=$(get-last-x-jenkins-versions ${JENKINS_VERSION_DEPTH})
+
+    # Filter the list if start after is set
+    if [ -n "${start_after}" ]; then
+        version_list=$(filter_version_list "${start_after}" "${version_list}")
+    fi
+
+    echo "Grabbing LTS version in list...."
+    lts_version=$(find-latest-lts-jenkins-version "${version_list}")
+    echo "Latest LTS version: ${lts_version}"
+
+    echo "Grabbing latest version in list..."
+    latest_version=$(find-latest-jenkins-version "${version_list}")
+    echo "Latest version: ${latest_version}"
+
+    echo "Jenkins versions the need to be processed: ${version_list}"
+
+    # Loop through all the filtered Dockerfiles to be processed
+    for FILE in ${dockerfile_list}; do
+        echo "Processing Dockerfile: ${FILE}"
+
+        echo "Processing supported archs...."
+        archs="amd64 amr64 s390x ppc64le"
+        supported_archs=""
+
+        # Loop through all archs and see if there is a conflict. If not add them to supported_arch var
+        for arch in ${archs}; do
+            valid_os_and_arch=true
+            for OS in ${!arch}; do
+                if [[ ${FILE} == *"/${OS}/"* ]]; then
+                    valid_os_and_arch=false
+                fi
+            done
+
+            if [[ ${valid_os_and_arch} = true ]]; then
+                supported_archs="${supported_archs} ${arch}"
+            fi
+        done
+
+        echo "Supported archs for ${FILE}: ${supported_archs}"
+
+        # Loop through all versions and process them
+        for VERSION in ${version_list}; do
+            echo "Generating all the tags for the image......"
+            tags=$(get_tags "${FILE}" "${VERSION}" "${lts_version}" "${latest_version}" "${default_image}" "${jdk11_image}")
+            # Adding in base verbose tag
+            tags="${tags} ${VERSION}-$(get_list_of_docker_images ${FILE})"
+            echo "Tags needing to be processed: ${tags}"
+
+            # Loop through all tags and build manifest
+            for tag in ${tags};do
+                build-manifest "jenkins:${tag}" "jenkins:${tag}" "${supported_archs}" "${DRY_RUN}"
+            done
+        done
+    done
+}
+
+# Configs
+
+# List OSs to exclude from a given arch
+# ARCH-NAME="OS-NAME_1 OS-NAME-2 OS-NAME-X...."
+amd64="clefos"
+amr64="clefos alpine"
+s390x="centos alpine"
+ppc64le="clefos alpine"
+
+# Default values to tag an image with the OS tag
+# OS-NAME="OS-VERSION JVM JDK-VERSION"
+alpine="3.12 hotspot 8"
+centos="8 hotspot 8"
+debian="buster hotspot 8"
+ubuntu="bionic openj9 8"
+
+# Default Image
+# default_image="OS-NAME OS-VERSION JVM JDK-VERSION"
+default_image="debian buster hotspot 8"
+
+# JDK11 Image
+# jdk11_image="OS-NAME OS-VERSION JVM JDK-VERSION"
+jdk11_image="debian buster hotspot 11"
+
+# Inputs
+JENKINS_VERSION_DEPTH=30 # The default number of Jenkins versions to fetch
+PUBLISH=""               # The item(image, tag, manifest) to be published
+OS_NAME=""               # The name of the OS you want to build for
+JDK_VERSIONS=""          # The JDK versions you want to build for
+JVM=""                   # The JVM options you want to build for
+START_AFTER=""           # Only build images after a certain Jenkins version
+DRY_RUN=false            # Builds the images but does not push/publish them
+DEBUG=false              # Turns on verbose output
+FORCE=false              # Will push/publish no matter what (Will override the dry run flag). Helpful when vulnerabilities are identified and need to push patches
 
 while [[ $# -gt 0 ]]; do
-    key="$1"
-    case $key in
-        -n)
-        dry_run=true
-        ;;
-        -d)
-        debug=true
-        ;;
-        -v|--variant)
-        variant="-"$2
-        shift
-        ;;
-        --start-after)
-        start_after=$2
-        shift
-        ;;
-        *)
-        echo "Unknown option: $key"
-        return 1
-        ;;
-    esac
+  key="$1"
+  case $key in
+    --publish)
+    PUBLISH=$2
     shift
+    ;;
+    --os-name)
+    OS_NAME=$2
+    shift
+    ;;
+    --jdk)
+    JDK_VERSIONS=$2
+    shift
+    ;;
+    --jvm)
+    JVM=$2
+    shift
+    ;;
+    --start-after)
+    START_AFTER=$2
+    shift
+    ;;
+    --debug)
+    DEBUG=true
+    ;;
+    --force)
+    FORCE=true
+    ;;
+    --dry-run)
+    DRY_RUN=true
+    ;;
+    *)
+    echo "Unknown option: $key"
+    return 1
+    ;;
+  esac
+  shift
 done
 
 
-if [ "$dry_run" = true ]; then
-    echo "Dry run, will not publish images"
+if [[ "$DRY_RUN" = true ]]; then
+    echo "Dry run enabled, will not publish object"
 fi
 
-TOKEN=$(login-token)
+if [[ "$DEBUG" = true ]]; then
+    set -x
+fi
 
-lts_version=""
-version=""
-for version in $(get-latest-versions); do
-    if is-published "$version$variant"; then
-        echo "Tag is already published: $version$variant"
-    else
-        echo "$version$variant not published yet"
-        if versionLT "$start_after" "$version"; then # if start_after < version
-            echo "Version $version higher than $start_after: publishing $version$variant"
-            publish "$version" "$variant"
-        else
-            echo "Version $version lower or equal to $start_after, no publishing (variant=$variant)."
-        fi
-    fi
-
-    # Update lts tag (if we have an LTS version depending on $start_after)
-    if versionLT "$start_after" "$version" && [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-        lts_version="${version}"
-    fi
-done
-
-publish-latest "${version}" "${variant}"
-
-if [ -n "${lts_version}" ]; then
-    publish-lts "${lts_version}" "${variant}"
+# Process what the user wants to build
+if [[ "${PUBLISH}" == "images" ]]; then
+    build_images "${OS_NAME}" "${JDK_VERSIONS}" "${JVM}" "${START_AFTER}" "${DRY_RUN}" "${FORCE}"
+elif [[ "${PUBLISH}" == "tags" ]]; then
+    tag_images "${OS_NAME}" "${JDK_VERSIONS}" "${JVM}" "${START_AFTER}" "${DRY_RUN}" "${FORCE}"
+elif [[ "${PUBLISH}" == "manifests" ]]; then
+    build-manifests "${OS_NAME}" "${JDK_VERSIONS}" "${JVM}" "${START_AFTER}" "${DRY_RUN}"
 else
-    echo "No LTS publishing"
+    echo "Publish parameter must be set to one of the following: images, tags or manifests!"
 fi

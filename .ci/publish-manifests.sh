@@ -1,195 +1,83 @@
 #!/bin/bash -eu
-
-# Publish any versions of the docker image not yet pushed to jenkins/jenkins
-# Arguments:
-#   -n dry run, do not build or publish images
-#   -d debug
-
 set -eou pipefail
 
-. jenkins-support
+source ./.ci/common-functions.sh > /dev/null 2>&1
 
-: "${DOCKERHUB_ORGANISATION:=jenkins4eval}"
-: "${DOCKERHUB_REPO:=jenkins}"
+publish-manifest() {
+    # Construct needed uris for the manifest process
+    manifest_uri=$(echo ${DOCKER_REGISTRY}/${DOCKER_NAMESPACE}/${MANIFEST_NAME} | sed 's/^\/*//')  # strip off all leading '/' characters
+    image_uri=$(echo ${DOCKER_REGISTRY}/${DOCKER_NAMESPACE}/${IMAGE_NAME} | sed 's/^\/*//')  # strip off all leading '/' characters
 
-JENKINS_REPO="${DOCKERHUB_ORGANISATION}/${DOCKERHUB_REPO}"
-
-cat <<EOF
-Docker repository in Use:
-* JENKINS_REPO: ${JENKINS_REPO}
-EOF
-
-#This is precautionary step to avoid accidental push to offical jenkins image
-if [[ "$DOCKERHUB_ORGANISATION" == "jenkins" ]]; then
-    echo "Experimental docker image should not published to jenkins organization , hence exiting with failure";
-    exit 1;
-fi
-
-docker-login() {
-    docker login --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_PASSWORD}
-    echo "Docker logged in successfully"
-}
-
-docker-enable-experimental() {
-    mkdir -p $HOME/.docker;
-    echo '{"experimental": "enabled"}' > $HOME/.docker/config.json;
-    echo "Docker experimental enabled successfully"
-}
-
-sort-versions() {
-    if [[ "$(uname)" == 'Darwin' ]]; then
-        gsort --version-sort
-    else
-        sort --version-sort
-    fi
-}
-
-get-latest-versions() {
-    curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 30
-}
-
-get-latest-lts-version() {
-    local lts_version=""
-
-    for version in $(get-latest-versions); do
-        if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            lts_version="${version}"
-        fi
-    done
-    echo "${lts_version}"
-}
-
-docker-pull() {
-    local tag=$1
-    local archs=$2
-
-    for arch in ${archs}; do
-        docker pull ${JENKINS_REPO}:${tag}-${arch}
-        echo "Pulled ${JENKINS_REPO}:${tag}-${arch}"
-    done
-}
-
-publish-variant() {
-    local tag=$1
-    local archs=$2
-    local manifest_tag=$3
-
-    # Pull down all images need for manifest
-    docker-pull "${tag}" "${archs}"
-
-    docker_manifest="docker manifest create ${JENKINS_REPO}:${manifest_tag}"
-
-    for arch in ${archs}; do
-        docker_manifest="${docker_manifest} ${JENKINS_REPO}:${tag}-${arch}"
+    # Pull each of our docker images on the supported architectures
+    echo "Pulling needed images to build ${manifest_uri} manifest"
+    for ARCH in ${ARCHITECTURES}; do
+        echo "Pulling ${image_uri}-${ARCH}....."
+        docker pull ${image_uri}-${ARCH}
+        echo "Successfully pulled image!"
     done
 
-    if [[ "$debug" = true ]]; then
-        echo "DEBUG: Docker Manifest command for ${manifest_tag}: ${docker_manifest}"
+    # Build the manifest
+    docker_manifest_command="docker manifest create ${manifest_uri}"
+    for ARCH in ${ARCHITECTURES}; do
+        docker_manifest_command="${docker_manifest_command} ${image_uri}-${ARCH}"
+    done
+
+    echo "Issuing the following command to build manifest: ${docker_manifest_command}"
+    if [[ ! "$DRY_RUN" = true ]]; then
+        eval "${docker_manifest_command}"
     fi
 
-    # Run the docker_manifest string
-    eval "${docker_manifest}"
-    echo "Docker Manifest for ${JENKINS_REPO}:${manifest_tag} created"
-
-    # Annotate the manifest
-    for arch in ${archs}; do
-        # Change nice arch name to Docker Official arch names
-        tag_arch=${arch}
-        if [[ $arch == arm64 ]]; then
-            tag_arch="arm64v8"
+    # Annotate the built manifest with arch information
+    for ARCH in ${ARCHITECTURES}; do
+        echo "Issuing the following command to annotate the manifest: docker manifest annotate ${manifest_uri} ${image_uri}-${ARCH} --arch ${ARCH}"
+        if [[ ! "$DRY_RUN" = true ]]; then
+            docker manifest annotate ${manifest_uri} ${image_uri}-${ARCH} --arch ${ARCH}
         fi
-
-        docker manifest annotate ${JENKINS_REPO}:${manifest_tag} ${JENKINS_REPO}:${tag}-${arch} --arch ${tag_arch}
-        echo "Annotated ${JENKINS_REPO}:${manifest_tag}: ${JENKINS_REPO}:${tag}-${arch} to be ${tag_arch} for manifest"
     done
 
-    # Push the manifest
-    docker manifest push ${JENKINS_REPO}:${manifest_tag}
-    echo "Pushed ${JENKINS_REPO}:${manifest_tag}"
+    # Push the annotated manifest
+    echo "Issuing the following command to push the annotated manifest: docker manifest push --purge ${manifest_uri}"
+    if [[ ! "$DRY_RUN" = true ]]; then
+        docker manifest push --purge ${manifest_uri}
+    fi
 
-    for arch in ${archs}; do
-        docker rmi "${JENKINS_REPO}:${tag}-${arch}"
-        echo "Removed  from ${JENKINS_REPO}:${tag}-${arch} local disk"
-    done
-}
-
-publish-alpine() {
-    local archs="arm64 s390x ppc64le amd64"
-    publish-variant "alpine"  "${archs}"  "alpine"
-}
-
-publish-slim() {
-    local archs="arm64 s390x ppc64le amd64"
-    publish-variant "slim"  "${archs}"  "slim"
-}
-
-publish-debian() {
-    local archs="arm64 s390x ppc64le amd64"
-    publish-variant "debian"  "${archs}"  "debian"
-}
-
-publish-lts-alpine() {
-    local archs="arm64 s390x ppc64le amd64"
-    publish-variant "lts-alpine"  "${archs}"  "lts-alpine"
-}
-
-publish-lts-slim() {
-    local archs="arm64 s390x ppc64le amd64"
-    publish-variant "lts-slim"  "${archs}"  "lts-slim"
-}
-
-publish-lts-debian() {
-    local archs="arm64 s390x ppc64le amd64"
-    publish-variant "lts-debian"  "${archs}"  "lts-debian"
-
-    # Default LTS
-    publish-variant "lts"  "${archs}"  "lts"
-}
-
-publish-latest() {
-    local archs="arm64 s390x ppc64le amd64"
-    publish-variant "latest"  "${archs}"  "latest"
-}
-
-publish-versions-alpine() {
-    for version in $(get-latest-versions); do
-        local archs="arm64 s390x ppc64le amd64"
-        publish-variant "${version}-alpine"  "${archs}"  "${version}-alpine"
+    # Removing the images pulled down for manifest
+    echo "Removing images from local disk....."
+    for ARCH in ${ARCHITECTURES}; do
+        echo "Removing ${image_uri}-${ARCH}....."
+        docker rmi ${image_uri}-${ARCH}
+        echo "Successfully removed image!"
     done
 }
 
-publish-versions-slim() {
-    for version in $(get-latest-versions); do
-        local archs="arm64 s390x ppc64le amd64"
-        publish-variant "${version}-slim"  "${archs}"  "${version}-slim"
-    done
-}
-
-publish-versions-debian() {
-    for version in $(get-latest-versions); do
-        local archs="arm64 s390x ppc64le amd64"
-        publish-variant "${version}-debian"  "${archs}"  "${version}-debian"
-        publish-variant "${version}-debian"  "${archs}"  "${version}"
-    done
-}
-
-# Process arguments
-dry_run=false
-debug=false
-variant=""
+DOCKER_REGISTRY=${DOCKER_REGISTRY:=docker.io} # Docker Registry to push the docker image and manifest to (defaults to docker.io)
+DOCKER_NAMESPACE=${DOCKERHUB_ORGANISATION:=jenkins} # Docker namespace to push the docker image to (this is your username for DockerHub)
+MANIFEST_NAME=""        # The name of the image that will be used for the manifest
+IMAGE_NAME=""           # The name of the image that will be used for the creation of the manifest, without arch at the end
+ARCHITECTURES=""        # The list of architectures you want to build the manifest for
+DRY_RUN=false           # Builds the images but does not push/publish them
+DEBUG=false             # Turns on verbose output
 
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
-        -n)
-        dry_run=true
-        ;;
-        -d)
-        debug=true
-        ;;
-        -v|--variant)
-        variant=$2
+        -m|--manifest-name)
+        MANIFEST_NAME=$2
         shift
+        ;;
+        -i|--image-name)
+        IMAGE_NAME=$2
+        shift
+        ;;
+         -a|--archs)
+        ARCHITECTURES=$2
+        shift
+        ;;
+        -n|--dry-run)
+        DRY_RUN=true
+        ;;
+        -d|--debug)
+        DEBUG=true
         ;;
         *)
         echo "Unknown option: $key"
@@ -199,53 +87,20 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-
-if [ "$dry_run" = true ]; then
-    echo "Dry run, will not publish images"
+if [[ "$DRY_RUN" = true ]]; then
+    echo "Dry run enabled, will not publish manifest"
 fi
 
-if [ "$debug" = true ]; then
+if [[ "$DEBUG" = true ]]; then
     set -x
 fi
+
+cat <<EOF
+Docker repository in Use:
+* JENKINS_REPO: $(echo ${DOCKER_REGISTRY}/${DOCKER_NAMESPACE} | sed 's/^\/*//')
+EOF
 
 docker-enable-experimental
 docker-login
 
-# Parse variant options
-echo "Processing manifest for ${variant}"
-if [[ ${variant} == alpine ]]; then
-    publish-alpine
-elif [[ ${variant} == slim ]]; then
-    publish-slim
-elif [[ ${variant} == debian ]]; then
-    publish-debian
-elif [[ ${variant} == lts-alpine ]]; then
-    lts_version=$(get-latest-lts-version)
-    if [[ -z ${lts_version} ]]; then
-        echo "No LTS Version to process!"
-    else
-        publish-lts-alpine
-    fi
-elif [[ ${variant} == lts-slim ]]; then
-    lts_version=$(get-latest-lts-version)
-    if [[ -z ${lts_version} ]]; then
-        echo "No LTS Version to process!"
-    else
-        publish-lts-slim
-    fi
-elif [[ ${variant} == lts-debian ]]; then
-    lts_version=$(get-latest-lts-version)
-    if [[ -z ${lts_version} ]]; then
-        echo "No LTS Version to process!"
-    else
-        publish-lts-debian
-    fi
-elif [[ ${variant} == latest ]]; then
-    publish-latest
-elif [[ ${variant} == versions-alpine ]]; then
-    publish-versions-alpine
-elif [[ ${variant} == versions-debian ]]; then
-    publish-versions-debian
-elif [[ ${variant} == versions-slim ]]; then
-    publish-versions-slim
-fi
+publish-manifest

@@ -1,68 +1,10 @@
 #!/bin/bash -eu
-
-# Publish any versions of the docker image not yet pushed to jenkins/jenkins
-# Arguments:
-#   -n dry run, do not build or publish images
-#   -d debug
-#   -f force, will publish tags no matter what
-
 set -eou pipefail
 
-. jenkins-support
+source ./.ci/common-functions.sh > /dev/null 2>&1
 
-: "${DOCKERHUB_ORGANISATION:=jenkins4eval}"
-: "${DOCKERHUB_REPO:=jenkins}"
-
-JENKINS_REPO="${DOCKERHUB_ORGANISATION}/${DOCKERHUB_REPO}"
-
-cat <<EOF
-Docker repository in Use:
-* JENKINS_REPO: ${JENKINS_REPO}
-EOF
-
-#This is precautionary step to avoid accidental push to offical jenkins image
-if [[ "$DOCKERHUB_ORGANISATION" == "jenkins" ]]; then
-    echo "Experimental docker image should not published to jenkins organization , hence exiting with failure";
-    exit 1;
-fi
-
-docker-login() {
-    docker login --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_PASSWORD}
-    echo "Docker logged in successfully"
-}
-
-docker-enable-experimental() {
-    mkdir -p $HOME/.docker;
-    echo '{"experimental": "enabled"}' > $HOME/.docker/config.json;
-    echo "Docker experimental enabled successfully"
-}
-
-get-remote-digest() {
-    local tag=$1
-    docker manifest inspect ${JENKINS_REPO}:${tag} | grep -A 10 "config.*" | grep digest | head -1 | cut -d':' -f 2,3 | xargs echo
-}
-
-compare-digests() {
-    local tag_1=$1
-    local tag_2=$2
-
-    remote_digest_1=$(get-remote-digest "${tag_1}")
-    remote_digest_2=$(get-remote-digest "${tag_2}")
-
-    if [[ "$debug" = true ]]; then
-        >&2 echo "DEBUG: Remote Digest 1 for ${tag_1}: ${remote_digest_1}"
-        >&2 echo "DEBUG: Remote Digest 2 for ${tag_2}: ${remote_digest_2}"
-    fi
-
-    if [[ "${remote_digest_1}" == "${remote_digest_2}" ]]; then
-        true
-    else
-        false
-    fi
-}
-
-# Try tagging with and without -f to support all versions of docker
 docker-tag() {
+    # Try tagging with and without -f to support all versions of docker
     local from="$1"
     local to="$2"
     local out
@@ -74,195 +16,121 @@ docker-tag() {
     fi
 }
 
-sort-versions() {
-    if [[ "$(uname)" == 'Darwin' ]]; then
-        gsort --version-sort
-    else
-        sort --version-sort
+publish-tags() {
+    # split the IMAGE into DOCKER_IMAGE_NAME DOCKER_TAG based on the delimiter, ':'
+    IFS=":" read -r -a image_info <<< "$IMAGE"
+    DOCKER_IMAGE_NAME=${image_info[0]}
+    DOCKER_TAG=${image_info[1]}
+
+    # Pull the latest image that was uploaded
+    DOCKER_REPO=${DOCKER_REGISTRY}/${DOCKER_NAMESPACE}/${DOCKER_IMAGE_NAME}
+    DOCKER_PULL_TAG=${DOCKER_TAG}-${DOCKER_ARCH}  # pull registry/namespace/image:tag-arch
+
+    DOCKER_REPO=$(echo ${DOCKER_REPO} | sed 's/^\/*//')  # strip off all leading '/' characters
+
+    echo "Pulling ${DOCKER_REPO}:${DOCKER_PULL_TAG}"
+    docker pull ${DOCKER_REPO}:${DOCKER_PULL_TAG}
+
+    for TAG in ${TAGS}; do
+        # build for regular user like format  i.e. registry/namespace/image:tag-arch
+        DOCKER_REPO=${DOCKER_REGISTRY}/${DOCKER_NAMESPACE}/${DOCKER_IMAGE_NAME}
+        DOCKER_PULL_TAG=${DOCKER_TAG}-${DOCKER_ARCH}
+        original_docker_image=${DOCKER_REPO}:${DOCKER_PULL_TAG} # already pushed (pulled earlier)
+        tagged_docker_image=${DOCKER_REPO}:${TAG}-${DOCKER_ARCH} # tag and push
+
+        # strip off all leading '/' characters to account for Registry and Namespaces
+        original_docker_image=$(echo ${original_docker_image} | sed 's/^\/*//')
+        tagged_docker_image=$(echo ${tagged_docker_image} | sed 's/^\/*//')
+
+        echo "Tagging ${original_docker_image} as ${tagged_docker_image}"
+        docker-tag "${original_docker_image}" "${tagged_docker_image}"
+
+        if [[ ! "$DRY_RUN" = true ]]; then
+            if [[ "$FORCE" = true ]]; then
+                echo "Force publishing of the tags is enabled! Pushing the tag....."
+                docker push "${tagged_docker_image}"
+                echo "Successfully pushed ${tagged_docker_image}"
+
+                docker rmi "${tagged_docker_image}"
+                echo "Removed tagged image from local disk"
+            elif ! compare-digests "${tagged_docker_image}" "${tagged_docker_image}" "local" "remote"; then
+                echo "Remote and local digests for ${tagged_docker_image} are different. Pushing new tag....."
+                docker push "${tagged_docker_image}"
+                echo "Successfully pushed ${tagged_docker_image}"
+
+                docker rmi "${tagged_docker_image}"
+                echo "Removed tagged image from local disk"
+            else
+                echo "Image ${original_docker_image} and ${tagged_docker_image} are already the same, not updating tags"
+                docker rmi "${tagged_docker_image}"
+                echo "Removed tagged image from local disk"
+            fi
+        else
+            echo "Dry Run enabled not pushing: ${tagged_docker_image}"
+        fi
+    done
+
+    echo "Done publishing additional tags for ${DOCKER_REPO}:${DOCKER_PULL_TAG}"
+
+    # Remove the original docker image if DRY_RUN is false
+    if [[ ! "$DRY_RUN" = true ]]; then
+        docker rmi ${DOCKER_REPO}:${DOCKER_PULL_TAG}
+        echo "Removed original image from local disk"
     fi
 }
 
-get-latest-versions() {
-    curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 30
-}
-
-publish-variant() {
-    local version=$1
-    local variant=$2
-    local archs=$3
-    local tag=$4
-	echo "Processing ${tag} on these architectures: ${archs}"
-
-    for arch in ${archs}; do
-        if [[ "$force" = true ]]; then
-            echo "Force processing tag!"
-
-            echo "Pulling ${version}-${variant}-${arch}"
-            # Pull down images to be re-tagged
-            docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
-
-            echo "Re-tagging image from ${version}-${variant}-${arch} to ${JENKINS_REPO}:${tag}-${arch}"
-            docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:${tag}-${arch}"
-
-            docker push "${JENKINS_REPO}:${variant}-${arch}"
-            echo "Successfully pushed ${JENKINS_REPO}:${variant}-${arch}"
-
-            docker rmi "${JENKINS_REPO}:${tag}-${arch}"
-            docker rmi "${JENKINS_REPO}:${version}-${variant}-${arch}"
-            echo "Removed images from local disk"
-        else
-            if ! compare-digests "${version}-${variant}-${arch}" "${tag}-${arch}"; then
-                echo "Pulling ${version}-${variant}-${arch}"
-                # Pull down images to be re-tagged
-                docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
-
-                echo "Re-tagging image from ${version}-${variant}-${arch} to ${JENKINS_REPO}:${tag}-${arch}"
-                docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:${tag}-${arch}"
-
-                docker push "${JENKINS_REPO}:${tag}-${arch}"
-                echo "Successfully pushed ${JENKINS_REPO}:${variant}-${arch}"
-
-                docker rmi "${JENKINS_REPO}:${tag}-${arch}"
-                docker rmi "${JENKINS_REPO}:${version}-${variant}-${arch}"
-                echo "Removed images from local disk"
-            else
-                echo "Image ${version}-${variant}-${arch} and ${tag}-${arch} are already the same, not updating tags"
-            fi
-        fi
-    done
-}
-
-publish-alpine() {
-    local version=$1
-    local archs="arm64 s390x ppc64le amd64"
-    publish-variant "${version}"  "alpine"  "${archs}" "alpine"
-}
-
-publish-slim() {
-    local version=$1
-    local archs="arm64 s390x ppc64le amd64"
-    publish-variant "${version}"  "slim"  "${archs}" "slim"
-}
-
-publish-debian() {
-    local version=$1
-    local archs="arm64 s390x ppc64le amd64"
-    publish-variant "${version}"  "debian"  "${archs}" "debian"
-}
-
-publish-lts-alpine() {
-    local version=$1
-    local archs="arm64 s390x ppc64le amd64"
-    publish-variant "${version}"  "alpine"  "${archs}"  "lts-alpine"
-}
-
-publish-lts-slim() {
-    local version=$1
-    local archs="arm64 s390x ppc64le amd64"
-    publish-variant "${version}"  "slim"  "${archs}"  "lts-slim"
-}
-
-publish-lts-debian() {
-    local version=$1
-    local archs="arm64 s390x ppc64le amd64"
-    publish-variant "${version}"  "debian"  "${archs}"  "lts-debian"
-
-    # Handles processing default lts tag
-    echo "Also processing tag for default LTS image"
-    publish-variant "${version}"  "debian"  "${archs}"  "lts"
-}
-
-publish-latest() {
-    local version=$1
-    local variant="debian"
-	local archs="arm64 s390x ppc64le amd64"
-    publish-variant "${version}"  "${variant}"  "${archs}"  "latest"
-}
-
-
-# Process arguments
-dry_run=false
-debug=false
-force=false
-tag=""
+DOCKER_REGISTRY=${DOCKER_REGISTRY:=docker.io} # Docker Registry to push the docker image and manifest to (defaults to docker.io)
+DOCKER_NAMESPACE=${DOCKERHUB_ORGANISATION:=jenkins} # Docker namespace to push the docker image to (this is your username for DockerHub)
+DOCKER_ARCH=$(docker-get-arch) # Will use Docker to get the correct architecture name
+IMAGE=""                # The docker image (including root tag) to use when making a new tag (image:tag)
+TAGS=""                 # A list of new tags that the image will become i.e. "tag1 tag2 ... tagN"
+DRY_RUN=false           # Builds the images but does not push/publish them
+DEBUG=false             # Turns on verbose output
+FORCE=false             # Will push/publish images no matter what (Will override the dry run flag). Helpful when vulnerabilities are identified and need to push patches
 
 while [[ $# -gt 0 ]]; do
-    key="$1"
-    case $key in
-        -n)
-        dry_run=true
-        ;;
-        -d)
-        debug=true
-        ;;
-        -f)
-        force=true
-        ;;
-        -t|--tag)
-        tag=$2
-        shift
-        ;;
-        *)
-        echo "Unknown option: $key"
-        return 1
-        ;;
-    esac
+  key="$1"
+  case $key in
+    -i|--image)
+    IMAGE=$2
     shift
+    ;;
+    -t|--tags)
+    TAGS=$2
+    shift
+    ;;
+    -n|--dry-run)
+    DRY_RUN=true
+    ;;
+    -d|--debug)
+    DEBUG=true
+    ;;
+    --force)
+    FORCE=true
+    ;;
+    *)
+    echo "Unknown option: $key"
+    return 1
+    ;;
+  esac
+  shift
 done
 
-if [[ "$dry_run" = true ]]; then
-    echo "Dry run, will not publish images"
+
+if [[ "$DRY_RUN" = true ]]; then
+    echo "Dry run enabled, will not publish tags"
 fi
 
-if [[ "$debug" = true ]]; then
+if [[ "$DEBUG" = true ]]; then
     set -x
 fi
+
+cat <<EOF
+Docker repository in Use:
+* JENKINS_REPO: $(echo ${DOCKER_REGISTRY}/${DOCKER_NAMESPACE} | sed 's/^\/*//')
+EOF
 
 docker-enable-experimental
 docker-login
 
-# Get LTS and Latest Version of Jenkins
-lts_version=""
-version=""
-for version in $(get-latest-versions); do
-    # Update lts tag
-    if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-        lts_version="${version}"
-    fi
-done
-
-if [[ "$debug" = true ]]; then
-    >&2 echo "Latest Version of Jenkins: ${version}"
-    >&2 echo "Latest LTS Version of Jenkins: ${lts_version}"
-fi
-
-
-# Parse tag options
-echo "Processing tags for ${tag}"
-if [[ ${tag} == alpine ]]; then
-    publish-alpine "${version}"
-elif [[ ${tag} == slim ]]; then
-    publish-slim "${version}"
-elif [[ ${tag} == debian ]]; then
-    publish-debian "${version}"
-elif [[ ${tag} == lts-alpine ]]; then
-    if [[ -z ${lts_version} ]]; then
-        echo "No LTS Version to process!"
-    else
-        publish-lts-alpine "${lts_version}"
-    fi
-elif [[ ${tag} == lts-slim ]]; then
-    if [[ -z ${lts_version} ]]; then
-        echo "No LTS Version to process!"
-    else
-        publish-lts-slim "${lts_version}"
-    fi
-elif [[ ${tag} == lts-debian ]]; then
-    if [[ -z ${lts_version} ]]; then
-        echo "No LTS Version to process!"
-    else
-        publish-lts-debian "${lts_version}"
-    fi
-elif [[ ${tag} == latest ]]; then
-    publish-latest "${version}"
-fi
+publish-tags

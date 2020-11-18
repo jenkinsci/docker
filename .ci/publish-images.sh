@@ -1,99 +1,27 @@
 #!/bin/bash -eu
-
-# Publish any versions of the docker image not yet pushed to jenkins/jenkins
-# Arguments:
-#   -n dry run, do not publish images
-#   -d debug
-#   -f force, will publish images no matter what
-
 set -eou pipefail
 
-. jenkins-support
+source ./.ci/common-functions.sh > /dev/null 2>&1
 
-: "${DOCKERHUB_ORGANISATION:=jenkins4eval}"
-: "${DOCKERHUB_REPO:=jenkins}"
+get_docker_uri() {
+    # Build image uri so it is compatible with dockerhub deployment  i.e. registry/namespace/image:tag-arch
+    DOCKER_REPO=${DOCKER_REGISTRY}/${DOCKER_NAMESPACE}/${DOCKER_IMAGE_NAME}
+    DOCKER_BUILD_TAG=${DOCKER_BUILD_TAG}-${DOCKER_ARCH}
+    DOCKER_URI="${DOCKER_REPO}:${DOCKER_BUILD_TAG}"
 
-JENKINS_REPO="${DOCKERHUB_ORGANISATION}/${DOCKERHUB_REPO}"
-
-cat <<EOF
-Docker repository in Use:
-* JENKINS_REPO: ${JENKINS_REPO}
-EOF
-
-# This is precautionary step to avoid accidental push to official jenkins image
-if [[ "$DOCKERHUB_ORGANISATION" == "jenkins" ]]; then
-    echo "Experimental docker image should not published to jenkins organization , hence exiting with failure";
-    exit 1;
-fi
-
-docker-login() {
-    # Making use of the credentials stored in `config.json`
-    docker login
-    echo "Docker logged in successfully"
-}
-
-docker-enable-experimental() {
-    # Enables experimental to utilize `docker manifest` command
-    echo "Enabling Docker experimental...."
-    export DOCKER_CLI_EXPERIMENTAL="enabled"
-}
-
-get-local-digest() {
-    # Gets the SHA digest of a local image
-    local tag=$1
-    docker inspect --format="{{.Id}}" ${JENKINS_REPO}:${tag}
-}
-
-get-remote-digest() {
-    # Gets the SHA digest out of a manifest. Manifest can be remote(DockerHub)
-    local tag=$1
-    docker manifest inspect ${JENKINS_REPO}:${tag} | grep -A 10 "config.*" | grep digest | head -1 | cut -d':' -f 2,3 | xargs echo
-}
-
-compare-digests() {
-    local tag=$1
-
-    # Grabs both digest SHAs
-    local_digest=$(get-local-digest "${tag}")
-    remote_digest=$(get-remote-digest "${tag}")
-
-    if [[ "$debug" = true ]]; then
-        >&2 echo "DEBUG: Local Digest for ${tag}: ${local_digest}"
-        >&2 echo "DEBUG: Remote Digest for ${tag}: ${remote_digest}"
-    fi
-
-    # Compare digest SHAs
-    if [[ "${local_digest}" == "${remote_digest}" ]]; then
-        true
-    else
-        false
-    fi
-}
-
-sort-versions() {
-    if [[ "$(uname)" == 'Darwin' ]]; then
-        gsort --version-sort
-    else
-        sort --version-sort
-    fi
-}
-
-get-latest-versions() {
-    curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 30
+    DOCKER_URI=$(echo ${DOCKER_URI} | sed 's/^\/*//')  # strip off all leading '/' characters
+    echo ${DOCKER_URI}
 }
 
 is-published() {
-    local version_variant=$1
-    local arch=$2
-    local tag="${version_variant}-${arch}"
     local opts=""
 
-    if [[ "$debug" = true ]]; then
+    if [[ "$DEBUG" = true ]]; then
         opts="-v"
     fi
 
     local http_code;
-    http_code=$(curl $opts -q -fsL -o /dev/null -w "%{http_code}" "https://hub.docker.com/v2/repositories/${JENKINS_REPO}/tags/${tag}")
+    http_code=$(curl $opts -q -fsL -o /dev/null -w "%{http_code}" "https://hub.docker.com/v2/repositories/${DOCKER_NAMESPACE}/${DOCKER_IMAGE_NAME}/tags/${DOCKER_BUILD_TAG}-${DOCKER_ARCH}")
 
     if [[ "$http_code" -eq "404" ]]; then
         false
@@ -105,163 +33,127 @@ is-published() {
     fi
 }
 
-set-base-image() {
-    local variant=$1
-    local arch=$2
-    local dockerfile
-    local BASEIMAGE
-
-    dockerfile="./multiarch/Dockerfile${variant}-${arch}"
-
-
-    if [[ "$variant" =~ alpine ]]; then
-        /bin/cp -f multiarch/Dockerfile.alpine "$dockerfile"
-    elif [[ "$variant" =~ slim ]]; then
-        /bin/cp -f multiarch/Dockerfile.slim "$dockerfile"
-    elif [[ "$variant" =~ debian ]]; then
-        /bin/cp -f multiarch/Dockerfile.debian "$dockerfile"
+publish-image() {
+    if [[ "$DRY_RUN" = true ]]; then
+        DOCKER_BUILD_OPTS=""
     fi
 
-    # Parse architectures and variants
-    if [[ $arch == amd64 ]]; then
-        BASEIMAGE="amd64/openjdk:8-jdk"
-    elif [[ $arch == arm ]]; then
-        BASEIMAGE="arm32v7/openjdk:8-jdk"
-    elif [[ $arch == arm64 ]]; then
-        BASEIMAGE="arm64v8/openjdk:8-jdk"
-    elif [[ $arch == s390x ]]; then
-        BASEIMAGE="s390x/openjdk:8-jdk"
-    elif [[ $arch == ppc64le ]]; then
-        BASEIMAGE="ppc64le/openjdk:8-jdk"
+    if [[ -n ${DOCKER_BUILD_ARGS} ]]; then
+        # the docker build args are set, expand the build args into docker command
+        expanded_build_args=""
+        for arg in ${DOCKER_BUILD_ARGS}
+        do
+            expanded_build_args="${expanded_build_args} --build-arg ${arg}"
+        done
+        DOCKER_BUILD_ARGS=${expanded_build_args}
     fi
 
-    # The Alpine image only supports arm32v6 but should work fine on arm32v7
-    # hardware - https://github.com/moby/moby/issues/34875
-    if [[ $variant =~ alpine && $arch == arm ]]; then
-        BASEIMAGE="arm32v6/openjdk:8-jdk-alpine"
-    elif [[ $variant =~ alpine ]]; then
-        BASEIMAGE="$BASEIMAGE-alpine"
-    elif [[ $variant =~ slim ]]; then
-        BASEIMAGE="$BASEIMAGE-slim"
-    fi
+    echo "Building $(get_docker_uri) using ${DOCKER_BUILD_PATH}/${DOCKERFILE}"
+    echo "Issuing the following Docker command: docker build --pull ${DOCKER_BUILD_ARGS} ${DOCKER_BUILD_OPTS} -t $(get_docker_uri) -f ${DOCKERFILE} ."
+    cd ${DOCKER_BUILD_PATH} && \
+    docker build --pull ${DOCKER_BUILD_ARGS} ${DOCKER_BUILD_OPTS} -t $(get_docker_uri) -f ${DOCKERFILE} .
 
-    # Make the Dockerfile after we set the base image
-    if [[ "$(uname)" == 'Darwin' ]]; then
-        sed -i '' "s|BASEIMAGE|${BASEIMAGE}|g" "$dockerfile"
-    else
-        sed -i "s|BASEIMAGE|${BASEIMAGE}|g" "$dockerfile"
-    fi
+    if [[ ! "$DRY_RUN" = true ]]; then
+        if [[ "$FORCE" = true ]]; then
+            docker push $(get_docker_uri)
+            echo "Successfully pushed $(get_docker_uri)"
 
-}
-
-publish() {
-    local version=$1
-    local variant=$2
-    local arch=$3
-    local tag="${version}${variant}-${arch}"
-    local sha
-    build_opts=(--no-cache --pull)
-
-    if [[ "$dry_run" = true ]]; then
-        build_opts=()
-    fi
-
-    sha=$(curl -q -fsSL "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/${version}/jenkins-war-${version}.war.sha256" )
-
-
-    set-base-image "$variant" "$arch"
-
-    docker build --file "multiarch/Dockerfile$variant-$arch" \
-                 --build-arg "JENKINS_VERSION=$version" \
-                 --build-arg "JENKINS_SHA=$sha" \
-                 --tag "${JENKINS_REPO}:${tag}" \
-                 "${build_opts[@]+"${build_opts[@]}"}" .
-
-    # " line to fix syntax highlightning
-    if [[ ! "$dry_run" = true ]]; then
-        if [[ "$force" = true ]]; then
-            docker push "${JENKINS_REPO}:${tag}"
-            echo "Successfully pushed ${JENKINS_REPO}:${tag}"
-
-            docker rmi "${JENKINS_REPO}:${tag}"
-            echo "Removed ${JENKINS_REPO}:${tag} from local disk"
+            docker rmi $(get_docker_uri)
+            echo "Removed $(get_docker_uri) from local disk"
         else
-            if ! compare-digests "${tag}"; then
-                docker push "${JENKINS_REPO}:${tag}"
-                echo "Successfully pushed ${JENKINS_REPO}:${tag}"
+            if ! compare-digests $(get_docker_uri) $(get_docker_uri) "local" "remote"; then
+                docker push $(get_docker_uri)
+                echo "Successfully pushed $(get_docker_uri)"
 
-                docker rmi "${JENKINS_REPO}:${tag}"
-                echo "Removed ${JENKINS_REPO}:${tag} from local disk"
+                docker rmi $(get_docker_uri)
+                echo "Removed $(get_docker_uri) from local disk"
             else
-                echo "Not pushing docker image because it already exist in DockerHub!"
+                echo "Not pushing $(get_docker_uri) because it already exist in ${DOCKER_REGISTRY} registry!"
             fi
         fi
+    else
+        echo "Dry Run enabled not pushing: $(get_docker_uri)"
     fi
 }
 
-cleanup() {
-    echo "Cleaning up"
-    rm -rf ./multiarch/Dockerfile-*
-}
-
-# Process arguments
-dry_run=false
-debug=false
-force=false
-variant=""
-arch=""
+DOCKER_REGISTRY=${DOCKER_REGISTRY:=docker.io} # Docker Registry to push the docker image and manifest to (defaults to docker.io)
+DOCKER_NAMESPACE=${DOCKERHUB_ORGANISATION:=jenkins} # Docker namespace to push the docker image to (this is your username for DockerHub)
+DOCKER_ARCH=$(docker-get-arch) # Will use Docker to get the correct architecture name
+DOCKER_BUILD_TAG=""     # The variant of the docker image to use when tagging the image (i.e. 2.263-jdk8-hotspot-debian-buster)
+DOCKER_BUILD_ARGS=""    # List of build-time variables and values separated by spaces (i.e. --build-args "JENKINS_VERSION=${VERSION} VAR=value")
+DOCKER_BUILD_OPTS=""    # Options passed to "docker build" command separated by spaces (i.e. --build-opts "--no-cache --pull")
+DOCKER_BUILD_PATH="."   # The docker build context to use when building the image
+DRY_RUN=false           # Builds the images but does not push/publish them
+DEBUG=false             # Turns on verbose output
+FORCE=false             # Will push/publish images no matter what (Will override the dry run flag). Helpful when vulnerabilities are identified and need to push patches
 
 while [[ $# -gt 0 ]]; do
-    key="$1"
-    case $key in
-        -n)
-        dry_run=true
-        ;;
-        -d)
-        debug=true
-        ;;
-        -f)
-        force=true
-        ;;
-        -v|--variant)
-        variant="-"$2
-        shift
-        ;;
-        -a|--arch)
-        arch=$2
-        shift
-        ;;
-        *)
-        echo "Unknown option: $key"
-        return 1
-        ;;
-    esac
+  key="$1"
+  case $key in
+    -f|--file)
+    DOCKERFILE=$2
     shift
+    ;;
+    -i|--image)
+    DOCKER_IMAGE_NAME=$2
+    shift
+    ;;
+    -t|--tag)
+    DOCKER_BUILD_TAG=$2
+    shift
+    ;;
+    -a|--build-args)
+    DOCKER_BUILD_ARGS=$2
+    shift
+    ;;
+    -b|--build-opts)
+    DOCKER_BUILD_OPTS=$2
+    shift
+    ;;
+    -c|--context)
+    DOCKER_BUILD_PATH=$2
+    shift
+    ;;
+    -n|--dry-run)
+    DRY_RUN=true
+    ;;
+    -d|--debug)
+    DEBUG=true
+    ;;
+    --force)
+    FORCE=true
+    ;;
+    *)
+    echo "Unknown option: $key"
+    return 1
+    ;;
+  esac
+  shift
 done
 
 
-if [[ "$dry_run" = true ]]; then
-    echo "Dry run, will not publish images"
+if [[ "$DRY_RUN" = true ]]; then
+    echo "Dry run enabled, will not publish images"
 fi
 
-if [[ "$debug" = true ]]; then
+if [[ "$DEBUG" = true ]]; then
     set -x
 fi
+
+cat <<EOF
+Docker repository in Use:
+* JENKINS_REPO: $(echo ${DOCKER_REGISTRY}/${DOCKER_NAMESPACE} | sed 's/^\/*//')
+EOF
 
 docker-enable-experimental
 docker-login
 
-version=""
-for version in $(get-latest-versions); do
-    if [[ "$force" = true ]]; then
-        echo "Force Processing version: ${version}${variant}-${arch}"
-        publish "${version}" "${variant}" "${arch}"
-    elif is-published "$version$variant" "$arch"; then
-        echo "Tag is already published: ${version}${variant}-${arch}"
-    else
-        echo "Processing version: ${version}${variant}-${arch}"
-        publish "${version}" "${variant}" "${arch}"
-    fi
-done
-
-cleanup
+if [[ "$FORCE" = true ]]; then
+    echo "Force Processing Image: $(get_docker_uri)"
+    publish-image
+elif is-published; then
+    echo "Image is already published: $(get_docker_uri)"
+else
+    echo "Processing Image: $(get_docker_uri)"
+    publish-image
+fi
