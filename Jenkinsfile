@@ -140,7 +140,7 @@ stage('Build') {
 
 void nodeWithTimeout(String label, def body) {
     node(label) {
-        timeout(time: 60, unit: 'MINUTES') {
+        timeout(time: 100, unit: 'MINUTES') {
             body.call()
         }
     }
