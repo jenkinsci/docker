@@ -63,17 +63,17 @@ EXPOSE ${agent_port}
 
 ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 
-# # set variables to create shared class cache
-# ENV JAVA_SCC_OPTS "-Xshareclasses:name=jenkins_scc,cacheDir=C:/tmp,enableBCI -Xscmx80M"
-# ENV JAVA_OLD_OPTS ${JAVA_OPTS}
-# ENV JAVA_OPTS "${JAVA_SCC_OPTS} ${JAVA_OPTS}"
+# set variables to create shared class cache
+ENV JAVA_SCC_OPTS "-Xshareclasses:name=jenkins_scc,cacheDir=C:/tmp,enableBCI -Xscmx80M"
+ENV JAVA_OLD_OPTS ${JAVA_OPTS}
+ENV JAVA_OPTS "${JAVA_SCC_OPTS} ${JAVA_OPTS}"
 
-# # create shared class cache
-# RUN $j = Start-Job -ScriptBlock { & C:/ProgramData/Jenkins/jenkins.ps1 } ; Start-Sleep -Seconds 120 ; Stop-Job $j
+# create shared class cache
+RUN $j = Start-Job -ScriptBlock { & C:/ProgramData/Jenkins/jenkins.ps1 } ; Start-Sleep -Seconds 120 ; Stop-Job $j
 
-# # revert JAVA_OPTS to not have shared class cache
-# ENV JAVA_SCC_OPTS "-Xshareclasses:name=jenkins_scc,cacheDir=C:/tmp,readonly"
-# ENV JAVA_OPTS "${JAVA_SCC_OPTS} ${JAVA_OLD_OPTS}"
+# revert JAVA_OPTS to not have shared class cache
+ENV JAVA_SCC_OPTS "-Xshareclasses:name=jenkins_scc,cacheDir=C:/tmp,readonly"
+ENV JAVA_OPTS "${JAVA_SCC_OPTS} ${JAVA_OLD_OPTS}"
 
 COPY jenkins-support.psm1 C:/ProgramData/Jenkins
 COPY jenkins.ps1 C:/ProgramData/Jenkins
