@@ -13,4 +13,4 @@ RUN Copy-Item C:/ProgramData/Jenkins/jenkins.war $env:JENKINS_WAR
 RUN jar -uf my-custom-jenkins.war WEB-INF/* 
 
 # Run the jenkins-plugin-cli script
-RUN C:/ProgramData/Jenkins/jenkins-plugin-cli.ps1 --list --war $env:JENKINS_WAR --plugins junit:1.6
+RUN C:/ProgramData/Jenkins/jenkins-plugin-cli.ps1 --war $env:JENKINS_WAR --plugins junit:1.6
