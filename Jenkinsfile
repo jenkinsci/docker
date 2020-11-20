@@ -24,15 +24,26 @@ stage('Build') {
                     powershell './make.ps1'
                 }
 
-                stage('Test') {
-                    def windowsTestStatus = powershell(script: './make.ps1 test', returnStatus: true)
-                    junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
-                    if (windowsTestStatus > 0) {
-                        // If something bad happened let's clean up the docker images
-                        powershell(script: '& docker system prune --force --all', returnStatus: true)
-                        error('Windows test stage failed.')
+                def labels = ['1809']
+                def builders = [:]
+                for (x in labels) {
+                    def label = x
+
+                    // Create a map to pass in to the 'parallel' step so we can fire all the builds at once
+                    builders[label] = {
+                        stage("Test windows-${label}") {
+                          def windowsTestStatus = powershell(script: "./make.ps1 test-${label}", returnStatus: true)
+                          junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
+                          if (windowsTestStatus > 0) {
+                            // If something bad happened let's clean up the docker images
+                            powershell(script: '& docker system prune --force --all', returnStatus: true)
+                            error('Windows test stage failed.')
+                          }
+                        }
                     }
                 }
+
+                parallel builders
 
                 def branchName = "${env.BRANCH_NAME}"
                 if (branchName ==~ 'master'){
