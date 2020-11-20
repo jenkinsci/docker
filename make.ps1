@@ -90,7 +90,7 @@ if($lastExitCode -ne 0) {
     exit $lastExitCode
 }
 
-if($target -eq "test") {
+if($target -eq "test-1809") {
     $mod = Get-InstalledModule -Name Pester -MinimumVersion 4.9.0 -MaximumVersion 4.99.99 -ErrorAction SilentlyContinue
     if($null -eq $mod) {
         $module = "c:\Program Files\WindowsPowerShell\Modules\Pester"
