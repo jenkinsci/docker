@@ -91,6 +91,8 @@ if($lastExitCode -ne 0) {
 }
 
 if($target -eq "test") {
+    # Only fail the run afterwards in case of any test failures
+    $testFailed = $false
     $mod = Get-InstalledModule -Name Pester -MinimumVersion 4.9.0 -MaximumVersion 4.99.99 -ErrorAction SilentlyContinue
     if($null -eq $mod) {
         $module = "c:\Program Files\WindowsPowerShell\Modules\Pester"
@@ -110,7 +112,13 @@ if($target -eq "test") {
             Remove-Item -Force -Recurse ".\target\$folder"
         }
         New-Item -Path ".\target\$folder" -Type Directory | Out-Null
-        Invoke-Pester -Path tests -EnableExit -OutputFile ".\target\$folder\junit-results.xml" -OutputFormat JUnitXml
+        $TestResults = Invoke-Pester -Path tests -PassThru -OutputFile ".\target\$folder\junit-results.xml" -OutputFormat JUnitXml
+        if ($TestResults.FailedCount -gt 0) {
+            Write-Host "There were $($TestResults.FailedCount) failed tests in $Build"
+            $testFailed = $true
+        } else {
+            Write-Host "There were $($TestResults.PassedCount) passed tests out of $($TestResults.TotalCount) in $Build"
+        }
         Remove-Item -Force env:\FOLDER
     } else {
         foreach($b in $builds.Keys) {
@@ -120,9 +128,23 @@ if($target -eq "test") {
                 Remove-Item -Force -Recurse ".\target\$folder"
             }
             New-Item -Path ".\target\$folder" -Type Directory | Out-Null
-            Invoke-Pester -Path tests -EnableExit -OutputFile ".\target\$folder\junit-results.xml" -OutputFormat JUnitXml
+            $TestResults = Invoke-Pester -Path tests -PassThru -OutputFile ".\target\$folder\junit-results.xml" -OutputFormat JUnitXml
+            if ($TestResults.FailedCount -gt 0) {
+                Write-Host "There were $($TestResults.FailedCount) failed tests in $b"
+                $testFailed = $true
+            } else {
+                Write-Host "There were $($TestResults.PassedCount) passed tests out of $($TestResults.TotalCount) in $b"
+            }
             Remove-Item -Force env:\FOLDER
         }
+    }
+
+    # Fail if any test failures
+    if($testFailed -ne $false) {
+        Write-Error "Test stage failed!"
+        exit 1
+    } else {
+        Write-Host "Test stage passed!"
     }
 }
 
