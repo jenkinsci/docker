@@ -237,7 +237,7 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
   run docker_build_child $SUT_IMAGE-plugins-cli-java-opts $BATS_TEST_DIRNAME/plugins-cli/java-opts
   assert_success
   # Assert JAVA_OPTS has been used and 'java.opts.test' has been set to JVM
-  assert_line --partial 'java.opts.test = true'
+  assert_line --regexp '\s*java.opts.test\s*=\s*true.*'
 }
 
 @test "[${SUT_DESCRIPTION}] clean work directory" {
