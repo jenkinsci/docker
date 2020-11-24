@@ -29,6 +29,6 @@ Docker is installed on your machine (Docker for Mac or Docker for Windows will w
             *************************************************************
 
 - Copy the password and paste it into the unlock screen.
-Use the "Select plugins to install" option in the Customize CloudBees Jenkins Distribution screen,  select None in the top panel of the window to unselect all plugins. Then click Install.
+Use the "Select plugins to install" option in the Customize Jenkins screen,  select None in the top panel of the window to unselect all plugins. Then click Install.
 We do not need plugins for this quickstart
 Your Jenkins is ready!
