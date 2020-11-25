@@ -19,6 +19,3 @@ filesystem_scm:experimental  # comment at the end
  
     #  
      # empty line
-
-# Incrementals (JENKINS-52028)
-workflow-support:incrementals;org.jenkins-ci.plugins.workflow;2.19-rc289.d09828a05a74

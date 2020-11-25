@@ -1,0 +1,16 @@
+FROM bats-jenkins
+
+# Define a custom location for the war
+ENV JENKINS_WAR C:/ProgramData/TestCustomDockerfile/my-custom-jenkins.war
+WORKDIR C:/ProgramData/TestCustomDockerfile
+# Add there a new weird plugin to assert
+COPY WEB-INF/ WEB-INF/
+
+# Copy the original jenkins.war to the custom location 
+RUN Copy-Item C:/ProgramData/Jenkins/jenkins.war $env:JENKINS_WAR 
+
+# Add the weird plugin to the new custom war
+RUN jar -uf my-custom-jenkins.war WEB-INF/* 
+
+# Run the jenkins-plugin-cli script
+RUN C:/ProgramData/Jenkins/jenkins-plugin-cli.ps1 --war $env:JENKINS_WAR --plugins junit:1.6
