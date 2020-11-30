@@ -58,7 +58,7 @@ build_images() {
 
         # Check if the current architecture and OS are valid
         for OS in ${!arch}; do
-            if [[ ${FILE} == *"/${OS}/"* ]]; then
+            if [[ ${FILE} == *"${OS}"* ]]; then
                 valid_os_and_arch=false
             fi
         done
@@ -138,7 +138,7 @@ tag_images() {
 
         # Check if the current architecture and OS are valid
         for OS in ${!arch}; do
-            if [[ ${FILE} == *"/${OS}/"* ]]; then
+            if [[ ${FILE} == *"${OS}"* ]]; then
                 valid_os_and_arch=false
             fi
         done
@@ -218,7 +218,7 @@ build-manifests() {
         for arch in ${archs}; do
             valid_os_and_arch=true
             for OS in ${!arch}; do
-                if [[ ${FILE} == *"/${OS}/"* ]]; then
+                if [[ ${FILE} == *"${OS}"* ]]; then
                     valid_os_and_arch=false
                 fi
             done
@@ -249,11 +249,11 @@ build-manifests() {
 # Configs
 
 # List OSs to exclude from a given arch
-# ARCH-NAME="OS-NAME_1 OS-NAME-2 OS-NAME-X...."
+# ARCH-NAME="PARTIAL-DOCKERFILE-PATH OS-NAME ......"
 amd64="clefos"
-amr64="clefos alpine"
-s390x="centos alpine"
-ppc64le="clefos alpine"
+amr64="clefos alpine debian/stretch 8/ubuntu/bionic/openj9"
+s390x="centos alpine debian/stretch/hotspot"
+ppc64le="clefos alpine debian/stretch/hotspot"
 
 # Default values to tag an image with the OS tag
 # OS-NAME="OS-VERSION JVM JDK-VERSION"
