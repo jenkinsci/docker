@@ -9,6 +9,7 @@
 set -eou pipefail
 
 . jenkins-support
+source ./.ci/common-functions.sh > /dev/null 2>&1
 
 : "${DOCKERHUB_ORGANISATION:=jenkins4eval}"
 : "${DOCKERHUB_REPO:=jenkins}"
@@ -25,18 +26,6 @@ if [[ "$DOCKERHUB_ORGANISATION" == "jenkins" ]]; then
     echo "Experimental docker image should not published to jenkins organization , hence exiting with failure";
     exit 1;
 fi
-
-docker-login() {
-    # Making use of the credentials stored in `config.json`
-    docker login
-    echo "Docker logged in successfully"
-}
-
-docker-enable-experimental() {
-    # Enables experimental to utilize `docker manifest` command
-    echo "Enabling Docker experimental...."
-    export DOCKER_CLI_EXPERIMENTAL="enabled"
-}
 
 get-local-digest() {
     # Gets the SHA digest of a local image
@@ -170,6 +159,8 @@ publish() {
 
 
     set-base-image "$variant" "$arch"
+
+    docker-debug-registries
 
     docker build --file "multiarch/Dockerfile$variant-$arch" \
                  --build-arg "JENKINS_VERSION=$version" \

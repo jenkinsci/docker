@@ -8,6 +8,7 @@
 set -o pipefail
 
 . jenkins-support
+source ./.ci/common-functions.sh > /dev/null 2>&1
 
 : "${DOCKERHUB_ORGANISATION:=jenkins}"
 : "${DOCKERHUB_REPO:=jenkins}"
@@ -112,6 +113,8 @@ publish() {
     fi
 
     sha=$(curl -q -fsSL "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/${version}/jenkins-war-${version}.war.sha256" )
+
+    docker_debug_registries
 
     docker build --file "${dockerfile}" \
                  --build-arg "JENKINS_VERSION=$version" \
