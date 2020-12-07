@@ -1,10 +1,12 @@
 docker-login() {
-    if [ -z "$DOCKER_CONFIG" ]; then
-      # Making use of the credentials stored in `config.json`
-      docker login
-    else
+    if [ -n "$DOCKERHUB_USERNAME" ] && [ -n "$DOCKERHUB_PASSWORD"]; then
       # Using username and password variables
+      echo "Using username/password"
       docker login --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_PASSWORD}
+    else
+      # Making use of the credentials stored in `config.json`
+      echo "Using config.json"
+      docker login
     fi
     echo "Docker logged in successfully"
 }
