@@ -127,7 +127,7 @@ publish-tag-lts-alpine:
 publish-tags-lts-slim:
 	./.ci/publish-tags.sh --tag lts-slim ;
 
-publish-tag-latest:
+publish-tags-latest:
 	./.ci/publish-tags.sh --tag latest ;
 
 publish-tags: publish-tags-debian publish-tag-alpine publish-tags-slim publish-tags-lts-debian publish-tag-lts-alpine publish-tags-lts-slim publish-tags-latest
