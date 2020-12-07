@@ -160,6 +160,8 @@ publish() {
 
     set-base-image "$variant" "$arch"
 
+    docker-debug-registries
+
     docker build --file "multiarch/Dockerfile$variant-$arch" \
                  --build-arg "JENKINS_VERSION=$version" \
                  --build-arg "JENKINS_SHA=$sha" \
