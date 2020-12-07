@@ -8,6 +8,7 @@
 set -eou pipefail
 
 . jenkins-support
+source ./.ci/common-functions.sh > /dev/null 2>&1
 
 : "${DOCKERHUB_ORGANISATION:=jenkins4eval}"
 : "${DOCKERHUB_REPO:=jenkins}"
@@ -24,17 +25,6 @@ if [[ "$DOCKERHUB_ORGANISATION" == "jenkins" ]]; then
     echo "Experimental docker image should not published to jenkins organization , hence exiting with failure";
     exit 1;
 fi
-
-docker-login() {
-    docker login --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_PASSWORD}
-    echo "Docker logged in successfully"
-}
-
-docker-enable-experimental() {
-    mkdir -p $HOME/.docker;
-    echo '{"experimental": "enabled"}' > $HOME/.docker/config.json;
-    echo "Docker experimental enabled successfully"
-}
 
 sort-versions() {
     if [[ "$(uname)" == 'Darwin' ]]; then

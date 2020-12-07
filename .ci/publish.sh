@@ -8,6 +8,7 @@
 set -o pipefail
 
 . jenkins-support
+source ./.ci/common-functions.sh > /dev/null 2>&1
 
 : "${DOCKERHUB_ORGANISATION:=jenkins}"
 : "${DOCKERHUB_REPO:=jenkins}"
