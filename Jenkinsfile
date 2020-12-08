@@ -85,7 +85,9 @@ stage('Build') {
                 * the Dockerfile in this repository, but not publishing to docker hub
                 */
                 stage('Build') {
-                    sh 'make build'
+                    infra.withDockerCredentials {
+                      sh 'make build'
+                    }
                 }
 
                 stage('Prepare Test') {
@@ -101,7 +103,9 @@ stage('Build') {
                     builders[label] = {
                         stage("Test ${label}") {
                             try {
-                                sh "make test-$label"
+                                infra.withDockerCredentials {
+                                  sh "make test-$label"
+                                }    
                             } catch(err) {
                                 error("${err.toString()}")
                             } finally {
