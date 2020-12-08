@@ -81,7 +81,7 @@ publish-variant() {
     local variant=$2
     local archs=$3
     local tag=$4
-	  echo "Processing ${tag} on these architectures: ${archs}"
+    echo "Processing ${tag} on these architectures: ${archs}"
 
     for arch in ${archs}; do
         if [[ "$force" = true ]]; then
@@ -165,7 +165,7 @@ publish-lts-debian() {
 publish-latest() {
     local version=$1
     local variant="debian"
-	  local archs="arm64 s390x ppc64le amd64"
+    local archs="arm64 s390x ppc64le amd64"
     publish-variant "${version}"  "${variant}"  "${archs}"  "latest"
 }
 
