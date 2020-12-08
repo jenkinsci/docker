@@ -1,3 +1,3 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-java -jar /usr/lib/jenkins-plugin-manager.jar "$@"
+exec /bin/bash -c "java $JAVA_OPTS -jar /usr/lib/jenkins-plugin-manager.jar $*"

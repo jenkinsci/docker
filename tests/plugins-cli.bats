@@ -229,3 +229,15 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
   run bash -c "ls -la $BATS_TEST_DIRNAME/upgrade-plugins ; rm -rf $BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
   assert_success
 }
+
+@test "[${SUT_DESCRIPTION}] JAVA_OPTS environment variable is used with jenkins-plugin-cli" {
+  run docker_build_child $SUT_IMAGE-plugins-cli-java-opts $BATS_TEST_DIRNAME/plugins-cli/java-opts
+  assert_success
+  # Assert JAVA_OPTS has been used and 'java.opts.test' has been set to JVM
+  assert_line --regexp '\s*java.opts.test\s*=\s*true.*'
+}
+
+@test "[${SUT_DESCRIPTION}] clean work directory" {
+  run bash -c "ls -la $BATS_TEST_DIRNAME/upgrade-plugins ; rm -rf $BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
+  assert_success
+}
