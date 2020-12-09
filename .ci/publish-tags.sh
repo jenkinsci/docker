@@ -81,17 +81,17 @@ publish-variant() {
     local variant=$2
     local archs=$3
     local tag=$4
-	echo "Processing ${tag} on these architectures: ${archs}"
+    echo "Processing ${tag} on these architectures: ${archs}"
 
     for arch in ${archs}; do
         if [[ "$force" = true ]]; then
             echo "Force processing tag!"
 
-            echo "Pulling ${version}-${variant}-${arch}"
+            echo "Pulling ${JENKINS_REPO}:${version}-${variant}-${arch}"
             # Pull down images to be re-tagged
             docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
 
-            echo "Re-tagging image from ${version}-${variant}-${arch} to ${JENKINS_REPO}:${tag}-${arch}"
+            echo "Re-tagging image from ${JENKINS_REPO}:${version}-${variant}-${arch} to ${JENKINS_REPO}:${tag}-${arch}"
             docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:${tag}-${arch}"
 
             docker push "${JENKINS_REPO}:${variant}-${arch}"
@@ -102,11 +102,11 @@ publish-variant() {
             echo "Removed images from local disk"
         else
             if ! compare-digests "${version}-${variant}-${arch}" "${tag}-${arch}"; then
-                echo "Pulling ${version}-${variant}-${arch}"
+                echo "Pulling ${JENKINS_REPO}:${version}-${variant}-${arch}"
                 # Pull down images to be re-tagged
                 docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
 
-                echo "Re-tagging image from ${version}-${variant}-${arch} to ${JENKINS_REPO}:${tag}-${arch}"
+                echo "Re-tagging image from ${JENKINS_REPO}:${version}-${variant}-${arch} to ${JENKINS_REPO}:${tag}-${arch}"
                 docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:${tag}-${arch}"
 
                 docker push "${JENKINS_REPO}:${tag}-${arch}"
@@ -165,7 +165,7 @@ publish-lts-debian() {
 publish-latest() {
     local version=$1
     local variant="debian"
-	local archs="arm64 s390x ppc64le amd64"
+    local archs="arm64 s390x ppc64le amd64"
     publish-variant "${version}"  "${variant}"  "${archs}"  "latest"
 }
 
