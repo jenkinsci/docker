@@ -11,6 +11,7 @@ multiarch/Dockerfile-*
 /docker.iml
 work-pester-jenkins-windows/
 /.idea/
+Dockerfile.*
 
 /**/windows/**/jenkins.ps1
 /**/windows/**/jenkins-plugin-cli.ps1

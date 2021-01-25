@@ -223,6 +223,8 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
 @test "[${SUT_DESCRIPTION}] Use a custom jenkins.war" {
   run docker_build_child $SUT_IMAGE-plugins-cli-custom-war $BATS_TEST_DIRNAME/plugins-cli/custom-war --no-cache
   assert_success
+  # Assert the weird plugin is there
+  assert_output --regexp 'my-happy-plugin\s+1.1'
 }
 
 @test "[${SUT_DESCRIPTION}] clean work directory" {
