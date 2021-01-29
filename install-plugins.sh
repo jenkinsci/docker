@@ -55,8 +55,8 @@ main() {
         done
     done    
 
-    if [[ -f "${plugins}" ]] ; then
-      jenkins-plugin-cli --list --verbose "${args[*]}" --plugin-file "${plugins}"
+    if [[ -f "${plugins[0]}" ]] ; then
+      jenkins-plugin-cli --list --verbose "${args[*]}" --plugin-file "${plugins[0]}"
     else
       jenkins-plugin-cli --list --verbose "${args[*]}" --plugins "${plugins[*]}"
     fi
