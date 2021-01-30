@@ -42,16 +42,18 @@ stage('Build') {
                     }
                 }
 
-                def branchName = "${env.BRANCH_NAME}"
-                if (branchName ==~ 'master'){
-                    stage('Publish Experimental') {
-                        infra.withDockerCredentials {
-                            withEnv(['DOCKERHUB_ORGANISATION=jenkins4eval','DOCKERHUB_REPO=jenkins']) {
-                                powershell './make.ps1 publish'
-                            }
-                        }
-                    }
-                }
+                // disable until we get the parallel changes merged in
+                //def branchName = "${env.BRANCH_NAME}"
+                //if (branchName ==~ 'master'){
+                //    stage('Publish Experimental') {
+                //        infra.withDockerCredentials {
+                //            withEnv(['DOCKERHUB_ORGANISATION=jenkins4eval','DOCKERHUB_REPO=jenkins']) {
+                //                powershell './make.ps1 publish'
+                //            }
+                //        }
+                //    }
+                //}
+                
                 // Let's always clean up the docker images at the very end
                 powershell(script: '& docker system prune --force --all', returnStatus: true)
             } else {
@@ -121,15 +123,16 @@ stage('Build') {
 
                 parallel builders
 
-                def branchName = "${env.BRANCH_NAME}"
-                if (branchName ==~ 'master'){
-                    stage('Publish Experimental') {
-                        infra.withDockerCredentials {
-                            sh 'make publish-tags'
-                            sh 'make publish-manifests'
-                        }
-                    }
-                }
+                // disable until we get the parallel changes merged in
+                //def branchName = "${env.BRANCH_NAME}"
+                //if (branchName ==~ 'master'){
+                //    stage('Publish Experimental') {
+                //        infra.withDockerCredentials {
+                //            sh 'make publish-tags'
+                //            sh 'make publish-manifests'
+                //        }
+                //    }
+                //}
 
                 // Let's always clean up the docker images at the very end
                 sh(script: 'docker system prune --force --all', returnStatus: true)
