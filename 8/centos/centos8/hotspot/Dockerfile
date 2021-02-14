@@ -1,4 +1,4 @@
-FROM centos:8
+FROM centos:8.3.2011
 
 RUN echo -e '[AdoptOpenJDK]\n\
 name=AdoptOpenJDK\n\
