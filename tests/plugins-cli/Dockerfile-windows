@@ -1,0 +1,4 @@
+FROM bats-jenkins
+
+RUN C:/ProgramData/Jenkins/jenkins-plugin-cli.ps1 --verbose --plugins junit:1.6 ant:1.3 mesos:0.13.0 git:latest filesystem_scm:experimental docker-plugin:1.1.6
+

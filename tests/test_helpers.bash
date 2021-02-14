@@ -41,11 +41,11 @@ function retry {
 }
 
 function sut_image {
-    echo "bats-jenkins-${DOCKERFILE:-Dockerfile}" | tr '[:upper:]' '[:lower:]' | sed -e 's/dockerfile$/default/' | sed -e 's/dockerfile-//'
+    echo "bats-jenkins-${DIRECTORY//\//-}" | tr '[:upper:]' '[:lower:]' | sed -e 's/dockerfile$/default/' | sed -e 's/dockerfile-//'
 }
 
 function docker_build {
-    local opts="-f ${DOCKERFILE:-Dockerfile}"
+    local opts="-f ${DIRECTORY}/Dockerfile"
     if [ -n "$JENKINS_VERSION" ]; then
         docker build $opts --build-arg JENKINS_VERSION=$JENKINS_VERSION --build-arg JENKINS_SHA=$JENKINS_SHA "$@"
     else
@@ -56,8 +56,9 @@ function docker_build {
 function docker_build_child {
     local tag=$1; shift
     local dir=$1; shift
-    sed -e "s/FROM bats-jenkins/FROM $(sut_image)/" "$dir/Dockerfile" > "$dir/Dockerfile.tmp"
-    docker build -t "$tag" "$@" -f "$dir/Dockerfile.tmp" "$dir"
+    local tmp=$(mktemp "$dir/Dockerfile.XXXXXX")
+    sed -e "s/FROM bats-jenkins/FROM $(sut_image)/" "$dir/Dockerfile" > "$tmp"
+    docker build -t "$tag" "$@" -f "$tmp" "$dir" && rm "$tmp"
 }
 
 function get_jenkins_url {
