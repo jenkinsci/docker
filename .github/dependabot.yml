@@ -105,7 +105,7 @@ updates:
 # Ubuntu Linux with OpenJ9
 
 - package-ecosystem: docker
-  directory: "11/ubuntu/bionic/openj9"
+  directory: "11/ubuntu/focal/openj9"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
@@ -116,7 +116,7 @@ updates:
   - dependencies
 
 - package-ecosystem: docker
-  directory: "8/ubuntu/bionic/openj9"
+  directory: "8/ubuntu/focal/openj9"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
