@@ -32,10 +32,10 @@ build-centos7:
 	docker build --file 8/centos/centos7/hotspot/Dockerfile .
 
 build-openj9:
-	docker build --file 8/ubuntu/bionic/openj9/Dockerfile .
+	docker build --file 8/ubuntu/focal/openj9/Dockerfile .
 
 build-openj9-jdk11:
-	docker build --file 11/ubuntu/bionic/openj9/Dockerfile .
+	docker build --file 11/ubuntu/focal/openj9/Dockerfile .
 
 bats:
 	# Latest tag is unfortunately 0.4.0 which is quite older than the latest master tip.
@@ -72,10 +72,10 @@ test-centos: test-run-centos
 test-centos7: DIRECTORY=8/centos/centos7/hotspot
 test-centos7: test-run-centos7
 
-test-openj9: DIRECTORY=8/ubuntu/bionic/openj9
+test-openj9: DIRECTORY=8/ubuntu/focal/openj9
 test-openj9: test-run-openj9
 
-test-openj9-jdk11: DIRECTORY=11/ubuntu/bionic/openj9
+test-openj9-jdk11: DIRECTORY=11/ubuntu/focal/openj9
 test-openj9-jdk11: test-run-openj9-jdk11
 
 test: build prepare-test

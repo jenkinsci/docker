@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk8:debianslim
+FROM adoptopenjdk/openjdk8:jdk8u282-b08-debianslim-slim
 
 RUN apt-get update && apt-get upgrade -y && apt-get install -y git git-lfs curl gpg unzip libfreetype6 libfontconfig1 && git lfs install && rm -rf /var/lib/apt/lists/*
 

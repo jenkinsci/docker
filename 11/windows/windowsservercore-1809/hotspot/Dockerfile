@@ -1,5 +1,5 @@
 # escape=`
-FROM adoptopenjdk:11-hotspot-windowsservercore-1809
+FROM adoptopenjdk:11.0.10_9-jdk-hotspot-windowsservercore-1809
 
 ARG user=jenkins
 ARG http_port=8080

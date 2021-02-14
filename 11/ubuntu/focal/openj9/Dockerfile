@@ -1,4 +1,4 @@
-FROM adoptopenjdk:8-jdk-openj9-bionic
+FROM adoptopenjdk:11.0.10_9-jdk-openj9-0.24.0-focal
 
 RUN apt-get update \
   && apt-get upgrade -y \
