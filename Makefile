@@ -10,7 +10,7 @@ shellcheck:
 	                             *.sh
 build:
 	@for d in ${DOCKERFILES} ; do \
-		docker build --file "$${d}" . ; \
+		docker build --file "$${d}" . & \
 	done
 
 build-debian:
