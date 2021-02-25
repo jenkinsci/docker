@@ -1,5 +1,8 @@
 ROOT_DIR="$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))/"
 
+# Ensure that docker builds are using BuildKit for an efficient caching
+export DOCKER_BUILDKIT=1
+
 all: shellcheck build test
 
 DOCKERFILES=$(shell find . -not -path '**/windows/*' -not -path './tests/*' -type f -name Dockerfile)
