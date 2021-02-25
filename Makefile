@@ -81,7 +81,7 @@ test-openj9-jdk11: test-run-openj9-jdk11
 test: build prepare-test
 	@for d in ${DOCKERFILES} ; do \
 		dir=`dirname $$d | sed -e "s_^\./__"` ; \
-		DIRECTORY=$${dir} bats/bin/bats tests ; \
+		DIRECTORY=$${dir} bats/bin/bats tests & \
 	done
 
 test-install-plugins: prepare-test
