@@ -82,7 +82,8 @@ test: build prepare-test
 	@for d in ${DOCKERFILES} ; do \
 		dir=`dirname $$d | sed -e "s_^\./__"` ; \
 		DIRECTORY=$${dir} bats/bin/bats tests & \
-	done
+	done; \
+	wait
 
 test-install-plugins: prepare-test
 	DIRECTORY="8/alpine/hotspot" bats/bin/bats tests/install-plugins.bats tests/install-plugins-plugins-cli.bats
