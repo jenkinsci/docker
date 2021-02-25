@@ -11,7 +11,8 @@ shellcheck:
 build:
 	@for d in ${DOCKERFILES} ; do \
 		docker build --file "$${d}" . & \
-	done
+	done; \
+	wait
 
 build-debian:
 	docker build --file 8/debian/buster/hotspot/Dockerfile .
