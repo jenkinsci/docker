@@ -43,6 +43,7 @@ download() {
     version="${2:-latest}"
     ignoreLockFile="${3:-}"
     url="${4:-}"
+    name="hema"
     lock="$(getLockFile "$plugin")"
 
     if [[ $ignoreLockFile ]] || mkdir "$lock" &>/dev/null; then
