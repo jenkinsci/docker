@@ -1,5 +1,5 @@
 # escape=`
-FROM jenkins4eval/openjdk:11-hotspot-windowsservercore-ltsc2019
+FROM jenkins/openjdk:11-hotspot-windowsservercore-ltsc2019
 
 ARG user=jenkins
 ARG http_port=8080
