@@ -198,6 +198,14 @@ This CLI will perform downloads from update centers, and internet access is requ
 
 See the CLI's [documentation](https://github.com/jenkinsci/plugin-installation-manager-tool) for more information,
 or run `jenkins-plugin-cli --help` to see the available options.
+
+### Installing Custom Plugins
+
+Installing prebuilt, custom plugins can be accomplished by copying the plugin HPI file into `/usr/share/jenkins/ref/plugins/` within the `Dockerfile`:
+
+```
+COPY path/to/custom.hpi /usr/share/jenkins/ref/plugins/
+```
  
 ### Usage
 
