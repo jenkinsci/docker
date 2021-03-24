@@ -63,7 +63,7 @@ and `Dockerfile`
 
 ```
 FROM jenkins/jenkins:lts
-COPY executors.groovy /usr/share/jenkins/ref/init.groovy.d/executors.groovy
+COPY --chown=jenkins:jenkins executors.groovy /usr/share/jenkins/ref/init.groovy.d/executors.groovy
 ```
 
 
@@ -119,8 +119,8 @@ to force use of HTTPS with a certificate included in the image.
 ```
 FROM jenkins/jenkins:lts
 
-COPY https.pem /var/lib/jenkins/cert
-COPY https.key /var/lib/jenkins/pk
+COPY --chown=jenkins:jenkins https.pem /var/lib/jenkins/cert
+COPY --chown=jenkins:jenkins https.key /var/lib/jenkins/pk
 ENV JENKINS_OPTS --httpPort=-1 --httpsPort=8083 --httpsCertificate=/var/lib/jenkins/cert --httpsPrivateKey=/var/lib/jenkins/pk
 EXPOSE 8083
 ```
@@ -161,7 +161,7 @@ wish the target installation to look like :
 
 ```
 FROM jenkins/jenkins:lts
-COPY custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
+COPY --chown=jenkins:jenkins custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
 ```
 
 ## Preinstalling plugins
@@ -204,7 +204,7 @@ or run `jenkins-plugin-cli --help` to see the available options.
 Installing prebuilt, custom plugins can be accomplished by copying the plugin HPI file into `/usr/share/jenkins/ref/plugins/` within the `Dockerfile`:
 
 ```
-COPY path/to/custom.hpi /usr/share/jenkins/ref/plugins/
+COPY --chown=jenkins:jenkins path/to/custom.hpi /usr/share/jenkins/ref/plugins/
 ```
  
 ### Usage
@@ -231,7 +231,7 @@ Furthermore it is possible to pass a file that contains this set of plugins (wit
 
 ```Dockerfile
 FROM jenkins/jenkins:lts
-COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
+COPY --chown=jenkins:jenkins plugins.txt /usr/share/jenkins/ref/plugins.txt
 RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
 ```
 
@@ -239,7 +239,7 @@ RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
 
 ```Dockerfile
 FROM jenkins/jenkins:lts
-COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
+COPY --chown=jenkins:jenkins plugins.txt /usr/share/jenkins/ref/plugins.txt
 RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
 ```
 
