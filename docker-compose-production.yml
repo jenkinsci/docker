@@ -1,0 +1,110 @@
+# this file from docker-compose.workspace, delete mail-server
+# default MySQL root password is 123456
+
+
+version: '3'
+services:
+  onlyoffice-mysql-server:
+    container_name: onlyoffice-mysql-server
+    image: mysql:5.7
+    environment:
+     - MYSQL_ROOT_PASSWORD=123456
+    stdin_open: true
+    tty: true
+    restart: always
+    volumes:
+     - ./config/mysql/conf.d:/etc/mysql/conf.d
+     - ./config/mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+     - ./mysql_data:/var/lib/mysql
+     
+  onlyoffice-community-server:
+    container_name: onlyoffice-community-server
+    image: onlyoffice/communityserver:11.0.0.1458
+    depends_on:
+     - onlyoffice-mysql-server
+     - onlyoffice-document-server
+    environment:
+     - ONLYOFFICE_CORE_MACHINEKEY=core_secret
+     - CONTROL_PANEL_PORT_80_TCP=80
+     - CONTROL_PANEL_PORT_80_TCP_ADDR=onlyoffice-control-panel
+     - DOCUMENT_SERVER_PORT_80_TCP_ADDR=onlyoffice-document-server
+     - DOCUMENT_SERVER_JWT_ENABLED=true
+     - DOCUMENT_SERVER_JWT_SECRET=jwt_secret
+     - DOCUMENT_SERVER_JWT_HEADER=AuthorizationJwt
+     - MYSQL_SERVER_ROOT_PASSWORD=123456
+     - MYSQL_SERVER_DB_NAME=onlyoffice
+     - MYSQL_SERVER_HOST=onlyoffice-mysql-server
+     - MYSQL_SERVER_USER=onlyoffice
+     - MYSQL_SERVER_PASS=123456
+    ports:
+     - '9003:80'
+     - '443'
+     - '5222:5222'
+    stdin_open: true
+    tty: true
+    restart: always
+    privileged: true
+    volumes:
+     - ./community_data:/var/www/onlyoffice/Data
+     - ./community_log:/var/log/onlyoffice
+     - ./community_letsencrypt:/etc/letsencrypt
+     - ./document_data:/var/www/onlyoffice/DocumentServerData
+     - /sys/fs/cgroup:/sys/fs/cgroup:ro
+     - ./certs:/var/www/onlyoffice/Data/certs
+     
+  onlyoffice-document-server:
+    container_name: onlyoffice-document-server
+    image: onlyoffice/documentserver:6.0.2
+    stdin_open: true
+    tty: true
+    restart: always
+    environment:
+     - JWT_ENABLED=true
+     - JWT_SECRET=jwt_secret
+     - JWT_HEADER=AuthorizationJwt
+    ports:
+     - '9002:80'
+    expose:
+      - '80'
+      - '443'
+    volumes:
+       - ./document_data:/var/www/onlyoffice/Data
+       - ./document_log:/var/log/onlyoffice
+       - ./document_fonts:/usr/share/fonts/truetype/custom
+       - .document_forgotten:/var/lib/onlyoffice/documentserver/App_Data/cache/files/forgotten
+
+  onlyoffice-control-panel:
+    container_name: onlyoffice-control-panel
+    depends_on:
+     - onlyoffice-document-server
+     - onlyoffice-community-server
+    image: onlyoffice/controlpanel:2.9.0.351
+    environment:
+     - ONLYOFFICE_CORE_MACHINEKEY=core_secret
+    expose:
+      - '80'
+      - '443'
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./controlpanel_data:/var/www/onlyoffice/Data
+      - ./controlpanel_log:/var/log/onlyoffice
+    stdin_open: true
+    tty: true
+    
+networks:
+  default:
+    external:
+      name: "apps"
+    
+volumes:
+  document_data:
+  document_log:
+  document_forgotten:
+  community_mysql:
+  community_data:
+  community_log:
+  community_letsencrypt:
+  controlpanel_data:
+  controlpanel_log:
+  mysql_data:
