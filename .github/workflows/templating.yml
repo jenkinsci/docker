@@ -12,11 +12,12 @@ jobs:
         
     - name: npm install jinjia2-cli
       run: |
-       wget -N https://raw.githubusercontent.com/Websoft9/docker-template/main/README.jinja2
-       wget -N https://raw.githubusercontent.com/Websoft9/docker-template/main/README-zh.jinja2
+       wget -N https://raw.githubusercontent.com/Websoft9/docker-template/main/README.jinja2 -O template_README.jinja2
+       wget -N https://raw.githubusercontent.com/Websoft9/docker-template/main/README-zh.jinja2 -O template_README-zh.jinja2
        pip install jinja2-cli
-       jinja2 README-zh.jinja2 variables.json  > README-zh.md
-       jinja2 README.jinja2 variables.json  > README.md
+       jinja2 template_README-zh.jinja2 variables.json  > README-zh.md
+       jinja2 template_README.jinja2 variables.json  > README.md
+       rm -f template_README.jinja2  template_README-zh.jinja2
        
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
