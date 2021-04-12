@@ -1,0 +1,32 @@
+name: Docs Build and Upload
+
+on: 
+  push:
+    paths: docs/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+        
+    - name: npm install vuepress
+      run: |
+       sudo npm install -g vuepress
+        
+    - name: vuepress build
+      run: |
+        cd docs
+        sudo vuepress build
+      env:
+        CI: true
+    
+    #  to azure blob
+    - name: debug
+      run: ls
+    - uses: bacongobbler/azure-blob-storage-upload@v1.0.0
+      with:
+        source_dir: docs/html
+        container_name: $web
+        connection_string: ${{ secrets.Azure_blob }}
+        extra_args: '--destination-path docs'
