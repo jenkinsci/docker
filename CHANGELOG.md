@@ -9,7 +9,7 @@ CHANGELOG
 We are doing experimental changelogs for Jenkins controller Docker packaging
 ([discussion in the developer list](https://groups.google.com/forum/#!topic/jenkinsci-dev/KvV_UjU02gE)).
 These release notes represent changes in in the packaging, but not in the bundled WAR files.
-Please refer to the [weekly changelog](https://jenkins.io/changelog/) and [LTS changelog](https://jenkins.io/changelog-stabl/e) for WAR file changelogs.
+Please refer to the [weekly changelog](https://jenkins.io/changelog/) and [LTS changelog](https://jenkins.io/changelog-stable/) for WAR file changelogs.
 
 ## Version scheme
 
