@@ -38,7 +38,7 @@ NOTE:This functionality may change/move at some point in the future.
 
 ## Debugging
 
-In order to debug the master, use the `-e DEBUG=true -p 5005:5005` when starting the container.
+In order to debug the controller, use the `-e DEBUG=true -p 5005:5005` when starting the container.
 Jenkins will be suspended on the startup in such case,
 and then it will be possible to attach a debugger from IDE to it.
 
