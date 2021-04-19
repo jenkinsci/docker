@@ -1,6 +1,7 @@
 name: Template README by variables.json
 
 on: 
+  repository_dispatch:
   push:
     paths: variables.json
 
