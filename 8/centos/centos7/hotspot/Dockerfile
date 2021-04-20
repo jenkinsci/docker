@@ -75,7 +75,7 @@ RUN curl -fsSL ${PLUGIN_CLI_URL} -o /usr/lib/jenkins-plugin-manager.jar
 # for main web interface:
 EXPOSE ${http_port}
 
-# will be used by attached slave agents:
+# will be used by attached agents:
 EXPOSE ${agent_port}
 
 ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
