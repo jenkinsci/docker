@@ -4,20 +4,21 @@
 version: '3.8'
 services:
   jenkins:
-    container_name: jenkins-${JENKINS_VERSION}
-    image: jenkins:${JENKINS_VERSION}
+    container_name: jenkins-jenkins
+    image: jenkins/jenkins
     ports:
-     - '8080:8080'
-     - '50000:50000'
+     - 8080:8081
+     - 50000:50000
     environment:
-     - JAVA_OPTS=-Duser.timezone=Asia/changsha
-    
+     - JAVA_OPTS=-Duser.timezone=Asia/Changsha
+    #   JAVA_OPTS: "-Djava.awt.headless=true"
+
     restart: always
     volumes:
      - /volumes/data/jenkins:/var/jenkins_home
     #  - ./volumes/jenkins_home:/var/jenkins_home
     #  - ./volumes/jenkins-plugins:/usr/share/jenkins/ref/plugins
-     
+
 networks:
   default:
       name: "jenkins"
