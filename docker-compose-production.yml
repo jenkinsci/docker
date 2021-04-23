@@ -5,13 +5,13 @@
 version: '3.8'
 services:
   jenkins:
-    container_name: jenkins-${JENKINS_VERSION}
-    image: jenkins:${JENKINS_VERSION}
+    container_name: jenkins/jenkins-${JENKINS_VERSION}
+    image: jenkins/jenkins:${JENKINS_VERSION}
     ports:
      - '8080:8080'
      - '50000:50000'
-    # environment:
-    #   JAVA_OPTS: "-Djava.awt.headless=true"
+    environment:
+     - JAVA_OPTS=-Duser.timezone=Asia/changsha
     
     restart: always
     volumes:
