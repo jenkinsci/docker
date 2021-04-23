@@ -14,7 +14,7 @@ services:
     
     restart: always
     volumes:
-     - '/volumes/data/jenkins:/var/jenkins_home
+     - /volumes/data/jenkins:/var/jenkins_home
     #  - ./volumes/jenkins_home:/var/jenkins_home
     #  - ./volumes/jenkins-plugins:/usr/share/jenkins/ref/plugins
      
