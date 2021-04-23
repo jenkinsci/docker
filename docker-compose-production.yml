@@ -1,5 +1,4 @@
-#You can use a random password in NEO4J_AUTH=neo4j/passwd
-#if you want to change neo4j version: 1. change file: ./.env 2. add parameter: docker run -e NEO4J_VERSION=${your_version}
+
 
 
 version: '3.8'
