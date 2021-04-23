@@ -1,0 +1,56 @@
+name: Mirror to Gitee Repo
+
+# on: [ push, delete, create ]
+on: 
+  push:
+    branches:
+      - main
+
+jobs:
+  git-mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure Private Key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.GITEE_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          echo "StrictHostKeyChecking no" >> ~/.ssh/config
+      - name: Push Mirror
+        env:
+          # SOURCE_REPO: 'https://github.com/mgithubTestOrg/giteeMirror.git'
+          SOURCE_REPO: 'https://github.com/${{ github.repository }}.git'
+          # DESTINATION_REPO: 'git@gitee.com:mgithubTestOrg/giteeMirror.git'
+#           DESTINATION_REPO: 'git@gitee.com:${{ github.repository }}.git'
+          DESTINATION_REPO: 'git@gitee.com:websoft9op/${{ github.event.repository.name }}.git'
+          BASE_REPO: 'https://github.com/${{ github.repository }}'
+        run: |
+          git clone "$SOURCE_REPO" && cd `basename "$BASE_REPO"`
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "xxx@websoft9.com"
+          
+          git remote set-url --push origin "$DESTINATION_REPO"
+          git push origin main --force
+          
+          git checkout dev
+          if [ -f "requirements.yml" ];then
+            sed -i 's/github/gitee/g' requirements.yml
+            git add requirements.yml
+            git commit -m "Make requirements.yml compatible with gitee"
+          fi
+          git push origin dev --force
+          
+          git checkout main
+          
+          git fetch -p origin
+          git for-each-ref --format 'delete %(refname)' refs/pull | git update-ref --stdin
+          git push origin main --force
+          
+          if [ -f "requirements.yml" ];then
+            sed -i 's/github/gitee/g' requirements.yml
+            git add requirements.yml
+            git commit -m "Make requirements.yml compatible with gitee"
+          fi
+          git push origin main --force
