@@ -1,0 +1,24 @@
+#You can use a random password in NEO4J_AUTH=neo4j/passwd
+#if you want to change neo4j version: 1. change file: ./.env 2. add parameter: docker run -e NEO4J_VERSION=${your_version}
+
+
+version: '3.8'
+services:
+  jenkins:
+    container_name: jenkins-${JENKINS_VERSION}
+    image: jenkins:${JENKINS_VERSION}
+    ports:
+     - '8080:8080'
+     - '50000:50000'
+    # environment:
+    #   JAVA_OPTS: "-Djava.awt.headless=true"
+    
+    restart: always
+    volumes:
+     - '/volumes/data/jenkins:/var/jenkins_home'
+    #  - ./volumes/jenkins_home:/var/jenkins_home
+    #  - ./volumes/jenkins-plugins:/usr/share/jenkins/ref/plugins
+     
+networks:
+  default:
+      name: "jenkins"
