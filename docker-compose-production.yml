@@ -5,8 +5,8 @@
 version: '3.8'
 services:
   jenkins:
-    container_name: jenkins/jenkins-${JENKINS_VERSION}
-    image: jenkins/jenkins:${JENKINS_VERSION}
+    container_name: jenkins-${JENKINS_VERSION}
+    image: jenkins:${JENKINS_VERSION}
     ports:
      - '8080:8080'
      - '50000:50000'
@@ -15,7 +15,7 @@ services:
     
     restart: always
     volumes:
-     - '/volumes/data/jenkins:/var/jenkins_home'
+     - '/volumes/data/jenkins:/var/jenkins_home
     #  - ./volumes/jenkins_home:/var/jenkins_home
     #  - ./volumes/jenkins-plugins:/usr/share/jenkins/ref/plugins
      
