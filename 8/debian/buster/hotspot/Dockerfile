@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk8:jdk8u282-b08-debian
+FROM adoptopenjdk/openjdk8:jdk8u292-b10-debian
 
 # Install latest git lfs on Debian per https://github.com/git-lfs/git-lfs/wiki/Installation#debian-and-ubuntu
 # Avoid JENKINS-59569 - git LFS 2.7.1 fails clone with reference repository
