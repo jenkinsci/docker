@@ -43,8 +43,14 @@ docker-tag() {
 }
 
 login-token() {
-    # could use jq .token
-    curl -q -sSL "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${JENKINS_REPO}:pull" | grep -o '"token":"[^"]*"' | cut -d':' -f 2 | xargs echo
+    ## Install jq in a temp directory. Sorry.
+    JQ_DIR="$(mktemp -d)"
+    JQ_BIN="${JQ_DIR}/jq"
+    curl --silent --show-error --location --output "${JQ_BIN}" https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+    sha256sum "${JQ_BIN}" | grep -q "af986793a515d500ab2d35f8d2aecd656e764504b789b66d7e1a0b727a124c44"
+    chmod +x "${JQ_BIN}"
+
+    curl -q -sSL "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${JENKINS_REPO}:pull" | "${JQ_BIN}" -r '.token'
 }
 
 is-published() {
