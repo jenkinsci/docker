@@ -317,4 +317,4 @@ If you wish to contribute fixes to this repository, please refer to the [dedicat
 
 # Questions?
 
-Jump on irc.freenode.net and the #jenkins room. Ask!
+We're on Gitter, https://gitter.im/jenkinsci/docker
