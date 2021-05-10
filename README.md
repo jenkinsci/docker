@@ -14,7 +14,7 @@ This is a fully functional Jenkins server.
 # Usage
 
 ```
-docker run -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts
+docker run -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts-jdk11
 ```
 
 NOTE: read below the _build executors_ part for the role of the `50000` port mapping.
@@ -24,7 +24,7 @@ All Jenkins data lives in there - including plugins and configuration.
 You will probably want to make that an explicit volume so you can manage it and attach to another container for upgrades :
 
 ```
-docker run -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts
+docker run -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts-jdk11
 ```
 
 This will automatically create a 'jenkins_home' [docker volume](https://docs.docker.com/storage/volumes/) on the host machine.
@@ -34,7 +34,7 @@ NOTE: Avoid using a [bind mount](https://docs.docker.com/storage/bind-mounts/) f
 If you _really_ need to bind mount jenkins_home, ensure that the directory on the host is accessible by the jenkins user inside the container (jenkins user - uid 1000) or use `-u some_other_user` parameter with `docker run`.
 
 ```
-docker run -d -v jenkins_home:/var/jenkins_home -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts
+docker run -d -v jenkins_home:/var/jenkins_home -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts-jdk11
 ```
 
 this will run Jenkins in detached mode with port forwarding and volume added. You can access logs with command 'docker logs CONTAINER_ID' in order to check first login token. ID of container will be returned from output of command above.
@@ -85,7 +85,7 @@ You might need to customize the JVM running Jenkins, typically to adjust [system
 Use the `JAVA_OPTS` environment variable for this purpose :
 
 ```
-docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS=-Dhudson.footerURL=http://mycompany.com jenkins/jenkins:lts
+docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS=-Dhudson.footerURL=http://mycompany.com jenkins/jenkins:lts-jdk11
 ```
 
 # Configuring logging
@@ -100,7 +100,7 @@ handlers=java.util.logging.ConsoleHandler
 jenkins.level=FINEST
 java.util.logging.ConsoleHandler.level=FINEST
 EOF
-docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS="-Djava.util.logging.config.file=/var/jenkins_home/log.properties" -v `pwd`/data:/var/jenkins_home jenkins/jenkins:lts
+docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS="-Djava.util.logging.config.file=/var/jenkins_home/log.properties" -v `pwd`/data:/var/jenkins_home jenkins/jenkins:lts-jdk11
 ```
 
 # Configuring reverse proxy
@@ -112,7 +112,7 @@ If you want to install Jenkins behind a reverse proxy with prefix, example: mysi
 
 Arguments you pass to docker running the Jenkins image are passed to jenkins launcher, so for example you can run:
 ```
-docker run jenkins/jenkins:lts --version
+docker run jenkins/jenkins:lts-jdk11 --version
 ```
 This will show the Jenkins version, the same as when you run Jenkins from an executable war.
 
@@ -121,7 +121,7 @@ You can also define Jenkins arguments via `JENKINS_OPTS`. This is useful for cus
 to force use of HTTPS with a certificate included in the image.
 
 ```
-FROM jenkins/jenkins:lts
+FROM jenkins/jenkins:lts-jdk11
 
 COPY --chown=jenkins:jenkins https.pem /var/lib/jenkins/cert
 COPY --chown=jenkins:jenkins https.key /var/lib/jenkins/pk
@@ -132,12 +132,12 @@ EXPOSE 8083
 You can also change the default agent port for Jenkins by defining `JENKINS_SLAVE_AGENT_PORT` in a sample Dockerfile.
 
 ```
-FROM jenkins/jenkins:lts
+FROM jenkins/jenkins:lts-jdk11
 ENV JENKINS_SLAVE_AGENT_PORT 50001
 ```
 or as a parameter to docker,
 ```
-docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGENT_PORT=50001 jenkins/jenkins:lts
+docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGENT_PORT=50001 jenkins/jenkins:lts-jdk11
 ```
 
 **Note**: This environment variable will be used to set the port adding the
@@ -151,7 +151,7 @@ docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGEN
 You can run your container as root - and install via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile to customise, for example:
 
 ```
-FROM jenkins/jenkins:lts
+FROM jenkins/jenkins:lts-jdk11
 # if we want to install via apt
 USER root
 RUN apt-get update && apt-get install -y ruby make more-thing-here
@@ -164,7 +164,7 @@ For this purpose, use `/usr/share/jenkins/ref` as a place to define the default 
 wish the target installation to look like :
 
 ```
-FROM jenkins/jenkins:lts
+FROM jenkins/jenkins:lts-jdk11
 COPY --chown=jenkins:jenkins custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
 ```
 
@@ -218,7 +218,7 @@ You can run the CLI manually in Dockerfile:
 #### Plugin installation manager CLI
 
 ```Dockerfile
-FROM jenkins/jenkins:lts
+FROM jenkins/jenkins:lts-jdk11
 RUN jenkins-plugin-cli --plugins pipeline-model-definition github-branch-source:1.8
 ```
 
@@ -227,14 +227,14 @@ Furthermore it is possible to pass a file that contains this set of plugins (wit
 #### install-plugins script (Deprecated)
 
 ```Dockerfile
-FROM jenkins/jenkins:lts
+FROM jenkins/jenkins:lts-jdk11
 RUN /usr/local/bin/install-plugins.sh pipeline-model-definition github-branch-source:1.8
 ```
 
 #### install-plugins script
 
 ```Dockerfile
-FROM jenkins/jenkins:lts
+FROM jenkins/jenkins:lts-jdk11
 COPY --chown=jenkins:jenkins plugins.txt /usr/share/jenkins/ref/plugins.txt
 RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
 ```
@@ -242,7 +242,7 @@ RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
 #### Plugin installation manager CLI (Preview)
 
 ```Dockerfile
-FROM jenkins/jenkins:lts
+FROM jenkins/jenkins:lts-jdk11
 COPY --chown=jenkins:jenkins plugins.txt /usr/share/jenkins/ref/plugins.txt
 RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
 ```
@@ -288,7 +288,7 @@ The [plugin-installation-manager-tool](https://github.com/jenkinsci/plugin-insta
 Example command:
 
 ```command
-JENKINS_IMAGE=jenkins/jenkins
+JENKINS_IMAGE=jenkins/jenkins:lts-jdk11
 docker run -it ${JENKINS_IMAGE} bash -c "stty -onlcr && jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt --available-updates --output txt" >  plugins2.txt
 mv plugins2.txt plugins.txt
 ```
