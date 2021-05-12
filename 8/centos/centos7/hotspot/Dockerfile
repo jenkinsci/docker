@@ -6,7 +6,7 @@ baseurl=http://adoptopenjdk.jfrog.io/adoptopenjdk/rpm/centos/$releasever/$basear
 enabled=1\n\
 gpgcheck=1\n\
 gpgkey=https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public' > /etc/yum.repos.d/adoptopenjdk.repo && \
-    yum update -y && yum install -y git curl adoptopenjdk-8-hotspot-8u282_b08-3 freetype fontconfig unzip which && \
+    yum update -y && yum install -y git curl adoptopenjdk-8-hotspot-8u292_b10-3 freetype fontconfig unzip which && \
     curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.rpm.sh | bash && yum install -y git-lfs && yum clean all
 
 ARG user=jenkins
