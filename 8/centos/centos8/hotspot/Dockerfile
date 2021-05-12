@@ -2,7 +2,7 @@ FROM centos:8.3.2011
 
 RUN echo -e '[AdoptOpenJDK]\n\
 name=AdoptOpenJDK\n\
-baseurl=http://adoptopenjdk.jfrog.io/adoptopenjdk/rpm/centos/$releasever/$basearch\n\
+baseurl=https://adoptopenjdk.jfrog.io/adoptopenjdk/rpm/centos/$releasever/$basearch\n\
 enabled=1\n\
 gpgcheck=1\n\
 gpgkey=https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public' > /etc/yum.repos.d/adoptopenjdk.repo && \
