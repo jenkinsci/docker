@@ -53,13 +53,13 @@ For more info check Docker docs section on [Use volumes](https://docs.docker.com
 
 # Setting the number of executors
 
-You can define the number of executors on the built-in Jenkins master node using a groovy script.
-By default it is set to 2 executors, but you can extend the image and change it to your desired number of executors (recommended 0 executors on the master node) :
+You can define the number of executors on the Jenkins built-in node using a groovy script.
+By default it is set to 2 executors, but you can extend the image and change it to your desired number of executors (recommended 0 executors on the built-in node) :
 
 `executors.groovy`
 ```
 import jenkins.model.*
-Jenkins.instance.setNumExecutors(0) // Recommended to not run builds on the master node
+Jenkins.instance.setNumExecutors(0) // Recommended to not run builds on the built-in node
 ```
 
 and `Dockerfile`
