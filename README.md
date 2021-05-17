@@ -17,7 +17,7 @@ This is a fully functional Jenkins server.
 docker run -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts-jdk11
 ```
 
-NOTE: read below the _build executors_ part for the role of the `50000` port mapping.
+NOTE: read the section [_Connecting agents_](#connecting-agents) below for the role of the `50000` port mapping.
 
 This will store the workspace in `/var/jenkins_home`.
 All Jenkins data lives in there - including plugins and configuration.
@@ -53,13 +53,13 @@ For more info check Docker docs section on [Use volumes](https://docs.docker.com
 
 # Setting the number of executors
 
-You can define the number of executors on your Jenkins controller using a groovy script.
-By default it is set to 2 executors, but you can extend the image and change it to your desired number of executors (recommended 0 executors on the controller) :
+You can define the number of executors on the Jenkins built-in node using a groovy script.
+By default it is set to 2 executors, but you can extend the image and change it to your desired number of executors (recommended 0 executors on the built-in node) :
 
 `executors.groovy`
 ```
 import jenkins.model.*
-Jenkins.instance.setNumExecutors(0) // Recommended to not enable executors on the controller
+Jenkins.instance.setNumExecutors(0) // Recommended to not run builds on the built-in node
 ```
 
 and `Dockerfile`
@@ -69,15 +69,16 @@ FROM jenkins/jenkins:lts
 COPY --chown=jenkins:jenkins executors.groovy /usr/share/jenkins/ref/init.groovy.d/executors.groovy
 ```
 
-# Attaching build executors
+# Connecting agents
 
 You can run builds on the controller out of the box.
 The Jenkins project recommends that no executors be enabled on the controller.
 
-In order to attach agents **through an inbound connection**, map the port: `-p 50000:50000`.
-That port will be used when you connect agents.
+In order to connect agents **through an inbound TCP connection**, map the port: `-p 50000:50000`.
+That port will be used when you connect agents to the controller.
 
-If you are only using [SSH (outbound) build agents](), port mapping is not required.
+If you are only using [SSH (outbound) build agents](https://plugins.jenkins.io/ssh-slaves/), this port is not required, as connections are established from the controller.
+If you connect agents using web sockets (since Jenkins 2.217), the TCP agent port is not used either.
 
 # Passing JVM parameters
 
