@@ -32,11 +32,20 @@
 sudo wget -N https://raw.githubusercontent.com/Websoft9/docker-template/main/docker-installer.sh; sudo bash docker-installer.sh -r onlyoffice
 ```
 
-另外，通过如下命令可以支持打包安装。
+### package包安装
+
+### 生成package包
+
+登录 Linux，运行下面的**自动化命令**即可生成所需的package包。
 ```
 sudo wget -N https://raw.githubusercontent.com/Websoft9/docker-template/main/docker-installer.sh; sudo bash docker-installer.sh -r onlyoffice -p
 ```
+### package包安装
 
+将压缩的package包复制到想要安装的服务器或虚拟机，登录 Linux，运行下面的**自动化命令**即可启动安装并显示安装结果。
+```
+sudo bash install-onlyoffice
+```
 
 ### 手动安装
 
