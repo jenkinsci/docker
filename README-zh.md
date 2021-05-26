@@ -34,13 +34,12 @@ sudo wget -N https://raw.githubusercontent.com/Websoft9/docker-template/main/doc
 
 ### package包安装
 
-#### 生成package包
-
+1.生成package包
 登录 Linux，运行下面的**自动化命令**即可生成所需的package包。
 ```
 sudo wget -N https://raw.githubusercontent.com/Websoft9/docker-template/main/docker-installer.sh; sudo bash docker-installer.sh -r onlyoffice -p
 ```
-#### package包安装
+2.复制package包后安装
 
 将压缩的package包复制到想要安装的服务器或虚拟机，登录 Linux，运行下面的**自动化命令**即可启动安装并显示安装结果。
 ```
