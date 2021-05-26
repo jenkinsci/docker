@@ -33,18 +33,17 @@ sudo wget -N https://raw.githubusercontent.com/Websoft9/docker-template/main/doc
 ```
 ### package install
 
-#### make package
-
+1.Make package
 You can get the  package as following script
 ```
 sudo wget -N https://raw.githubusercontent.com/Websoft9/docker-template/main/docker-installer.sh; sudo bash docker-installer.sh -r onlyoffice -p
 ```
 
-#### Install by package
-
+2.Install by package
 Copy package to your server, Use SSH to connect your instance and run the automatic installation script below
 ```
 sudo bash install-onlyoffice
+```
 
 ### Manual Installation
 
