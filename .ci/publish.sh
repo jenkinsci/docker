@@ -234,6 +234,7 @@ TOKEN=$(login-token)
 lts_version=""
 version=""
 for version in $(get-latest-versions); do
+    TOKEN=$(login-token)
     if is-published "$version$variant"; then
         echo "Tag is already published: $version$variant"
     else
@@ -252,8 +253,10 @@ for version in $(get-latest-versions); do
     fi
 done
 
+TOKEN=$(login-token)
 publish-latest "${version}" "${variant}"
 
+TOKEN=$(login-token)
 if [ -n "${lts_version}" ]; then
     publish-lts "${lts_version}" "${variant}"
 else
