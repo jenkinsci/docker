@@ -28,6 +28,9 @@ build-jdk11:
 build-centos:
 	docker build --file 8/centos/centos8/hotspot/Dockerfile .
 
+build-rhel-ubi8-jdk11:
+	docker build --file 11/rhel/ubi8/hotspot/Dockerfile .
+
 build-centos7:
 	docker build --file 8/centos/centos7/hotspot/Dockerfile .
 
@@ -69,6 +72,9 @@ test-jdk11: test-run-jdk11
 test-centos: DIRECTORY=8/centos/centos8/hotspot
 test-centos: test-run-centos
 
+test-rhel-ubi8-jdk11: DIRECTORY=11/rhel/ubi8/hotspot
+test-rhel-ubi8-jdk11: test-run-rhel-ubi8-jdk11
+
 test-centos7: DIRECTORY=8/centos/centos7/hotspot
 test-centos7: test-run-centos7
 
@@ -93,6 +99,7 @@ publish:
 	./.ci/publish.sh --variant slim ; \
 	./.ci/publish.sh --variant jdk11 --start-after 2.151 ; \
 	./.ci/publish.sh --variant centos --start-after 2.181 ; \
+	./.ci/publish.sh --variant rhel-ubi8-jdk11 --start-after 2.289 ; \
 	./.ci/publish.sh --variant centos7 --start-after 2.199 ;
 
 publish-images-variant:
