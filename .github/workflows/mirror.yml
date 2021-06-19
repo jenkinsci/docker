@@ -24,7 +24,7 @@ jobs:
           SOURCE_REPO: 'https://github.com/${{ github.repository }}.git'
           # DESTINATION_REPO: 'git@gitee.com:mgithubTestOrg/giteeMirror.git'
 #           DESTINATION_REPO: 'git@gitee.com:${{ github.repository }}.git'
-          DESTINATION_REPO: 'git@gitee.com:websoft9op/${{ github.event.repository.name }}.git'
+          DESTINATION_REPO: 'git@gitee.com:websoft9/${{ github.event.repository.name }}.git'
           BASE_REPO: 'https://github.com/${{ github.repository }}'
         run: |
           git clone "$SOURCE_REPO" && cd `basename "$BASE_REPO"`
