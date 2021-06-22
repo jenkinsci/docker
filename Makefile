@@ -37,6 +37,9 @@ build-openj9:
 build-openj9-jdk11:
 	docker build --file 11/ubuntu/focal/openj9/Dockerfile .
 
+build-hotspot-jdk11:
+	docker build --file 11/ubuntu/focal/hotspot/Dockerfile .
+
 bats:
 	# Latest tag is unfortunately 0.4.0 which is quite older than the latest master tip.
 	# So we clone and reset to this well known current sha:
