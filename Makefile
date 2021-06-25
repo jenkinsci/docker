@@ -51,14 +51,16 @@ build-centos7:
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos7_jdk8
 
 bats:
-	git clone -b v1.3.0 https://github.com/bats-core/bats-core bats
+	git clone https://github.com/bats-core/bats-core bats ;\
+	cd bats ;\
+	git checkout eac1e9d047b2b8137d85307fc94439c90bdc25ae
 
 prepare-test: bats
 	git submodule update --init --recursive
 	mkdir -p target
 
 test-run-%: prepare-test
-	DIRECTORY="${DIRECTORY}" bats/bin/bats tests | tee target/results-$*.tap
+	DIRECTORY="${DIRECTORY}" bats/bin/bats --jobs 10 tests | tee target/results-$*.tap
 	docker run --rm -v "${PWD}":/usr/src/app \
 					-w /usr/src/app node:12-alpine \
 					sh -c "npm install tap-xunit -g && cat target/results-$*.tap | tap-xunit --package='jenkinsci.docker.$*' > target/junit-results-$*.xml"
@@ -90,11 +92,11 @@ test-centos7: test-run-centos7
 test: build prepare-test
 	@for d in ${DOCKERFILES} ; do \
 		dir=`dirname $$d | sed -e "s_^\./__"` ; \
-		DIRECTORY=$${dir} bats/bin/bats tests ; \
+		DIRECTORY=$${dir} bats/bin/bats --jobs 10 tests ; \
 	done
 
 test-install-plugins: prepare-test
-	DIRECTORY="8/alpine/hotspot" bats/bin/bats tests/install-plugins.bats tests/install-plugins-plugins-cli.bats
+	DIRECTORY="8/alpine/hotspot" bats/bin/bats --jobs 10 tests/install-plugins.bats tests/install-plugins-plugins-cli.bats
 
 publish:
 	./.ci/publish.sh
