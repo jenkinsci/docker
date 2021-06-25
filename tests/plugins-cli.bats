@@ -210,8 +210,8 @@ teardown() {
 }
 
 @test "[${SUT_DESCRIPTION}] JAVA_OPTS environment variable is used with jenkins-plugin-cli" {
-  run docker_build_child $SUT_IMAGE-plugins-cli-java-opts $BATS_TEST_DIRNAME/plugins-cli/java-opts
+  run docker_build_child $SUT_IMAGE-plugins-cli-java-opts $BATS_TEST_DIRNAME/plugins-cli/java-opts --no-cache
   assert_success
   # Assert JAVA_OPTS has been used and 'java.opts.test' has been set to JVM
-  assert_line --regexp '\s*java.opts.test\s*=\s*true.*'
+  assert_line --regexp 'java.opts.test.*=.*true'
 }
