@@ -30,13 +30,3 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
   run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 1.0-beta-1 1.0-alpha-1"
   assert_failure
 }
-
-@test "[${SUT_DESCRIPTION}] permissions are propagated from override file" {
-  run docker_build_child $SUT_IMAGE-functions $BATS_TEST_DIRNAME/functions
-  assert_success
-
-  # replace DOS line endings \r\n
-  run bash -c "docker run -v $BATS_TEST_DIRNAME/functions:/var/jenkins_home --rm $SUT_IMAGE-functions stat -c '%a' /var/jenkins_home/.ssh/config"
-  assert_success
-  assert_line '600'
-}
