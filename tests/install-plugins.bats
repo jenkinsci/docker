@@ -107,7 +107,7 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
   run docker_build_child $SUT_IMAGE-install-plugins-update $BATS_TEST_DIRNAME/install-plugins/update --no-cache
   assert_success
   assert_line --partial 'Skipping already installed dependency workflow-step-api'
-  assert_line "Using provided plugin: ant"
+  assert_line --partial 'Using provided plugin: ant'
   # replace DOS line endings \r\n
   run bash -c "docker run --rm $SUT_IMAGE-install-plugins-update unzip -p /var/jenkins_home/plugins/junit.jpi META-INF/MANIFEST.MF | tr -d '\r'"
   assert_success
