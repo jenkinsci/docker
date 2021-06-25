@@ -120,27 +120,27 @@ teardown() {
   # Initial execution
   run docker_build_child $SUT_IMAGE-plugins-cli $BATS_TEST_DIRNAME/plugins-cli
   assert_success
-  local work; work="$BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
-  mkdir -p $work
+  local volume_name
+  volume_name="$(docker volume create)"
   # Image contains junit 1.6 and ant-plugin 1.3
-  run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-plugins-cli true"
+  run docker run --volume "$volume_name:/var/jenkins_home" --rm "$SUT_IMAGE-plugins-cli" true
   assert_success
-  run unzip_manifest junit.jpi $work
+  run unzip_manifest junit.jpi "$volume_name"
   assert_line 'Plugin-Version: 1.6'
-  run unzip_manifest ant.jpi $work
+  run unzip_manifest ant.jpi "$volume_name"
   assert_line 'Plugin-Version: 1.3'
 
   # Upgrade to new image with different plugins
   run docker_build_child $SUT_IMAGE-upgrade-plugins $BATS_TEST_DIRNAME/upgrade-plugins
   assert_success
   # Images contains junit 1.28 and ant-plugin 1.2
-  run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-upgrade-plugins true"
+  run docker run --volume "$volume_name:/var/jenkins_home" --rm "$SUT_IMAGE-upgrade-plugins" true
   assert_success
-  run unzip_manifest junit.jpi $work
+  run unzip_manifest junit.jpi "$volume_name"
   assert_success
   # Should be updated
   assert_line 'Plugin-Version: 1.28'
-  run unzip_manifest ant.jpi $work
+  run unzip_manifest ant.jpi "$volume_name"
   # 1.2 is older than the existing 1.3, so keep 1.3
   assert_line 'Plugin-Version: 1.3'
 }
@@ -148,25 +148,28 @@ teardown() {
 @test "[${SUT_DESCRIPTION}] do not upgrade if plugin has been manually updated" {
   run docker_build_child $SUT_IMAGE-plugins-cli $BATS_TEST_DIRNAME/plugins-cli
   assert_success
-  local work; work="$BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
-  mkdir -p $work
+  local volume_name
+  volume_name="$(docker volume create)"
   # Image contains junit 1.8 and ant-plugin 1.3
-  run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-plugins-cli curl --connect-timeout 20 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L https://updates.jenkins.io/download/plugins/junit/1.8/junit.hpi -o /var/jenkins_home/plugins/junit.jpi"
+  run docker run --volume "$volume_name:/var/jenkins_home" --rm "$SUT_IMAGE-plugins-cli" \
+    curl --connect-timeout 20 --retry 5 --retry-delay 0 --retry-max-time 60 --silent --fail \
+    --location https://updates.jenkins.io/download/plugins/junit/1.8/junit.hpi \
+    --output /var/jenkins_home/plugins/junit.jpi
   assert_success
-  run unzip_manifest junit.jpi $work
+  run unzip_manifest junit.jpi "$volume_name"
   assert_line 'Plugin-Version: 1.8'
   run docker_build_child $SUT_IMAGE-upgrade-plugins $BATS_TEST_DIRNAME/upgrade-plugins
   assert_success
   # Images contains junit 1.28 and ant-plugin 1.2
-  run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-upgrade-plugins true"
+  run docker run --volume "$volume_name:/var/jenkins_home" --rm "$SUT_IMAGE-upgrade-plugins" true
   assert_success
   # junit shouldn't be upgraded
-  run unzip_manifest junit.jpi $work
+  run unzip_manifest junit.jpi "$volume_name"
   assert_success
   assert_line 'Plugin-Version: 1.8'
   refute_line 'Plugin-Version: 1.28'
   # ant shouldn't be downgraded
-  run unzip_manifest ant.jpi $work
+  run unzip_manifest ant.jpi "$volume_name"
   assert_success
   assert_line 'Plugin-Version: 1.3'
   refute_line 'Plugin-Version: 1.2'
@@ -175,25 +178,28 @@ teardown() {
 @test "[${SUT_DESCRIPTION}] upgrade plugin even if it has been manually updated when PLUGINS_FORCE_UPGRADE=true" {
   run docker_build_child $SUT_IMAGE-plugins-cli $BATS_TEST_DIRNAME/plugins-cli
   assert_success
-  local work; work="$BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
-  mkdir -p $work
+  local volume_name
+  volume_name="$(docker volume create)"
   # Image contains junit 1.6 and ant-plugin 1.3
-  run bash -c "docker run -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-plugins-cli curl --connect-timeout 20 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L https://updates.jenkins.io/download/plugins/junit/1.8/junit.hpi -o /var/jenkins_home/plugins/junit.jpi"
+  run docker run --volume "$volume_name:/var/jenkins_home" --rm "$SUT_IMAGE-plugins-cli" \
+    curl --connect-timeout 20 --retry 5 --retry-delay 0 --retry-max-time 60 --silent --fail \
+    --location https://updates.jenkins.io/download/plugins/junit/1.8/junit.hpi \
+    --output /var/jenkins_home/plugins/junit.jpi
   assert_success
-  run unzip_manifest junit.jpi $work
+  run unzip_manifest junit.jpi "$volume_name"
   assert_line 'Plugin-Version: 1.8'
   run docker_build_child $SUT_IMAGE-upgrade-plugins $BATS_TEST_DIRNAME/upgrade-plugins
   assert_success
   # Images contains junit 1.28 and ant-plugin 1.2
-  run bash -c "docker run -e PLUGINS_FORCE_UPGRADE=true -u $UID -v $work:/var/jenkins_home --rm $SUT_IMAGE-upgrade-plugins true"
+  run docker run --env PLUGINS_FORCE_UPGRADE=true --volume "$volume_name:/var/jenkins_home" --rm "$SUT_IMAGE-upgrade-plugins" true
   assert_success
   # junit should be upgraded
-  run unzip_manifest junit.jpi $work
+  run unzip_manifest junit.jpi "$volume_name"
   assert_success
   refute_line 'Plugin-Version: 1.8'
   assert_line 'Plugin-Version: 1.28'
   # ant shouldn't be downgraded
-  run unzip_manifest ant.jpi $work
+  run unzip_manifest ant.jpi "$volume_name"
   assert_success
   assert_line 'Plugin-Version: 1.3'
   refute_line 'Plugin-Version: 1.2'

@@ -44,6 +44,10 @@ function sut_image {
     echo "bats-jenkins-${DIRECTORY//\//-}" | tr '[:upper:]' '[:lower:]' | sed -e 's/dockerfile$/default/' | sed -e 's/dockerfile-//'
 }
 
+function sut_container {
+    echo "$(sut_image)-${BATS_TEST_NUMBER}"
+}
+
 function docker_build {
     local opts="-f ${DIRECTORY}/Dockerfile"
     if [ -n "$JENKINS_VERSION" ]; then
@@ -69,11 +73,11 @@ function get_jenkins_url {
     else
         DOCKER_IP=$(echo "$DOCKER_HOST" | sed -e 's|tcp://\(.*\):[0-9]*|\1|')
     fi
-    echo "http://$DOCKER_IP:$(docker port "$SUT_CONTAINER" 8080 | cut -d: -f2)"
+    echo "http://$DOCKER_IP:$(docker port "$(sut_container)" 8080 | cut -d: -f2)"
 }
 
 function get_jenkins_password {
-    docker logs "$SUT_CONTAINER" 2>&1 | grep -A 2 "Please use the following password to proceed to installation" | tail -n 1
+    docker logs "$(sut_container)" 2>&1 | grep -A 2 "Please use the following password to proceed to installation" | tail -n 1
 }
 
 function test_url {
@@ -94,8 +98,9 @@ function cleanup {
 
 function unzip_manifest {
     local plugin=$1
-    local work=$2
-    bash -c "docker run --rm -v $work:/var/jenkins_home --entrypoint unzip $SUT_IMAGE -p /var/jenkins_home/plugins/$plugin META-INF/MANIFEST.MF | tr -d '\r'"
+    local volume_name=$2
+    docker run --rm --volume "${volume_name}:/var/jenkins_home" --entrypoint unzip "${SUT_IMAGE}" \
+        -p "/var/jenkins_home/plugins/${plugin}" META-INF/MANIFEST.MF | tr -d '\r'
 }
 
 function clean_work_directory {

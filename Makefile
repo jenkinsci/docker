@@ -6,6 +6,7 @@ export BUILDKIT_PROGRESS=plain
 all: shellcheck build test
 
 DOCKERFILES=$(shell find . -not -path '**/windows/*' -not -path './tests/*' -type f -name Dockerfile)
+PARALLEL_JOBS=$(shell sh -c "sysctl -n hw.ncpu 2>/dev/null || grep -c processor /proc/cpuinfo")
 
 shellcheck:
 	$(ROOT_DIR)/tools/shellcheck -e SC1091 \
@@ -48,7 +49,7 @@ prepare-test: bats
 	mkdir -p target
 
 test-run-%: prepare-test
-	DIRECTORY="${DIRECTORY}" bats/bin/bats tests | tee target/results-$*.tap
+	DIRECTORY="${DIRECTORY}" bats/bin/bats --jobs $(PARALLEL_JOBS) tests | tee target/results-$*.tap
 	docker run --rm -v "${PWD}":/usr/src/app \
 					-w /usr/src/app node:12-alpine \
 					sh -c "npm install tap-xunit -g && cat target/results-$*.tap | tap-xunit --package='jenkinsci.docker.$*' > target/junit-results-$*.xml"
@@ -80,11 +81,11 @@ test-openj9-jdk11: test-run-openj9-jdk11
 test: build prepare-test
 	@for d in ${DOCKERFILES} ; do \
 		dir=`dirname $$d | sed -e "s_^\./__"` ; \
-		DIRECTORY=$${dir} bats/bin/bats tests ; \
+		DIRECTORY=$${dir} bats/bin/bats --jobs $(PARALLEL_JOBS) tests ; \
 	done
 
 test-install-plugins: prepare-test
-	DIRECTORY="8/alpine/hotspot" bats/bin/bats tests/install-plugins.bats tests/install-plugins-plugins-cli.bats
+	DIRECTORY="8/alpine/hotspot" bats/bin/bats --jobs $(PARALLEL_JOBS) tests/install-plugins.bats tests/install-plugins.bats
 
 publish:
 	./.ci/publish.sh ; \
