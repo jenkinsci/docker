@@ -1,7 +1,7 @@
 FROM registry.access.redhat.com/ubi8/ubi:8.4-203.1622660121
 
-RUN yum update -y \
-    && yum install -y \
+RUN yum update --disableplugin=subscription-manager -y  \
+    && yum install --disableplugin=subscription-manager -y \
         git \
         git-lfs \
         curl \
@@ -10,7 +10,7 @@ RUN yum update -y \
         fontconfig \
         unzip \
         which \
-    && yum clean all
+    && yum clean --disableplugin=subscription-manager all
 
 ARG user=jenkins
 ARG group=jenkins
