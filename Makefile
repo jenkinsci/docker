@@ -5,52 +5,58 @@ export BUILDKIT_PROGRESS=plain
 
 all: shellcheck build test
 
-DOCKERFILES=$(shell find . -not -path '**/windows/*' -not -path './tests/*' -type f -name Dockerfile)
+DOCKERFILES ?= $(shell find . -not -path '**/windows/*' -not -path './tests/*' -type f -name Dockerfile)
+## One test per core available to the Docker Engine as most of the workload is network
+PARALLEL_JOBS = $(shell docker run --rm alpine grep -c processor /proc/cpuinfo)
+TEST_SUITES ?= $(CURIDR)/tests
+# No additional flags by default
+BAKE_ADDITIONAL_FLAGS ?=
 
 shellcheck:
-	$(ROOT_DIR)/tools/shellcheck -e SC1091 \
-	                             jenkins-support \
-	                             *.sh
+	$(ROOT_DIR)/tools/shellcheck -e SC1091 jenkins-support *.sh
+
 build:
-	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load linux
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load linux $(BAKE_ADDITIONAL_FLAGS)
 
 build-arm64:
-	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/arm64' --load linux-arm64
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/arm64' --load linux-arm64 $(BAKE_ADDITIONAL_FLAGS)
 
 build-s390x:
-	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/s390x' --load linux-s390x
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/s390x' --load linux-s390x $(BAKE_ADDITIONAL_FLAGS)
 
 build-ppc64le:
-	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/ppc64le' --load linux-ppc64le
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/ppc64le' --load linux-ppc64le $(BAKE_ADDITIONAL_FLAGS)
 
 build-multiarch:
 	docker buildx bake -f docker-bake.hcl --load linux
 
 build-debian:
-	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_jdk8
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_jdk8 $(BAKE_ADDITIONAL_FLAGS)
 
 build-alpine:
-	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load alpine_jdk8
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load alpine_jdk8 $(BAKE_ADDITIONAL_FLAGS)
 
 build-slim:
-	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_slim_jdk8
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_slim_jdk8 $(BAKE_ADDITIONAL_FLAGS)
 
 build-jdk11:
-	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_jdk11
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_jdk11 $(BAKE_ADDITIONAL_FLAGS)
 
 build-almalinux:
-	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load almalinux_jdk11
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load almalinux_jdk11 $(BAKE_ADDITIONAL_FLAGS)
 
 build-centos:
-	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos8_jdk8
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos8_jdk8 $(BAKE_ADDITIONAL_FLAGS)
 
 build-rhel-ubi8-jdk11:
-	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load rhel_ubi8_jdk11
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load rhel_ubi8_jdk11 $(BAKE_ADDITIONAL_FLAGS)
 
 build-centos7:
-	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos7_jdk8
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos7_jdk8 $(BAKE_ADDITIONAL_FLAGS)
 
 bats:
+	# fixes relating to parallel testing are on master and not released yet
+	# git clone -b <tag> https://github.com/bats-core/bats-core bats
 	git clone https://github.com/bats-core/bats-core bats ;\
 	cd bats ;\
 	git checkout eac1e9d047b2b8137d85307fc94439c90bdc25ae
@@ -60,10 +66,11 @@ prepare-test: bats
 	mkdir -p target
 
 test-run-%: prepare-test
-	DIRECTORY="${DIRECTORY}" bats/bin/bats --jobs 10 tests | tee target/results-$*.tap
-	docker run --rm -v "${PWD}":/usr/src/app \
-					-w /usr/src/app node:12-alpine \
-					sh -c "npm install tap-xunit -g && cat target/results-$*.tap | tap-xunit --package='jenkinsci.docker.$*' > target/junit-results-$*.xml"
+	make --silent -C $(CURDIR) build-$*
+	IMAGE=$* bats/bin/bats --jobs $(PARALLEL_JOBS) $(TEST_SUITES) | tee target/results-$*.tap
+	docker run --rm -v "$(CURDIR)":/usr/src/app \
+		-w /usr/src/app node:12-alpine \
+	sh -c "npm install tap-xunit -g && cat target/results-$*.tap | tap-xunit --package='jenkinsci.docker.$*' > target/junit-results-$*.xml"
 
 test-debian: DIRECTORY="8/debian/buster/hotspot"
 test-debian: test-run-debian
@@ -92,11 +99,11 @@ test-centos7: test-run-centos7
 test: build prepare-test
 	@for d in ${DOCKERFILES} ; do \
 		dir=`dirname $$d | sed -e "s_^\./__"` ; \
-		DIRECTORY=$${dir} bats/bin/bats --jobs 10 tests ; \
+		DIRECTORY=$${dir} bats/bin/bats --jobs $(PARALLEL_JOBS) tests ; \
 	done
 
 test-install-plugins: prepare-test
-	DIRECTORY="8/alpine/hotspot" bats/bin/bats --jobs 10 tests/install-plugins.bats tests/install-plugins-plugins-cli.bats
+	DIRECTORY="8/alpine/hotspot" bats/bin/bats --jobs $(PARALLEL_JOBS) tests/install-plugins.bats tests/install-plugins.bats
 
 publish:
 	./.ci/publish.sh
