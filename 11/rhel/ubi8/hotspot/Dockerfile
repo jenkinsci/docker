@@ -1,7 +1,7 @@
 FROM registry.access.redhat.com/ubi8/ubi:8.4-203.1622660121
 
-RUN yum update --disableplugin=subscription-manager -y  \
-    && yum install --disableplugin=subscription-manager -y \
+RUN yum update --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs -y  \
+    && yum install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs -y \
         git \
         git-lfs \
         curl \
