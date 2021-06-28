@@ -43,14 +43,7 @@ docker-tag() {
 }
 
 login-token() {
-    ## Install jq in a temp directory. Sorry.
-    JQ_DIR="$(mktemp -d)"
-    JQ_BIN="${JQ_DIR}/jq"
-    curl --silent --show-error --location --output "${JQ_BIN}" https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
-    sha256sum "${JQ_BIN}" | grep -q "af986793a515d500ab2d35f8d2aecd656e764504b789b66d7e1a0b727a124c44"
-    chmod +x "${JQ_BIN}"
-
-    curl -q -sSL "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${JENKINS_REPO}:pull" | "${JQ_BIN}" -r '.token'
+    curl -q -sSL "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${JENKINS_REPO}:pull" | jq -r '.token'
 }
 
 is-published() {
@@ -99,37 +92,42 @@ publish() {
     local variant=$2
     local tag="${version}${variant}"
     local sha
-    local build_opts=(--no-cache --pull)
+    local build_opts=(--pull --push)
     local dockerfile="./8/debian/buster/hotspot/Dockerfile"
 
     if [ "$dry_run" = true ]; then
         build_opts=()
     fi
 
+    platform="linux/amd64"
+
     if [ "$variant" == "-alpine" ] ; then
         dockerfile="./8/alpine/hotspot/Dockerfile"
     elif [ "$variant" == "-slim" ] ; then
         dockerfile="./8/debian/buster-slim/hotspot/Dockerfile"
+        platform="linux/amd64,linux/arm64,linux/s390x,linux/ppc64le"
     elif [ "$variant" == "-jdk11" ] ; then
         dockerfile="./11/debian/buster/hotspot/Dockerfile"
+        platform="linux/amd64,linux/arm64,linux/s390x,linux/ppc64le"
     elif [ "$variant" == "-centos" ] ; then
         dockerfile="./8/centos/centos8/hotspot/Dockerfile"
+        platform="linux/amd64,linux/arm64/v8,linux/ppc64le"
     elif [ "$variant" == "-centos7" ] ; then
         dockerfile="./8/centos/centos7/hotspot/Dockerfile"
+        platform="linux/amd64,linux/arm64/v8,linux/ppc64le"
     fi
 
     sha=$(curl -q -fsSL "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/${version}/jenkins-war-${version}.war.sha256" )
 
-    docker build --file "${dockerfile}" \
+    docker buildx build --platform "${platform}" --file "${dockerfile}" \
                  --build-arg "JENKINS_VERSION=$version" \
                  --build-arg "JENKINS_SHA=$sha" \
                  --tag "${JENKINS_REPO}:${tag}" \
                  "${build_opts[@]+"${build_opts[@]}"}" .
 
     # " line to fix syntax highlightning
-    if [ ! "$dry_run" = true ]; then
+    if [ "$dry_run" = true ]; then
         docker push "${JENKINS_REPO}:${tag}"
-    else
         echo "Dry run mode: no docker push"
     fi
 }
