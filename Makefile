@@ -1,5 +1,8 @@
 ROOT_DIR="$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))/"
 
+export DOCKER_BUILDKIT=1
+export BUILDKIT_PROGRESS=plain
+
 all: shellcheck build test
 
 DOCKERFILES=$(shell find . -not -path '**/windows/*' -not -path './tests/*' -type f -name Dockerfile)
