@@ -1,4 +1,4 @@
-FROM adoptopenjdk:8u292-b10-jdk-openj9-0.24.0-focal
+FROM adoptopenjdk:8u292-b10-jdk-openj9-0.26.0-focal
 
 RUN apt-get update \
   && apt-get upgrade -y \
