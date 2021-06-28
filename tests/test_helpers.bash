@@ -56,9 +56,11 @@ function docker_build {
 function docker_build_child {
     local tag=$1; shift
     local dir=$1; shift
-    local tmp=$(mktemp "$dir/Dockerfile.XXXXXX")
+    local tmp
+    tmp=$(mktemp "$dir/Dockerfile.XXXXXX")
     sed -e "s/FROM bats-jenkins/FROM $(sut_image)/" "$dir/Dockerfile" > "$tmp"
-    docker build -t "$tag" "$@" -f "$tmp" "$dir" && rm "$tmp"
+    docker build -t "$tag" "$@" -f "$tmp" "$dir" 2>&1
+    rm "$tmp"
 }
 
 function get_jenkins_url {
