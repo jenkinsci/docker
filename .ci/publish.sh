@@ -116,6 +116,8 @@ publish() {
         dockerfile="./8/centos/centos8/hotspot/Dockerfile"
     elif [ "$variant" == "-centos7" ] ; then
         dockerfile="./8/centos/centos7/hotspot/Dockerfile"
+    elif [ "$variant" == "-rhel-ubi8-jdk11" ]; then
+        dockerfile="./11/rhel/ubi8/hotspot/Dockerfile"
     fi
 
     sha=$(curl -q -fsSL "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/${version}/jenkins-war-${version}.war.sha256" )
