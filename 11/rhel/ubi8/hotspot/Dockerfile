@@ -1,16 +1,22 @@
 FROM registry.access.redhat.com/ubi8/ubi:8.4-203.1622660121
 
-RUN yum update --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs -y  \
-    && yum install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs -y \
+RUN echo -e '[AdoptOpenJDK]\n\
+name=AdoptOpenJDK\n\
+baseurl=https://adoptopenjdk.jfrog.io/adoptopenjdk/rpm/rhel/$releasever/$basearch\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public' > /etc/yum.repos.d/adoptopenjdk.repo \
+    && dnf update --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs -y  \
+    && dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs -y \
+        adoptopenjdk-11-hotspot-11.0.11+9-3.x86_64 \
         git \
         git-lfs \
         curl \
-        java-11-openjdk-devel \
         freetype \
         fontconfig \
         unzip \
         which \
-    && yum clean --disableplugin=subscription-manager all
+    && dnf clean --disableplugin=subscription-manager all
 
 ARG user=jenkins
 ARG group=jenkins
