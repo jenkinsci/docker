@@ -22,9 +22,7 @@ group "linux-arm64" {
 
 group "linux-s390x" {
   targets = [
-    "debian_jdk8",
     "debian_jdk11",
-    "debian_slim_jdk8",
   ]
 }
 
@@ -101,7 +99,7 @@ target "debian_jdk8" {
     JENKINS_SHA = JENKINS_SHA
   }
   tags = ["${REGISTRY}/${OWNER}/jenkins:${JENKINS_VERSION}"]
-  platforms = ["linux/amd64", "linux/ppc64le", "linux/arm64", "linux/s390x"]
+  platforms = ["linux/amd64", "linux/ppc64le", "linux/arm64"]
 }
 
 target "debian_jdk11" {
@@ -123,7 +121,7 @@ target "debian_slim_jdk8" {
     JENKINS_SHA = JENKINS_SHA
   }
   tags = ["${REGISTRY}/${OWNER}/jenkins:${JENKINS_VERSION}-slim"]
-  platforms = ["linux/amd64", "linux/ppc64le", "linux/arm64", "linux/s390x"]
+  platforms = ["linux/amd64", "linux/ppc64le", "linux/arm64"]
 }
 
 target "windows_1809_jdk11" {
