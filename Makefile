@@ -85,12 +85,7 @@ test-install-plugins: prepare-test
 	DIRECTORY="8/alpine/hotspot" bats/bin/bats tests/install-plugins.bats tests/install-plugins-plugins-cli.bats
 
 publish:
-	./.ci/publish.sh ; \
-	./.ci/publish.sh --variant alpine ; \
-	./.ci/publish.sh --variant slim ; \
-	./.ci/publish.sh --variant jdk11 --start-after 2.151 ; \
-	./.ci/publish.sh --variant centos --start-after 2.181 ; \
-	./.ci/publish.sh --variant centos7 --start-after 2.199 ;
+	./.ci/publish.sh
 
 publish-images-variant:
 	./.ci/publish-images.sh --variant ${VARIANT} --arch ${ARCH} ;

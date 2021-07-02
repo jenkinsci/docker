@@ -1,5 +1,3 @@
-// TODO handle latest / latest-variant / latest-lts
-
 group "linux" {
   targets = [
     "alpine_jdk8",
@@ -58,6 +56,14 @@ variable "JENKINS_REPO" {
   default = "jenkins/jenkins"
 }
 
+variable "LATEST_WEEKLY" {
+  default = "false"
+}
+
+variable "LATEST_LTS" {
+  default = "false"
+}
+
 target "alpine_jdk8" {
   dockerfile = "8/alpine/hotspot/Dockerfile"
   context = "."
@@ -65,7 +71,11 @@ target "alpine_jdk8" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
   }
-  tags = ["${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-alpine"]
+  tags = [
+    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-alpine",
+    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:alpine" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-alpine" : "",
+  ]
   platforms = ["linux/amd64"]
 }
 
@@ -76,7 +86,11 @@ target "centos7_jdk8" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
   }
-  tags = ["${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-centos7"]
+  tags = [
+    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-centos7",
+    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:centos7" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-centos7" : "",
+  ]
   platforms = ["linux/amd64"]
 }
 
@@ -87,7 +101,11 @@ target "centos8_jdk8" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
   }
-  tags = ["${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-centos"]
+  tags = [
+    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-centos",
+    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:centos" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-centos" : "",
+  ]
   platforms = ["linux/amd64", "linux/ppc64le", "linux/arm64"]
 }
 
@@ -98,7 +116,11 @@ target "debian_jdk8" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
   }
-  tags = ["${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}"]
+  tags = [
+    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}",
+    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:latest" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts" : "",
+  ]
   platforms = ["linux/amd64", "linux/ppc64le", "linux/arm64"]
 }
 
@@ -109,7 +131,11 @@ target "debian_jdk11" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
   }
-  tags = ["${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-jdk11"]
+  tags = [
+    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-jdk11",
+    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:jdk11" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-jdk11" : "",
+  ]
   platforms = ["linux/amd64", "linux/ppc64le", "linux/arm64", "linux/s390x"]
 }
 
@@ -120,7 +146,11 @@ target "debian_slim_jdk8" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
   }
-  tags = ["${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-slim"]
+  tags = [
+    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-slim",
+    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:slim" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-slim" : "",
+  ]
   platforms = ["linux/amd64", "linux/ppc64le", "linux/arm64"]
 }
 
@@ -132,7 +162,11 @@ target "windows_1809_jdk11" {
     JENKINS_SHA = JENKINS_SHA
   }
 
-  tags = ["{REGISTRY}/${JENKINS_REPO}:jdk11-hotspot-windowsservercore-1809"]
+  tags = [
+    "{REGISTRY}/${JENKINS_REPO}:jdk11-hotspot-windowsservercore-1809",
+    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:windowsservercore-1809" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-windowsservercore-1809" : "",
+  ]
 }
 
 target "windows_2019_jdk11" {
@@ -142,5 +176,9 @@ target "windows_2019_jdk11" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
   }
-  tags = ["{REGISTRY}/${JENKINS_REPO}:jdk11-hotspot-windowsservercore-2019"]
+  tags = [
+    "{REGISTRY}/${JENKINS_REPO}:jdk11-hotspot-windowsservercore-2019",
+    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:windowsservercore-2019" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-windowsservercore-2019" : "",
+  ]
 }
