@@ -17,9 +17,6 @@ build:
 build-arm64:
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/arm64' --load linux-arm64
 
-build-arm64:
-	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/arm64' --load linux-arm64
-
 build-s390x:
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/s390x' --load linux-s390x
 
