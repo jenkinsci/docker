@@ -54,8 +54,8 @@ variable "REGISTRY" {
   default = "docker.io"
 }
 
-variable "OWNER" {
-  default = "jenkins"
+variable "JENKINS_REPO" {
+  default = "jenkins/jenkins"
 }
 
 target "alpine_jdk8" {
@@ -65,7 +65,7 @@ target "alpine_jdk8" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
   }
-  tags = ["${REGISTRY}/${OWNER}/jenkins:${JENKINS_VERSION}-alpine"]
+  tags = ["${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-alpine"]
   platforms = ["linux/amd64"]
 }
 
@@ -76,7 +76,7 @@ target "centos7_jdk8" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
   }
-  tags = ["${REGISTRY}/${OWNER}/jenkins:${JENKINS_VERSION}-centos7"]
+  tags = ["${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-centos7"]
   platforms = ["linux/amd64"]
 }
 
@@ -87,7 +87,7 @@ target "centos8_jdk8" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
   }
-  tags = ["${REGISTRY}/${OWNER}/jenkins:${JENKINS_VERSION}-centos"]
+  tags = ["${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-centos"]
   platforms = ["linux/amd64", "linux/ppc64le", "linux/arm64"]
 }
 
@@ -98,7 +98,7 @@ target "debian_jdk8" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
   }
-  tags = ["${REGISTRY}/${OWNER}/jenkins:${JENKINS_VERSION}"]
+  tags = ["${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}"]
   platforms = ["linux/amd64", "linux/ppc64le", "linux/arm64"]
 }
 
@@ -109,7 +109,7 @@ target "debian_jdk11" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
   }
-  tags = ["${REGISTRY}/${OWNER}/jenkins:${JENKINS_VERSION}-jdk11"]
+  tags = ["${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-jdk11"]
   platforms = ["linux/amd64", "linux/ppc64le", "linux/arm64", "linux/s390x"]
 }
 
@@ -120,7 +120,7 @@ target "debian_slim_jdk8" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
   }
-  tags = ["${REGISTRY}/${OWNER}/jenkins:${JENKINS_VERSION}-slim"]
+  tags = ["${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-slim"]
   platforms = ["linux/amd64", "linux/ppc64le", "linux/arm64"]
 }
 
@@ -132,7 +132,7 @@ target "windows_1809_jdk11" {
     JENKINS_SHA = JENKINS_SHA
   }
 
-  tags = ["${REGISTRY}/${OWNER}/jdk11-hotspot-windowsservercore-1809"]
+  tags = ["{REGISTRY}/${JENKINS_REPO}:jdk11-hotspot-windowsservercore-1809"]
 }
 
 target "windows_2019_jdk11" {
@@ -142,5 +142,5 @@ target "windows_2019_jdk11" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
   }
-  tags = ["${REGISTRY}/${OWNER}/jdk11-hotspot-windowsservercore-2019"]
+  tags = ["{REGISTRY}/${JENKINS_REPO}:jdk11-hotspot-windowsservercore-2019"]
 }
