@@ -12,27 +12,37 @@ shellcheck:
 	                             jenkins-support \
 	                             *.sh
 build:
-	@for d in ${DOCKERFILES} ; do \
-		docker build --file "$${d}" . ; \
-	done
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load linux
+
+build-arm64:
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/arm64' --load linux-arm64
+
+build-s390x:
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/s390x' --load linux-s390x
+
+build-ppc64le:
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/ppc64le' --load linux-ppc64le
+
+build-multiarch:
+	docker buildx bake -f docker-bake.hcl --load linux
 
 build-debian:
-	docker build --file 8/debian/buster/hotspot/Dockerfile .
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_jdk8
 
 build-alpine:
-	docker build --file 8/alpine/hotspot/Dockerfile .
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load alpine_jdk8
 
 build-slim:
-	docker build --file 8/debian/buster-slim/hotspot/Dockerfile .
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_slim_jdk8
 
 build-jdk11:
-	docker build --file 11/debian/buster/hotspot/Dockerfile .
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_slim_jdk8
 
 build-centos:
-	docker build --file 8/centos/centos8/hotspot/Dockerfile .
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos7_jdk8
 
 build-centos7:
-	docker build --file 8/centos/centos7/hotspot/Dockerfile .
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos8_jdk8
 
 bats:
 	git clone -b v1.3.0 https://github.com/bats-core/bats-core bats
