@@ -35,11 +35,7 @@ build-centos7:
 	docker build --file 8/centos/centos7/hotspot/Dockerfile .
 
 bats:
-	# Latest tag is unfortunately 0.4.0 which is quite older than the latest master tip.
-	# So we clone and reset to this well known current sha:
-	git clone https://github.com/sstephenson/bats.git ; \
-	cd bats; \
-	git reset --hard 03608115df2071fff4eaaff1605768c275e5f81f
+	git clone -b v1.3.0 https://github.com/bats-core/bats-core bats
 
 prepare-test: bats
 	git submodule update --init --recursive

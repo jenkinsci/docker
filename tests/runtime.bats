@@ -13,11 +13,9 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
   docker_build -t $SUT_IMAGE .
 }
 
-@test "[${SUT_DESCRIPTION}] clean test containers" {
-    cleanup $SUT_CONTAINER
-}
-
 @test "[${SUT_DESCRIPTION}] test multiple JENKINS_OPTS" {
+  cleanup $SUT_CONTAINER
+
   # running --help --version should return the version, not the help
   local version=$(grep 'ENV JENKINS_VERSION' Dockerfile | sed -e 's/.*:-\(.*\)}/\1/')
   # need the last line of output
@@ -66,8 +64,6 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
       bash -c "curl -fsSL --user \"admin:$(get_jenkins_password)\" $(get_jenkins_url)/systemInfo | sed 's/<\/tr>/<\/tr>\'$'\n/g' | grep '<td class=\"pane\">hudson.model.DirectoryBrowserSupport.CSP</td>' | sed -e '${sed_expr}'"
     assert 'Europe/Madrid' \
       bash -c "curl -fsSL --user \"admin:$(get_jenkins_password)\" $(get_jenkins_url)/systemInfo | sed 's/<\/tr>/<\/tr>\'$'\n/g' | grep '<td class=\"pane\">user.timezone</td>' | sed -e '${sed_expr}'"
-}
 
-@test "[${SUT_DESCRIPTION}] clean test containers" {
     cleanup $SUT_CONTAINER
 }
