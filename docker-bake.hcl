@@ -86,7 +86,7 @@ target "almalinux_jdk11" {
     JENKINS_SHA = JENKINS_SHA
   }
   tags = [
-    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-almalinux"]
+    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-almalinux",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:almalinux" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-almalinux" : "",
   ]
