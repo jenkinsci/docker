@@ -16,12 +16,14 @@ group "linux-arm64" {
     "debian_jdk8",
     "debian_jdk11",
     "debian_slim_jdk8",
+    "rhel_ubi8_jdk11",
   ]
 }
 
 group "linux-s390x" {
   targets = [
     "debian_jdk11",
+    "rhel_ubi8_jdk11",
   ]
 }
 
@@ -31,6 +33,7 @@ group "linux-ppc64le" {
     "debian_jdk8",
     "debian_jdk11",
     "debian_slim_jdk8",
+    "rhel_ubi8_jdk11",
   ]
 }
 
@@ -63,6 +66,10 @@ variable "LATEST_WEEKLY" {
 
 variable "LATEST_LTS" {
   default = "false"
+}
+
+variable "PLUGIN_CLI_VERSION" {
+  default = "2.10.0"
 }
 
 target "alpine_jdk8" {
@@ -161,13 +168,14 @@ target "rhel_ubi8_jdk11" {
   args = {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-rhel-ubi8-jdk11",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:rhel-ubi8-jdk11" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-rhel-ubi8-jdk11" : "",
   ]
-  platforms = ["linux/amd64"]
+  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x"]
 }
 
 target "windows_1809_jdk11" {

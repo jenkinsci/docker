@@ -8,7 +8,7 @@ gpgcheck=1\n\
 gpgkey=https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public' > /etc/yum.repos.d/adoptopenjdk.repo \
     && dnf update --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs -y  \
     && dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs -y \
-        adoptopenjdk-11-hotspot-11.0.11+9-3.x86_64 \
+        adoptopenjdk-11-hotspot-11.0.11+9-3 \
         git \
         git-lfs \
         curl \
@@ -78,7 +78,8 @@ ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
 ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 RUN chown -R ${user} "$JENKINS_HOME" "$REF"
 
-ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/2.9.0/jenkins-plugin-manager-2.9.0.jar
+ARG PLUGIN_CLI_VERSION=2.9.3
+ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
 RUN curl -fsSL ${PLUGIN_CLI_URL} -o /usr/lib/jenkins-plugin-manager.jar
 
 # for main web interface:
@@ -100,3 +101,13 @@ ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
 # from a derived Dockerfile, can use `RUN install-plugins.sh active.txt` to setup $REF/plugins from a support bundle
 COPY install-plugins.sh /usr/local/bin/install-plugins.sh
+
+# metadata labels
+LABEL \
+    org.opencontainers.image.vendor="Jenkins project" \
+    org.opencontainers.image.title="Official Jenkins Docker image" \
+    org.opencontainers.image.description="The Jenkins Continuous Integration and Delivery server" \
+    org.opencontainers.image.version="${JENKINS_VERSION}" \
+    org.opencontainers.image.url="https://www.jenkins.io/" \
+    org.opencontainers.image.source="https://github.com/jenkinsci/jenkins" \
+    org.opencontainers.image.licenses="MIT"
