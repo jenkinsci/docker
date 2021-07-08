@@ -36,7 +36,7 @@ build-slim:
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_slim_jdk8
 
 build-jdk11:
-	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_slim_jdk8
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_jdk11
 
 build-centos:
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos8_jdk8
