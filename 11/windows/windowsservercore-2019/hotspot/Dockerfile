@@ -1,5 +1,5 @@
 # escape=`
-FROM adoptopenjdk:11.0.10_9-jdk-hotspot-windowsservercore-1809
+FROM jenkins/openjdk:11-hotspot-windowsservercore-ltsc2019
 
 ARG user=jenkins
 ARG http_port=8080
@@ -69,14 +69,3 @@ COPY jenkins.ps1 C:/ProgramData/Jenkins
 COPY jenkins-plugin-cli.ps1 C:/ProgramData/Jenkins
 
 ENTRYPOINT ["powershell.exe", "-f", "C:/ProgramData/Jenkins/jenkins.ps1"]
-
-# metadata labels
-LABEL `
-    org.label-schema.schema-version="1.0" `
-    org.label-schema.vendor="Jenkins project" `
-    org.label-schema.name="Official Jenkins Docker image" `
-    org.label-schema.description="The Jenkins Continuous Integration and Delivery server" `
-    org.label-schema.version="${JENKINS_VERSION}" `
-    org.label-schema.url="https://jenkins.io/" `
-    org.label-schema.vcs-url="https://github.com/jenkinsci/jenkins" `
-    org.label-schema.license="MIT"

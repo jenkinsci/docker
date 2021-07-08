@@ -9,6 +9,7 @@
 set -eou pipefail
 
 . jenkins-support
+source ./.ci/common-functions.sh > /dev/null 2>&1
 
 : "${DOCKERHUB_ORGANISATION:=jenkins4eval}"
 : "${DOCKERHUB_REPO:=jenkins}"
@@ -25,18 +26,6 @@ if [[ "$DOCKERHUB_ORGANISATION" == "jenkins" ]]; then
     echo "Experimental docker image should not published to jenkins organization , hence exiting with failure";
     exit 1;
 fi
-
-docker-login() {
-    # Making use of the credentials stored in `config.json`
-    docker login
-    echo "Docker logged in successfully"
-}
-
-docker-enable-experimental() {
-    # Enables experimental to utilize `docker manifest` command
-    echo "Enabling Docker experimental...."
-    export DOCKER_CLI_EXPERIMENTAL="enabled"
-}
 
 get-local-digest() {
     # Gets the SHA digest of a local image
@@ -79,7 +68,7 @@ sort-versions() {
 }
 
 get-latest-versions() {
-    curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 30
+    curl -q -fsSL https://repo.jenkins-ci.org/releases-20210630/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 30
 }
 
 is-published() {
@@ -166,10 +155,12 @@ publish() {
         build_opts=()
     fi
 
-    sha=$(curl -q -fsSL "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/${version}/jenkins-war-${version}.war.sha256" )
+    sha=$(curl -q -fsSL "https://repo.jenkins-ci.org/releases-20210630/org/jenkins-ci/main/jenkins-war/${version}/jenkins-war-${version}.war.sha256" )
 
 
     set-base-image "$variant" "$arch"
+
+    docker-debug-registries
 
     docker build --file "multiarch/Dockerfile$variant-$arch" \
                  --build-arg "JENKINS_VERSION=$version" \

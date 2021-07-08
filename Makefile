@@ -1,5 +1,8 @@
 ROOT_DIR="$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))/"
 
+export DOCKER_BUILDKIT=1
+export BUILDKIT_PROGRESS=plain
+
 all: shellcheck build test
 
 DOCKERFILES=$(shell find . -not -path '**/windows/*' -not -path './tests/*' -type f -name Dockerfile)
@@ -9,40 +12,40 @@ shellcheck:
 	                             jenkins-support \
 	                             *.sh
 build:
-	@for d in ${DOCKERFILES} ; do \
-		docker build --file "$${d}" . ; \
-	done
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load linux
+
+build-arm64:
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/arm64' --load linux-arm64
+
+build-s390x:
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/s390x' --load linux-s390x
+
+build-ppc64le:
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/ppc64le' --load linux-ppc64le
+
+build-multiarch:
+	docker buildx bake -f docker-bake.hcl --load linux
 
 build-debian:
-	docker build --file 8/debian/buster/hotspot/Dockerfile .
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_jdk8
 
 build-alpine:
-	docker build --file 8/alpine/hotspot/Dockerfile .
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load alpine_jdk8
 
 build-slim:
-	docker build --file 8/debian/buster-slim/hotspot/Dockerfile .
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_slim_jdk8
 
 build-jdk11:
-	docker build --file 11/debian/buster/hotspot/Dockerfile .
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_slim_jdk8
 
 build-centos:
-	docker build --file 8/centos/centos8/hotspot/Dockerfile .
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos7_jdk8
 
 build-centos7:
-	docker build --file 8/centos/centos7/hotspot/Dockerfile .
-
-build-openj9:
-	docker build --file 8/ubuntu/bionic/openj9/Dockerfile .
-
-build-openj9-jdk11:
-	docker build --file 11/ubuntu/bionic/openj9/Dockerfile .
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos8_jdk8
 
 bats:
-	# Latest tag is unfortunately 0.4.0 which is quite older than the latest master tip.
-	# So we clone and reset to this well known current sha:
-	git clone https://github.com/sstephenson/bats.git ; \
-	cd bats; \
-	git reset --hard 03608115df2071fff4eaaff1605768c275e5f81f
+	git clone -b v1.3.0 https://github.com/bats-core/bats-core bats
 
 prepare-test: bats
 	git submodule update --init --recursive
@@ -72,12 +75,6 @@ test-centos: test-run-centos
 test-centos7: DIRECTORY=8/centos/centos7/hotspot
 test-centos7: test-run-centos7
 
-test-openj9: DIRECTORY=8/ubuntu/bionic/openj9
-test-openj9: test-run-openj9
-
-test-openj9-jdk11: DIRECTORY=11/ubuntu/bionic/openj9
-test-openj9-jdk11: test-run-openj9-jdk11
-
 test: build prepare-test
 	@for d in ${DOCKERFILES} ; do \
 		dir=`dirname $$d | sed -e "s_^\./__"` ; \
@@ -88,12 +85,7 @@ test-install-plugins: prepare-test
 	DIRECTORY="8/alpine/hotspot" bats/bin/bats tests/install-plugins.bats tests/install-plugins-plugins-cli.bats
 
 publish:
-	./.ci/publish.sh ; \
-	./.ci/publish.sh --variant alpine ; \
-	./.ci/publish.sh --variant slim ; \
-	./.ci/publish.sh --variant jdk11 --start-after 2.151 ; \
-	./.ci/publish.sh --variant centos --start-after 2.181 ; \
-	./.ci/publish.sh --variant centos7 --start-after 2.199 ;
+	./.ci/publish.sh
 
 publish-images-variant:
 	./.ci/publish-images.sh --variant ${VARIANT} --arch ${ARCH} ;
@@ -127,10 +119,7 @@ publish-tag-lts-alpine:
 publish-tags-lts-slim:
 	./.ci/publish-tags.sh --tag lts-slim ;
 
-publish-tag-latest:
-	./.ci/publish-tags.sh --tag latest ;
-
-publish-tags: publish-tags-debian publish-tag-alpine publish-tags-slim publish-tags-lts-debian publish-tag-lts-alpine publish-tags-lts-slim publish-tags-latest
+publish-tags: publish-tags-debian publish-tag-alpine publish-tags-slim publish-tags-lts-debian publish-tag-lts-alpine publish-tags-lts-slim
 
 publish-manifests-debian:
 	./.ci/publish-manifests.sh --variant debian ;
@@ -150,9 +139,6 @@ publish-manifests-lts-alpine:
 publish-manifests-lts-slim:
 	./.ci/publish-manifests.sh --variant lts-slim ;
 
-publish-manifests-latest:
-	./.ci/publish-manifests.sh --variant latest ;
-
 publish-manifests-versions-debian:
 	./.ci/publish-manifests.sh --variant versions-debian ;
 
@@ -162,7 +148,7 @@ publish-manifests-versions-alpine:
 publish-manifests-versions-slim:
 	./.ci/publish-manifests.sh --variant versions-slim ;
 
-publish-manifests: publish-manifests-debian publish-manifests-alpine publish-manifests-slim publish-manifests-lts-debian publish-manifests-lts-alpine publish-manifests-lts-slim publish-manifests-latest publish-manifests-versions-debian publish-manifests-versions-alpine publish-manifests-versions-slim
+publish-manifests: publish-manifests-debian publish-manifests-alpine publish-manifests-slim publish-manifests-lts-debian publish-manifests-lts-alpine publish-manifests-lts-slim publish-manifests-versions-debian publish-manifests-versions-alpine publish-manifests-versions-slim
 
 clean:
 	rm -rf tests/test_helper/bats-*; \

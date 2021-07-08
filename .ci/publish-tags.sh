@@ -9,6 +9,7 @@
 set -eou pipefail
 
 . jenkins-support
+source ./.ci/common-functions.sh > /dev/null 2>&1
 
 : "${DOCKERHUB_ORGANISATION:=jenkins4eval}"
 : "${DOCKERHUB_REPO:=jenkins}"
@@ -25,17 +26,6 @@ if [[ "$DOCKERHUB_ORGANISATION" == "jenkins" ]]; then
     echo "Experimental docker image should not published to jenkins organization , hence exiting with failure";
     exit 1;
 fi
-
-docker-login() {
-    docker login --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_PASSWORD}
-    echo "Docker logged in successfully"
-}
-
-docker-enable-experimental() {
-    mkdir -p $HOME/.docker;
-    echo '{"experimental": "enabled"}' > $HOME/.docker/config.json;
-    echo "Docker experimental enabled successfully"
-}
 
 get-remote-digest() {
     local tag=$1
@@ -83,7 +73,7 @@ sort-versions() {
 }
 
 get-latest-versions() {
-    curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 30
+    curl -q -fsSL https://repo.jenkins-ci.org/releases-20210630/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 30
 }
 
 publish-variant() {
@@ -91,17 +81,17 @@ publish-variant() {
     local variant=$2
     local archs=$3
     local tag=$4
-	echo "Processing ${tag} on these architectures: ${archs}"
+    echo "Processing ${tag} on these architectures: ${archs}"
 
     for arch in ${archs}; do
         if [[ "$force" = true ]]; then
             echo "Force processing tag!"
 
-            echo "Pulling ${version}-${variant}-${arch}"
+            echo "Pulling ${JENKINS_REPO}:${version}-${variant}-${arch}"
             # Pull down images to be re-tagged
             docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
 
-            echo "Re-tagging image from ${version}-${variant}-${arch} to ${JENKINS_REPO}:${tag}-${arch}"
+            echo "Re-tagging image from ${JENKINS_REPO}:${version}-${variant}-${arch} to ${JENKINS_REPO}:${tag}-${arch}"
             docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:${tag}-${arch}"
 
             docker push "${JENKINS_REPO}:${variant}-${arch}"
@@ -112,11 +102,11 @@ publish-variant() {
             echo "Removed images from local disk"
         else
             if ! compare-digests "${version}-${variant}-${arch}" "${tag}-${arch}"; then
-                echo "Pulling ${version}-${variant}-${arch}"
+                echo "Pulling ${JENKINS_REPO}:${version}-${variant}-${arch}"
                 # Pull down images to be re-tagged
                 docker pull "${JENKINS_REPO}:${version}-${variant}-${arch}"
 
-                echo "Re-tagging image from ${version}-${variant}-${arch} to ${JENKINS_REPO}:${tag}-${arch}"
+                echo "Re-tagging image from ${JENKINS_REPO}:${version}-${variant}-${arch} to ${JENKINS_REPO}:${tag}-${arch}"
                 docker-tag "${JENKINS_REPO}:${version}-${variant}-${arch}" "${JENKINS_REPO}:${tag}-${arch}"
 
                 docker push "${JENKINS_REPO}:${tag}-${arch}"
@@ -175,7 +165,7 @@ publish-lts-debian() {
 publish-latest() {
     local version=$1
     local variant="debian"
-	local archs="arm64 s390x ppc64le amd64"
+    local archs="arm64 s390x ppc64le amd64"
     publish-variant "${version}"  "${variant}"  "${archs}"  "latest"
 }
 

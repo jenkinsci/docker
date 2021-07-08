@@ -34,9 +34,16 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
 @test "[${SUT_DESCRIPTION}] permissions are propagated from override file" {
   run docker_build_child $SUT_IMAGE-functions $BATS_TEST_DIRNAME/functions
   assert_success
-
+  # Create a predefined named volume and fill it with a file in an unexpected file mode
+  local volume_name
+  volume_name="functions_${BATS_TEST_NUMBER}"
+  run bash -c "docker volume rm ${volume_name}; docker volume create ${volume_name}"
+  run docker run --rm --volume "${volume_name}:/sut_data" --user=0 "$SUT_IMAGE-functions" \
+    bash -c "mkdir -p /sut_data/.ssh && touch /sut_data/.ssh/config && chmod 644 /sut_data/.ssh/config && chown -R 1000:1000 /sut_data"
   # replace DOS line endings \r\n
-  run bash -c "docker run -v $BATS_TEST_DIRNAME/functions:/var/jenkins_home --rm $SUT_IMAGE-functions stat -c '%a' /var/jenkins_home/.ssh/config"
+  run bash -c "docker run --rm --volume "${volume_name}:/var/jenkins_home:rw" $SUT_IMAGE-functions stat -c '%a' /var/jenkins_home/.ssh/config"
   assert_success
   assert_line '600'
+  # Cleanup
+  run docker volume rm "${volume_name}"
 }

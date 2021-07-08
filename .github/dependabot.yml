@@ -1,0 +1,151 @@
+# Per https://docs.github.com/en/github/administering-a-repository/configuration-options-for-dependency-updates
+version: 2
+updates:
+
+# Alpine Linux
+
+- package-ecosystem: docker
+  directory: "11/alpine/hotspot"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 2
+  target-branch: master
+  reviewers:
+  - MarkEWaite
+  - slide
+  labels:
+  - dependencies
+
+- package-ecosystem: docker
+  directory: "8/alpine/hotspot"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 2
+  target-branch: master
+  reviewers:
+  - MarkEWaite
+  - slide
+  labels:
+  - dependencies
+
+# CentOS Linux
+
+- package-ecosystem: docker
+  directory: "8/centos/centos7/hotspot"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 2
+  target-branch: master
+  reviewers:
+  - slide
+  labels:
+  - dependencies
+
+- package-ecosystem: docker
+  directory: "8/centos/centos8/hotspot"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 2
+  target-branch: master
+  reviewers:
+  - slide
+  labels:
+  - dependencies
+
+# Debian Linux
+
+- package-ecosystem: docker
+  directory: "11/debian/buster/hotspot"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 2
+  target-branch: master
+  reviewers:
+  - MarkEWaite
+  - slide
+  labels:
+  - dependencies
+
+- package-ecosystem: docker
+  directory: "11/debian/buster-slim/hotspot"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 2
+  target-branch: master
+  reviewers:
+  - MarkEWaite
+  - slide
+  labels:
+  - dependencies
+
+- package-ecosystem: docker
+  directory: "8/debian/buster/hotspot"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 2
+  target-branch: master
+  reviewers:
+  - MarkEWaite
+  - slide
+  labels:
+  - dependencies
+
+- package-ecosystem: docker
+  directory: "8/debian/buster-slim/hotspot"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 2
+  target-branch: master
+  reviewers:
+  - MarkEWaite
+  - slide
+  labels:
+  - dependencies
+
+# Ubuntu Linux with OpenJ9
+
+- package-ecosystem: docker
+  directory: "11/ubuntu/focal/openj9"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 2
+  target-branch: master
+  reviewers:
+  - james-crowley
+  labels:
+  - dependencies
+
+- package-ecosystem: docker
+  directory: "8/ubuntu/focal/openj9"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 2
+  target-branch: master
+  reviewers:
+  - james-crowley
+  labels:
+  - dependencies
+
+# Windows
+
+- package-ecosystem: docker
+  directory: "11/windows/windowsservercore-1809/hotspot"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 2
+  target-branch: master
+  reviewers:
+  - slide
+  labels:
+  - dependencies
+
+- package-ecosystem: docker
+  directory: "11/windows/windowsservercore-2019/hotspot"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 2
+  target-branch: master
+  reviewers:
+  - slide
+  labels:
+  - dependencies

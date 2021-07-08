@@ -56,10 +56,10 @@ function docker_build {
 function docker_build_child {
     local tag=$1; shift
     local dir=$1; shift
-    local tmp=$(mktemp "$dir/Dockerfile.XXXXXX")
+    local tmp
+    tmp=$(mktemp "$dir/Dockerfile.XXXXXX")
     sed -e "s/FROM bats-jenkins/FROM $(sut_image)/" "$dir/Dockerfile" > "$tmp"
-    cat "$tmp" >&3
-    docker build -t "$tag" "$@" -f "$tmp" "$dir"
+    docker build -t "$tag" "$@" -f "$tmp" "$dir" 2>&1
     rm "$tmp"
 }
 
@@ -101,4 +101,10 @@ function unzip_manifest {
     local plugin=$1
     local work=$2
     bash -c "docker run --rm -v $work:/var/jenkins_home --entrypoint unzip $SUT_IMAGE -p /var/jenkins_home/plugins/$plugin META-INF/MANIFEST.MF | tr -d '\r'"
+}
+
+function clean_work_directory {
+    local workdir=$1
+    local sut_image=$2
+    rm -rf "${workdir}/upgrade-plugins/work-${sut_image}"
 }
