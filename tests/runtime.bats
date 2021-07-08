@@ -19,7 +19,7 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
 
 @test "[${SUT_DESCRIPTION}] test version in docker metadata" {
   local version=$(get_version)
-  assert "${version}" docker inspect --format '{{ index .Config.Labels "org.label-schema.version"}}' $SUT_IMAGE
+  assert "${version}" docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.version"}}' $SUT_IMAGE
 }
 
 @test "[${SUT_DESCRIPTION}] test multiple JENKINS_OPTS" {

@@ -72,11 +72,10 @@ ENTRYPOINT ["powershell.exe", "-f", "C:/ProgramData/Jenkins/jenkins.ps1"]
 
 # metadata labels
 LABEL `
-    org.label-schema.schema-version="1.0" `
-    org.label-schema.vendor="Jenkins project" `
-    org.label-schema.name="Official Jenkins Docker image" `
-    org.label-schema.description="The Jenkins Continuous Integration and Delivery server" `
-    org.label-schema.version="${JENKINS_VERSION}" `
-    org.label-schema.url="https://www.jenkins.io/" `
-    org.label-schema.vcs-url="https://github.com/jenkinsci/jenkins" `
-    org.label-schema.license="MIT"
+    org.opencontainers.image.vendor="Jenkins project" `
+    org.opencontainers.image.title="Official Jenkins Docker image" `
+    org.opencontainers.image.description="The Jenkins Continuous Integration and Delivery server" `
+    org.opencontainers.image.version="${JENKINS_VERSION}" `
+    org.opencontainers.image.url="https://www.jenkins.io/" `
+    org.opencontainers.image.source="https://github.com/jenkinsci/jenkins" `
+    org.opencontainers.image.licenses="MIT"
