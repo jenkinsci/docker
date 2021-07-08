@@ -6,7 +6,7 @@ This document explains how to develop on this repository.
 
 Build with the usual
 
-    make build-debian # or build-alpine build-slim build-jdk11 build-centos build-centos7 build-openj9 build-openj9-jdk11
+    make build-debian # or build-alpine build-slim build-jdk11 build-centos build-centos7
 
 Tests are written using `https://github.com/sstephenson/bats[bats]` under the `tests` dir
 

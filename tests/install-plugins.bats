@@ -7,6 +7,10 @@ load test_helpers
 SUT_IMAGE=$(sut_image)
 SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
 
+teardown() {
+  clean_work_directory "${BATS_TEST_DIRNAME}" "${SUT_IMAGE}"
+}
+
 @test "[${SUT_DESCRIPTION}] build image" {
   cd $BATS_TEST_DIRNAME/..
   docker_build -t $SUT_IMAGE .
@@ -114,11 +118,6 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
   assert_line 'Plugin-Version: 1.28'
 }
 
-@test "[${SUT_DESCRIPTION}] clean work directory" {
-  run bash -c "ls -la $BATS_TEST_DIRNAME/upgrade-plugins ; rm -rf $BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
-  assert_success
-}
-
 @test "[${SUT_DESCRIPTION}] plugins are getting upgraded but not downgraded" {
   # Initial execution
   run docker_build_child $SUT_IMAGE-install-plugins $BATS_TEST_DIRNAME/install-plugins
@@ -148,11 +147,6 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
   assert_line 'Plugin-Version: 1.3'
 }
 
-@test "[${SUT_DESCRIPTION}] clean work directory" {
-  run bash -c "ls -la $BATS_TEST_DIRNAME/upgrade-plugins ; rm -rf $BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
-  assert_success
-}
-
 @test "[${SUT_DESCRIPTION}] do not upgrade if plugin has been manually updated" {
   run docker_build_child $SUT_IMAGE-install-plugins $BATS_TEST_DIRNAME/install-plugins
   assert_success
@@ -178,11 +172,6 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
   assert_success
   assert_line 'Plugin-Version: 1.3'
   refute_line 'Plugin-Version: 1.2'
-}
-
-@test "[${SUT_DESCRIPTION}] clean work directory" {
-  run bash -c "ls -la $BATS_TEST_DIRNAME/upgrade-plugins ; rm -rf $BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
-  assert_success
 }
 
 @test "[${SUT_DESCRIPTION}] upgrade plugin even if it has been manually updated when PLUGINS_FORCE_UPGRADE=true" {
@@ -212,11 +201,6 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
   refute_line 'Plugin-Version: 1.2'
 }
 
-@test "[${SUT_DESCRIPTION}] clean work directory" {
-  run bash -c "ls -la $BATS_TEST_DIRNAME/upgrade-plugins ; rm -rf $BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
-  assert_success
-}
-
 @test "[${SUT_DESCRIPTION}] plugins are installed with install-plugins.sh and no war" {
   run docker_build_child $SUT_IMAGE-install-plugins-no-war $BATS_TEST_DIRNAME/install-plugins/no-war
   assert_success
@@ -228,9 +212,4 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
   assert_success
   # Assert the weird plugin is there
   assert_output --partial 'my-happy-plugin:1.1'
-}
-
-@test "[${SUT_DESCRIPTION}] clean work directory" {
-  run bash -c "ls -la $BATS_TEST_DIRNAME/upgrade-plugins ; rm -rf $BATS_TEST_DIRNAME/upgrade-plugins/work-${SUT_IMAGE}"
-  assert_success
 }
