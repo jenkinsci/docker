@@ -2,7 +2,7 @@ FROM adoptopenjdk/openjdk11:jdk-11.0.11_9-debian
 
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y git curl unzip && \
+    apt-get install -y git curl gpg unzip && \
     rm -rf /var/lib/apt/lists/*
 
 ARG TARGETARCH
