@@ -16,12 +16,14 @@ group "linux-arm64" {
     "debian_jdk8",
     "debian_jdk11",
     "debian_slim_jdk8",
+    "rhel_ubi8_jdk11"
   ]
 }
 
 group "linux-s390x" {
   targets = [
     "debian_jdk11",
+    "rhel_ubi8_jdk11"
   ]
 }
 
@@ -31,6 +33,7 @@ group "linux-ppc64le" {
     "debian_jdk8",
     "debian_jdk11",
     "debian_slim_jdk8",
+    "rhel_ubi8_jdk11"
   ]
 }
 
@@ -167,7 +170,7 @@ target "rhel_ubi8_jdk11" {
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:rhel-ubi8-jdk11" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-rhel-ubi8-jdk11" : "",
   ]
-  platforms = ["linux/amd64"]
+  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x"]
 }
 
 target "windows_1809_jdk11" {
