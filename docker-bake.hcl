@@ -6,6 +6,7 @@ group "linux" {
     "debian_jdk8",
     "debian_jdk11",
     "debian_slim_jdk8",
+    "rhel_ubi8_jdk11"
   ]
 }
 
@@ -152,6 +153,21 @@ target "debian_slim_jdk8" {
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-slim" : "",
   ]
   platforms = ["linux/amd64", "linux/ppc64le", "linux/arm64"]
+}
+
+target "rhel_ubi8_jdk11" {
+  dockerfile = "11/rhel/ubi8/hotspot/Dockerfile"
+  context = "."
+  args = {
+    JENKINS_VERSION = JENKINS_VERSION
+    JENKINS_SHA = JENKINS_SHA
+  }
+  tags = [
+    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-rhel-ubi8-jdk11",
+    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:rhel-ubi8-jdk11" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-rhel-ubi8-jdk11" : "",
+  ]
+  platforms = ["linux/amd64"]
 }
 
 target "windows_1809_jdk11" {
