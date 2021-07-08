@@ -8,7 +8,6 @@ RUN apk add --no-cache \
   coreutils \
   curl \
   git \
-  git-lfs \
   openssh-client \
   tini \
   ttf-dejavu \
