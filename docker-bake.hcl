@@ -16,14 +16,14 @@ group "linux-arm64" {
     "debian_jdk8",
     "debian_jdk11",
     "debian_slim_jdk8",
-    "rhel_ubi8_jdk11"
+    "rhel_ubi8_jdk11",
   ]
 }
 
 group "linux-s390x" {
   targets = [
     "debian_jdk11",
-    "rhel_ubi8_jdk11"
+    "rhel_ubi8_jdk11",
   ]
 }
 
@@ -33,7 +33,7 @@ group "linux-ppc64le" {
     "debian_jdk8",
     "debian_jdk11",
     "debian_slim_jdk8",
-    "rhel_ubi8_jdk11"
+    "rhel_ubi8_jdk11",
   ]
 }
 
@@ -184,6 +184,7 @@ target "rhel_ubi8_jdk11" {
   args = {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-rhel-ubi8-jdk11",
