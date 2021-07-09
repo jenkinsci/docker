@@ -97,3 +97,9 @@ function unzip_manifest {
     local work=$2
     bash -c "docker run --rm -v $work:/var/jenkins_home --entrypoint unzip $SUT_IMAGE -p /var/jenkins_home/plugins/$plugin META-INF/MANIFEST.MF | tr -d '\r'"
 }
+
+function clean_work_directory {
+    local workdir=$1
+    local sut_image=$2
+    rm -rf "${workdir}/upgrade-plugins/work-${sut_image}"
+}
