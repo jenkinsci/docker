@@ -41,11 +41,18 @@ build-jdk11:
 build-centos:
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos8_jdk8
 
+build-rhel-ubi8-jdk11:
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load rhel_ubi8_jdk11
+
 build-centos7:
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos7_jdk8
 
 bats:
-	git clone -b v1.3.0 https://github.com/bats-core/bats-core bats
+	# Latest tag is unfortunately 0.4.0 which is quite older than the latest master tip.
+	# So we clone and reset to this well known current sha:
+	git clone https://github.com/sstephenson/bats.git ; \
+	cd bats; \
+	git reset --hard 03608115df2071fff4eaaff1605768c275e5f81f
 
 prepare-test: bats
 	git submodule update --init --recursive
@@ -71,6 +78,9 @@ test-jdk11: test-run-jdk11
 
 test-centos: DIRECTORY=8/centos/centos8/hotspot
 test-centos: test-run-centos
+
+test-rhel-ubi8-jdk11: DIRECTORY=11/rhel/ubi8/hotspot
+test-rhel-ubi8-jdk11: test-run-rhel-ubi8-jdk11
 
 test-centos7: DIRECTORY=8/centos/centos7/hotspot
 test-centos7: test-run-centos7

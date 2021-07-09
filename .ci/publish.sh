@@ -67,7 +67,6 @@ publish() {
 
     sha=$(curl -q -fsSL "https://repo.jenkins-ci.org/releases-20210630/org/jenkins-ci/main/jenkins-war/${version}/jenkins-war-${version}.war.sha256" )
 
-
     export JENKINS_VERSION=$version
     export JENKINS_SHA=$sha
     export LATEST_WEEKLY=$latest_weekly
