@@ -68,6 +68,10 @@ variable "LATEST_LTS" {
   default = "false"
 }
 
+variable "GIT_LFS_VERSION" {
+  default = "2.13.3"
+}
+
 variable "PLUGIN_CLI_VERSION" {
   default = "2.10.0"
 }
@@ -78,6 +82,8 @@ target "alpine_jdk8" {
   args = {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
+    GIT_LFS_VERSION = GIT_LFS_VERSION
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-alpine",
@@ -93,6 +99,8 @@ target "centos7_jdk8" {
   args = {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
+    GIT_LFS_VERSION = GIT_LFS_VERSION
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-centos7",
@@ -108,6 +116,8 @@ target "centos8_jdk8" {
   args = {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
+    GIT_LFS_VERSION = GIT_LFS_VERSION
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-centos",
@@ -123,6 +133,8 @@ target "debian_jdk8" {
   args = {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
+    GIT_LFS_VERSION = GIT_LFS_VERSION
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}",
@@ -138,6 +150,8 @@ target "debian_jdk11" {
   args = {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
+    GIT_LFS_VERSION = GIT_LFS_VERSION
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-jdk11",
@@ -153,6 +167,8 @@ target "debian_slim_jdk8" {
   args = {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
+    GIT_LFS_VERSION = GIT_LFS_VERSION
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-slim",
@@ -178,30 +194,34 @@ target "rhel_ubi8_jdk11" {
   platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x"]
 }
 
+# TODO update windows publishing script to use this file
 target "windows_1809_jdk11" {
   dockerfile = "11/windows/windowsservercore-1809/hotspot/Dockerfile"
   context = "."
   args = {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
 
   tags = [
-    "{REGISTRY}/${JENKINS_REPO}:jdk11-hotspot-windowsservercore-1809",
+    "${REGISTRY}/${JENKINS_REPO}:jdk11-hotspot-windowsservercore-1809",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:windowsservercore-1809" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-windowsservercore-1809" : "",
   ]
 }
 
+# TODO update windows publishing script to use this file
 target "windows_2019_jdk11" {
   dockerfile = "11/windows/windowsservercore-2019/hotspot/Dockerfile"
   context = "."
   args = {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
-    "{REGISTRY}/${JENKINS_REPO}:jdk11-hotspot-windowsservercore-2019",
+    "${REGISTRY}/${JENKINS_REPO}:jdk11-hotspot-windowsservercore-2019",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:windowsservercore-2019" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-windowsservercore-2019" : "",
   ]

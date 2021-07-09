@@ -36,16 +36,16 @@ build-slim:
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_slim_jdk8
 
 build-jdk11:
-	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_slim_jdk8
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_jdk11
 
 build-centos:
-	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos7_jdk8
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos8_jdk8
 
 build-rhel-ubi8-jdk11:
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/arm64' --load rhel_ubi8_jdk11
 
 build-centos7:
-	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos8_jdk8
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos7_jdk8
 
 bats:
 	git clone -b v1.3.0 https://github.com/bats-core/bats-core bats
