@@ -38,6 +38,9 @@ build-slim:
 build-jdk11:
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_jdk11
 
+build-almalinux:
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load almalinux_jdk11
+
 build-centos:
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos8_jdk8
 
@@ -71,6 +74,9 @@ test-slim: test-run-slim
 
 test-jdk11: DIRECTORY=11/debian/buster/hotspot
 test-jdk11: test-run-jdk11
+
+test-almalinux: DIRECTORY=11/almalinux/almalinux8/hotspot
+test-almalinux: test-run-almalinux
 
 test-centos: DIRECTORY=8/centos/centos8/hotspot
 test-centos: test-run-centos
