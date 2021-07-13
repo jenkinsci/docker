@@ -6,10 +6,15 @@ export BUILDKIT_PROGRESS=plain
 all: shellcheck build test
 
 DOCKERFILES ?= $(shell find . -not -path '**/windows/*' -not -path './tests/*' -type f -name Dockerfile)
-## One test per core available to the Docker Engine as most of the workload is network
-PARALLEL_JOBS = $(shell docker run --rm alpine grep -c processor /proc/cpuinfo)
-TEST_SUITES ?= $(CURIDR)/tests
-# No additional flags by default
+
+# Set to 'true' to disable parellel tests
+DISABLE_PARALLEL_TESTS ?= false
+
+# Set to the path of a specific test suite to restrict execution only to this
+# default is "all test suites in the "tests/" directory
+TEST_SUITES ?= $(CURDIR)/tests
+
+# No additional flags by default (used to add --print)
 BAKE_ADDITIONAL_FLAGS ?=
 
 shellcheck:
@@ -55,8 +60,6 @@ build-centos7:
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos7_jdk8 $(BAKE_ADDITIONAL_FLAGS)
 
 bats:
-	# fixes relating to parallel testing are on master and not released yet
-	# git clone -b <tag> https://github.com/bats-core/bats-core bats
 	git clone https://github.com/bats-core/bats-core bats ;\
 	cd bats ;\
 	git checkout eac1e9d047b2b8137d85307fc94439c90bdc25ae
@@ -65,9 +68,21 @@ prepare-test: bats
 	git submodule update --init --recursive
 	mkdir -p target
 
+## Both 'docker' and GNU 'parallel' command lines are required to enable parallel tests
+parallel_cli := $(shell command -v parallel 2> /dev/null)
+docker_cli := $(shell command -v docker 2> /dev/null)
+bats_flags := $(TEST_SUITES)
+ifneq (true,$(DISABLE_PARALLEL_TESTS))
+ifneq (,$(docker_cli)$(parallel_cli))
+## Two tests per core available to the Docker Engine as most of the workload is network
+PARALLEL_JOBS ?= $(shell echo $$(( $(shell docker run --rm alpine grep -c processor /proc/cpuinfo) * 2)))
+bats_flags += --jobs $(PARALLEL_JOBS)
+endif
+endif
+
 test-run-%: prepare-test
 	make --silent -C $(CURDIR) build-$*
-	IMAGE=$* bats/bin/bats --jobs $(PARALLEL_JOBS) $(TEST_SUITES) | tee target/results-$*.tap
+	IMAGE=$* bats/bin/bats $(bats_flags) | tee target/results-$*.tap
 	docker run --rm -v "$(CURDIR)":/usr/src/app \
 		-w /usr/src/app node:12-alpine \
 	sh -c "npm install tap-xunit -g && cat target/results-$*.tap | tap-xunit --package='jenkinsci.docker.$*' > target/junit-results-$*.xml"

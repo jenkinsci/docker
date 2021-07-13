@@ -4,20 +4,60 @@ This document explains how to develop on this repository.
 
 ## Building
 
+### Linux
+
 Build with the usual
 
-    make build-debian # or build-alpine build-slim build-jdk11 build-almalinux build-centos build-centos7
+[source,bash]
+--
+## build all linux platforms
+make build
 
-Tests are written using `https://github.com/sstephenson/bats[bats]` under the `tests` dir
+## only build a specific linux platform
+make build-debian # or build-alpine build-slim build-jdk11 ...
+--
 
-    DOCKERFILE=Dockerfile bats tests
-    DOCKERFILE=Dockerfile-alpine bats tests
+## Testing
 
-Download the test helpers by updating the submodules
+### Linux
 
-    git submodule update --init --recursive
+Tests for Linux images are written using https://github.com/bats-core/bats-core[bats] under the `tests/` directory.
 
-Bats can be easily installed with `brew install bats` on OS X
+Tests pre-requisites are automatically managed by the `make prepare-test` target (dependency of any `make test*` target)  which:
+
+- Ensures that the `bats` command is installed in the `bats/bin/` directory (along with all the bats project in `./bats/`)
+- Ensures that the additional bats helper are installed as git sub-modules in `./tests/test_helper/`
+
+For efficiency, the tests are executed as parallel tasks.
+
+[IMPORTANT]
+Due to the parallel execution, each test stanza (e.g. block) should be self-contained
+and should not depends on another test stanza, even inside a given test harness.
+
+Please note that:
+
+- You can disable the parallel execution by setting the environment variable `DISABLE_PARALLEL_TESTS` to the value `true`
+- Parallel execution is automatically disable if the commands `docker` or (GNU) `parallel` are absent from your system
+
+
+You can also restrict the execution to only a subset of test harness files by setting the environment variable `TEST_SUITES`
+to the path of the bats test harness file to execute alone.
+
+[source,bash]
+--
+## Run tests for all linux platforms
+make test
+
+## Run tests for a specific linux platform
+make test-debian # or test-alpine test-slim test-jdk11 ...
+
+## Run tests for Alpine Linux platform in sequential mode
+DISABLE_PARALLEL_TESTS=true make test-alpine
+
+## Only run the test suite `functions.bats` for the CentOS 7 platform
+TEST_SUITES=./tests/functions.bats make test-centos7
+--
+
 
 ## Multiarch support
 
@@ -46,7 +86,7 @@ and then it will be possible to attach a debugger from IDE to it.
 
 Create a new dedicated target repository in your Docker Hub account, and use it like follows:
 
-[source]
+[source,bash]
 --
 export DOCKERHUB_ORGANISATION=batmat
 export DOCKERHUB_REPO=test-jenkins
@@ -66,7 +106,7 @@ Create a new dedicated target repository in your Docker Hub account, and use it 
 export DOCKERHUB_ORGANISATION=durgadas
 export DOCKERHUB_REPO=jenkins
 
-./publish-experimental.sh --variant alpine 
+./publish-experimental.sh --variant alpine
 
 # The log below will help confirm this override was taken in account:
 Docker repository in Use:
@@ -77,6 +117,6 @@ Docker repository in Use:
 Also, one can execute the publish-experimental.sh using:
 
 [source]
---  
+--
 make publish-experimental
 --
