@@ -2,11 +2,25 @@
 
 This document explains how to develop on this repository.
 
+## Requirements
+
+The following tools are required:
+
+- A Bourne-Again-Shell compatible prompt
+- GNU `make` 3.80+
+- Docker with https://github.com/docker/buildx[BuildX] capability
+  - Docker 20.10+ is recommended as it is usually packaged with Buildx
+  - Docker 19.03+ is required
+  - BuildX v0.5.1+ is needed (manual install of the plugin can be done if you don't have it: https://github.com/docker/buildx)
+- https://git-scm.com/[git] 1.6+ (git 2+ is recommended)
+- https://stedolan.github.io/jq/[jq] 1.5+
+- https://curl.se/[curl] 7+
+
+Please note that https://www.gnu.org/software/parallel/[GNU Parallel] is recommended but not required (to allow parallel execution of the tests).
+
 ## Building
 
 ### Linux
-
-Build with the usual
 
 [source,bash]
 --

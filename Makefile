@@ -17,46 +17,58 @@ TEST_SUITES ?= $(CURDIR)/tests
 # No additional flags by default (used to add --print)
 BAKE_ADDITIONAL_FLAGS ?=
 
+## Macro to check for the presence of a CLI in the current PATH
+check_cli = type "$(1)" >/dev/null 2>&1 || { echo "Error: command '$(1)' required but not found. Exiting." ; exit 1 ; }
+check-reqs:
+## Build requirements
+	@$(call check_cli,bash)
+	@$(call check_cli,git)
+	@$(call check_cli,docker)
+	@docker info | grep 'buildx:' >/dev/null 2>&1 || { echo "Error: Docker BuildX plugin required but not found. Exiting." ; exit 1 ; }
+## Test requirements
+	@$(call check_cli,curl)
+	@$(call check_cli,jq)
+
 shellcheck:
 	$(ROOT_DIR)/tools/shellcheck -e SC1091 jenkins-support *.sh
 
-build:
+build: check-reqs
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load linux $(BAKE_ADDITIONAL_FLAGS)
 
-build-arm64:
+build-arm64: check-reqs
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/arm64' --load linux-arm64 $(BAKE_ADDITIONAL_FLAGS)
 
-build-s390x:
+build-s390x: check-reqs
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/s390x' --load linux-s390x $(BAKE_ADDITIONAL_FLAGS)
 
-build-ppc64le:
+build-ppc64le: check-reqs
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/ppc64le' --load linux-ppc64le $(BAKE_ADDITIONAL_FLAGS)
 
-build-multiarch:
+build-multiarch: check-reqs
 	docker buildx bake -f docker-bake.hcl --load linux
 
-build-debian:
+build-debian: check-reqs
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_jdk8 $(BAKE_ADDITIONAL_FLAGS)
 
-build-alpine:
+build-alpine: check-reqs
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load alpine_jdk8 $(BAKE_ADDITIONAL_FLAGS)
 
-build-slim:
+build-slim: check-reqs
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_slim_jdk8 $(BAKE_ADDITIONAL_FLAGS)
 
-build-jdk11:
+build-jdk11: check-reqs
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_jdk11 $(BAKE_ADDITIONAL_FLAGS)
 
-build-almalinux:
+build-almalinux: check-reqs
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load almalinux_jdk11 $(BAKE_ADDITIONAL_FLAGS)
 
-build-centos:
+build-centos: check-reqs
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos8_jdk8 $(BAKE_ADDITIONAL_FLAGS)
 
-build-rhel-ubi8-jdk11:
+build-rhel-ubi8-jdk11: check-reqs
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load rhel_ubi8_jdk11 $(BAKE_ADDITIONAL_FLAGS)
 
-build-centos7:
+build-centos7: check-reqs
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos7_jdk8 $(BAKE_ADDITIONAL_FLAGS)
 
 bats:
@@ -64,16 +76,15 @@ bats:
 	cd bats ;\
 	git checkout eac1e9d047b2b8137d85307fc94439c90bdc25ae
 
-prepare-test: bats
+prepare-test: bats check-reqs
 	git submodule update --init --recursive
 	mkdir -p target
 
 ## Both 'docker' and GNU 'parallel' command lines are required to enable parallel tests
-parallel_cli := $(shell command -v parallel 2> /dev/null)
-docker_cli := $(shell command -v docker 2> /dev/null)
+parallel_cli := $(shell command -v parallel 2>/dev/null)
 bats_flags := $(TEST_SUITES)
 ifneq (true,$(DISABLE_PARALLEL_TESTS))
-ifneq (,$(docker_cli)$(parallel_cli))
+ifneq (,$(parallel_cli))
 ## Two tests per core available to the Docker Engine as most of the workload is network
 PARALLEL_JOBS ?= $(shell echo $$(( $(shell docker run --rm alpine grep -c processor /proc/cpuinfo) * 2)))
 bats_flags += --jobs $(PARALLEL_JOBS)
@@ -190,4 +201,4 @@ clean:
 	rm -rf tests/test_helper/bats-*; \
 	rm -rf bats
 
-.PHONY: shellcheck
+.PHONY: shellcheck check-reqs build clean test

@@ -1,12 +1,5 @@
 #!/bin/bash
 
-# check dependencies
-(
-    type docker &>/dev/null || ( echo "docker is not available"; exit 1 )
-    type curl &>/dev/null || ( echo "curl is not available"; exit 1 )
-    type parallel &>/dev/null || ( echo "GNU parallel is not available"; exit 1 )
-)>&2
-
 # Assert that $1 is the outputof a command $2
 function assert {
     local expected_output=$1
