@@ -28,7 +28,7 @@ Please note that https://www.gnu.org/software/parallel/[GNU Parallel] is recomme
 make build
 
 ## only build a specific linux platform
-make build-debian # or build-alpine build-slim build-jdk11 ...
+make build-debian_jdk8 # or build-alpine_jdk8 build-debian_slim_jdk8 build-debian_jdk11 ...
 --
 
 ## Testing
@@ -63,13 +63,13 @@ to the path of the bats test harness file to execute alone.
 make test
 
 ## Run tests for a specific linux platform
-make test-debian # or test-alpine test-slim test-jdk11 ...
+make test-debian_jdk8 # or test-alpine_jdk8 test-debian_slim_jdk8 test-debian_jdk11 ...
 
-## Run tests for Alpine Linux platform in sequential mode
-DISABLE_PARALLEL_TESTS=true make test-alpine
+## Run tests for Alpine Linux JDK8 platform in sequential mode
+DISABLE_PARALLEL_TESTS=true make test-alpine_jdk8
 
-## Only run the test suite `functions.bats` for the CentOS 7 platform
-TEST_SUITES=./tests/functions.bats make test-centos7
+## Only run the test suite `functions.bats` for the CentOS 7 JDK8 platform
+TEST_SUITES=./tests/functions.bats make test-centos7_jdk8
 --
 
 

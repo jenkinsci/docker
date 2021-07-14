@@ -71,13 +71,11 @@ stage('Build') {
         }
     }
 
-    def linuxDistributions = ['debian', 'slim', 'alpine', 'jdk11', 'almalinux', 'centos', 'centos7', 'rhel-ubi8-jdk11']
-    for (l in linuxDistributions) {
-        def aLinuxDistrib = l
-        def label = "linux-${aLinuxDistrib}"
+    def images = ['almalinux_jdk11', 'alpine_jdk8', 'centos7_jdk8', 'centos8_jdk8', 'debian_jdk11', 'debian_jdk8', 'debian_slim_jdk8', 'rhel_ubi8_jdk11']
+    for (i in images) {
+        def imageToBuild = i
 
-
-        builds[label] = {
+        builds[imageToBuild] = {
             nodeWithTimeout('docker && aws') {
                 deleteDir()
 
@@ -93,20 +91,17 @@ stage('Build') {
                     /* Outside of the trusted.ci environment, we're building and testing
                     * the Dockerfile in this repository, but not publishing to docker hub
                     */
-                    stage("Build ${label}") {
+                    stage("Build linux-${imageToBuild}") {
                         infra.withDockerCredentials {
-                            sh "make build-${aLinuxDistrib}"
+                            sh "make build-${imageToBuild}"
                         }
                     }
 
-                    stage('Prepare Test') {
+                    stage("Test linux-${imageToBuild}") {
                         sh "make prepare-test"
-                    }
-
-                    stage("Test ${label}") {
                         try {
                             infra.withDockerCredentials {
-                                sh "make test-${aLinuxDistrib}"
+                                sh "make test-${imageToBuild}"
                             }
                         } catch(err) {
                             error("${err.toString()}")
