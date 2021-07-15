@@ -23,7 +23,7 @@ BAKE_ADDITIONAL_FLAGS ?=
 ## Check the presence of a CLI in the current PATH
 check_cli = type "$(1)" >/dev/null 2>&1 || { echo "Error: command '$(1)' required but not found. Exiting." ; exit 1 ; }
 ## Check if a given image exists in the current manifest docker-bake.hcl
-check_image = make --silent list | grep -w '$(1)' >/dev/null 2>&1 || { echo "Error: the image '$(1)' does not exist in manifest. Please check the output of `make list`. Exiting." ; exit 1 ; }
+check_image = make --silent list | grep -w '$(1)' >/dev/null 2>&1 || { echo "Error: the image '$(1)' does not exist in manifest. Please check the output of 'make list'. Exiting." ; exit 1 ; }
 ## Generic command to build an image from the manifest
 build_image = docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load '$(1)' $(BAKE_ADDITIONAL_FLAGS)
 
@@ -44,11 +44,11 @@ build:
 	$(call build_image,linux)
 
 list: check-reqs
-	@make --silent -C $(CURDIR) build BAKE_ADDITIONAL_FLAGS=--print | jq -r '.target | keys[]'
+	@make --silent build BAKE_ADDITIONAL_FLAGS=--print | jq -r '.target | keys[]'
 
 build-%: check-reqs
-	$(call check_image,$*)
-	$(call build_image,$*)
+	@$(call check_image,$*)
+	@$(call build_image,$*)
 
 bats:
 	git clone https://github.com/bats-core/bats-core bats ;\
@@ -84,10 +84,10 @@ test-%: prepare-test
 		sh -c "npm install tap-xunit -g && cat target/results-$*.tap | tap-xunit --package='jenkinsci.docker.$*' > target/junit-results-$*.xml"
 
 test: prepare-test
-	@for image in $(shell make list); do make "test-$${image}"; done
+	@make --silent list | while read image; do make --silent "test-$${image}"; done
 
 test-install-plugins: prepare-test
-	@make -C $(CURDIR) --silent test TEST_SUITES=tests/install-plugins.bats tests/plugins-cli.bats
+	@make --silent test TEST_SUITES=tests/install-plugins.bats tests/plugins-cli.bats
 
 publish:
 	./.ci/publish.sh
