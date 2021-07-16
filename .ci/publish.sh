@@ -51,7 +51,7 @@ is-published() {
 }
 
 get-latest-versions() {
-    curl -q -fsSL https://repo.jenkins-ci.org/releases-20210630/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 30
+    curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 30
 }
 
 publish() {
@@ -65,7 +65,7 @@ publish() {
         build_opts=()
     fi
 
-    sha=$(curl -q -fsSL "https://repo.jenkins-ci.org/releases-20210630/org/jenkins-ci/main/jenkins-war/${version}/jenkins-war-${version}.war.sha256" )
+    sha=$(curl -q -fsSL "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/${version}/jenkins-war-${version}.war.sha256" )
 
     export JENKINS_VERSION=$version
     export JENKINS_SHA=$sha
