@@ -100,7 +100,7 @@ stage('Build') {
                     sh "make prepare-test"
                 }
 
-                def labels = ['debian', 'slim', 'alpine', 'jdk11', 'centos', 'centos7']
+                def labels = ['debian', 'slim', 'alpine', 'jdk11', 'almalinux', 'centos', 'centos7', 'rhel-ubi8-jdk11']
                 def builders = [:]
                 for (x in labels) {
                     def label = x

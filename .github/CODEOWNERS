@@ -1,1 +1,3 @@
 * @jenkinsci/team-docker-packaging
+*/rhel/ubi*/ @olivergondza
+*/almalinux/almalinux8/ @saper

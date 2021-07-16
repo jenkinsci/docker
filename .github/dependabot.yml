@@ -28,6 +28,20 @@ updates:
   labels:
   - dependencies
 
+# AlmaLinux
+
+- package-ecosystem: docker
+  directory: "11/almalinux/almalinux8/hotspot"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 2
+  target-branch: master
+  reviewers:
+  - saper
+  - slide
+  labels:
+  - dependencies
+
 # CentOS Linux
 
 - package-ecosystem: docker
@@ -125,6 +139,20 @@ updates:
   - james-crowley
   labels:
   - dependencies
+
+# RHEL UBI
+
+- package-ecosystem: docker
+  directory: "11/rhel/ubi8/hotspot"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 2
+  target-branch: master
+  reviewers:
+    - olivergondza
+    - slide
+  labels:
+    - dependencies
 
 # Windows
 
