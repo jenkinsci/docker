@@ -13,18 +13,27 @@ SUT_DESCRIPTION=$(echo $SUT_IMAGE | sed -e 's/bats-jenkins-//g')
   docker_build -t $SUT_IMAGE .
 }
 
+@test "[${SUT_DESCRIPTION}] clean test containers" {
+    cleanup $SUT_CONTAINER
+}
+
+@test "[${SUT_DESCRIPTION}] test version in docker metadata" {
+  local version=$(get_version)
+  assert "${version}" docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.version"}}' $SUT_IMAGE
+}
+
 @test "[${SUT_DESCRIPTION}] test multiple JENKINS_OPTS" {
   cleanup $SUT_CONTAINER
 
   # running --help --version should return the version, not the help
-  local version=$(grep 'ENV JENKINS_VERSION' Dockerfile | sed -e 's/.*:-\(.*\)}/\1/')
+  local version=$(get_version)
   # need the last line of output
   assert "${version}" docker run --rm -e JENKINS_OPTS="--help --version" --name $SUT_CONTAINER -P $SUT_IMAGE | tail -n 1
 }
 
 @test "[${SUT_DESCRIPTION}] test jenkins arguments" {
   # running --help --version should return the version, not the help
-  local version=$(grep 'ENV JENKINS_VERSION' Dockerfile | sed -e 's/.*:-\(.*\)}/\1/')
+  local version=$(get_version)
   # need the last line of output
   assert "${version}" docker run --rm --name $SUT_CONTAINER -P $SUT_IMAGE --help --version | tail -n 1
 }
