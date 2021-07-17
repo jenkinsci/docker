@@ -22,3 +22,6 @@ filesystem_scm:experimental  # comment at the end
 
 # from url
 subversion:::https://updates.jenkins.io/download/plugins/subversion/2.12.1/subversion.hpi
+
+# plugin ending in http from url
+pipeline-cps-http:::https://updates.jenkins.io/download/plugins/pipeline-cps-http/0.2.1/pipeline-cps-http.hpi
