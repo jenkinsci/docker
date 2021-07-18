@@ -41,7 +41,6 @@ group "linux-ppc64le" {
 
 group "windows" {
   targets = [
-    "windows_1809_jdk11",
     "windows_2019_jdk11",
   ]
 }
@@ -209,23 +208,6 @@ target "rhel_ubi8_jdk11" {
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-rhel-ubi8-jdk11" : "",
   ]
   platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x"]
-}
-
-# TODO update windows publishing script to use this file
-target "windows_1809_jdk11" {
-  dockerfile = "11/windows/windowsservercore-1809/hotspot/Dockerfile"
-  context = "."
-  args = {
-    JENKINS_VERSION = JENKINS_VERSION
-    JENKINS_SHA = JENKINS_SHA
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-  }
-
-  tags = [
-    "${REGISTRY}/${JENKINS_REPO}:jdk11-hotspot-windowsservercore-1809",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:windowsservercore-1809" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-windowsservercore-1809" : "",
-  ]
 }
 
 # TODO update windows publishing script to use this file

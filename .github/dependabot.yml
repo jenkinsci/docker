@@ -133,17 +133,6 @@ updates:
 # Windows
 
 - package-ecosystem: docker
-  directory: "11/windows/windowsservercore-1809/hotspot"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 2
-  target-branch: master
-  reviewers:
-  - slide
-  labels:
-  - dependencies
-
-- package-ecosystem: docker
   directory: "11/windows/windowsservercore-2019/hotspot"
   schedule:
     interval: weekly
