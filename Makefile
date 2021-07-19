@@ -36,13 +36,19 @@ build-slim:
 	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_slim_jdk8
 
 build-jdk11:
-	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_slim_jdk8
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load debian_jdk11
+
+build-almalinux:
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load almalinux_jdk11
 
 build-centos:
-	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos7_jdk8
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos8_jdk8
+
+build-rhel-ubi8-jdk11:
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load rhel_ubi8_jdk11
 
 build-centos7:
-	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos8_jdk8
+	docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load centos7_jdk8
 
 bats:
 	git clone -b v1.3.0 https://github.com/bats-core/bats-core bats
@@ -69,8 +75,14 @@ test-slim: test-run-slim
 test-jdk11: DIRECTORY=11/debian/buster/hotspot
 test-jdk11: test-run-jdk11
 
+test-almalinux: DIRECTORY=11/almalinux/almalinux8/hotspot
+test-almalinux: test-run-almalinux
+
 test-centos: DIRECTORY=8/centos/centos8/hotspot
 test-centos: test-run-centos
+
+test-rhel-ubi8-jdk11: DIRECTORY=11/rhel/ubi8/hotspot
+test-rhel-ubi8-jdk11: test-run-rhel-ubi8-jdk11
 
 test-centos7: DIRECTORY=8/centos/centos7/hotspot
 test-centos7: test-run-centos7
