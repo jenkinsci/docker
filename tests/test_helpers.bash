@@ -40,7 +40,7 @@ function get_sut_image {
     # Option --print for 'docker buildx bake' prints the JSON configuration on the stdout
     # Option --silent for 'make' suppresses the echoing of command so the output is valid JSON
     # The image name is the 1st of the "tags" array, on the first "image" found
-    make --silent build-"${IMAGE}" BAKE_ADDITIONAL_FLAGS=--print | jq -r 'first(.target[]).tags[0]'
+    make --silent show | jq -r ".target.${IMAGE}.tags[0]"
 }
 
 function get_test_image {

@@ -7,6 +7,9 @@ export DOCKER_CLI_EXPERIMENTAL=enabled
 ## Required to have docker build output always printed on stdout
 export BUILDKIT_PROGRESS=plain
 
+current_arch := $(shell uname -m)
+export ARCH ?= $(shell case $(current_arch) in (x86_64) echo "amd64" ;; (i386) echo "386";; (aarch64|arm64) echo "arm64" ;; (armv6*) echo "arm/v6";; (armv7*) echo "arm/v7";; (ppc64*|s390*|riscv*) echo $(current_arch);; (*) echo "UNKNOWN-CPU";; esac)
+
 all: shellcheck build test
 
 # Set to 'true' to disable parellel tests
@@ -16,16 +19,13 @@ DISABLE_PARALLEL_TESTS ?= false
 # default is "all test suites in the "tests/" directory
 TEST_SUITES ?= $(CURDIR)/tests
 
-# No additional flags by default (used to add --print)
-BAKE_ADDITIONAL_FLAGS ?=
-
 ##### Macros
 ## Check the presence of a CLI in the current PATH
 check_cli = type "$(1)" >/dev/null 2>&1 || { echo "Error: command '$(1)' required but not found. Exiting." ; exit 1 ; }
 ## Check if a given image exists in the current manifest docker-bake.hcl
-check_image = make --silent list | grep -w '$(1)' >/dev/null 2>&1 || { echo "Error: the image '$(1)' does not exist in manifest. Please check the output of 'make list'. Exiting." ; exit 1 ; }
-## Generic command to build an image from the manifest
-build_image = docker buildx bake -f docker-bake.hcl --set '*.platform=linux/amd64' --load '$(1)' $(BAKE_ADDITIONAL_FLAGS)
+check_image = make --silent list | grep -w '$(1)' >/dev/null 2>&1 || { echo "Error: the image '$(1)' does not exist in manifest for the platform 'linux/$(ARCH)'. Please check the output of 'make list'. Exiting." ; exit 1 ; }
+## Base "docker buildx base" command to be reused everywhere
+bake_base_cli := docker buildx bake -f docker-bake.hcl --load
 
 check-reqs:
 ## Build requirements
@@ -40,15 +40,18 @@ check-reqs:
 shellcheck:
 	$(ROOT_DIR)/tools/shellcheck -e SC1091 jenkins-support *.sh
 
-build:
-	$(call build_image,linux)
-
-list: check-reqs
-	@make --silent build BAKE_ADDITIONAL_FLAGS=--print | jq -r '.target | keys[]'
+build: check-reqs
+	@set -x; $(bake_base_cli) --set '*.platform=linux/$(ARCH)' $(shell make --silent list)
 
 build-%: check-reqs
 	@$(call check_image,$*)
-	@$(call build_image,$*)
+	@set -x; $(bake_base_cli) --set '*.platform=linux/$(ARCH)' '$*'
+
+show:
+	@$(bake_base_cli) linux --print
+
+list: check-reqs
+	@set -x; make --silent show | jq -r '.target | path(.. | select(.platforms[] | contains("linux/$(ARCH)"))?) | add'
 
 bats:
 	git clone https://github.com/bats-core/bats-core bats ;\
@@ -76,7 +79,7 @@ test-%: prepare-test
 # Check that the image exists in the manifest
 	@$(call check_image,$*)
 # Ensure that the image is built
-	@$(call build_image,$*)
+	@make --silent build-$*
 # Execute the test harness and write result to a TAP file
 	IMAGE=$* bats/bin/bats $(bats_flags) | tee target/results-$*.tap
 # convert TAP to JUNIT
@@ -159,4 +162,4 @@ clean:
 	rm -rf tests/test_helper/bats-*; \
 	rm -rf bats
 
-.PHONY: shellcheck check-reqs build clean test list test-install-plugins
+.PHONY: shellcheck check-reqs build clean test list test-install-plugins show
