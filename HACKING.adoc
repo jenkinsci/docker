@@ -11,7 +11,7 @@ This document explains how to develop on this repository.
 ** Docker 19.03+ is required
 ** BuildX v0.5.1+ is needed (manual installation of the plugin can be done if you don't have it: https://github.com/docker/buildx)
 * https://git-scm.com/[git] 1.6+ (git 2+ is recommended)
-* https://stedolan.github.io/jq/[jq] 1.5+
+* https://stedolan.github.io/jq/[jq] 1.6+
 * https://curl.se/[curl] 7+
 
 We recommend https://www.gnu.org/software/parallel/[GNU Parallel] for parallel test execution, but it is not required.
