@@ -73,7 +73,6 @@ publish() {
     export LATEST_LTS=$latest_lts
     set -x
     docker buildx bake --file docker-bake.hcl \
-                 --set '*.platform=linux/amd64' \
                  "${build_opts[@]+"${build_opts[@]}"}" linux
     set +x
     if [ "$dry_run" = true ]; then
