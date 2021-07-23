@@ -14,10 +14,7 @@ group "linux" {
 group "linux-arm64" {
   targets = [
     "almalinux_jdk11",
-    "centos8_jdk8",
-    "debian_jdk8",
     "debian_jdk11",
-    "debian_slim_jdk8",
     "rhel_ubi8_jdk11",
   ]
 }
@@ -31,10 +28,7 @@ group "linux-s390x" {
 
 group "linux-ppc64le" {
   targets = [
-    "centos8_jdk8",
-    "debian_jdk8",
     "debian_jdk11",
-    "debian_slim_jdk8",
     "rhel_ubi8_jdk11",
   ]
 }
