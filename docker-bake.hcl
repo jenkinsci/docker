@@ -19,7 +19,6 @@ group "linux-arm64" {
 
 group "linux-s390x" {
   targets = [
-    "debian_jdk11",
     "rhel_ubi8_jdk11",
   ]
 }
