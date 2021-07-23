@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# check dependencies
-(
-    type docker &>/dev/null || ( echo "docker is not available"; exit 1 )
-    type curl &>/dev/null || ( echo "curl is not available"; exit 1 )
-)>&2
-
 # Assert that $1 is the outputof a command $2
 function assert {
     local expected_output=$1
@@ -40,26 +34,34 @@ function retry {
     false
 }
 
-function sut_image {
-    echo "bats-jenkins-${DIRECTORY//\//-}" | tr '[:upper:]' '[:lower:]' | sed -e 's/dockerfile$/default/' | sed -e 's/dockerfile-//'
+function get_sut_image {
+    test -n "${IMAGE:?"[sut_image] Please set the variable 'IMAGE' to the name of the image to test in 'docker-bake.hcl'."}"
+    ## Retrieve the SUT image name from buildx
+    # Option --print for 'docker buildx bake' prints the JSON configuration on the stdout
+    # Option --silent for 'make' suppresses the echoing of command so the output is valid JSON
+    # The image name is the 1st of the "tags" array, on the first "image" found
+    make --silent show | jq -r ".target.${IMAGE}.tags[0]"
 }
 
-function docker_build {
-    local opts="-f ${DIRECTORY}/Dockerfile"
-    if [ -n "$JENKINS_VERSION" ]; then
-        docker build $opts --build-arg JENKINS_VERSION=$JENKINS_VERSION --build-arg JENKINS_SHA=$JENKINS_SHA "$@"
-    else
-        docker build $opts "$@"
-    fi
+function get_test_image {
+    test -n "${BATS_TEST_NUMBER:?"[get_test_image] Please set the variable BATS_TEST_NUMBER."}"
+    test -n "${SUT_DESCRIPTION:?"[get_test_image] Please set the variable SUT_DESCRIPTION."}"
+    echo "${SUT_DESCRIPTION}-${BATS_TEST_NUMBER}"
+}
+
+function get_sut_container_name {
+    echo "$(get_test_image)-container"
 }
 
 function docker_build_child {
+    local parent=$1; shift
     local tag=$1; shift
     local dir=$1; shift
+    local build_opts=("$@")
     local tmp
     tmp=$(mktemp "$dir/Dockerfile.XXXXXX")
-    sed -e "s/FROM bats-jenkins/FROM $(sut_image)/" "$dir/Dockerfile" > "$tmp"
-    docker build -t "$tag" "$@" -f "$tmp" "$dir" 2>&1
+    sed -e "s#FROM bats-jenkins.*#FROM ${parent}#g" "$dir/Dockerfile" > "$tmp"
+    docker build --tag "$tag" "${build_opts[@]}" --file "${tmp}" "${dir}" 2>&1
     rm "$tmp"
 }
 
@@ -69,11 +71,11 @@ function get_jenkins_url {
     else
         DOCKER_IP=$(echo "$DOCKER_HOST" | sed -e 's|tcp://\(.*\):[0-9]*|\1|')
     fi
-    echo "http://$DOCKER_IP:$(docker port "$SUT_CONTAINER" 8080 | cut -d: -f2)"
+    echo "http://$DOCKER_IP:$(docker port "$(get_sut_container_name)" 8080 | cut -d: -f2)"
 }
 
 function get_jenkins_password {
-    docker logs "$SUT_CONTAINER" 2>&1 | grep -A 2 "Please use the following password to proceed to installation" | tail -n 1
+    docker logs "$(get_sut_container_name)" 2>&1 | grep -A 2 "Please use the following password to proceed to installation" | tail -n 1
 }
 
 function test_url {
@@ -94,8 +96,10 @@ function cleanup {
 
 function unzip_manifest {
     local plugin=$1
-    local work=$2
-    bash -c "docker run --rm -v $work:/var/jenkins_home --entrypoint unzip $SUT_IMAGE -p /var/jenkins_home/plugins/$plugin META-INF/MANIFEST.MF | tr -d '\r'"
+    local volume_name=$2
+    export SUT_IMAGE
+    docker run --rm --volume "${volume_name}:/var/jenkins_home" --entrypoint unzip "${SUT_IMAGE}" \
+        -p "/var/jenkins_home/plugins/${plugin}" META-INF/MANIFEST.MF | tr -d '\r'
 }
 
 function clean_work_directory {
