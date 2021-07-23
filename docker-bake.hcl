@@ -1,8 +1,6 @@
 group "linux" {
   targets = [
     "almalinux_jdk11",
-    "alpine_jdk8",
-    "centos7_jdk8",
     "centos8_jdk8",
     "debian_jdk8",
     "debian_jdk11",
@@ -168,7 +166,7 @@ target "debian_jdk11" {
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:jdk11" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-jdk11" : "",
   ]
-  platforms = ["linux/amd64", "linux/ppc64le", "linux/arm64", "linux/s390x"]
+  platforms = ["linux/amd64", "linux/ppc64le", "linux/arm64"]
 }
 
 target "debian_slim_jdk8" {
