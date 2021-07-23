@@ -1,6 +1,7 @@
 group "linux" {
   targets = [
     "almalinux_jdk11",
+    "alpine_jdk8",
     "centos8_jdk8",
     "debian_jdk8",
     "debian_jdk11",
