@@ -116,7 +116,10 @@ stage('Build') {
                     */
                     stage('Publish') {
                         infra.withDockerCredentials {
-                            sh 'make publish'
+                            sh '''
+                            docker buildx create --use
+                            make publish
+                            '''
                         }
                     }
                 }
