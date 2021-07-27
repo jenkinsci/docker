@@ -27,7 +27,6 @@ group "linux-s390x" {
 
 group "linux-ppc64le" {
   targets = [
-    "debian_jdk11",
     "rhel_ubi8_jdk11",
   ]
 }
@@ -167,7 +166,7 @@ target "debian_jdk11" {
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:jdk11" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-jdk11" : "",
   ]
-  platforms = ["linux/amd64", "linux/ppc64le", "linux/arm64"]
+  platforms = ["linux/amd64", "linux/arm64"]
 }
 
 target "debian_slim_jdk8" {
