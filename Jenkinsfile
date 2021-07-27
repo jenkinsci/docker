@@ -71,19 +71,19 @@ stage('Build') {
         }
     }
 
-    def images = ['almalinux_jdk11', 'alpine_jdk8', 'centos7_jdk8', 'centos8_jdk8', 'debian_jdk11', 'debian_jdk8', 'debian_slim_jdk8', 'rhel_ubi8_jdk11']
-    for (i in images) {
-        def imageToBuild = i
+    if (!infra.isTrusted()) {
+        def images = ['almalinux_jdk11', 'alpine_jdk8', 'centos7_jdk8', 'centos8_jdk8', 'debian_jdk11', 'debian_jdk8', 'debian_slim_jdk8', 'rhel_ubi8_jdk11']
+        for (i in images) {
+            def imageToBuild = i
 
-        builds[imageToBuild] = {
-            nodeWithTimeout('docker') {
-                deleteDir()
+            builds[imageToBuild] = {
+                nodeWithTimeout('docker') {
+                    deleteDir()
 
-                stage('Checkout') {
-                    checkout scm
-                }
+                    stage('Checkout') {
+                        checkout scm
+                    }
 
-                if (!infra.isTrusted()) {
                     stage('shellcheck') {
                         sh 'make shellcheck'
                     }
@@ -103,29 +103,33 @@ stage('Build') {
                             infra.withDockerCredentials {
                                 sh "make test-${imageToBuild}"
                             }
-                        } catch(err) {
+                        } catch (err) {
                             error("${err.toString()}")
                         } finally {
                             junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/*.xml')
                         }
                     }
 
-                } else {
-                    /* In our trusted.ci environment we only want to be publishing our
-                    * containers from artifacts
-                    */
-                    stage('Publish') {
-                        infra.withDockerCredentials {
-                            sh '''
+                    // Let's always clean up the docker images at the very end
+                    sh(script: 'docker system prune --force --all', returnStatus: true)
+                }
+            }
+        }
+    } else {
+        builds['linux'] = {
+            nodeWithTimeout('docker') {
+                stage('Checkout') {
+                    checkout scm
+                }
+
+                stage('Publish') {
+                    infra.withDockerCredentials {
+                        sh '''
                             docker buildx create --use
                             make publish
                             '''
-                        }
                     }
                 }
-
-                // Let's always clean up the docker images at the very end
-                sh(script: 'docker system prune --force --all', returnStatus: true)
             }
         }
     }
