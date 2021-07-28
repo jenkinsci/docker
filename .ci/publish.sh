@@ -119,14 +119,13 @@ if [ "$dry_run" = true ]; then
     echo "Dry run, will not publish images"
 fi
 
-TOKEN=$(login-token)
-
 versions=$(get-latest-versions)
 latest_weekly_version=$(echo "${versions}" | tail -n 1)
 
 latest_lts_version=$(echo "${versions}" | grep -E '[0-9]\.[0-9]+\.[0-9]' | tail -n 1 || echo "No LTS versions")
 
 for version in $versions; do
+    TOKEN=$(login-token)
     # Temporary hack to publish 2.289.3 even though some variants are already published
     if is-published "$version$variant" && [ "$version" != "2.289.3" ] ; then
         echo "Tag is already published: $version$variant"
