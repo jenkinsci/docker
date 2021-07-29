@@ -126,8 +126,7 @@ latest_lts_version=$(echo "${versions}" | grep -E '[0-9]\.[0-9]+\.[0-9]' | tail 
 
 for version in $versions; do
     TOKEN=$(login-token)
-    # Temporary hack to publish 2.289.3 even though some variants are already published
-    if is-published "$version$variant" && [ "$version" != "2.289.3" ] ; then
+    if is-published "$version$variant"; then
         echo "Tag is already published: $version$variant"
     else
         echo "$version$variant not published yet"
