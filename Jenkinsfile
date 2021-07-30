@@ -126,6 +126,7 @@ stage('Build') {
                     infra.withDockerCredentials {
                         sh '''
                             docker buildx create --use
+                            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
                             make publish
                             '''
                     }
