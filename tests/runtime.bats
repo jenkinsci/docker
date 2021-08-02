@@ -7,11 +7,6 @@ load test_helpers
 SUT_IMAGE=$(get_sut_image)
 SUT_DESCRIPTION="${IMAGE}-runtime"
 
-
-@test "[${SUT_DESCRIPTION}] clean test containers" {
-    cleanup $SUT_CONTAINER
-}
-
 @test "[${SUT_DESCRIPTION}] test version in docker metadata" {
   local version=$(grep 'ENV JENKINS_VERSION' Dockerfile | sed -e 's/.*:-\(.*\)}/\1/')
   assert "${version}" docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.version"}}' $SUT_IMAGE
