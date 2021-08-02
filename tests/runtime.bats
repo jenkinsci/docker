@@ -13,14 +13,14 @@ SUT_DESCRIPTION="${IMAGE}-runtime"
 }
 
 @test "[${SUT_DESCRIPTION}] test version in docker metadata" {
-  local version=$(get_version)
+  local version=$(grep 'ENV JENKINS_VERSION' Dockerfile | sed -e 's/.*:-\(.*\)}/\1/')
   assert "${version}" docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.version"}}' $SUT_IMAGE
 }
 
 @test "[${SUT_DESCRIPTION}] test multiple JENKINS_OPTS" {
   local container_name version
   # running --help --version should return the version, not the help
-  local version=$(get_version)
+  local version=$(grep 'ENV JENKINS_VERSION' Dockerfile | sed -e 's/.*:-\(.*\)}/\1/')
   container_name="$(get_sut_container_name)"
   cleanup "${container_name}"
   # need the last line of output
@@ -30,7 +30,7 @@ SUT_DESCRIPTION="${IMAGE}-runtime"
 @test "[${SUT_DESCRIPTION}] test jenkins arguments" {
   local container_name version
   # running --help --version should return the version, not the help
-  local version=$(get_version)
+  local version=$(grep 'ENV JENKINS_VERSION' Dockerfile | sed -e 's/.*:-\(.*\)}/\1/')
   container_name="$(get_sut_container_name)"
   cleanup "${container_name}"
   # need the last line of output
