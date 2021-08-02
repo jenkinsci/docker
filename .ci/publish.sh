@@ -73,7 +73,6 @@ publish() {
     export LATEST_LTS=$latest_lts
     set -x
     docker buildx bake --file docker-bake.hcl \
-                 --set '*.platform=linux/amd64' \
                  "${build_opts[@]+"${build_opts[@]}"}" linux
     set +x
     if [ "$dry_run" = true ]; then
@@ -119,14 +118,13 @@ if [ "$dry_run" = true ]; then
     echo "Dry run, will not publish images"
 fi
 
-TOKEN=$(login-token)
-
 versions=$(get-latest-versions)
 latest_weekly_version=$(echo "${versions}" | tail -n 1)
 
 latest_lts_version=$(echo "${versions}" | grep -E '[0-9]\.[0-9]+\.[0-9]' | tail -n 1 || echo "No LTS versions")
 
 for version in $versions; do
+    TOKEN=$(login-token)
     if is-published "$version$variant"; then
         echo "Tag is already published: $version$variant"
     else

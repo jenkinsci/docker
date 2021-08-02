@@ -1,52 +1,108 @@
-# Hacking documentation
+= Hacking documentation
 
 This document explains how to develop on this repository.
 
-## Building
+== Requirements
 
-Build with the usual
+* A Bourne-Again-Shell compatible prompt (bash)
+* GNU `make` 3.80+
+* Docker with https://github.com/docker/buildx[BuildX] capability
+** Docker 20.10+ is recommended as it is usually packaged with Buildx
+** Docker 19.03+ is required
+** BuildX v0.5.1+ is needed (manual installation of the plugin can be done if you don't have it: https://github.com/docker/buildx)
+* https://git-scm.com/[git] 1.6+ (git 2+ is recommended)
+* https://stedolan.github.io/jq/[jq] 1.6+
+* https://curl.se/[curl] 7+
 
-    make build-debian # or build-alpine build-slim build-jdk11 build-almalinux build-centos build-centos7
+We recommend https://www.gnu.org/software/parallel/[GNU Parallel] for parallel test execution, but it is not required.
 
-Tests are written using `https://github.com/sstephenson/bats[bats]` under the `tests` dir
+// In case the link breaks, and the bug hasn't been fixed yet:
+// On Apple Silicon in native arm64 containers, older versions of libssl in
+// debian:buster, ubuntu:20.04 and centos:8 will segfault when connected to some TLS
+// servers, for example curl https://dl.yarnpkg.com. The bug is fixed in newer versions
+// of libssl in debian:bullseye, ubuntu:21.04 and fedora:35.
 
-    DOCKERFILE=Dockerfile bats tests
-    DOCKERFILE=Dockerfile-alpine bats tests
+Tests currently do not work on Mac M1 due to a link:https://docs.docker.com/docker-for-mac/release-notes/#known-issues[known issue] in 'Docker Desktop 3.4.0'.
 
-Download the test helpers by updating the submodules
+== Building
 
-    git submodule update --init --recursive
+=== Linux
 
-Bats can be easily installed with `brew install bats` on OS X
+[source,bash]
+--
+## build all linux platforms
+make build
 
-## Multiarch support
+## only build a specific linux image
+make build-debian_jdk8 # or build-alpine_jdk8 build-debian_slim_jdk8 build-debian_jdk11 ...
 
-Multiarch support is added via the `publish-experimental.sh` script, which relies on QEMU for emulating the architecture being built as well as the Docker `https://github.com/estesp/manifest-tool[manifest-tool]` for creating registry
-v2.2 "thick" manifests.
+--
 
-When changes are pushed to the upstream Jenkins project, a job is triggered via the `Jenkinsfile` from this repo, which then runs the `publish-experimental.sh` script in parallel mode. Multiarch images created by the script are built/tagged/pushed to the Docker Hub `https://hub.docker.com/r/jenkins4eval/jenkins/[jenkins4eval/jenkins]` repo.
+== Testing
 
-Currently supported architectures:
+=== Linux
+
+Tests for Linux images are written using https://github.com/bats-core/bats-core[bats] under the `tests/` directory.
+
+Tests pre-requisites are automatically managed by the `make prepare-test` target (dependency of any `make test*` target)  which:
+
+- Ensures that the `bats` command is installed in the `bats/bin/` directory (along with all the bats project in `./bats/`)
+- Ensures that the additional bats helper are installed as git sub-modules in `./tests/test_helper/`
+
+For efficiency, the tests are executed in parallel.
+
+[IMPORTANT]
+Due to the parallel execution, each test should be self-contained
+and not depend on another test, even inside a given test harness.
+
+Please note that:
+
+- You can disable the parallel execution by setting the environment variable `DISABLE_PARALLEL_TESTS` to the value `true`
+- Parallel execution is disabled if the commands `docker` or (GNU) `parallel` are not installed.
+
+
+You can restrict the execution to only a subset of test harness files. By setting the environment variable `TEST_SUITES`
+to the path of the bats test harness file to execute alone.
+
+[source,bash]
+--
+## Run tests for all linux platforms
+make test
+
+## Run tests for a specific linux platform
+make test-debian_jdk8 # or test-alpine_jdk8 test-debian_slim_jdk8 test-debian_jdk11 ...
+
+## Run tests for Alpine Linux JDK8 platform in sequential mode
+DISABLE_PARALLEL_TESTS=true make test-alpine_jdk8
+
+## Only run the test suite `functions.bats` for the CentOS 7 JDK8 platform
+TEST_SUITES=./tests/functions.bats make test-centos7_jdk8
+--
+
+== Multiarch support
+
+The buildx tool is used to build our multiarch images, this relies on either QEMU for emulating the architecture being built, or a remote builder configured for the required platform(s).
+
+Planned supported architectures:
 
 * amd64
-* arm32
 * arm64
 * s390x
 * ppc64le
 
-NOTE:This functionality may change/move at some point in the future.
+We're not currently publishing multi-arch images although we plan to do this soon, see https://github.com/jenkinsci/docker/issues/1139.
 
-## Debugging
+== Debugging
 
 In order to debug the controller, use the `-e DEBUG=true -p 5005:5005` when starting the container.
 Jenkins will be suspended on the startup in such case,
 and then it will be possible to attach a debugger from IDE to it.
 
-## Test the publishing using an overridden target repository on Docker Hub
+== Test the publishing using an overridden target repository on Docker Hub
 
 Create a new dedicated target repository in your Docker Hub account, and use it like follows:
 
-[source]
+[source,bash]
 --
 export DOCKERHUB_ORGANISATION=batmat
 export DOCKERHUB_REPO=test-jenkins
@@ -55,28 +111,4 @@ export DOCKERHUB_REPO=test-jenkins
 Docker repository in Use:
 * JENKINS_REPO: batmat/test-jenkins
 ...
---
-
-## Test the publishing of Multi-arch image using an overridden target repository
-
-Create a new dedicated target repository in your Docker Hub account, and use it like follows:
-
-[source]
---
-export DOCKERHUB_ORGANISATION=durgadas
-export DOCKERHUB_REPO=jenkins
-
-./publish-experimental.sh --variant alpine 
-
-# The log below will help confirm this override was taken in account:
-Docker repository in Use:
-* JENKINS_REPO: durgadas/jenkins
-...
---
-
-Also, one can execute the publish-experimental.sh using:
-
-[source]
---  
-make publish-experimental
 --

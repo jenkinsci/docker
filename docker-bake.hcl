@@ -14,27 +14,19 @@ group "linux" {
 group "linux-arm64" {
   targets = [
     "almalinux_jdk11",
-    "centos8_jdk8",
-    "debian_jdk8",
     "debian_jdk11",
-    "debian_slim_jdk8",
     "rhel_ubi8_jdk11",
   ]
 }
 
 group "linux-s390x" {
   targets = [
-    "debian_jdk11",
     "rhel_ubi8_jdk11",
   ]
 }
 
 group "linux-ppc64le" {
   targets = [
-    "centos8_jdk8",
-    "debian_jdk8",
-    "debian_jdk11",
-    "debian_slim_jdk8",
     "rhel_ubi8_jdk11",
   ]
 }
@@ -105,6 +97,7 @@ target "alpine_jdk8" {
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-alpine",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:alpine" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-alpine" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts-alpine" : "",
   ]
   platforms = ["linux/amd64"]
 }
@@ -122,6 +115,7 @@ target "centos7_jdk8" {
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-centos7",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:centos7" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-centos7" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts-centos7" : "",
   ]
   platforms = ["linux/amd64"]
 }
@@ -139,8 +133,9 @@ target "centos8_jdk8" {
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-centos",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:centos" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-centos" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts-centos" : "",
   ]
-  platforms = ["linux/amd64", "linux/ppc64le", "linux/arm64"]
+  platforms = ["linux/amd64"]
 }
 
 target "debian_jdk8" {
@@ -156,8 +151,9 @@ target "debian_jdk8" {
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:latest" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts" : "",
   ]
-  platforms = ["linux/amd64", "linux/ppc64le", "linux/arm64"]
+  platforms = ["linux/amd64"]
 }
 
 target "debian_jdk11" {
@@ -173,8 +169,9 @@ target "debian_jdk11" {
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-jdk11",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:jdk11" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-jdk11" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts-jdk11" : "",
   ]
-  platforms = ["linux/amd64", "linux/ppc64le", "linux/arm64", "linux/s390x"]
+  platforms = ["linux/amd64", "linux/arm64"]
 }
 
 target "debian_slim_jdk8" {
@@ -190,8 +187,9 @@ target "debian_slim_jdk8" {
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-slim",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:slim" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-slim" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts-slim" : "",
   ]
-  platforms = ["linux/amd64", "linux/ppc64le", "linux/arm64"]
+  platforms = ["linux/amd64"]
 }
 
 target "rhel_ubi8_jdk11" {
