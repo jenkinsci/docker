@@ -70,3 +70,13 @@ COPY jenkins.ps1 C:/ProgramData/Jenkins
 COPY jenkins-plugin-cli.ps1 C:/ProgramData/Jenkins
 
 ENTRYPOINT ["powershell.exe", "-f", "C:/ProgramData/Jenkins/jenkins.ps1"]
+
+# metadata labels
+LABEL `
+    org.opencontainers.image.vendor="Jenkins project" `
+    org.opencontainers.image.title="Official Jenkins Docker image" `
+    org.opencontainers.image.description="The Jenkins Continuous Integration and Delivery server" `
+    org.opencontainers.image.version="${JENKINS_VERSION}" `
+    org.opencontainers.image.url="https://www.jenkins.io/" `
+    org.opencontainers.image.source="https://github.com/jenkinsci/jenkins" `
+    org.opencontainers.image.licenses="MIT"

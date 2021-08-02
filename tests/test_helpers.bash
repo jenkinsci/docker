@@ -43,6 +43,12 @@ function get_sut_image {
     make --silent show | jq -r ".target.${IMAGE}.tags[0]"
 }
 
+function get_jenkins_version() {
+  test -n "${IMAGE:?"[sut_image] Please set the variable 'IMAGE' to the name of the image to test in 'docker-bake.hcl'."}"
+
+  make --silent show | jq -r ".target.${IMAGE}.args.JENKINS_VERSION"
+}
+
 function get_test_image {
     test -n "${BATS_TEST_NUMBER:?"[get_test_image] Please set the variable BATS_TEST_NUMBER."}"
     test -n "${SUT_DESCRIPTION:?"[get_test_image] Please set the variable SUT_DESCRIPTION."}"
