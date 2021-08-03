@@ -7,6 +7,8 @@ services:
     ports:
      - ${APP_PORT}:8080
      - 50000:50000
+    privileged: true
+    user: root
     environment:
      - JAVA_OPTS=-Duser.timezone=Asia/Changsha
     #   JAVA_OPTS: "-Djava.awt.headless=true"
