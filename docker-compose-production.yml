@@ -7,8 +7,8 @@ services:
     image: jenkins/jenkins:${JENKINS_VERSION}
     environment:
       JAVA_OPTS: "-Djava.awt.headless=true"
-    # user: root
-    # privileged: true
+    user: root
+    privileged: true
     restart: always
     ports:
       - "50000:50000"
