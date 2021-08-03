@@ -1,6 +1,6 @@
 # this file from docker-compose.workspace, delete mail-server
 
-version: 'lts'
+version: '2'
 services:
   jenkins:
     container_name: ${APP_CONTAINER_NAME}
