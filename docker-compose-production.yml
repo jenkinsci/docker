@@ -1,13 +1,11 @@
 
-
-
 version: '3.8'
 services:
   jenkins:
-    container_name: jenkins-jenkins
-    image: jenkins/jenkins
+    container_name: ${APP_CONTAINER_NAME}
+    image: jenkins:${JENKINS_VERSION}
     ports:
-     - 8080:8081
+     - ${APP_PORT}:8081
      - 50000:50000
     environment:
      - JAVA_OPTS=-Duser.timezone=Asia/Changsha
@@ -16,6 +14,7 @@ services:
     restart: always
     volumes:
      - /volumes/data/jenkins:/var/jenkins_home
+     - /var/jenkins_home/secrets/initialAdminPassword:/var/jenkins_home/secrets/initialAdminPassword
     #  - ./volumes/jenkins_home:/var/jenkins_home
     #  - ./volumes/jenkins-plugins:/usr/share/jenkins/ref/plugins
 
