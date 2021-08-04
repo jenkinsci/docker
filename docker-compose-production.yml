@@ -3,7 +3,7 @@ version: '3.8'
 services:
   jenkins:
     container_name: ${APP_CONTAINER_NAME}
-    image: jenkins/jenkins:${JENKINS_VERSION}
+    image: jenkins/jenkins:${APP_VERSION}
     environment:
       JAVA_OPTS: "-Djava.awt.headless=true"
     user: root
