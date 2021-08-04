@@ -37,13 +37,22 @@ Describe "[$TEST_TAG] test multiple JENKINS_OPTS" {
 }
 
 Describe "[$TEST_TAG] test jenkins arguments" {
-  It 'running --help --version should return the version, not the help' {
+  BeforeEach {
     $folder = Get-EnvOrDefault 'FOLDER' ''
     $version=Get-Content $(Join-Path $folder 'Dockerfile') | Select-String -Pattern 'ENV JENKINS_VERSION.*' | %{$_ -replace '.*:-(.*)}','$1'} | Select-Object -First 1
+  }
+
+  It 'running --help --version should return the version, not the help' {
     # need the last line of output
     $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run --rm --name $SUT_CONTAINER -P $SUT_IMAGE --help --version"
     $exitCode | Should -Be 0
     $stdout -split '`n' | %{$_.Trim()} | Select-Object -Last 1 | Should -Be $version
+  }
+
+  It 'version in docker metadata' {
+    $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "inspect -f `"{{index .Config.Labels \`"org.opencontainers.image.version\`"}}`" $SUT_IMAGE"
+    $exitCode | Should -Be 0
+    $stdout.Trim() | Should -Match $version
   }
 }
 
