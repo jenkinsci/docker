@@ -10,7 +10,7 @@
     "cpu": "2",
     "memory": "0.256",
     "disk": "1",
-    "url": "https://github.com/jenkins/docker#recommended-system-requirements"
+    "url": "https://www.jenkins.io/doc/book/scaling/hardware-recommendations/"
   },
 
   "services":[
@@ -29,15 +29,7 @@
       "answer_cn": "答案1",
       "question_en": "question1",
       "answer_en": "answer1"
-    },
-
-    {
-      "question_cn": "问题2",
-      "answer_cn": "答案2",
-      "question_en": "question2",
-      "answer_en": "answer2"
     }
-
   ]
 
 }

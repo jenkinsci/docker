@@ -1,0 +1,21 @@
+name: Sync remoting source
+
+on: 
+  repository_dispatch:
+  push:
+    paths: [.env_all, docker-compose-production*.yml]
+  schedule:
+    - cron: '0 18 1 * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+        
+    - name: Git clone remoting source and overloaded by websoft9's working files
+      run: |
+       wget -O - https://raw.githubusercontent.com/Websoft9/docker-template/main/filelist.sh | bash
+    - uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: Sync remoting source
