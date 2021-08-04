@@ -1,6 +1,5 @@
-# this file from docker-compose.workspace, delete mail-server
-
 version: '3.8'
+
 services:
   jenkins:
     container_name: ${APP_CONTAINER_NAME}
@@ -8,14 +7,12 @@ services:
     environment:
       JAVA_OPTS: "-Djava.awt.headless=true"
     user: root
-    
     restart: always
     ports:
       - "50000:50000"
       - "${APP_PORT}:8080"
     volumes:
-      - ./volumes/data/jenkins:/var/jenkins_home
-      - /var/jenkins_home/secrets:/var/jenkins_home/secrets
+      - ${VOLUMES_PATH_PREFIX}/data/jenkins:/var/jenkins_home
 
 networks:
   default:
