@@ -8,7 +8,7 @@
   "requirements":{
     "cpu_arch": "Linux x86-64, ARM 32/64, Windows x86-64, IBM POWER8, x86/i686",
     "cpu": "2",
-    "memory": "256",
+    "memory": "0.256",
     "disk": "1",
     "url": "https://github.com/jenkins/docker#recommended-system-requirements"
   },
