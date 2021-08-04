@@ -12,7 +12,6 @@
     "disk": "1",
     "url": "https://www.jenkins.io/doc/book/installing/docker/"
   },
-
   "services":[
     {
       "name": "jenkins",
