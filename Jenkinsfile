@@ -26,19 +26,19 @@ stage('Build') {
                 */
                 stage('Build') {
                     infra.withDockerCredentials {
-                      powershell './make.ps1'
+                        powershell './make.ps1'
                     }
                 }
 
                 stage('Test') {
                     infra.withDockerCredentials {
-                      def windowsTestStatus = powershell(script: './make.ps1 test', returnStatus: true)
-                      junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
-                      if (windowsTestStatus > 0) {
-                        // If something bad happened let's clean up the docker images
-                        powershell(script: '& docker system prune --force --all', returnStatus: true)
-                        error('Windows test stage failed.')
-                      }
+                        def windowsTestStatus = powershell(script: './make.ps1 test', returnStatus: true)
+                        junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
+                        if (windowsTestStatus > 0) {
+                            // If something bad happened let's clean up the docker images
+                            powershell(script: '& docker system prune --force --all', returnStatus: true)
+                            error('Windows test stage failed.')
+                        }
                     }
                 }
 
@@ -53,7 +53,7 @@ stage('Build') {
                 //        }
                 //    }
                 //}
-                
+
                 // Let's always clean up the docker images at the very end
                 powershell(script: '& docker system prune --force --all', returnStatus: true)
             } else {
@@ -71,78 +71,64 @@ stage('Build') {
         }
     }
 
-    builds['linux'] = {
-        nodeWithTimeout('docker') {
-            deleteDir()
+    if (!infra.isTrusted()) {
+        def images = ['almalinux_jdk11', 'alpine_jdk8', 'centos7_jdk8', 'centos8_jdk8', 'debian_jdk11', 'debian_jdk8', 'debian_slim_jdk8', 'rhel_ubi8_jdk11']
+        for (i in images) {
+            def imageToBuild = i
 
-            stage('Checkout') {
-                checkout scm
-            }
+            builds[imageToBuild] = {
+                nodeWithTimeout('docker') {
+                    deleteDir()
 
-            if (!infra.isTrusted()) {
-
-                stage('shellcheck') {
-                    // run shellcheck ignoring error SC1091
-                    // Not following: /usr/local/bin/jenkins-support was not specified as input
-                    sh 'make shellcheck'
-                }
-
-                /* Outside of the trusted.ci environment, we're building and testing
-                * the Dockerfile in this repository, but not publishing to docker hub
-                */
-                stage('Build') {
-                    infra.withDockerCredentials {
-                      sh 'make build'
+                    stage('Checkout') {
+                        checkout scm
                     }
-                }
 
-                stage('Prepare Test') {
-                    sh "make prepare-test"
-                }
+                    stage('shellcheck') {
+                        sh 'make shellcheck'
+                    }
 
-                def labels = ['debian', 'slim', 'alpine', 'jdk11', 'centos', 'centos7']
-                def builders = [:]
-                for (x in labels) {
-                    def label = x
-
-                    // Create a map to pass in to the 'parallel' step so we can fire all the builds at once
-                    builders[label] = {
-                        stage("Test ${label}") {
-                            try {
-                                infra.withDockerCredentials {
-                                  sh "make test-$label"
-                                }    
-                            } catch(err) {
-                                error("${err.toString()}")
-                            } finally {
-                                junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/*.xml')
-                            }
+                    /* Outside of the trusted.ci environment, we're building and testing
+                    * the Dockerfile in this repository, but not publishing to docker hub
+                    */
+                    stage("Build linux-${imageToBuild}") {
+                        infra.withDockerCredentials {
+                            sh "make build-${imageToBuild}"
                         }
                     }
+
+                    stage("Test linux-${imageToBuild}") {
+                        sh "make prepare-test"
+                        try {
+                            infra.withDockerCredentials {
+                                sh "make test-${imageToBuild}"
+                            }
+                        } catch (err) {
+                            error("${err.toString()}")
+                        } finally {
+                            junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/*.xml')
+                        }
+                    }
+
+                    // Let's always clean up the docker images at the very end
+                    sh(script: 'docker system prune --force --all', returnStatus: true)
+                }
+            }
+        }
+    } else {
+        builds['linux'] = {
+            nodeWithTimeout('docker') {
+                stage('Checkout') {
+                    checkout scm
                 }
 
-                parallel builders
-
-                // disable until we get the parallel changes merged in
-                //def branchName = "${env.BRANCH_NAME}"
-                //if (branchName ==~ 'master'){
-                //    stage('Publish Experimental') {
-                //        infra.withDockerCredentials {
-                //            sh 'make publish-tags'
-                //            sh 'make publish-manifests'
-                //        }
-                //    }
-                //}
-
-                // Let's always clean up the docker images at the very end
-                sh(script: 'docker system prune --force --all', returnStatus: true)
-            } else {
-                /* In our trusted.ci environment we only want to be publishing our
-                * containers from artifacts
-                */
                 stage('Publish') {
                     infra.withDockerCredentials {
-                        sh 'make publish'
+                        sh '''
+                            docker buildx create --use
+                            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+                            make publish
+                            '''
                     }
                 }
             }
