@@ -18,7 +18,7 @@
       "name": "jenkins",
       "port": "9001",
       "description_cn": "浏览器访问 Jenkins",
-      "description_en": "Web-GUI database management tool",
+      "description_en": "access Jenkins by browse",
       "required": "Y"
     }
   ]
