@@ -106,6 +106,7 @@ publish-variant() {
 publish-alpine() {
     local archs="arm64 s390x ppc64le amd64"
     publish-variant "alpine"  "${archs}"  "alpine"
+    publish-variant "alpine"  "${archs}"  "alpine-jdk8"
 }
 
 publish-slim() {
@@ -139,12 +140,14 @@ publish-lts-debian() {
 publish-latest() {
     local archs="arm64 s390x ppc64le amd64"
     publish-variant "latest"  "${archs}"  "latest"
+    publish-variant "latest"  "${archs}"  "latest-jdk8"
 }
 
 publish-versions-alpine() {
     for version in $(get-latest-versions); do
         local archs="arm64 s390x ppc64le amd64"
         publish-variant "${version}-alpine"  "${archs}"  "${version}-alpine"
+        publish-variant "${version}-alpine"  "${archs}"  "${version}-alpine-jdk8"
     done
 }
 
