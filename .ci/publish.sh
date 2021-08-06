@@ -85,7 +85,6 @@ publish() {
 
 dry_run=false
 debug=false
-variant=""
 start_after="1.0" # By default, we will publish anything missing (only the last 30 actually)
 
 while [[ $# -gt 0 ]]; do
@@ -96,10 +95,6 @@ while [[ $# -gt 0 ]]; do
         ;;
         -d)
         debug=true
-        ;;
-        -v|--variant)
-        variant="-"$2
-        shift
         ;;
         --start-after)
         start_after=$2
@@ -125,10 +120,10 @@ latest_lts_version=$(echo "${versions}" | grep -E '[0-9]\.[0-9]+\.[0-9]' | tail 
 
 for version in $versions; do
     TOKEN=$(login-token)
-    if is-published "$version$variant"; then
-        echo "Tag is already published: $version$variant"
+    if is-published "$version"; then
+        echo "Tag is already published: $version"
     else
-        echo "$version$variant not published yet"
+        echo "$version not published yet"
 
         if [[ $version == "${latest_weekly_version}" ]]; then
           latest_weekly="true"
