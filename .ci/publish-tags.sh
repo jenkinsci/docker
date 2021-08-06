@@ -126,14 +126,12 @@ publish-alpine() {
     local version=$1
     local archs="arm64 s390x ppc64le amd64"
     publish-variant "${version}"  "alpine"  "${archs}" "alpine"
-    publish-variant "${version}"  "alpine"  "${archs}" "alpine-jdk8"
 }
 
 publish-slim() {
     local version=$1
     local archs="arm64 s390x ppc64le amd64"
     publish-variant "${version}"  "slim"  "${archs}" "slim"
-    publish-variant "${version}"  "slim"  "${archs}" "slim-jdk8"
 }
 
 publish-debian() {
@@ -169,7 +167,6 @@ publish-latest() {
     local variant="debian"
     local archs="arm64 s390x ppc64le amd64"
     publish-variant "${version}"  "${variant}"  "${archs}"  "latest"
-    publish-variant "${version}"  "${variant}"  "${archs}"  "latest-jdk8"
 }
 
 
