@@ -90,8 +90,6 @@ Planned supported architectures:
 * s390x
 * ppc64le
 
-We're not currently publishing multi-arch images although we plan to do this soon, see https://github.com/jenkinsci/docker/issues/1139.
-
 == Debugging
 
 In order to debug the controller, use the `-e DEBUG=true -p 5005:5005` when starting the container.
@@ -107,7 +105,7 @@ Create a new dedicated target repository in your Docker Hub account, and use it 
 export DOCKERHUB_ORGANISATION=batmat
 export DOCKERHUB_REPO=test-jenkins
 # The log below will help confirm this override was taken in account:
-./publish.sh --variant jdk11
+./publish.sh
 Docker repository in Use:
 * JENKINS_REPO: batmat/test-jenkins
 ...
