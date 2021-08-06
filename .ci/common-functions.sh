@@ -10,13 +10,3 @@ docker-login() {
     fi
     echo "Docker logged in successfully"
 }
-
-docker-enable-experimental() {
-    # Enables experimental to utilize `docker manifest` command
-    echo "Enabling Docker experimental...."
-    export DOCKER_CLI_EXPERIMENTAL="enabled"
-}
-
-docker-debug-registries() {
-    cat $HOME/.docker/config.json | jq -r '.auths | keys'
-}

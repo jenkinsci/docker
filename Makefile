@@ -95,69 +95,6 @@ test-install-plugins: prepare-test
 publish:
 	./.ci/publish.sh
 
-publish-images-variant:
-	./.ci/publish-images.sh --variant ${VARIANT} --arch ${ARCH} ;
-
-publish-images-debian:
-	./.ci/publish-images.sh --variant debian --arch ${ARCH} ;
-
-publish-images-alpine:
-	./.ci/publish-images.sh --variant alpine --arch ${ARCH} ;
-
-publish-images-slim:
-	./.ci/publish-images.sh --variant slim --arch ${ARCH} ;
-
-publish-images: publish-images-debian publish-images-alpine publish-images-slim
-
-publish-tags-debian:
-	./.ci/publish-tags.sh --tag debian ;
-
-publish-tag-alpine:
-	./.ci/publish-tags.sh --tag alpine ;
-
-publish-tags-slim:
-	./.ci/publish-tags.sh --tag slim ;
-
-publish-tags-lts-debian:
-	./.ci/publish-tags.sh --tag lts-debian ;
-
-publish-tag-lts-alpine:
-	./.ci/publish-tags.sh --tag lts-alpine ;
-
-publish-tags-lts-slim:
-	./.ci/publish-tags.sh --tag lts-slim ;
-
-publish-tags: publish-tags-debian publish-tag-alpine publish-tags-slim publish-tags-lts-debian publish-tag-lts-alpine publish-tags-lts-slim
-
-publish-manifests-debian:
-	./.ci/publish-manifests.sh --variant debian ;
-
-publish-manifests-alpine:
-	./.ci/publish-manifests.sh --variant alpine ;
-
-publish-manifests-slim:
-	./.ci/publish-manifests.sh --variant slim ;
-
-publish-manifests-lts-debian:
-	./.ci/publish-manifests.sh --variant lts-debian ;
-
-publish-manifests-lts-alpine:
-	./.ci/publish-manifests.sh --variant lts-alpine ;
-
-publish-manifests-lts-slim:
-	./.ci/publish-manifests.sh --variant lts-slim ;
-
-publish-manifests-versions-debian:
-	./.ci/publish-manifests.sh --variant versions-debian ;
-
-publish-manifests-versions-alpine:
-	./.ci/publish-manifests.sh --variant versions-alpine ;
-
-publish-manifests-versions-slim:
-	./.ci/publish-manifests.sh --variant versions-slim ;
-
-publish-manifests: publish-manifests-debian publish-manifests-alpine publish-manifests-slim publish-manifests-lts-debian publish-manifests-lts-alpine publish-manifests-lts-slim publish-manifests-versions-debian publish-manifests-versions-alpine publish-manifests-versions-slim
-
 clean:
 	rm -rf tests/test_helper/bats-*; \
 	rm -rf bats
