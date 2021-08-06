@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk8:jdk8u302-b08-debian
+FROM adoptopenjdk/openjdk8:jdk8u292-b10-debian
 
 RUN apt-get update && \
     apt-get upgrade -y && \

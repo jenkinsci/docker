@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk11:jdk-11.0.12_7-alpine
+FROM adoptopenjdk/openjdk11:jdk-11.0.11_9-alpine
 
 RUN apk add --no-cache \
   bash \
