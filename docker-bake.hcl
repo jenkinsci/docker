@@ -2,11 +2,14 @@ group "linux" {
   targets = [
     "almalinux_jdk11",
     "alpine_jdk8",
+    "alpine_jdk11",
     "centos7_jdk8",
+    "centos7_jdk11",
     "centos8_jdk8",
     "debian_jdk8",
     "debian_jdk11",
     "debian_slim_jdk8",
+    "debian_slim_jdk11",
     "rhel_ubi8_jdk11"
   ]
 }
@@ -42,7 +45,7 @@ variable "JENKINS_VERSION" {
 }
 
 variable "JENKINS_SHA" {
-  default = "51663780626a80134c0970ad6b6f9e0000c8772b0e1e3b452a902809b7f7288e"
+  default = "4dfe49cd7422ec4317a7c7a7c083f40fa475a58a7747bd94187b2cf222006ac0"
 }
 
 variable "REGISTRY" {
@@ -94,13 +97,27 @@ target "alpine_jdk8" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
-    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-alpine",
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-alpine-jdk8",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:alpine" : "",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:alpine-jdk8" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-alpine" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-alpine-jdk8" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts-alpine" : "",
+  ]
+  platforms = ["linux/amd64"]
+}
+
+target "alpine_jdk11" {
+  dockerfile = "11/alpine/hotspot/Dockerfile"
+  context = "."
+  args = {
+    JENKINS_VERSION = JENKINS_VERSION
+    JENKINS_SHA = JENKINS_SHA
+    GIT_LFS_VERSION = GIT_LFS_VERSION
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+  }
+  tags = [
+    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-alpine",
+    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:alpine" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-alpine" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-alpine" : "",
   ]
   platforms = ["linux/amd64"]
 }
@@ -115,13 +132,27 @@ target "centos7_jdk8" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
-    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-centos7",
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-centos7-jdk8",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:centos7" : "",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:centos7-jdk8" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-centos7" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-centos7-jdk8" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts-centos7" : "",
+  ]
+  platforms = ["linux/amd64"]
+}
+
+target "centos7_jdk11" {
+  dockerfile = "11/centos/centos7/hotspot/Dockerfile"
+  context = "."
+  args = {
+    JENKINS_VERSION = JENKINS_VERSION
+    JENKINS_SHA = JENKINS_SHA
+    GIT_LFS_VERSION = GIT_LFS_VERSION
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+  }
+  tags = [
+    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-centos7",
+    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:centos7" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-centos7" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-centos7" : "",
   ]
   platforms = ["linux/amd64"]
 }
@@ -154,13 +185,9 @@ target "debian_jdk8" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
-    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}",
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-jdk8",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:latest" : "",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:latest-jdk8" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-jdk8" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts" : "",
   ]
   platforms = ["linux/amd64"]
 }
@@ -193,13 +220,27 @@ target "debian_slim_jdk8" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
-    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-slim",
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-slim-jdk8",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:slim" : "",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:slim-jdk8" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-slim" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-slim-jdk8" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts-slim" : "",
+  ]
+  platforms = ["linux/amd64"]
+}
+
+target "debian_slim_jdk11" {
+  dockerfile = "11/debian/buster-slim/hotspot/Dockerfile"
+  context = "."
+  args = {
+    JENKINS_VERSION = JENKINS_VERSION
+    JENKINS_SHA = JENKINS_SHA
+    GIT_LFS_VERSION = GIT_LFS_VERSION
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+  }
+  tags = [
+    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-slim",
+    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:slim" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-slim" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-slim" : "",
   ]
   platforms = ["linux/amd64"]
 }
