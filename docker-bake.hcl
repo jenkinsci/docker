@@ -38,11 +38,11 @@ group "windows" {
 }
 
 variable "JENKINS_VERSION" {
-  default = "2.300"
+  default = "2.303"
 }
 
 variable "JENKINS_SHA" {
-  default = "2f6aa548373b038af4fb6a4d6eaa5d13679510008f1712532732bf77c55b9670"
+  default = "51663780626a80134c0970ad6b6f9e0000c8772b0e1e3b452a902809b7f7288e"
 }
 
 variable "REGISTRY" {
