@@ -168,7 +168,6 @@ target "centos8_jdk8" {
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-centos",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:centos" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-centos" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts-centos" : "",
   ]
   platforms = ["linux/amd64"]
 }
@@ -203,7 +202,6 @@ target "debian_jdk11" {
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-jdk11",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:jdk11" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-jdk11" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts-jdk11" : "",
   ]
   platforms = ["linux/amd64", "linux/arm64"]
 }
