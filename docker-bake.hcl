@@ -199,8 +199,11 @@ target "debian_jdk11" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
+    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}",
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-jdk11",
+    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:latest" : "",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:jdk11" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-jdk11" : "",
   ]
   platforms = ["linux/amd64", "linux/arm64"]
