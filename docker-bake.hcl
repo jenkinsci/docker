@@ -5,7 +5,6 @@ group "linux" {
     "alpine_jdk11",
     "centos7_jdk8",
     "centos7_jdk11",
-    "centos8_jdk8",
     "debian_jdk8",
     "debian_jdk11",
     "debian_slim_jdk8",
@@ -155,23 +154,6 @@ target "centos7_jdk11" {
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:centos7-jdk11" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-centos7" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-centos7-jdk11" : "",
-  ]
-  platforms = ["linux/amd64"]
-}
-
-target "centos8_jdk8" {
-  dockerfile = "8/centos/centos8/hotspot/Dockerfile"
-  context = "."
-  args = {
-    JENKINS_VERSION = JENKINS_VERSION
-    JENKINS_SHA = JENKINS_SHA
-    GIT_LFS_VERSION = GIT_LFS_VERSION
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-  }
-  tags = [
-    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-centos",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:centos" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-centos" : "",
   ]
   platforms = ["linux/amd64"]
 }
