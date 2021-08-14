@@ -116,7 +116,9 @@ target "alpine_jdk11" {
   tags = [
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-alpine",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:alpine" : "",
+    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:alpine-jdk11" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-alpine" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-alpine-jdk11" : "",
   ]
   platforms = ["linux/amd64"]
 }
@@ -150,7 +152,9 @@ target "centos7_jdk11" {
   tags = [
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-centos7",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:centos7" : "",
+    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:centos7-jdk11" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-centos7" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-centos7-jdk11" : "",
   ]
   platforms = ["linux/amd64"]
 }
@@ -202,6 +206,7 @@ target "debian_jdk11" {
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}",
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-jdk11",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:latest" : "",
+    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:latest-jdk11" : "",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:jdk11" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-jdk11" : "",
@@ -238,7 +243,9 @@ target "debian_slim_jdk11" {
   tags = [
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-slim",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:slim" : "",
+    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:slim-jdk11" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-slim" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-slim-jdk11" : "",
   ]
   platforms = ["linux/amd64"]
 }
