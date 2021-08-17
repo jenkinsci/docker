@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi:8.4-206.1626828523
+FROM registry.access.redhat.com/ubi8/ubi:8.4-209
 
 RUN echo -e '[AdoptOpenJDK]\n\
 name=AdoptOpenJDK\n\
