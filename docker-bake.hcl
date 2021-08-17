@@ -24,12 +24,14 @@ group "linux-arm64" {
 group "linux-s390x" {
   targets = [
     "rhel_ubi8_jdk11",
+    "debian_jdk11",
   ]
 }
 
 group "linux-ppc64le" {
   targets = [
     "rhel_ubi8_jdk11",
+    "debian_jdk11",
   ]
 }
 
@@ -193,7 +195,7 @@ target "debian_jdk11" {
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-jdk11" : "",
   ]
-  platforms = ["linux/amd64", "linux/arm64"]
+  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x"]
 }
 
 target "debian_slim_jdk8" {
