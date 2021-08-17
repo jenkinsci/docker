@@ -28,6 +28,20 @@ updates:
   labels:
   - dependencies
 
+# AlmaLinux
+
+- package-ecosystem: docker
+  directory: "11/almalinux/almalinux8/hotspot"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 2
+  target-branch: master
+  reviewers:
+  - saper
+  - slide
+  labels:
+  - dependencies
+
 # CentOS Linux
 
 - package-ecosystem: docker
@@ -102,42 +116,21 @@ updates:
   labels:
   - dependencies
 
-# Ubuntu Linux with OpenJ9
+# RHEL UBI
 
 - package-ecosystem: docker
-  directory: "11/ubuntu/focal/openj9"
+  directory: "11/rhel/ubi8/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
   target-branch: master
   reviewers:
-  - james-crowley
+    - olivergondza
+    - slide
   labels:
-  - dependencies
-
-- package-ecosystem: docker
-  directory: "8/ubuntu/focal/openj9"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 2
-  target-branch: master
-  reviewers:
-  - james-crowley
-  labels:
-  - dependencies
+    - dependencies
 
 # Windows
-
-- package-ecosystem: docker
-  directory: "11/windows/windowsservercore-1809/hotspot"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 2
-  target-branch: master
-  reviewers:
-  - slide
-  labels:
-  - dependencies
 
 - package-ecosystem: docker
   directory: "11/windows/windowsservercore-2019/hotspot"
