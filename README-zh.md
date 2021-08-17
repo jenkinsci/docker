@@ -29,7 +29,8 @@
 登录 Linux，运行下面的**自动化命令**即可启动安装并显示安装结果。  
 
 ```
-sudo wget -N https://raw.githubusercontent.com/Websoft9/docker-template/main/docker-installer.sh; sudo bash docker-installer.sh -r jenkins
+sudo wget -N https://raw.githubusercontent.com/Websoft9/StackHub/main/docker-installer.sh; sudo bash docker-installer.sh -r jenkins
+
 ```
 
 ### package包安装
@@ -37,7 +38,7 @@ sudo wget -N https://raw.githubusercontent.com/Websoft9/docker-template/main/doc
 1.生成package包
 登录 Linux，运行下面的**自动化命令**即可生成所需的package包。
 ```
-sudo wget -N https://raw.githubusercontent.com/Websoft9/docker-template/main/docker-installer.sh; sudo bash docker-installer.sh -r jenkins -p
+sudo wget -N https://raw.githubusercontent.com/Websoft9/StackHub/main/docker-installer.sh; sudo bash docker-installer.sh -r jenkins -p
 ```
 2.复制package包后安装
 
