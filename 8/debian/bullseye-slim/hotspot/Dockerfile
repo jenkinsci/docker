@@ -1,8 +1,9 @@
-FROM adoptopenjdk/openjdk11:jdk-11.0.12_7-debian
+FROM eclipse-temurin:8u302-b08-jdk-focal as jre-build
+
+FROM debian:bullseye-20210816-slim
 
 RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y git curl gpg unzip && \
+    apt-get install -y git curl gpg unzip libfreetype6 libfontconfig1 && \
     rm -rf /var/lib/apt/lists/*
 
 ARG TARGETARCH
@@ -93,7 +94,10 @@ EXPOSE ${http_port}
 EXPOSE ${agent_port}
 
 ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
-ENV JENKINS_ENABLE_FUTURE_JAVA=true
+
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH "${JAVA_HOME}/bin:${PATH}"
+COPY --from=jre-build /opt/java/openjdk $JAVA_HOME
 
 USER ${user}
 

@@ -161,7 +161,7 @@ target "centos7_jdk11" {
 }
 
 target "debian_jdk8" {
-  dockerfile = "8/debian/buster/hotspot/Dockerfile"
+  dockerfile = "8/debian/bullseye/hotspot/Dockerfile"
   context = "."
   args = {
     JENKINS_VERSION = JENKINS_VERSION
@@ -178,7 +178,7 @@ target "debian_jdk8" {
 }
 
 target "debian_jdk11" {
-  dockerfile = "11/debian/buster/hotspot/Dockerfile"
+  dockerfile = "11/debian/bullseye/hotspot/Dockerfile"
   context = "."
   args = {
     JENKINS_VERSION = JENKINS_VERSION
@@ -199,7 +199,7 @@ target "debian_jdk11" {
 }
 
 target "debian_slim_jdk8" {
-  dockerfile = "8/debian/buster-slim/hotspot/Dockerfile"
+  dockerfile = "8/debian/bullseye-slim/hotspot/Dockerfile"
   context = "."
   args = {
     JENKINS_VERSION = JENKINS_VERSION
@@ -216,7 +216,7 @@ target "debian_slim_jdk8" {
 }
 
 target "debian_slim_jdk11" {
-  dockerfile = "11/debian/buster-slim/hotspot/Dockerfile"
+  dockerfile = "11/debian/bullseye-slim/hotspot/Dockerfile"
   context = "."
   args = {
     JENKINS_VERSION = JENKINS_VERSION

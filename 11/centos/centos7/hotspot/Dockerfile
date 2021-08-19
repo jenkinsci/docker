@@ -1,14 +1,21 @@
+FROM eclipse-temurin:11.0.12_7-jdk-centos7 as jre-build
+
+# Generate smaller java runtime without unneeded files
+# for now we include the full module path to maintain compatibility
+# while still saving space (approx 200mb from the full distribution)
+RUN jlink \
+         --add-modules ALL-MODULE-PATH \
+         --strip-debug \
+         --no-man-pages \
+         --no-header-files \
+         --compress=2 \
+         --output /javaruntime
+
 FROM centos:centos7.9.2009
 
 ARG TARGETARCH
 
-RUN echo -e '[AdoptOpenJDK]\n\
-name=AdoptOpenJDK\n\
-baseurl=https://adoptopenjdk.jfrog.io/adoptopenjdk/rpm/centos/$releasever/$basearch\n\
-enabled=1\n\
-gpgcheck=1\n\
-gpgkey=https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public' > /etc/yum.repos.d/adoptopenjdk.repo && \
-    yum update -y && yum install -y git curl adoptopenjdk-11-hotspot-11.0.11+9-3 freetype fontconfig unzip which && \
+RUN yum install -y git curl freetype fontconfig unzip which && \
     yum clean all
 
 ARG TARGETARCH
@@ -99,6 +106,10 @@ EXPOSE ${http_port}
 EXPOSE ${agent_port}
 
 ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
+
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH "${JAVA_HOME}/bin:${PATH}"
+COPY --from=jre-build /javaruntime $JAVA_HOME
 
 USER ${user}
 
