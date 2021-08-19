@@ -1,13 +1,5 @@
 FROM eclipse-temurin:8u302-b08-jdk-focal as jre-build
 
-RUN jlink \
-         --add-modules ALL-MODULE-PATH \
-         --strip-debug \
-         --no-man-pages \
-         --no-header-files \
-         --compress=2 \
-         --output /javaruntime
-
 FROM debian:bullseye-20210816-slim
 
 RUN apt-get update && \
@@ -105,7 +97,7 @@ ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH "${JAVA_HOME}/bin:${PATH}"
-COPY --from=jre-build /javaruntime $JAVA_HOME
+COPY --from=jre-build /opt/java/openjdk $JAVA_HOME
 
 USER ${user}
 

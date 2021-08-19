@@ -1,5 +1,8 @@
 FROM eclipse-temurin:11.0.12_7-jdk-centos7 as jre-build
 
+# Generate smaller java runtime without unneeded files
+# for now we include the full module path to maintain compatibility
+# while still saving space (approx 200mb from the full distribution)
 RUN jlink \
          --add-modules ALL-MODULE-PATH \
          --strip-debug \
