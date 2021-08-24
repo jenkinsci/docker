@@ -5,9 +5,7 @@ FROM eclipse-temurin:11.0.12_7-jdk-centos7 as jre-build
 # while still saving space (approx 200mb from the full distribution)
 RUN jlink \
          --add-modules ALL-MODULE-PATH \
-         --strip-debug \
          --no-man-pages \
-         --no-header-files \
          --compress=2 \
          --output /javaruntime
 
