@@ -28,10 +28,7 @@ group "linux-s390x" {
 }
 
 group "linux-ppc64le" {
-  targets = [
-    "rhel_ubi8_jdk11",
-    "debian_jdk11",
-  ]
+  targets = []
 }
 
 group "windows" {
@@ -194,7 +191,7 @@ target "debian_jdk11" {
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-jdk11" : "",
   ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x"]
+  platforms = ["linux/amd64", "linux/arm64", "linux/s390x"]
 }
 
 target "debian_slim_jdk8" {
@@ -246,7 +243,7 @@ target "rhel_ubi8_jdk11" {
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:rhel-ubi8-jdk11" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-rhel-ubi8-jdk11" : "",
   ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le"]
+  platforms = ["linux/amd64", "linux/arm64"]
 }
 
 # TODO update windows publishing script to use this file
