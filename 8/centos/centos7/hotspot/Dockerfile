@@ -38,6 +38,7 @@ ARG JENKINS_HOME=/var/jenkins_home
 ARG REF=/usr/share/jenkins/ref
 
 ENV JENKINS_HOME $JENKINS_HOME
+ENV JENKINS_HTTP_PORT ${http_port}
 ENV JENKINS_SLAVE_AGENT_PORT ${agent_port}
 ENV REF $REF
 
@@ -111,6 +112,9 @@ ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
 # from a derived Dockerfile, can use `RUN install-plugins.sh active.txt` to setup $REF/plugins from a support bundle
 COPY install-plugins.sh /usr/local/bin/install-plugins.sh
+
+HEALTHCHECK --interval=30s --timeout=30s --start-period=30s --retries=10 \
+  CMD curl -f http://localhost:${JENKINS_HTTP_PORT}/login || exit 1
 
 # metadata labels
 LABEL \
