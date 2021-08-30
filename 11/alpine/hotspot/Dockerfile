@@ -11,7 +11,7 @@ RUN jlink \
          --compress=2 \
          --output /javaruntime
 
-FROM alpine:3.14.1
+FROM alpine:3.14.2
 
 RUN apk add --no-cache \
   bash \
