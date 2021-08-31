@@ -24,7 +24,6 @@ group "linux-arm64" {
 group "linux-s390x" {
   targets = [
     "debian_jdk11",
-    "rhel_ubi8_jdk11",
   ]
 }
 
@@ -240,5 +239,5 @@ target "rhel_ubi8_jdk11" {
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:rhel-ubi8-jdk11" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-rhel-ubi8-jdk11" : "",
   ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/s390x"]
+  platforms = ["linux/amd64", "linux/arm64"]
 }
