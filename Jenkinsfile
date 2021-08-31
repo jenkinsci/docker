@@ -115,6 +115,18 @@ stage('Build') {
                 }
             }
         }
+        builds['multiarch-build'] = {
+            nodeWithTimeout('docker') {
+                // sanity check that proves all images build on declared platforms
+                stage('Multi arch build') {
+                    sh '''
+                        docker buildx create --use
+                        docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+                        docker buildx bake --file docker-bake.hcl linux
+                    '''
+                }
+            }
+        }
     } else {
         builds['linux'] = {
             nodeWithTimeout('docker') {
