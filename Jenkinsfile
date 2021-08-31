@@ -36,7 +36,6 @@ stage('Build') {
                         junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
                         if (windowsTestStatus > 0) {
                             // If something bad happened let's clean up the docker images
-                            powershell(script: '& docker system prune --force --all', returnStatus: true)
                             error('Windows test stage failed.')
                         }
                     }
@@ -54,8 +53,6 @@ stage('Build') {
                 //    }
                 //}
 
-                // Let's always clean up the docker images at the very end
-                powershell(script: '& docker system prune --force --all', returnStatus: true)
             } else {
                 /* In our trusted.ci environment we only want to be publishing our
                 * containers from artifacts
@@ -109,14 +106,16 @@ stage('Build') {
                             junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/*.xml')
                         }
                     }
-
-                    // Let's always clean up the docker images at the very end
-                    sh(script: 'docker system prune --force --all', returnStatus: true)
                 }
             }
         }
         builds['multiarch-build'] = {
             nodeWithTimeout('docker') {
+                stage('Checkout') {
+                    deleteDir()
+                    checkout scm
+                }
+
                 // sanity check that proves all images build on declared platforms
                 stage('Multi arch build') {
                     sh '''
