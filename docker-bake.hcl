@@ -22,17 +22,13 @@ group "linux-arm64" {
 }
 
 group "linux-s390x" {
-  targets = []
+  targets = [
+    "debian_jdk11",
+  ]
 }
 
 group "linux-ppc64le" {
   targets = []
-}
-
-group "windows" {
-  targets = [
-    "windows_2019_jdk11",
-  ]
 }
 
 variable "JENKINS_VERSION" {
@@ -189,7 +185,7 @@ target "debian_jdk11" {
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-jdk11" : "",
   ]
-  platforms = ["linux/amd64", "linux/arm64"]
+  platforms = ["linux/amd64", "linux/arm64", "linux/s390x"]
 }
 
 target "debian_slim_jdk8" {
@@ -242,20 +238,4 @@ target "rhel_ubi8_jdk11" {
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-rhel-ubi8-jdk11" : "",
   ]
   platforms = ["linux/amd64", "linux/arm64"]
-}
-
-# TODO update windows publishing script to use this file
-target "windows_2019_jdk11" {
-  dockerfile = "11/windows/windowsservercore-2019/hotspot/Dockerfile"
-  context = "."
-  args = {
-    JENKINS_VERSION = JENKINS_VERSION
-    JENKINS_SHA = JENKINS_SHA
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-  }
-  tags = [
-    "${REGISTRY}/${JENKINS_REPO}:jdk11-hotspot-windowsservercore-2019",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:windowsservercore-2019" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-windowsservercore-2019" : "",
-  ]
 }
