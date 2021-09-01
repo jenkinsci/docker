@@ -118,11 +118,13 @@ stage('Build') {
 
                 // sanity check that proves all images build on declared platforms
                 stage('Multi arch build') {
-                    sh '''
-                        docker buildx create --use
-                        docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-                        docker buildx bake --file docker-bake.hcl linux
-                    '''
+                    infra.withDockerCredentials {
+                        sh '''
+                            docker buildx create --use
+                            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+                            docker buildx bake --file docker-bake.hcl linux
+                        '''
+                    }
                 }
             }
         }
