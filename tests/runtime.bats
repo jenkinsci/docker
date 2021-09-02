@@ -49,6 +49,11 @@ SUT_DESCRIPTION="${IMAGE}-runtime"
   refute [ "${timezone1}" = "${timezone2}" ]
 }
 
+@test "[${SUT_DESCRIPTION}] has utf-8 locale" {
+  run docker run --rm "${SUT_IMAGE}" locale charmap
+  assert_equal "${output}" "UTF-8"
+}
+
 @test "[${SUT_DESCRIPTION}] create test container with Jenkins initialize and JAVA_OPTS are set" {
   local container_name
   container_name="$(get_sut_container_name)"
