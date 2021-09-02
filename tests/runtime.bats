@@ -50,7 +50,11 @@ SUT_DESCRIPTION="${IMAGE}-runtime"
 }
 
 @test "[${SUT_DESCRIPTION}] has utf-8 locale" {
-  run docker run --rm "${SUT_IMAGE}" locale charmap
+  if [[ "${SUT_IMAGE}" == *"alpine"*  ]]; then
+    run docker run --rm "${SUT_IMAGE}" /usr/glibc-compat/bin/locale charmap
+  else
+    run docker run --rm "${SUT_IMAGE}" locale charmap
+  fi
   assert_equal "${output}" "UTF-8"
 }
 

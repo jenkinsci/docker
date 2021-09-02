@@ -25,6 +25,8 @@ RUN apk add --no-cache \
   tzdata \
   unzip
 
+ENV LANG C.UTF-8
+
 ARG TARGETARCH
 ARG GIT_LFS_VERSION=2.13.3
 

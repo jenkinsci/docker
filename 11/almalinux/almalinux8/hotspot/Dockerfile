@@ -11,6 +11,8 @@ RUN jlink \
 
 FROM almalinux:8.4
 
+ENV LANG C.UTF-8
+
 ARG TARGETARCH
 
 RUN dnf --setopt=install_weak_deps=0 --setopt=tsflags=nodocs install -y \

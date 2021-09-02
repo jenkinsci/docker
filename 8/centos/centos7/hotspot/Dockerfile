@@ -1,5 +1,7 @@
 FROM centos:centos7.9.2009
 
+ENV LANG C.UTF-8
+
 ARG TARGETARCH
 
 RUN echo -e '[AdoptOpenJDK]\n\
