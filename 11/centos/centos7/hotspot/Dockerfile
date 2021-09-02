@@ -11,6 +11,8 @@ RUN jlink \
 
 FROM centos:centos7.9.2009
 
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
+
 ARG TARGETARCH
 
 RUN yum install -y git curl freetype fontconfig unzip which && \

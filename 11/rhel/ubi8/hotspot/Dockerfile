@@ -11,6 +11,8 @@ RUN jlink \
 
 FROM registry.access.redhat.com/ubi8/ubi:8.4-209
 
+ENV LANG C.UTF-8
+
 ARG TARGETARCH
 
 RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs -y \

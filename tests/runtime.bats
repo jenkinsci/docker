@@ -49,6 +49,15 @@ SUT_DESCRIPTION="${IMAGE}-runtime"
   refute [ "${timezone1}" = "${timezone2}" ]
 }
 
+@test "[${SUT_DESCRIPTION}] has utf-8 locale" {
+  if [[ "${SUT_IMAGE}" == *"alpine"*  ]]; then
+    run docker run --rm "${SUT_IMAGE}" /usr/glibc-compat/bin/locale charmap
+  else
+    run docker run --rm "${SUT_IMAGE}" locale charmap
+  fi
+  assert_equal "${output}" "UTF-8"
+}
+
 @test "[${SUT_DESCRIPTION}] create test container with Jenkins initialize and JAVA_OPTS are set" {
   local container_name
   container_name="$(get_sut_container_name)"
