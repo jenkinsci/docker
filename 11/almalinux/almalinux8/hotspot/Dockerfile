@@ -117,5 +117,5 @@ LABEL \
     org.opencontainers.image.description="The Jenkins Continuous Integration and Delivery server" \
     org.opencontainers.image.version="${JENKINS_VERSION}" \
     org.opencontainers.image.url="https://www.jenkins.io/" \
-    org.opencontainers.image.source="https://github.com/jenkinsci/jenkins" \
+    org.opencontainers.image.source="https://github.com/jenkinsci/docker" \
     org.opencontainers.image.licenses="MIT"
