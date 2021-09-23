@@ -34,6 +34,15 @@ if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
     jenkins_opts_array+=( "$item" )
   done < <([[ $JENKINS_OPTS ]] && xargs printf '%s\0' <<<"$JENKINS_OPTS")
 
+  if [[ "$JENKINS_ENABLE_FUTURE_JAVA" ]] ; then
+    java_opts_array+=( \
+      '--add-opens java.base/java.lang=ALL-UNNAMED' \
+      '--add-opens=java.base/java.io=ALL-UNNAMED' \
+      '--add-opens java.base/java.util=ALL-UNNAMED' \
+    )
+    jenkins_opts_array+=( "--enable-future-java" )
+  fi
+
   exec java -Duser.home="$JENKINS_HOME" "${java_opts_array[@]}" -jar ${JENKINS_WAR} "${jenkins_opts_array[@]}" "$@"
 fi
 
