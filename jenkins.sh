@@ -25,7 +25,7 @@ if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
   if [[ "$DEBUG" ]] ; then
     java_opts_array+=( \
       '-Xdebug' \
-      '-Xrunjdwp:server=y,transport=dt_socket,address=5005,suspend=y' \
+      '-Xrunjdwp:server=y,transport=dt_socket,address=*:5005,suspend=y' \
     )
   fi
 
