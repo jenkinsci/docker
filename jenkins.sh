@@ -34,16 +34,14 @@ if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
     jenkins_opts_array+=( "$item" )
   done < <([[ $JENKINS_OPTS ]] && xargs printf '%s\0' <<<"$JENKINS_OPTS")
 
+  FUTURE_OPTS=""
   if [[ "$JENKINS_ENABLE_FUTURE_JAVA" ]] ; then
-    java_opts_array+=( \
-      '--add-opens java.base/java.lang=ALL-UNNAMED' \
-      '--add-opens=java.base/java.io=ALL-UNNAMED' \
-      '--add-opens java.base/java.util=ALL-UNNAMED' \
-    )
-    jenkins_opts_array+=( "--enable-future-java" )
+    FUTURE_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED"
   fi
 
-  exec java -Duser.home="$JENKINS_HOME" "${java_opts_array[@]}" -jar ${JENKINS_WAR} "${jenkins_opts_array[@]}" "$@"
+  # --add-opens won't get expanded properly with quotes around it
+  # shellcheck disable=SC2086
+  exec java -Duser.home="$JENKINS_HOME" ${FUTURE_OPTS} "${java_opts_array[@]}" -jar ${JENKINS_WAR} "${jenkins_opts_array[@]}" "$@"
 fi
 
 # As argument is not jenkins, assume user want to run his own process, for example a `bash` shell to explore this image
