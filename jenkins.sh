@@ -34,6 +34,11 @@ if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
     jenkins_opts_array+=( "$item" )
   done < <([[ $JENKINS_OPTS ]] && xargs printf '%s\0' <<<"$JENKINS_OPTS")
 
+  readonly http_port_option='--httpPort'
+  if [ -n "${JENKINS_HTTP_PORT:-}" ] && [[ "${JENKINS_OPTS:-}" != *"${http_port_option}"* ]]; then
+    jenkins_opts_array+=( "--httpPort=${JENKINS_HTTP_PORT}" )
+  fi
+
   exec java -Duser.home="$JENKINS_HOME" "${java_opts_array[@]}" -jar ${JENKINS_WAR} "${jenkins_opts_array[@]}" "$@"
 fi
 

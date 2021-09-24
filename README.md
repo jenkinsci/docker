@@ -130,22 +130,23 @@ ENV JENKINS_OPTS --httpPort=-1 --httpsPort=8083 --httpsCertificate=/var/lib/jenk
 EXPOSE 8083
 ```
 
-You can also change the default agent port for Jenkins by defining `JENKINS_SLAVE_AGENT_PORT` in a sample Dockerfile.
+You can change the default http port and/or agent port for Jenkins by defining the `JENKINS_HTTP_PORT` and/or `JENKINS_SLAVE_AGENT_PORT` in a sample Dockerfile
 
 ```
 FROM jenkins/jenkins:lts-jdk11
+ENV JENKINS_HTTP_PORT 8081
 ENV JENKINS_SLAVE_AGENT_PORT 50001
 ```
 or as a parameter to docker,
 ```
-docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGENT_PORT=50001 jenkins/jenkins:lts-jdk11
+docker run --name myjenkins -p 8081:8081 -p 50001:50001 --env JENKINS_HTTP_PORT=8081 --env JENKINS_SLAVE_AGENT_PORT=50001 jenkins/jenkins:lts-jdk11
 ```
 
-**Note**: This environment variable will be used to set the port adding the
+**Note**: The environment variable `JENKINS_HTTP_PORT` will be used to set the port by adding the `--httpPort` option to the **JENKINS_OPTS**. And the `JENKINS_SLAVE_AGENT_PORT` environment variable will be used to set the port adding the
 [system property][https://www.jenkins.io/doc/book/managing/system-properties/] `jenkins.model.Jenkins.slaveAgentPort` to **JAVA_OPTS**.
 
-> If this property is already set in **JAVA_OPTS**, then the value of
-`JENKINS_SLAVE_AGENT_PORT` will be ignored.
+> If the option `--httpPort` is already set in **JENKINS_OPTS**, then the value of
+`JENKINS_HTTP_PORT` will be ignored. Similarly, if the `jenkins.model.Jenkins.slaveAgentPort` property is already set in **JAVA_OPTS**, then the value of `JENKINS_SLAVE_AGENT_PORT` will be ignored.
 
 # Installing more tools
 
