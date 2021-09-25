@@ -36,7 +36,11 @@ if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
 
   FUTURE_OPTS=""
   if [[ "$JENKINS_ENABLE_FUTURE_JAVA" ]] ; then
-    FUTURE_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED"
+    FUTURE_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED
+        --add-opens=java.base/java.io=ALL-UNNAMED
+        --add-opens java.base/java.util=ALL-UNNAMED
+        --add-opens java.base/java.util.concurrent=ALL-UNNAMED
+        "
   fi
 
   # --add-opens won't get expanded properly with quotes around it
