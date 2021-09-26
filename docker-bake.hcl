@@ -7,6 +7,7 @@ group "linux" {
     "centos7_jdk11",
     "debian_jdk8",
     "debian_jdk11",
+    "debian_jdk17",
     "debian_slim_jdk8",
     "debian_slim_jdk11",
     "rhel_ubi8_jdk11"
@@ -17,6 +18,7 @@ group "linux-arm64" {
   targets = [
     "almalinux_jdk11",
     "debian_jdk11",
+    "debian_jdk17",
     "rhel_ubi8_jdk11",
   ]
 }
@@ -241,6 +243,25 @@ target "rhel_ubi8_jdk11" {
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-rhel-ubi8-jdk11",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:rhel-ubi8-jdk11" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-rhel-ubi8-jdk11" : "",
+  ]
+  platforms = ["linux/amd64", "linux/arm64"]
+}
+
+target "debian_jdk17" {
+  dockerfile = "17/debian/bullseye/hotspot/Dockerfile"
+  context = "."
+  args = {
+    JENKINS_VERSION = JENKINS_VERSION
+    JENKINS_SHA = JENKINS_SHA
+    GIT_LFS_VERSION = GIT_LFS_VERSION
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+  }
+  tags = [
+    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-jdk17-preview",
+    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:latest-jdk17-preview" : "",
+    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:jdk17-preview" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-jdk17-preview" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts-jdk17-preview" : "",
   ]
   platforms = ["linux/amd64", "linux/arm64"]
 }
