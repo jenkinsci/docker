@@ -62,7 +62,7 @@ variable "GIT_LFS_VERSION" {
 }
 
 variable "PLUGIN_CLI_VERSION" {
-  default = "2.10.2"
+  default = "2.11.0"
 }
 
 target "almalinux_jdk11" {
