@@ -55,21 +55,10 @@ updates:
   labels:
   - dependencies
 
-- package-ecosystem: docker
-  directory: "8/centos/centos8/hotspot"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 2
-  target-branch: master
-  reviewers:
-  - slide
-  labels:
-  - dependencies
-
 # Debian Linux
 
 - package-ecosystem: docker
-  directory: "11/debian/buster/hotspot"
+  directory: "11/debian/bullseye/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
@@ -81,7 +70,7 @@ updates:
   - dependencies
 
 - package-ecosystem: docker
-  directory: "11/debian/buster-slim/hotspot"
+  directory: "11/debian/bullseye-slim/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
@@ -93,7 +82,7 @@ updates:
   - dependencies
 
 - package-ecosystem: docker
-  directory: "8/debian/buster/hotspot"
+  directory: "8/debian/bullseye/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
@@ -105,7 +94,7 @@ updates:
   - dependencies
 
 - package-ecosystem: docker
-  directory: "8/debian/buster-slim/hotspot"
+  directory: "8/debian/bullseye-slim/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2

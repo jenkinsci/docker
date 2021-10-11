@@ -6,7 +6,7 @@ RUN jlink \
          --compress=2 \
          --output /javaruntime
 
-FROM debian:bullseye-20210902
+FROM debian:bullseye-20210927
 
 RUN apt-get update && \
     apt-get install -y git curl gpg unzip libfreetype6 libfontconfig1 && \
@@ -15,7 +15,7 @@ RUN apt-get update && \
 ENV LANG C.UTF-8
 
 ARG TARGETARCH
-ARG GIT_LFS_VERSION=2.13.3
+ARG GIT_LFS_VERSION=3.0.1
 
 # required for multi-arch support, revert to package cloud after:
 # https://github.com/git-lfs/git-lfs/issues/4546

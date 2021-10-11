@@ -14,7 +14,7 @@ gpgkey=https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public' > /etc/yum
     yum clean all
 
 ARG TARGETARCH
-ARG GIT_LFS_VERSION=2.13.3
+ARG GIT_LFS_VERSION=3.0.1
 
 # required for multi-arch support, revert to package cloud after:
 # https://github.com/git-lfs/git-lfs/issues/4546
