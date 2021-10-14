@@ -125,10 +125,7 @@ H 6,21 * * 3''' : '')
                             timeout(time: 60, unit: 'MINUTES')
                         }
                         steps {
-                            withDockerCredentials {
-                                cmd(linux: "make prepare-test test-${PLATFORM}_${FLAVOR}")
-                            }
-                            cmd(windows: './make.ps1 test')
+                            cmd(linux: "make prepare-test test-${PLATFORM}_${FLAVOR}", windows: './make.ps1 test')
                         }
                         post {
                             always {
@@ -145,13 +142,11 @@ H 6,21 * * 3''' : '')
                             expression { runOnlyOnceOnLinux() }
                         }
                         steps {
-                            withDockerCredentials {
-                                cmd(linux: '''
-                                    docker buildx create --use
-                                    docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-                                    docker buildx bake --file docker-bake.hcl linux
-                                ''')
-                            }
+                            cmd(linux: '''
+                                docker buildx create --use
+                                docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+                                docker buildx bake --file docker-bake.hcl linux
+                            ''')
                         }
                     }
                     // See https://github.com/jenkinsci/docker/pull/1074
@@ -161,10 +156,8 @@ H 6,21 * * 3''' : '')
                             expression { !isTrusted() }
                         }
                         steps {
-                            withDockerCredentials {
-                                withEnv(['DOCKERHUB_ORGANISATION=jenkins4eval','DOCKERHUB_REPO=jenkins']) {
-                                    cmd(linux: 'make publish-tags publish-manifests', windows: './make.ps1 publish')
-                                }
+                            withEnv(['DOCKERHUB_ORGANISATION=jenkins4eval','DOCKERHUB_REPO=jenkins']) {
+                                cmd(linux: 'make publish-tags publish-manifests', windows: './make.ps1 publish')
                             }
                         }
                     }*/
@@ -183,9 +176,7 @@ H 6,21 * * 3''' : '')
                     }
                     steps {
                         cmd(windows: './make.ps1')
-                        withDockerCredentials {
-                            cmd(windows: './make.ps1 publish')
-                        }
+                        cmd(windows: './make.ps1 publish')
                     }
                 }
                 stage('Publish Linux') {
@@ -194,13 +185,11 @@ H 6,21 * * 3''' : '')
                         timeout(time: 60, unit: 'MINUTES')
                     }
                     steps {
-                        withDockerCredentials {
-                            cmd(linux: '''
-                                docker buildx create --use
-                                docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-                                make publish
-                            ''')
-                        }
+                        cmd(linux: '''
+                            docker buildx create --use
+                            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+                            make publish
+                        ''')
                     }
                 }
             }
@@ -211,13 +200,15 @@ H 6,21 * * 3''' : '')
 // Wrapper to call a command OS agnostic
 def cmd(args) {
     def returnStatus = args.get('returnStatus', false)
-    if(isUnix) {
-        if (args.containsKey('linux')) {
-            sh(script: args.linux, returnStatus: returnStatus)
-        }
-    } else {
-        if (args.containsKey('windows')) {
-            powershell(script: args.windows, returnStatus: returnStatus)
+    infra.withDockerCredentials {
+        if(isUnix) {
+            if (args.containsKey('linux')) {
+                sh(script: args.linux, returnStatus: returnStatus)
+            }
+        } else {
+            if (args.containsKey('windows')) {
+                powershell(script: args.windows, returnStatus: returnStatus)
+            }
         }
     }
 }
@@ -225,13 +216,6 @@ def cmd(args) {
 // Wrapper to avoid the script closure in the declarative pipeline
 def isTrusted() {
     return infra.isTrusted()
-}
-
-// Wrapper to avoid the script closure in the declarative pipeline
-def withDockerCredentials(body) {
-    infra.withDockerCredentials {
-        body()
-    }
 }
 
 // To enable one stage in the matrix only for one combination of
