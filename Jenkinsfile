@@ -20,9 +20,10 @@ H 6,21 * * 3''' : '')
                     }
                     axis {
                         name 'FLAVOR'
-                        values 'jdk8', 'jdk11', 'jdk17', 'ONCE'
-                        // ONCE value helps to exclude the matrix only for windows once
-                        // or enabling the the multiarch-build stage only once.
+                        values 'jdk8', 'jdk11', 'jdk17', 'windows'
+                        // IMPORTANT: windows value helps to configure the matrix only for windows once
+                        // IMPORTANT: jdk8 and alpine are used to run one of the stages once. Please change
+                        //            runOnlyOnceForLinux if jdk8 or alpine are changed.
                     }
                 }
                 excludes {
@@ -34,7 +35,18 @@ H 6,21 * * 3''' : '')
                         }
                         axis {
                             name 'FLAVOR'
-                            values 'ONCE'
+                            values 'windows'
+                        }
+                    }
+                    exclude {
+                        // This is the trick to allow running windows in the same matrix ONLY once
+                        axis {
+                            name 'PLATFORM'
+                            values 'windows'
+                        }
+                        axis {
+                            name 'FLAVOR'
+                            notValues 'windows'
                         }
                     }
                     exclude {
@@ -91,7 +103,9 @@ H 6,21 * * 3''' : '')
                 stages {
                     stage('Shellcheck') {
                         when {
-                            expression { !isTrusted() && PLATFORM.equals('windows') }
+                            not {
+                                expression { isTrusted() && runOnlyOnceForWindows() }
+                            }
                         }
                         steps {
                             cmd(linux: "make shellcheck")
@@ -123,7 +137,8 @@ H 6,21 * * 3''' : '')
                     }
                     stage('Multiarch-Build') {
                         when {
-                            expression { !isTrusted() && FLAVOR.equals('ONCE') }
+                            // Run only once on linux
+                            expression { !isTrusted() && runOnlyOnceForLinux() }
                         }
                         steps {
                             withDockerCredentials {
@@ -152,7 +167,8 @@ H 6,21 * * 3''' : '')
                     stage('Publish Windows') {
                         when {
                             beforeAgent true
-                            expression { isTrusted() && PLATFORM.equals('windows') && FLAVOR.equals('ONCE') }
+                            // Run only once on windows
+                            expression { isTrusted() && runOnlyOnceForWindows() }
                         }
                         steps {
                             withDockerCredentials {
@@ -165,7 +181,8 @@ H 6,21 * * 3''' : '')
                     stage('Publish Linux') {
                         when {
                             beforeAgent true
-                            expression { isTrusted() && !PLATFORM.equals('windows') && FLAVOR.equals('ONCE') }
+                            // Run only once on linux
+                            expression { isTrusted() && runOnlyOnceForLinux() }
                         }
                         steps {
                             withDockerCredentials {
@@ -207,4 +224,18 @@ def withDockerCredentials(body) {
     infra.withDockerCredentials {
         body()
     }
+}
+
+// To enable one stage in the matrix only for one combination of
+// the axis.
+// This value should be changed when the flavors are updated.
+def runOnlyOnceForLinux() {
+    return FLAVOR.equals('jdk8') && PLATFORM.equals('alpine')
+}
+
+// To enable one stage in the matrix only for one combination of
+// the axis.
+// This value should be changed when the flavors are updated.
+def runOnlyOnceForWindows() {
+    return FLAVOR.equals('windows') && PLATFORM.equals('windows')
 }
