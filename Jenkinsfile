@@ -12,7 +12,7 @@ H 6,21 * * 3''' : '')
     stages {
         stage('BuildAndTest') {
             matrix {
-                agent { label "${PLATFORM.equals('windows') ? 'winlock' : 'docker'}" }
+                agent { label "${PLATFORM.equals('windows') ? 'windock' : 'docker'}" }
                 axes {
                     axis {
                         name 'PLATFORM'
