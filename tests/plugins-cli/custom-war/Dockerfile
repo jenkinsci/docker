@@ -18,4 +18,4 @@ RUN cp /usr/share/jenkins/jenkins.war $JENKINS_WAR && \
 RUN jar -uf my-custom-jenkins.war WEB-INF/* 
 
 # Run the jenkins-plugin-cli script
-RUN jenkins-plugin-cli --list --war $JENKINS_WAR --plugins junit:1.6
+RUN jenkins-plugin-cli --war $JENKINS_WAR --plugins junit:1.6

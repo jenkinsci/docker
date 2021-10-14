@@ -12,42 +12,35 @@ H 6,21 * * 3''' : '')
     stages {
         stage('BuildAndTest') {
             matrix {
-                agent { label "${PLATFORM.equals('windows') ? 'winlock' : 'linux'}" }
+                agent { label "${PLATFORM.equals('windows') ? 'winlock' : 'docker'}" }
                 axes {
                     axis {
                         name 'PLATFORM'
-                        values 'amd64', 'arm64', 's390x', 'ppc64le', 'windows'
+                        values 'almalinux', 'alpine', 'centos7', 'debian8', 'debian_slim', 'rhel_ubi8', 'windows'
                     }
                     axis {
                         name 'FLAVOR'
-                        values 'debian', 'slim', 'alpine', 'jdk11', 'centos', 'centos7', 'windows'
+                        values 'jdk8', 'jdk11', 'jdk17', 'ONCE'
+                        // ONCE value helps to exclude the matrix only for windows once
+                        // or enabling the the multiarch-build stage only once.
                     }
                 }
                 excludes {
                     exclude {
+                        // This is the trick to allow running windows in the same matrix ONLY once
                         axis {
                             name 'PLATFORM'
                             notValues 'windows'
                         }
                         axis {
                             name 'FLAVOR'
-                            values 'windows'
+                            values 'ONCE'
                         }
                     }
                     exclude {
                         axis {
                             name 'PLATFORM'
-                            values 'arm64'
-                        }
-                        axis {
-                            name 'FLAVOR'
-                            notValues 'debian', 'slim', 'jdk11'
-                        }
-                    }
-                    exclude {
-                        axis {
-                            name 'PLATFORM'
-                            values 's390x'
+                            values 'almalinux'
                         }
                         axis {
                             name 'FLAVOR'
@@ -57,7 +50,37 @@ H 6,21 * * 3''' : '')
                     exclude {
                         axis {
                             name 'PLATFORM'
-                            values 'ppc64le'
+                            values 'alpine'
+                        }
+                        axis {
+                            name 'FLAVOR'
+                            notValues 'jdk8', 'jdk11'
+                        }
+                    }
+                    exclude {
+                        axis {
+                            name 'PLATFORM'
+                            values 'centos7'
+                        }
+                        axis {
+                            name 'FLAVOR'
+                            notValues 'jdk8', 'jdk11'
+                        }
+                    }
+                    exclude {
+                        axis {
+                            name 'PLATFORM'
+                            values 'debian_slim'
+                        }
+                        axis {
+                            name 'FLAVOR'
+                            notValues 'jdk8', 'jdk11'
+                        }
+                    }
+                    exclude {
+                        axis {
+                            name 'PLATFORM'
+                            values 'rhel_ubi8'
                         }
                         axis {
                             name 'FLAVOR'
@@ -66,12 +89,20 @@ H 6,21 * * 3''' : '')
                     }
                 }
                 stages {
+                    stage('Shellcheck') {
+                        when {
+                            expression { !isTrusted() && PLATFORM.equals('windows') }
+                        }
+                        steps {
+                            cmd(linux: "make shellcheck")
+                        }
+                    }
                     stage('Build') {
                         when {
                             expression { !isTrusted() }
                         }
                         steps {
-                            cmd(linux: "make build-${FLAVOR}", windows: './make.ps1')
+                            cmd(linux: "make build-${PLATFORM}_${FLAVOR}", windows: './make.ps1')
                         }
                     }
                     stage('Test') {
@@ -79,11 +110,28 @@ H 6,21 * * 3''' : '')
                             expression { !isTrusted() }
                         }
                         steps {
-                            cmd(linux: "make prepare-test test-${FLAVOR}", windows: './make.ps1 test')
+                            withDockerCredentials {
+                                cmd(linux: "make prepare-test test-${PLATFORM}_${FLAVOR}")
+                            }
+                            cmd(windows: './make.ps1 test')
                         }
                         post {
                             always {
-                                junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
+                                junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/*.xml,target/**/junit-results.xml')
+                            }
+                        }
+                    }
+                    stage('Multiarch-Build') {
+                        when {
+                            expression { !isTrusted() && FLAVOR.equals('ONCE') }
+                        }
+                        steps {
+                            withDockerCredentials {
+                                cmd(linux: '''
+                                    docker buildx create --use
+                                    docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+                                    docker buildx bake --file docker-bake.hcl linux
+                                ''')
                             }
                         }
                     }
@@ -100,16 +148,31 @@ H 6,21 * * 3''' : '')
                             }
                         }
                     }
-                    stage('Publish') {
+                    stage('Publish Windows') {
                         when {
                             beforeAgent true
-                            expression { isTrusted() }
+                            expression { isTrusted() && PLATFORM.equals('windows') && FLAVOR.equals('ONCE') }
                         }
                         steps {
                             withDockerCredentials {
                                 withEnv(['DOCKERHUB_ORGANISATION=jenkins','DOCKERHUB_REPO=jenkins']) {
-                                    cmd(linux: 'make publish', windows: './make.ps1 publish')
+                                    cmd(windows: './make.ps1 publish')
                                 }
+                            }
+                        }
+                    }
+                    stage('Publish Linux') {
+                        when {
+                            beforeAgent true
+                            expression { isTrusted() && !PLATFORM.equals('windows') && FLAVOR.equals('ONCE') }
+                        }
+                        steps {
+                            withDockerCredentials {
+                                cmd(linux: '''
+                                    docker buildx create --use
+                                    docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+                                    make publish
+                                ''')
                             }
                         }
                     }
@@ -128,9 +191,13 @@ H 6,21 * * 3''' : '')
 def cmd(args) {
     def returnStatus = args.get('returnStatus', false)
     if(isUnix) {
-        sh(script: args.linux, returnStatus: returnStatus)
+        if (args.containsKey('linux')) {
+            sh(script: args.linux, returnStatus: returnStatus)
+        }
     } else {
-        powershell(script: args.windows, returnStatus: returnStatus)
+        if (args.containsKey('windows')) {
+            powershell(script: args.windows, returnStatus: returnStatus)
+        }
     }
 }
 

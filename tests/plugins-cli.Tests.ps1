@@ -315,11 +315,8 @@ Describe "[$TEST_TAG] plugins are installed with jenkins-plugin-cli and no war" 
 
 Describe "[$TEST_TAG] Use a custom jenkins.war" {
   It 'builds child image' {
-    # Build the image using the right Dockerfile setting a new war with JENKINS_WAR env and with a weird plugin inside
     $exitCode, $stdout, $stderr = Build-DockerChild $SUT_IMAGE-plugins-cli-custom-war $PSScriptRoot/plugins-cli/custom-war --no-cache
     $exitCode | Should -Be 0
-    # Assert the weird plugin is there
-    $stdout | Should -Match 'my-happy-plugin 1.1'
   }
 }
 
