@@ -135,7 +135,8 @@ H 6,21 * * 3''' : '')
                             }
                         }
                     }
-                    stage('Publish Experimental') {
+                    // See https://github.com/jenkinsci/docker/pull/1074
+                    /*stage('Publish Experimental') {
                         when {
                             branch 'master'
                             expression { !isTrusted() }
@@ -147,7 +148,7 @@ H 6,21 * * 3''' : '')
                                 }
                             }
                         }
-                    }
+                    }*/
                     stage('Publish Windows') {
                         when {
                             beforeAgent true
