@@ -11,6 +11,9 @@ H 6,21 * * 3''' : '')
     }
     stages {
         stage('BuildAndTest') {
+            when {
+                expression { !isTrusted() }
+            }
             matrix {
                 agent { label "${PLATFORM.equals('windows') ? 'windock' : 'docker'}" }
                 axes {
@@ -23,7 +26,7 @@ H 6,21 * * 3''' : '')
                         values 'jdk8', 'jdk11', 'jdk17', 'windows'
                         // IMPORTANT: windows value helps to configure the matrix only for windows once
                         // IMPORTANT: jdk8 and alpine are used to run one of the stages once. Please change
-                        //            runOnlyOnceForLinux if jdk8 or alpine are changed.
+                        //            runOnlyOnceOnLinux if jdk8 or alpine are changed.
                     }
                 }
                 excludes {
@@ -103,26 +106,18 @@ H 6,21 * * 3''' : '')
                 stages {
                     stage('Shellcheck') {
                         when {
-                            not {
-                                expression { isTrusted() && runOnlyOnceForWindows() }
-                            }
+                            expression { runOnlyOnLinux() }
                         }
                         steps {
-                            cmd(linux: "make shellcheck")
+                            cmd(linux: 'make shellcheck')
                         }
                     }
                     stage('Build') {
-                        when {
-                            expression { !isTrusted() }
-                        }
                         steps {
                             cmd(linux: "make build-${PLATFORM}_${FLAVOR}", windows: './make.ps1')
                         }
                     }
                     stage('Test') {
-                        when {
-                            expression { !isTrusted() }
-                        }
                         steps {
                             withDockerCredentials {
                                 cmd(linux: "make prepare-test test-${PLATFORM}_${FLAVOR}")
@@ -138,7 +133,7 @@ H 6,21 * * 3''' : '')
                     stage('Multiarch-Build') {
                         when {
                             // Run only once on linux
-                            expression { !isTrusted() && runOnlyOnceForLinux() }
+                            expression { runOnlyOnceOnLinux() }
                         }
                         steps {
                             withDockerCredentials {
@@ -164,34 +159,32 @@ H 6,21 * * 3''' : '')
                             }
                         }
                     }*/
-                    stage('Publish Windows') {
-                        when {
-                            beforeAgent true
-                            // Run only once on windows
-                            expression { isTrusted() && runOnlyOnceForWindows() }
-                        }
-                        steps {
-                            withDockerCredentials {
-                                withEnv(['DOCKERHUB_ORGANISATION=jenkins','DOCKERHUB_REPO=jenkins']) {
-                                    cmd(windows: './make.ps1 publish')
-                                }
-                            }
+                }
+            }
+        }
+        stage('Publish') {
+            when {
+                expression { isTrusted() }
+            }
+            stages {
+                stage('Publish Windows') {
+                    agent { label 'windock' }
+                    steps {
+                        cmd(windows: './make.ps1')
+                        withDockerCredentials {
+                            cmd(windows: './make.ps1 publish')
                         }
                     }
-                    stage('Publish Linux') {
-                        when {
-                            beforeAgent true
-                            // Run only once on linux
-                            expression { isTrusted() && runOnlyOnceForLinux() }
-                        }
-                        steps {
-                            withDockerCredentials {
-                                cmd(linux: '''
-                                    docker buildx create --use
-                                    docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-                                    make publish
-                                ''')
-                            }
+                }
+                stage('Publish Linux') {
+                    agent { label 'docker' }
+                    steps {
+                        withDockerCredentials {
+                            cmd(linux: '''
+                                docker buildx create --use
+                                docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+                                make publish
+                            ''')
                         }
                     }
                 }
@@ -229,13 +222,10 @@ def withDockerCredentials(body) {
 // To enable one stage in the matrix only for one combination of
 // the axis.
 // This value should be changed when the flavors are updated.
-def runOnlyOnceForLinux() {
+def runOnlyOnceOnLinux() {
     return FLAVOR.equals('jdk8') && PLATFORM.equals('alpine')
 }
 
-// To enable one stage in the matrix only for one combination of
-// the axis.
-// This value should be changed when the flavors are updated.
-def runOnlyOnceForWindows() {
-    return FLAVOR.equals('windows') && PLATFORM.equals('windows')
+def runOnlyOnLinux() {
+    return !PLATFORM.equals('windows')
 }
