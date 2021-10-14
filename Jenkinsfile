@@ -3,6 +3,7 @@ pipeline {
     options {
         buildDiscarder(logRotator(artifactNumToKeepStr: '5', numToKeepStr: '50'))
         timestamps()
+        disableConcurrentBuilds(abortPrevious: true)
     }
     triggers {
         cron(env.BRANCH_NAME == 'master' ? '''H H/6 * * 0-2,4-6
