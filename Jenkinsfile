@@ -2,7 +2,6 @@ pipeline {
     agent none
     options {
         buildDiscarder(logRotator(artifactNumToKeepStr: '5', numToKeepStr: '50'))
-        timeout(time: 60, unit: 'MINUTES')
         timestamps()
     }
     triggers {
@@ -113,11 +112,17 @@ H 6,21 * * 3''' : '')
                         }
                     }
                     stage('Build') {
+                        options {
+                            timeout(time: 60, unit: 'MINUTES')
+                        }
                         steps {
                             cmd(linux: "make build-${PLATFORM}_${FLAVOR}", windows: './make.ps1')
                         }
                     }
                     stage('Test') {
+                        options {
+                            timeout(time: 60, unit: 'MINUTES')
+                        }
                         steps {
                             withDockerCredentials {
                                 cmd(linux: "make prepare-test test-${PLATFORM}_${FLAVOR}")
@@ -131,6 +136,9 @@ H 6,21 * * 3''' : '')
                         }
                     }
                     stage('Multiarch-Build') {
+                        options {
+                            timeout(time: 60, unit: 'MINUTES')
+                        }
                         when {
                             // Run only once on linux
                             expression { runOnlyOnceOnLinux() }
@@ -169,6 +177,9 @@ H 6,21 * * 3''' : '')
             stages {
                 stage('Publish Windows') {
                     agent { label 'windock' }
+                    options {
+                        timeout(time: 60, unit: 'MINUTES')
+                    }
                     steps {
                         cmd(windows: './make.ps1')
                         withDockerCredentials {
@@ -178,6 +189,9 @@ H 6,21 * * 3''' : '')
                 }
                 stage('Publish Linux') {
                     agent { label 'docker' }
+                    options {
+                        timeout(time: 60, unit: 'MINUTES')
+                    }
                     steps {
                         withDockerCredentials {
                             cmd(linux: '''
