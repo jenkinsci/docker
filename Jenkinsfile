@@ -177,11 +177,6 @@ H 6,21 * * 3''' : '')
                         }
                     }
                 }
-                post {
-                    always {
-                        dockerCleanup()
-                    }
-                }
             }
         }
     }
@@ -199,13 +194,6 @@ def cmd(args) {
             powershell(script: args.windows, returnStatus: returnStatus)
         }
     }
-}
-
-// Wrapper to cleanup the docker images
-def dockerCleanup() {
-    cmd(linux: 'docker system prune --force --all',
-        windows: '& docker system prune --force --all',
-        returnStatus: true)
 }
 
 // Wrapper to avoid the script closure in the declarative pipeline
