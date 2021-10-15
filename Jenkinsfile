@@ -201,7 +201,7 @@ H 6,21 * * 3''' : '')
 def cmd(args) {
     def returnStatus = args.get('returnStatus', false)
     infra.withDockerCredentials {
-        if(isUnix) {
+        if(isUnix()) {
             if (args.containsKey('linux')) {
                 sh(script: args.linux, returnStatus: returnStatus)
             }
