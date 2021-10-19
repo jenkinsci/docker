@@ -14,7 +14,7 @@ properties(listOfProperties)
 stage('Build') {
     def builds = [:]
     builds['windows'] = {
-        nodeWithTimeout('windock') {
+        nodeWithTimeout('docker-windows') {
             stage('Checkout') {
                 checkout scm
             }
