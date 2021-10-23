@@ -316,6 +316,6 @@ Then plugins will be upgraded if the version provided by the docker image is new
 
 If you wish to contribute fixes to this repository, please refer to the [dedicated documentation](HACKING.adoc).
 
-# Questions?
+# Questions? 
 
 We're on Gitter, https://gitter.im/jenkinsci/docker
