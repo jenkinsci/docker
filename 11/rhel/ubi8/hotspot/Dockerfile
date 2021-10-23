@@ -14,6 +14,7 @@ FROM registry.access.redhat.com/ubi8/ubi:8.4-211
 ENV LANG C.UTF-8
 
 ARG TARGETARCH
+ARG COMMIT_SHA
 
 RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs -y \
         git \
@@ -121,4 +122,5 @@ LABEL \
     org.opencontainers.image.version="${JENKINS_VERSION}" \
     org.opencontainers.image.url="https://www.jenkins.io/" \
     org.opencontainers.image.source="https://github.com/jenkinsci/docker" \
+    org.opencontainers.image.revision="${COMMIT_SHA}" \
     org.opencontainers.image.licenses="MIT"

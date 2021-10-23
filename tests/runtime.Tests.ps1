@@ -40,6 +40,7 @@ Describe "[$TEST_TAG] test jenkins arguments" {
   BeforeEach {
     $folder = Get-EnvOrDefault 'FOLDER' ''
     $version=Get-Content $(Join-Path $folder 'Dockerfile') | Select-String -Pattern 'ENV JENKINS_VERSION.*' | %{$_ -replace '.*:-(.*)}','$1'} | Select-Object -First 1
+    $revision=Get-Content $(Join-Path $folder 'Dockerfile') | Select-String -Pattern 'ENV COMMIT_SHA.*' | %{$_ -replace '.*:-(.*)}','$1'} | Select-Object -First 1
   }
 
   It 'running --help --version should return the version, not the help' {
@@ -53,6 +54,12 @@ Describe "[$TEST_TAG] test jenkins arguments" {
     $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "inspect -f `"{{index .Config.Labels \`"org.opencontainers.image.version\`"}}`" $SUT_IMAGE"
     $exitCode | Should -Be 0
     $stdout.Trim() | Should -Match $version
+  }
+
+  It 'commit SHA in docker metadata' {
+    $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "inspect -f `"{{index .Config.Labels \`"org.opencontainers.image.revision\`"}}`" $SUT_IMAGE"
+    $exitCode | Should -Be 0
+    $stdout.Trim() | Should -Match $revision
   }
 }
 

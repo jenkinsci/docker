@@ -6,6 +6,8 @@ export DOCKER_BUILDKIT=1
 export DOCKER_CLI_EXPERIMENTAL=enabled
 ## Required to have docker build output always printed on stdout
 export BUILDKIT_PROGRESS=plain
+## Required to have the commit SHA added as a Docker image label
+export COMMIT_SHA=$(shell git rev-parse HEAD)
 
 current_arch := $(shell uname -m)
 export ARCH ?= $(shell case $(current_arch) in (x86_64) echo "amd64" ;; (i386) echo "386";; (aarch64|arm64) echo "arm64" ;; (armv6*) echo "arm/v6";; (armv7*) echo "arm/v7";; (ppc64*|s390*|riscv*) echo $(current_arch);; (*) echo "UNKNOWN-CPU";; esac)

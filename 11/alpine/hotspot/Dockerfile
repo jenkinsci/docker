@@ -28,6 +28,7 @@ RUN apk add --no-cache \
 ENV LANG C.UTF-8
 
 ARG TARGETARCH
+ARG COMMIT_SHA
 ARG GIT_LFS_VERSION=3.0.1
 
 # required for multi-arch support, revert to package cloud after:
@@ -166,4 +167,5 @@ LABEL \
     org.opencontainers.image.version="${JENKINS_VERSION}" \
     org.opencontainers.image.url="https://www.jenkins.io/" \
     org.opencontainers.image.source="https://github.com/jenkinsci/docker" \
+    org.opencontainers.image.revision="${COMMIT_SHA}" \
     org.opencontainers.image.licenses="MIT"
