@@ -71,6 +71,7 @@ publish() {
     export JENKINS_SHA=$sha
     export LATEST_WEEKLY=$latest_weekly
     export LATEST_LTS=$latest_lts
+    export COMMIT_SHA=$(git rev-parse HEAD)
     set -x
     docker buildx bake --file docker-bake.hcl \
                  "${build_opts[@]+"${build_opts[@]}"}" linux

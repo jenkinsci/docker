@@ -13,6 +13,16 @@ SUT_DESCRIPTION="${IMAGE}-runtime"
   assert "${version}" docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.version"}}' $SUT_IMAGE
 }
 
+@test "[${SUT_DESCRIPTION}] test commit SHA in docker metadata is not empty" {
+  run docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision"}}' $SUT_IMAGE
+  refute_output ""
+}
+
+@test "[${SUT_DESCRIPTION}] test commit SHA in docker metadata" {
+  local revision=$(get_commit_sha)
+  assert "${revision}" docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision"}}' $SUT_IMAGE
+}
+
 @test "[${SUT_DESCRIPTION}] test multiple JENKINS_OPTS" {
   local container_name version
   # running --help --version should return the version, not the help

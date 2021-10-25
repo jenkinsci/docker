@@ -14,6 +14,7 @@ FROM almalinux:8.4
 ENV LANG C.UTF-8
 
 ARG TARGETARCH
+ARG COMMIT_SHA
 
 RUN dnf --setopt=install_weak_deps=0 --setopt=tsflags=nodocs install -y \
 	fontconfig \
@@ -118,4 +119,5 @@ LABEL \
     org.opencontainers.image.version="${JENKINS_VERSION}" \
     org.opencontainers.image.url="https://www.jenkins.io/" \
     org.opencontainers.image.source="https://github.com/jenkinsci/docker" \
+    org.opencontainers.image.revision="${COMMIT_SHA}" \
     org.opencontainers.image.licenses="MIT"

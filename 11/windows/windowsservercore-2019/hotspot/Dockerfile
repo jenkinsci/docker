@@ -6,6 +6,8 @@ ARG http_port=8080
 ARG agent_port=50000
 ARG JENKINS_HOME=C:/ProgramData/Jenkins/JenkinsHome
 
+ARG COMMIT_SHA
+
 ENV JENKINS_HOME $JENKINS_HOME
 ENV JENKINS_AGENT_PORT ${agent_port}
 
@@ -79,4 +81,5 @@ LABEL `
     org.opencontainers.image.version="${JENKINS_VERSION}" `
     org.opencontainers.image.url="https://www.jenkins.io/" `
     org.opencontainers.image.source="https://github.com/jenkinsci/docker" `
+    org.opencontainers.image.revision="${COMMIT_SHA}" `
     org.opencontainers.image.licenses="MIT"
