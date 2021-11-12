@@ -58,7 +58,7 @@ variable "LATEST_LTS" {
 }
 
 variable "GIT_LFS_VERSION" {
-  default = "3.0.1"
+  default = "3.0.2"
 }
 
 variable "PLUGIN_CLI_VERSION" {

@@ -1,4 +1,4 @@
-FROM eclipse-temurin:8u302-b08-jdk-focal as jre-build
+FROM eclipse-temurin:8u312-b07-jdk-focal as jre-build
 
 FROM debian:bullseye-20211011-slim
 
@@ -10,7 +10,7 @@ ENV LANG C.UTF-8
 
 ARG TARGETARCH
 ARG COMMIT_SHA
-ARG GIT_LFS_VERSION=3.0.1
+ARG GIT_LFS_VERSION=3.0.2
 
 # required for multi-arch support, revert to package cloud after:
 # https://github.com/git-lfs/git-lfs/issues/4546
