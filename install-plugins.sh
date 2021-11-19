@@ -249,7 +249,7 @@ main() {
     # shellcheck disable=SC2086
     jenkinsUcJson=$(curl ${CURL_OPTIONS:--sSfL} -o /dev/null -w "%{url_effective}" "${JENKINS_UC}/update-center.json?version=${jenkinsVersion}")
     if [ -n "${jenkinsUcJson}" ]; then
-        JENKINS_UC_LATEST=${jenkinsUcJson//update-center.json/}
+        JENKINS_UC_LATEST=${jenkinsUcJson///update-center.json/}
         echo "Using version-specific update center: $JENKINS_UC_LATEST..."
     else
         JENKINS_UC_LATEST=
