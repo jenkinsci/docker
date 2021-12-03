@@ -48,5 +48,5 @@ if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
   exec java -Duser.home="$JENKINS_HOME" ${FUTURE_OPTS} "${java_opts_array[@]}" -jar ${JENKINS_WAR} "${jenkins_opts_array[@]}" "$@"
 fi
 
-# As argument is not jenkins, assume user want to run his own process, for example a `bash` shell to explore this image
+# As argument is not jenkins, assume user wants to run a different process, for example a `bash` shell to explore this image
 exec "$@"
