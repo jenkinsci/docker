@@ -22,8 +22,7 @@ jobs:
       - name: Check if update is available
         id: update
         run: |
-          curl -sSLo install.sh https://install.hclq.sh && sh install.sh
-          CURRENT_VERSION=$(cat docker-bake.hcl| hclq get "variable.PLUGIN_CLI_VERSION.default")
+          CURRENT_VERSION=$(docker buildx bake -f docker-bake.hcl --print alpine_jdk8 | jq -r .target.alpine_jdk8.args.PLUGIN_CLI_VERSION")
           if [ "$CURRENT_VERSION" = "${{ steps.lts.outputs.next-version }}" ]; then
             echo "::set-output name=available::false"
           else
