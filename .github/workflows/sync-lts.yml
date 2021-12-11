@@ -13,42 +13,34 @@ jobs:
       - name: Check out source code
         uses: actions/checkout@v2
 
-      - name: next release version
-        id: nextversion
-        uses: jenkins-x-plugins/jx-release-version@v2.5.1
-        with:
-          previous-version: from-file:charts/jenkins/Chart.yaml
-
-      - name: Jenkins LTS version
+      - name: PLUGIN_CLI_VERSION LTS version
         id: lts
-        uses: garethjevans/jenkins-version@0.1.2
-        with:
-          version-identifier: lts
+        run: | 
+          NEXT_VERSION=$(curl -sL https://github.com/jenkinsci/plugin-installation-manager-tool/releases/latest | jq -r ".tag_name")
+          echo "::set-output name=next-version::$NEXT_VERSION"
 
       - name: Check if update is available
         id: update
         run: |
-          CURRENT_VERSION=$(cat charts/jenkins/Chart.yaml| grep appVersion | sed 's/appVersion: //')
-          if [ "$CURRENT_VERSION" = "${{ steps.lts.outputs.jenkins_version }}" ]; then
+          curl -sSLo install.sh https://install.hclq.sh && sh install.sh
+          CURRENT_VERSION=$(cat docker-bake.hcl| hclq get "variable.PLUGIN_CLI_VERSION.default")
+          if [ "$CURRENT_VERSION" = "${{ steps.lts.outputs.next-version }}" ]; then
             echo "::set-output name=available::false"
           else
             echo "::set-output name=available::true"
             echo "::set-output name=current-version::$CURRENT_VERSION"
           fi
-      - name: Update version in Chart.yaml
-        uses: mikefarah/yq@v4.16.1
-        if: ${{ steps.update.outputs.available == 'true' }}
-        with:
-          cmd: yq eval '.version = "${{ steps.nextversion.outputs.version }}"' -i charts/jenkins/Chart.yaml
 
       - name: Update LTS version in files
         if: ${{ steps.update.outputs.available == 'true' }}
         run: |
-          grep -ilr ${{ steps.update.outputs.current-version }} charts/jenkins | grep -v CHANGELOG.md | xargs sed -i 's/${{ steps.update.outputs.current-version }}/${{ steps.lts.outputs.jenkins_version }}/g'
+          grep -ilr ${{ steps.update.outputs.current-version }} ./ | grep -v CHANGELOG.md | xargs sed -i 's/${{ steps.update.outputs.current-version }}/${{ steps.lts.outputs.next-version }}/g'
+     
       - name: Changelog
         if: ${{ steps.update.outputs.available == 'true' }}
         run: |
-          sed -i '/git commit to be able to get more details./a \\n## ${{ steps.nextversion.outputs.version }}\n\nUpdate Jenkins image and appVersion to jenkins lts release version ${{ steps.lts.outputs.jenkins_version }}\n' charts/jenkins/CHANGELOG.md
+          sed -i '/git commit to be able to get more details./a \\n## ${{ steps.nextversion.outputs.version }}\n\nUpdate Jenkins  plugin cli verions to jenkins plugin cli lts release version ${{ steps.lts.outputs.next-version }}\n' CHANGELOG.md
+     
       - name: Git Diff
         if: ${{ steps.update.outputs.available == 'true' }}
         run: |
