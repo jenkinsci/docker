@@ -16,7 +16,7 @@ jobs:
       - name: PLUGIN_CLI_VERSION LTS version
         id: lts
         run: | 
-          NEXT_VERSION=$(curl -sL https://github.com/jenkinsci/plugin-installation-manager-tool/releases/latest | jq -r ".tag_name")
+          NEXT_VERSION=$(curl -sL  https://api.github.com/repos/jenkinsci/plugin-installation-manager-tool/releases/latest | jq -r ".tag_name")
           echo "::set-output name=next-version::$NEXT_VERSION"
 
       - name: Check if update is available
