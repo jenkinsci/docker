@@ -1,0 +1,65 @@
+---
+name: Sync LTS Version
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v2
+
+      - name: PLUGIN_CLI_VERSION LTS version
+        id: lts
+        run: | 
+          NEXT_VERSION=$(curl -sL  https://api.github.com/repos/jenkinsci/plugin-installation-manager-tool/releases/latest | jq -r ".tag_name")
+          echo "::set-output name=next-version::$NEXT_VERSION"
+
+      - name: Check if update is available
+        id: update
+        run: |
+          CURRENT_VERSION=$(docker buildx bake -f docker-bake.hcl --print alpine_jdk8 | jq -r ".target.alpine_jdk8.args.PLUGIN_CLI_VERSION")
+          if [ "$CURRENT_VERSION" = "${{ steps.lts.outputs.next-version }}" ]; then
+            echo "::set-output name=available::false"
+          else
+            echo "::set-output name=available::true"
+            echo "::set-output name=current-version::$CURRENT_VERSION"
+          fi
+
+      - name: Update LTS version in files
+        if: ${{ steps.update.outputs.available == 'true' }}
+        run: |
+          grep -ilr ${{ steps.update.outputs.current-version }} ./ | grep -v CHANGELOG.md | xargs sed -i 's/${{ steps.update.outputs.current-version }}/${{ steps.lts.outputs.next-version }}/g'
+     
+      - name: Changelog
+        if: ${{ steps.update.outputs.available == 'true' }}
+        run: |
+          sed -i '/git commit to be able to get more details./a \\n## ${{ steps.nextversion.outputs.version }}\n\nUpdate Jenkins  plugin cli verions to jenkins plugin cli lts release version ${{ steps.lts.outputs.next-version }}\n' CHANGELOG.md
+     
+      - name: Git Diff
+        if: ${{ steps.update.outputs.available == 'true' }}
+        run: |
+          git diff
+          # update the changelog
+          
+      - uses: tibdex/github-app-token@v1
+        id: generate-token
+        with:
+          app_id: ${{ secrets.JENKINS_DEPENDENCY_UPDATER_APP_ID }}
+          private_key: ${{ secrets.JENKINS_DEPENDENCY_UPDATER_PRIVATE_KEY }}
+
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        if: ${{ steps.update.outputs.available == 'true' }}
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          commit-message: 'chore(deps): bump lts to ${{ steps.lts.outputs.next-version }}'
+          author: jenkins-dependency-updater <81680575+jenkins-dependency-updater[bot]@users.noreply.github.com>
+          committer: jenkins-dependency-updater <81680575+jenkins-dependency-updater[bot]@users.noreply.github.com>
+          signoff: true
+          title: 'chore(deps): bump lts to ${{ steps.lts.outputs.next-version }}'
