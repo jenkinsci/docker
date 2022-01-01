@@ -62,7 +62,7 @@ variable "GIT_LFS_VERSION" {
 }
 
 variable "PLUGIN_CLI_VERSION" {
-  default = "2.11.0"
+  default = "2.12.1"
 }
 
 variable "COMMIT_SHA" {
