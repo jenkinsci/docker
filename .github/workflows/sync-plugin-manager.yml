@@ -1,5 +1,5 @@
 ---
-name: Sync LTS Version
+name: Sync Plugin manager Version
 
 on:
   schedule:
@@ -13,7 +13,7 @@ jobs:
       - name: Check out source code
         uses: actions/checkout@v2
 
-      - name: PLUGIN_CLI_VERSION LTS version
+      - name: PLUGIN_CLI_VERSION
         id: lts
         run: | 
           NEXT_VERSION=$(curl -sL  https://api.github.com/repos/jenkinsci/plugin-installation-manager-tool/releases/latest | jq -r ".tag_name")
@@ -58,8 +58,8 @@ jobs:
         if: ${{ steps.update.outputs.available == 'true' }}
         with:
           token: ${{ steps.generate-token.outputs.token }}
-          commit-message: 'chore(deps): bump lts to ${{ steps.lts.outputs.next-version }}'
+          commit-message: 'chore(deps): bump plugin manager to ${{ steps.lts.outputs.next-version }}'
           author: jenkins-dependency-updater <81680575+jenkins-dependency-updater[bot]@users.noreply.github.com>
           committer: jenkins-dependency-updater <81680575+jenkins-dependency-updater[bot]@users.noreply.github.com>
           signoff: true
-          title: 'chore(deps): bump lts to ${{ steps.lts.outputs.next-version }}'
+          title: 'chore(deps): bump plugin manager to ${{ steps.lts.outputs.next-version }}'
