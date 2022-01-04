@@ -177,6 +177,7 @@ target "debian_jdk8" {
     "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-jdk8",
     equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:latest-jdk8" : "",
     equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-jdk8" : "",
+    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts-jdk8" : "",
   ]
   platforms = ["linux/amd64"]
 }
