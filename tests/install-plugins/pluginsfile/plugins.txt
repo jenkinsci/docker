@@ -21,4 +21,4 @@ filesystem_scm:experimental  # comment at the end
      # empty line
 
 # from url
-subversion:::https://updates.jenkins.io/download/plugins/subversion/2.12.3/subversion.hpi
+subversion:::https://updates.jenkins.io/download/plugins/subversion/2.12.1/subversion.hpi
