@@ -1,0 +1,3 @@
+FROM bats-jenkins
+
+RUN Remove-Item -Recurse -Force C:/ProgramData/Jenkins/Reference ; C:/ProgramData/Jenkins/jenkins-plugin-cli.ps1 --verbose --plugins junit:1.28 ant:1.3

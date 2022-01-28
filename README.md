@@ -11,28 +11,30 @@ This is a fully functional Jenkins server.
 
 <img src="https://jenkins.io/sites/default/files/jenkins_logo.png"/>
 
-
 # Usage
 
 ```
-docker run -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts
+docker run -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts-jdk11
 ```
 
-NOTE: read below the _build executors_ part for the role of the `50000` port mapping.
+NOTE: read the section [_Connecting agents_](#connecting-agents) below for the role of the `50000` port mapping.
 
-This will store the workspace in /var/jenkins_home. All Jenkins data lives in there - including plugins and configuration.
+This will store the workspace in `/var/jenkins_home`.
+All Jenkins data lives in there - including plugins and configuration.
 You will probably want to make that an explicit volume so you can manage it and attach to another container for upgrades :
 
 ```
-docker run --user $UID -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts
+docker run --user $UID -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts-jdk11
 ```
 
-this will automatically create a 'jenkins_home' [docker volume](https://docs.docker.com/storage/volumes/) on the host machine, that will survive the container stop/restart/deletion.
+This will automatically create a 'jenkins_home' [docker volume](https://docs.docker.com/storage/volumes/) on the host machine.
+Docker volumes retain their content even when the container is stopped, started, or deleted.
 
-NOTE: Avoid using a [bind mount](https://docs.docker.com/storage/bind-mounts/) from a folder on the host machine into `/var/jenkins_home`, as this might result in file permission issues (the user used inside the container might not have rights to the folder on the host machine). If you _really_ need to bind mount jenkins_home, ensure that the directory on the host is accessible by the jenkins user inside the container (jenkins user - uid 1000) or use `-u some_other_user` parameter with `docker run`.
+NOTE: Avoid using a [bind mount](https://docs.docker.com/storage/bind-mounts/) from a folder on the host machine into `/var/jenkins_home`, as this might result in file permission issues (the user used inside the container might not have rights to the folder on the host machine).
+If you _really_ need to bind mount jenkins_home, ensure that the directory on the host is accessible by the jenkins user inside the container (jenkins user - uid 1000) or use `-u some_other_user` parameter with `docker run`.
 
 ```
-docker run -d --user $UID -v jenkins_home:/var/jenkins_home -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts
+docker run -d --user $UID -v jenkins_home:/var/jenkins_home -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts-jdk11
 ```
 
 this will run Jenkins in detached mode with port forwarding and volume added. You can access logs with command 'docker logs CONTAINER_ID' in order to check first login token. ID of container will be returned from output of command above.
@@ -44,44 +46,47 @@ If you bind mount in a volume - you can simply back up that directory
 
 This is highly recommended. Treat the jenkins_home directory as you would a database - in Docker you would generally put a database on a volume.
 
-If your volume is inside a container - you can use ```docker cp $ID:/var/jenkins_home``` command to extract the data, or other options to find where the volume data is.
+If your volume is inside a container - you can use `docker cp $ID:/var/jenkins_home` command to extract the data, or other options to find where the volume data is.
 Note that some symlinks on some OSes may be converted to copies (this can confuse jenkins with lastStableBuild links etc)
 
-For more info check Docker docs section on [Managing data in containers](https://docs.docker.com/engine/tutorials/dockervolumes/)
+For more info check Docker docs section on [Use volumes](https://docs.docker.com/storage/volumes/)
 
 # Setting the number of executors
 
-You can specify and set the number of executors of your Jenkins master instance using a groovy script. By default its set to 2 executors, but you can extend the image and change it to your desired number of executors :
+You can define the number of executors on the Jenkins built-in node using a groovy script.
+By default it is set to 2 executors, but you can extend the image and change it to your desired number of executors (recommended 0 executors on the built-in node) :
 
 `executors.groovy`
 ```
 import jenkins.model.*
-Jenkins.instance.setNumExecutors(5)
+Jenkins.instance.setNumExecutors(0) // Recommended to not run builds on the built-in node
 ```
 
 and `Dockerfile`
 
 ```
 FROM jenkins/jenkins:lts
-COPY executors.groovy /usr/share/jenkins/ref/init.groovy.d/executors.groovy
+COPY --chown=jenkins:jenkins executors.groovy /usr/share/jenkins/ref/init.groovy.d/executors.groovy
 ```
 
+# Connecting agents
 
-# Attaching build executors
+You can run builds on the controller out of the box.
+The Jenkins project recommends that no executors be enabled on the controller.
 
-You can run builds on the master out of the box.
+In order to connect agents **through an inbound TCP connection**, map the port: `-p 50000:50000`.
+That port will be used when you connect agents to the controller.
 
-But if you want to attach build slave servers **through JNLP (Java Web Start)**: make sure you map the port: ```-p 50000:50000``` - which will be used when you connect a slave agent.
-
-If you are only using [SSH slaves](https://wiki.jenkins-ci.org/display/JENKINS/SSH+Slaves+plugin), then you do **NOT** need to put that port mapping.
+If you are only using [SSH (outbound) build agents](https://plugins.jenkins.io/ssh-slaves/), this port is not required, as connections are established from the controller.
+If you connect agents using web sockets (since Jenkins 2.217), the TCP agent port is not used either.
 
 # Passing JVM parameters
 
-You might need to customize the JVM running Jenkins, typically to pass system properties ([list of props](https://wiki.jenkins.io/display/JENKINS/Features+controlled+by+system+properties)) or tweak heap memory settings. Use JAVA_OPTS environment
-variable for this purpose :
+You might need to customize the JVM running Jenkins, typically to adjust [system properties](https://www.jenkins.io/doc/book/managing/system-properties/) or tweak heap memory settings.
+Use the `JAVA_OPTS` environment variable for this purpose :
 
 ```
-docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS=-Dhudson.footerURL=http://mycompany.com jenkins/jenkins:lts
+docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS=-Dhudson.footerURL=http://mycompany.com jenkins/jenkins:lts-jdk11
 ```
 
 # Configuring logging
@@ -96,19 +101,19 @@ handlers=java.util.logging.ConsoleHandler
 jenkins.level=FINEST
 java.util.logging.ConsoleHandler.level=FINEST
 EOF
-docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS="-Djava.util.logging.config.file=/var/jenkins_home/log.properties" -v `pwd`/data:/var/jenkins_home jenkins/jenkins:lts
+docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS="-Djava.util.logging.config.file=/var/jenkins_home/log.properties" -v `pwd`/data:/var/jenkins_home jenkins/jenkins:lts-jdk11
 ```
 
 # Configuring reverse proxy
 If you want to install Jenkins behind a reverse proxy with prefix, example: mysite.com/jenkins, you need to add environment variable `JENKINS_OPTS="--prefix=/jenkins"` and then follow the below procedures to configure your reverse proxy, which will depend if you have Apache or Nginx:
-- [Apache](https://wiki.jenkins-ci.org/display/JENKINS/Running+Jenkins+behind+Apache)
-- [Nginx](https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+behind+an+NGinX+reverse+proxy)
+- [Apache](https://www.jenkins.io/doc/book/system-administration/reverse-proxy-configuration-apache/)
+- [Nginx](https://www.jenkins.io/doc/book/system-administration/reverse-proxy-configuration-nginx/)
 
 # Passing Jenkins launcher parameters
 
 Arguments you pass to docker running the Jenkins image are passed to jenkins launcher, so for example you can run:
 ```
-docker run jenkins/jenkins:lts --version
+docker run jenkins/jenkins:lts-jdk11 --version
 ```
 This will show the Jenkins version, the same as when you run Jenkins from an executable war.
 
@@ -117,27 +122,27 @@ You can also define Jenkins arguments via `JENKINS_OPTS`. This is useful for cus
 to force use of HTTPS with a certificate included in the image.
 
 ```
-FROM jenkins/jenkins:lts
+FROM jenkins/jenkins:lts-jdk11
 
-COPY https.pem /var/lib/jenkins/cert
-COPY https.key /var/lib/jenkins/pk
+COPY --chown=jenkins:jenkins https.pem /var/lib/jenkins/cert
+COPY --chown=jenkins:jenkins https.key /var/lib/jenkins/pk
 ENV JENKINS_OPTS --httpPort=-1 --httpsPort=8083 --httpsCertificate=/var/lib/jenkins/cert --httpsPrivateKey=/var/lib/jenkins/pk
 EXPOSE 8083
 ```
 
-You can also change the default slave agent port for jenkins by defining `JENKINS_SLAVE_AGENT_PORT` in a sample Dockerfile.
+You can also change the default agent port for Jenkins by defining `JENKINS_SLAVE_AGENT_PORT` in a sample Dockerfile.
 
 ```
-FROM jenkins/jenkins:lts
+FROM jenkins/jenkins:lts-jdk11
 ENV JENKINS_SLAVE_AGENT_PORT 50001
 ```
 or as a parameter to docker,
 ```
-docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGENT_PORT=50001 jenkins/jenkins:lts
+docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGENT_PORT=50001 jenkins/jenkins:lts-jdk11
 ```
 
 **Note**: This environment variable will be used to set the port adding the
-[system property][system-property] `jenkins.model.Jenkins.slaveAgentPort` to **JAVA_OPTS**.
+[system property][https://www.jenkins.io/doc/book/managing/system-properties/] `jenkins.model.Jenkins.slaveAgentPort` to **JAVA_OPTS**.
 
 > If this property is already set in **JAVA_OPTS**, then the value of
 `JENKINS_SLAVE_AGENT_PORT` will be ignored.
@@ -147,7 +152,7 @@ docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGEN
 You can run your container as root - and install via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile to customise, for example:
 
 ```
-FROM jenkins/jenkins:lts
+FROM jenkins/jenkins:lts-jdk11
 # if we want to install via apt
 USER root
 RUN apt-get update && apt-get install -y ruby make more-thing-here
@@ -160,14 +165,15 @@ For this purpose, use `/usr/share/jenkins/ref` as a place to define the default 
 wish the target installation to look like :
 
 ```
-FROM jenkins/jenkins:lts
-COPY custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
+FROM jenkins/jenkins:lts-jdk11
+COPY --chown=jenkins:jenkins custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
 ```
 
 ## Preinstalling plugins
 
-You can rely on the `install-plugins.sh` script to pass a set of plugins to download with their dependencies.
-This script will perform downloads from update centers, and internet access is required for the default update centers.
+### Install plugins script
+
+You can rely on the install-plugins.sh script to pass a set of plugins to download with their dependencies. This script will perform downloads from update centers, and internet access is required for the default update centers.
 
 ### Setting update centers
 
@@ -183,61 +189,63 @@ During the download, the script will use update centers defined by the following
   Defines Maven mirror to be used to download plugins from the
   [Incrementals repo](https://jenkins.io/blog/2018/05/15/incremental-deployment/).
   Default value: https://repo.jenkins-ci.org/incrementals
-* `JENKINS_UC_DOWNLOAD` - Download url of the Update Center. 
+* `JENKINS_UC_DOWNLOAD` - Download url of the Update Center.
   Default value: `$JENKINS_UC/download`
-  
+
 It is possible to override the environment variables in images.
 
-:exclamation: Note that changing this variables **will not** change the Update Center being used by Jenkins runtime.
+:exclamation: Note that changing update center variables **will not** change the Update Center being used by Jenkins runtime.
 
-### Plugin version format
+### Plugin installation manager CLI (Preview)
 
-Use plugin artifact ID, without `-plugin` extension, and append the version if needed separated by `:`.
-Dependencies that are already included in the Jenkins war will only be downloaded if their required version is newer than the one included.
+You can also use the `jenkins-plugin-cli` tool to install plugins.
+This CLI will perform downloads from update centers, and internet access is required for the default update centers.
 
-There are also custom version specifiers:
+See the CLI's [documentation](https://github.com/jenkinsci/plugin-installation-manager-tool) for more information,
+or run `jenkins-plugin-cli --help` to see the available options.
 
-* `latest` - download the latest version from the main update center.
-  For Jenkins LTS images
-  (example: `git:latest`)
-* `experimental` - download the latest version from the experimental update center defined by the `JENKINS_UC_EXPERIMENTAL` environment variable (example: `filesystem_scm:experimental`)
-* `incrementals;org.jenkins-ci.plugins.workflow;2.19-rc289.d09828a05a74[;githubUserId][;branchName]`
-- download the plugin from the [Incrementals repo](https://jenkins.io/blog/2018/05/15/incremental-deployment/).
-  * For this option you need to specify `groupId` of the plugin.
-    Note that this value may change between plugin versions without notice.
-  * In order to automatically update Incrementals in plugins.txt, it is possible to use the Incrementals Maven Plugin:
-    `mvn incrementals:updatePluginsTxt -DpluginsFile=plugins.txt`.
-    [More Info](https://github.com/jenkinsci/incrementals-tools#updating-versions-for-jenkins-docker-images)
+### Installing Custom Plugins
 
-### Fine-tune the downloads
+Installing prebuilt, custom plugins can be accomplished by copying the plugin HPI file into `/usr/share/jenkins/ref/plugins/` within the `Dockerfile`:
 
-The script uses `curl` to download the plugins. You can configure the options with some environment variables:
-* `CURL_OPTIONS`: When downloading the plugins with curl. Curl options. Default value: `-sSfL`
-* `CURL_CONNECTION_TIMEOUT`: When downloading the plugins with curl. <seconds> Maximum time allowed for connection. Default value: `20`
-* `CURL_RETRY`: When downloading the plugins with curl. Retry request if transient problems occur. Default value: `3`
-* `CURL_RETRY_DELAY`: When downloading the plugins with curl. <seconds> Wait time between retries. Default value: `0`
-* `CURL_RETRY_MAX_TIME`: When downloading the plugins with curl. <seconds> Retry only within this period. Default value: `60`
- 
-### Other environment variables
-In case you have changed some default paths in the image, you can modify their values with these environment variables:
-* `REF`: directory with preinstalled plugins. Default value: `/usr/share/jenkins/ref/plugins`
-* `JENKINS_WAR`: full path to the jenkins.war. Default value: `/usr/share/jenkins/jenkins.war`
- 
-### Script usage
+```
+COPY --chown=jenkins:jenkins path/to/custom.hpi /usr/share/jenkins/ref/plugins/
+```
 
-You can run the script manually in Dockerfile:
+### Usage
+
+You can run the CLI manually in Dockerfile:
+
+#### Plugin installation manager CLI
 
 ```Dockerfile
-FROM jenkins/jenkins:lts
-RUN /usr/local/bin/install-plugins.sh docker-slaves github-branch-source:1.8
+FROM jenkins/jenkins:lts-jdk11
+RUN jenkins-plugin-cli --plugins pipeline-model-definition github-branch-source:1.8
 ```
 
 Furthermore it is possible to pass a file that contains this set of plugins (with or without line breaks).
 
+#### install-plugins script (Deprecated)
+
 ```Dockerfile
-FROM jenkins/jenkins:lts
-COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
+FROM jenkins/jenkins:lts-jdk11
+RUN /usr/local/bin/install-plugins.sh pipeline-model-definition github-branch-source:1.8
+```
+
+#### install-plugins script
+
+```Dockerfile
+FROM jenkins/jenkins:lts-jdk11
+COPY --chown=jenkins:jenkins plugins.txt /usr/share/jenkins/ref/plugins.txt
 RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
+```
+
+#### Plugin installation manager CLI (Preview)
+
+```Dockerfile
+FROM jenkins/jenkins:lts-jdk11
+COPY --chown=jenkins:jenkins plugins.txt /usr/share/jenkins/ref/plugins.txt
+RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
 ```
 
 When jenkins container starts, it will check `JENKINS_HOME` has this reference content, and copy them
@@ -247,8 +255,7 @@ be reverted on next start.
 In case you *do* want to override, append '.override' to the name of the reference file. E.g. a file named
 `/usr/share/jenkins/ref/config.xml.override` will overwrite an existing `config.xml` file in JENKINS_HOME.
 
-Also see [JENKINS-24986](https://issues.jenkins-ci.org/browse/JENKINS-24986)
-
+Also see [JENKINS-24986](https://issues.jenkins.io/browse/JENKINS-24986)
 
 Here is an example to get the list of plugins from an existing server:
 
@@ -275,19 +282,35 @@ to indicate that this Jenkins installation is fully configured.
 Otherwise a banner will appear prompting the user to install additional plugins,
 which may be inappropriate.
 
+### Updating plugins file (Preview)
+
+The [plugin-installation-manager-tool](https://github.com/jenkinsci/plugin-installation-manager-tool) supports updating the plugin file for you.
+
+Example command:
+
+```command
+JENKINS_IMAGE=jenkins/jenkins:lts-jdk11
+docker run -it ${JENKINS_IMAGE} bash -c "stty -onlcr && jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt --available-updates --output txt" >  plugins2.txt
+mv plugins2.txt plugins.txt
+```
+
 # Upgrading
 
-All the data needed is in the /var/jenkins_home directory - so depending on how you manage that - depends on how you upgrade. Generally - you can copy it out - and then "docker pull" the image again - and you will have the latest LTS - you can then start up with -v pointing to that data (/var/jenkins_home) and everything will be as you left it.
+All the data needed is in the /var/jenkins_home directory - so depending on how you manage that - depends on how you upgrade.
+Generally - you can copy it out - and then "docker pull" the image again - and you will have the latest LTS - you can then start up with -v pointing to that data (/var/jenkins_home) and everything will be as you left it.
 
 As always - please ensure that you know how to drive docker - especially volume handling!
 
 ## Upgrading plugins
 
-By default, plugins will be upgraded if they haven't been upgraded manually and if the version from the docker image is newer than the version in the container. Versions installed by the docker image are tracked through a marker file.
+By default, plugins will be upgraded if they haven't been upgraded manually and if the version from the docker image is newer than the version in the container.
+Versions installed by the docker image are tracked through a marker file.
 
 To force upgrades of plugins that have been manually upgraded, run the docker image with `-e PLUGINS_FORCE_UPGRADE=true`.
 
-The default behaviour when upgrading from a docker image that didn't write marker files is to leave existing plugins in place. If you want to upgrade existing plugins without marker you may run the docker image with `-e TRY_UPGRADE_IF_NO_MARKER=true`. Then plugins will be upgraded if the version provided by the docker image is newer.
+The default behaviour when upgrading from a docker image that didn't write marker files is to leave existing plugins in place.
+If you want to upgrade existing plugins without marker you may run the docker image with `-e TRY_UPGRADE_IF_NO_MARKER=true`.
+Then plugins will be upgraded if the version provided by the docker image is newer.
 
 ## Hacking
 
@@ -295,6 +318,4 @@ If you wish to contribute fixes to this repository, please refer to the [dedicat
 
 # Questions?
 
-Jump on irc.freenode.net and the #jenkins room. Ask!
-
-[system-property]: https://wiki.jenkins.io/display/JENKINS/Features+controlled+by+system+properties
+We're on Gitter, https://gitter.im/jenkinsci/docker
