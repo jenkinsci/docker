@@ -1,6 +1,6 @@
 FROM eclipse-temurin:8u312-b07-jdk-focal as jre-build
 
-FROM debian:bullseye-20211220-slim
+FROM debian:bullseye-20220125-slim
 
 RUN apt-get update && \
     apt-get install -y git curl gpg unzip libfreetype6 libfontconfig1 && \
