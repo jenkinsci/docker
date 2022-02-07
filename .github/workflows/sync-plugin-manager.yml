@@ -3,7 +3,7 @@ name: Sync Plugin manager Version
 
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "* 23 * * *"
   workflow_dispatch:
 
 jobs:
