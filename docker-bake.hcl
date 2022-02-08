@@ -96,7 +96,7 @@ function "tag_weekly" {
 # return a LTS tag including or not jenkins version
 function "tag_lts" {
   params = [jenkins_version, tag]
-  result =  equal(LATEST_LTS, "true") ? tag(jenkins_version, "${tag}") : ""
+  result =  equal(LATEST_LTS, "true") ? tag(jenkins_version, tag) : ""
 }
 
 # ---- targets ----
@@ -314,3 +314,5 @@ target "debian_jdk17" {
   ]
   platforms = ["linux/amd64", "linux/arm64"]
 }
+LATEST_LTS=true LATEST_WEEKLY=true docker buildx bake -f docker-bake.hcl --print linux | \
+  jq -r '.target | keys[] as $k | "\($k) -> \(.[$k] | .tags[])"'
