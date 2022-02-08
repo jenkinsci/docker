@@ -1,3 +1,5 @@
+# ---- groups ----
+
 group "linux" {
   targets = [
     "almalinux_jdk11",
@@ -32,6 +34,8 @@ group "linux-s390x" {
 group "linux-ppc64le" {
   targets = []
 }
+
+# ---- variables ----
 
 variable "JENKINS_VERSION" {
   default = "2.303"
@@ -69,6 +73,27 @@ variable "COMMIT_SHA" {
   default = ""
 }
 
+# ----  user-defined functions ----
+
+# return a tag including or not jenkins version
+function "tag" {
+  params = [jenkins_version, tag]
+  result = equal(jenkins_version, true) ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-${tag}" : "${REGISTRY}/${JENKINS_REPO}:${tag}"
+}
+
+# return a weekly tag including or not jenkins version
+function "tag_weekly" {
+  params = [jenkins_version, tag]
+  result =  equal(LATEST_WEEKLY, "true") ? tag(false, tag) : ""
+}
+
+# return a LTS tag including or not jenkins version
+function "tag_lts" {
+  params = [jenkins_version, tag]
+  result =  equal(LATEST_LTS, "true") ? tag(false, "lts-${tag}") : ""
+}
+
+# ---- targets ----
 target "almalinux_jdk11" {
   dockerfile = "11/almalinux/almalinux8/hotspot/Dockerfile"
   context = "."
@@ -78,9 +103,9 @@ target "almalinux_jdk11" {
     COMMIT_SHA = COMMIT_SHA
   }
   tags = [
-    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-almalinux",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:almalinux" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-almalinux" : "",
+    tag(true, "almalinux"),
+    tag_weekly(false, "almalinux"),
+    tag_lts(false, "almalinux")
   ]
   platforms = ["linux/amd64", "linux/arm64"]
 }
@@ -96,9 +121,9 @@ target "alpine_jdk8" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
-    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-alpine-jdk8",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:alpine-jdk8" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-alpine-jdk8" : "",
+    tag(true, "alpine-jdk8"),
+    tag_weekly(false, "alpine-jdk8"),
+    tag_lts(false, "alpine-jdk8")
   ]
   platforms = ["linux/amd64"]
 }
@@ -114,12 +139,12 @@ target "alpine_jdk11" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
-    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-alpine",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:alpine" : "",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:alpine-jdk11" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-alpine" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-alpine-jdk11" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts-alpine" : "",
+    tag(true, "alpine"),
+    tag_weekly(false, "alpine"),
+    tag_lts(false, "alpine"),
+    tag_lts(true, "alpine"),
+    tag_weekly(false, "alpine-jdk11"),
+    tag_lts(false, "alpine-jdk11")
   ]
   platforms = ["linux/amd64"]
 }
