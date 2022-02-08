@@ -75,28 +75,28 @@ variable "COMMIT_SHA" {
 
 # ----  user-defined functions ----
 
-# return a tag including the jenkins version
+# return a tag prefixed by the Jenkins version
 function "_tag_jenkins_version" {
   params = [tag]
   result = notequal(tag, "") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-${tag}" : "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}"
 }
 
-# return a tag including or not jenkins version
+# return a tag optionaly prefixed by the Jenkins version
 function "tag" {
-  params = [jenkins_version, tag]
-  result = equal(jenkins_version, true) ? _tag_jenkins_version(tag) : "${REGISTRY}/${JENKINS_REPO}:${tag}"
+  params = [prepend_jenkins_version, tag]
+  result = equal(prepend_jenkins_version, true) ? _tag_jenkins_version(tag) : "${REGISTRY}/${JENKINS_REPO}:${tag}"
 }
 
-# return a weekly tag including or not jenkins version
+# return a weekly optionaly prefixed by the Jenkins version
 function "tag_weekly" {
-  params = [jenkins_version, tag]
-  result =  equal(LATEST_WEEKLY, "true") ? tag(false, tag) : ""
+  params = [prepend_jenkins_version, tag]
+  result =  equal(LATEST_WEEKLY, "true") ? tag(prepend_jenkins_version, tag) : ""
 }
 
-# return a LTS tag including or not jenkins version
+# return a LTS optionaly prefixed by the Jenkins version
 function "tag_lts" {
-  params = [jenkins_version, tag]
-  result =  equal(LATEST_LTS, "true") ? tag(jenkins_version, tag) : ""
+  params = [prepend_jenkins_version, tag]
+  result =  equal(LATEST_LTS, "true") ? tag(prepend_jenkins_version, tag) : ""
 }
 
 # ---- targets ----
