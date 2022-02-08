@@ -314,5 +314,3 @@ target "debian_jdk17" {
   ]
   platforms = ["linux/amd64", "linux/arm64"]
 }
-LATEST_LTS=true LATEST_WEEKLY=true docker buildx bake -f docker-bake.hcl --print linux | \
-  jq -r '.target | keys[] as $k | "\($k) -> \(.[$k] | .tags[])"'
