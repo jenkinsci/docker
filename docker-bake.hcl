@@ -1,3 +1,5 @@
+# ---- groups ----
+
 group "linux" {
   targets = [
     "almalinux_jdk11",
@@ -32,6 +34,8 @@ group "linux-s390x" {
 group "linux-ppc64le" {
   targets = []
 }
+
+# ---- variables ----
 
 variable "JENKINS_VERSION" {
   default = "2.303"
@@ -69,6 +73,34 @@ variable "COMMIT_SHA" {
   default = ""
 }
 
+# ----  user-defined functions ----
+
+# return a tag prefixed by the Jenkins version
+function "_tag_jenkins_version" {
+  params = [tag]
+  result = notequal(tag, "") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-${tag}" : "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}"
+}
+
+# return a tag optionaly prefixed by the Jenkins version
+function "tag" {
+  params = [prepend_jenkins_version, tag]
+  result = equal(prepend_jenkins_version, true) ? _tag_jenkins_version(tag) : "${REGISTRY}/${JENKINS_REPO}:${tag}"
+}
+
+# return a weekly optionaly prefixed by the Jenkins version
+function "tag_weekly" {
+  params = [prepend_jenkins_version, tag]
+  result =  equal(LATEST_WEEKLY, "true") ? tag(prepend_jenkins_version, tag) : ""
+}
+
+# return a LTS optionaly prefixed by the Jenkins version
+function "tag_lts" {
+  params = [prepend_jenkins_version, tag]
+  result =  equal(LATEST_LTS, "true") ? tag(prepend_jenkins_version, tag) : ""
+}
+
+# ---- targets ----
+
 target "almalinux_jdk11" {
   dockerfile = "11/almalinux/almalinux8/hotspot/Dockerfile"
   context = "."
@@ -78,9 +110,9 @@ target "almalinux_jdk11" {
     COMMIT_SHA = COMMIT_SHA
   }
   tags = [
-    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-almalinux",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:almalinux" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-almalinux" : "",
+    tag(true, "almalinux"),
+    tag_weekly(false, "almalinux"),
+    tag_lts(false, "lts-almalinux")
   ]
   platforms = ["linux/amd64", "linux/arm64"]
 }
@@ -96,9 +128,9 @@ target "alpine_jdk8" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
-    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-alpine-jdk8",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:alpine-jdk8" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-alpine-jdk8" : "",
+    tag(true, "alpine-jdk8"),
+    tag_weekly(false, "alpine-jdk8"),
+    tag_lts(false, "lts-alpine-jdk8")
   ]
   platforms = ["linux/amd64"]
 }
@@ -114,12 +146,12 @@ target "alpine_jdk11" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
-    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-alpine",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:alpine" : "",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:alpine-jdk11" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-alpine" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-alpine-jdk11" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts-alpine" : "",
+    tag(true, "alpine"),
+    tag_weekly(false, "alpine"),
+    tag_weekly(false, "alpine-jdk11"),
+    tag_lts(false, "lts-alpine"),
+    tag_lts(false, "lts-alpine-jdk11"),
+    tag_lts(true, "lts-alpine"),
   ]
   platforms = ["linux/amd64"]
 }
@@ -135,9 +167,9 @@ target "centos7_jdk8" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
-    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-centos7-jdk8",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:centos7-jdk8" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-centos7-jdk8" : "",
+    tag(true, "centos7-jdk8"),
+    tag_weekly(false, "centos7-jdk8"),
+    tag_lts(false, "lts-centos7-jdk8")
   ]
   platforms = ["linux/amd64"]
 }
@@ -153,12 +185,12 @@ target "centos7_jdk11" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
-    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-centos7",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:centos7" : "",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:centos7-jdk11" : "",
-    equal(LATEST_LTS, "true") ?  "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts-centos7" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-centos7" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-centos7-jdk11" : "",
+    tag(true, "centos7"),
+    tag_weekly(false, "centos7"),
+    tag_weekly(false, "centos7-jdk11"),
+    tag_lts(true, "lts-centos7"),
+    tag_lts(false, "lts-centos7"),
+    tag_lts(false, "lts-centos7-jdk11")
   ]
   platforms = ["linux/amd64"]
 }
@@ -174,10 +206,10 @@ target "debian_jdk8" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
-    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-jdk8",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:latest-jdk8" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-jdk8" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts-jdk8" : "",
+    tag(true, "jdk8"),
+    tag_weekly(false, "latest-jdk8"),
+    tag_lts(false, "lts-jdk8"),
+    tag_lts(true, "lts-jdk8")
   ]
   platforms = ["linux/amd64"]
 }
@@ -193,15 +225,15 @@ target "debian_jdk11" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
-    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}",
-    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-jdk11",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:latest" : "",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:latest-jdk11" : "",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:jdk11" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-jdk11" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts-jdk11" : "",
+    tag(true, ""),
+    tag(true, "jdk11"),
+    tag_weekly(false, "latest"),
+    tag_weekly(false, "latest-jdk11"),
+    tag_weekly(false, "jdk11"),
+    tag_lts(false, "lts"),
+    tag_lts(false, "lts-jdk11"),
+    tag_lts(true, "lts"),
+    tag_lts(true, "lts-jdk11")
   ]
   platforms = ["linux/amd64", "linux/arm64", "linux/s390x"]
 }
@@ -217,9 +249,9 @@ target "debian_slim_jdk8" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
-    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-slim-jdk8",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:slim-jdk8" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-slim-jdk8" : "",
+    tag(true, "slim-jdk8"),
+    tag_weekly(false, "slim-jdk8"),
+    tag_lts(false, "lts-slim-jdk8"),
   ]
   platforms = ["linux/amd64"]
 }
@@ -235,12 +267,12 @@ target "debian_slim_jdk11" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
-    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-slim",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:slim" : "",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:slim-jdk11" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-slim" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-slim-jdk11" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts-slim" : "",
+    tag(true, "slim"),
+    tag_weekly(false, "slim"),
+    tag_weekly(false, "slim-jdk11"),
+    tag_lts(false, "lts-slim"),
+    tag_lts(false, "lts-slim-jdk11"),
+    tag_lts(true, "lts-slim"),
   ]
   platforms = ["linux/amd64"]
 }
@@ -255,10 +287,10 @@ target "rhel_ubi8_jdk11" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
-    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-rhel-ubi8-jdk11",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:rhel-ubi8-jdk11" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-rhel-ubi8-jdk11" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts-rhel-ubi8-jdk11" : "",   
+    tag(true, "rhel-ubi8-jdk11"),
+    tag_weekly(false, "rhel-ubi8-jdk11"),
+    tag_lts(false, "lts-rhel-ubi8-jdk11"),
+    tag_lts(true, "lts-rhel-ubi8-jdk11")
   ]
   platforms = ["linux/amd64", "linux/arm64"]
 }
@@ -274,11 +306,11 @@ target "debian_jdk17" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
-    "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-jdk17-preview",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:latest-jdk17-preview" : "",
-    equal(LATEST_WEEKLY, "true") ? "${REGISTRY}/${JENKINS_REPO}:jdk17-preview" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:lts-jdk17-preview" : "",
-    equal(LATEST_LTS, "true") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-lts-jdk17-preview" : "",
+    tag(true, "jdk17-preview"),
+    tag_weekly(false, "latest-jdk17-preview"),
+    tag_weekly(false, "jdk17-preview"),
+    tag_lts(false, "lts-jdk17-preview"),
+    tag_lts(true, "lts-jdk17-preview")
   ]
   platforms = ["linux/amd64", "linux/arm64"]
 }
