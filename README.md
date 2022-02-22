@@ -83,11 +83,13 @@ If you connect agents using web sockets (since Jenkins 2.217), the TCP agent por
 # Passing JVM parameters
 
 You might need to customize the JVM running Jenkins, typically to adjust [system properties](https://www.jenkins.io/doc/book/managing/system-properties/) or tweak heap memory settings.
-Use the `JAVA_OPTS` environment variable for this purpose :
+Use the `JAVA_OPTS` or `JENKINS_JAVA_OPTS` environment variables for this purpose :
 
 ```
-docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS=-Dhudson.footerURL=http://mycompany.com jenkins/jenkins:lts-jdk11
+docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JENKINS_JAVA_OPTS=-Dhudson.footerURL=http://mycompany.com jenkins/jenkins:lts-jdk11
 ```
+
+JVM options specifically for the Jenkins controller should be set through `JENKINS_JAVA_OPTS`, as other tools might also respond to the `JAVA_OPTS` environment variable.
 
 # Configuring logging
 
@@ -141,10 +143,10 @@ or as a parameter to docker,
 docker run --name myjenkins -p 8080:8080 -p 50001:50001 --env JENKINS_SLAVE_AGENT_PORT=50001 jenkins/jenkins:lts-jdk11
 ```
 
-**Note**: This environment variable will be used to set the port adding the
-[system property][https://www.jenkins.io/doc/book/managing/system-properties/] `jenkins.model.Jenkins.slaveAgentPort` to **JAVA_OPTS**.
+**Note**: This environment variable will be used to set the
+[system property](https://www.jenkins.io/doc/book/managing/system-properties/) `jenkins.model.Jenkins.slaveAgentPort`.
 
-> If this property is already set in **JAVA_OPTS**, then the value of
+> If this property is already set in **JAVA_OPTS** or **JENKINS_JAVA_OPTS**, then the value of
 `JENKINS_SLAVE_AGENT_PORT` will be ignored.
 
 # Installing more tools
