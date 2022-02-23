@@ -8,6 +8,10 @@ IMAGE=${IMAGE:-debian_jdk17}
 SUT_IMAGE=$(get_sut_image)
 SUT_DESCRIPTION="${IMAGE}-runtime"
 
+teardown() {
+  cleanup "$(get_sut_container_name)"
+}
+
 @test "[${SUT_DESCRIPTION}] test version in docker metadata" {
   local version=$(get_jenkins_version)
   assert "${version}" docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.version"}}' $SUT_IMAGE
@@ -69,14 +73,13 @@ SUT_DESCRIPTION="${IMAGE}-runtime"
   assert_equal "${output}" "UTF-8"
 }
 
-@test "[${SUT_DESCRIPTION}] create test container with Jenkins initialize and JAVA_OPTS are set" {
+# parameters are passed as docker run parameters
+start-jenkins-with-jvm-opts() {
   local container_name
   container_name="$(get_sut_container_name)"
   cleanup "${container_name}"
 
-  run docker run --detach --name "${container_name}" --publish-all \
-    --env JAVA_OPTS="-Duser.timezone=Europe/Madrid -Dhudson.model.DirectoryBrowserSupport.CSP=\"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';\"" \
-    $SUT_IMAGE
+  run docker run --detach --name "${container_name}" --publish-all "$@" $SUT_IMAGE
   assert_success
 
   # Container is running
@@ -85,11 +88,40 @@ SUT_DESCRIPTION="${IMAGE}-runtime"
 
   # Jenkins is initialized
   retry 30 5 test_url /api/json
+}
 
-  # JAVA_OPTS are set
+get-csp-value() {
   local sed_expr='s/<wbr>//g;s/<td class="pane">.*<\/td><td class.*normal">//g;s/<t.>//g;s/<\/t.>//g'
-  assert 'default-src &#039;self&#039;; script-src &#039;self&#039; &#039;unsafe-inline&#039; &#039;unsafe-eval&#039;; style-src &#039;self&#039; &#039;unsafe-inline&#039;;' \
-    bash -c "curl -fsSL --user \"admin:$(get_jenkins_password)\" $(get_jenkins_url)/systemInfo | sed 's/<\/tr>/<\/tr>\'$'\n/g' | grep '<td class=\"pane\">hudson.model.DirectoryBrowserSupport.CSP</td>' | sed -e '${sed_expr}'"
-  assert 'Europe/Madrid' \
-    bash -c "curl -fsSL --user \"admin:$(get_jenkins_password)\" $(get_jenkins_url)/systemInfo | sed 's/<\/tr>/<\/tr>\'$'\n/g' | grep '<td class=\"pane\">user.timezone</td>' | sed -e '${sed_expr}'"
+  bash -c "curl -fsSL --user \"admin:$(get_jenkins_password)\" $(get_jenkins_url)/systemInfo | sed 's/<\/tr>/<\/tr>\'$'\n/g' | grep '<td class=\"pane\">hudson.model.DirectoryBrowserSupport.CSP</td>' | sed -e '${sed_expr}'"
+}
+
+get-timezone-value() {
+  local sed_expr='s/<wbr>//g;s/<td class="pane">.*<\/td><td class.*normal">//g;s/<t.>//g;s/<\/t.>//g'
+  bash -c "curl -fsSL --user \"admin:$(get_jenkins_password)\" $(get_jenkins_url)/systemInfo | sed 's/<\/tr>/<\/tr>\'$'\n/g' | grep '<td class=\"pane\">user.timezone</td>' | sed -e '${sed_expr}'"
+}
+
+@test "[${SUT_DESCRIPTION}] passes JAVA_OPTS as JVM options" {
+  start-jenkins-with-jvm-opts --env JAVA_OPTS="-Duser.timezone=Europe/Madrid -Dhudson.model.DirectoryBrowserSupport.CSP=\"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';\""
+
+  # JAVA_OPTS are used
+  assert 'default-src &#039;self&#039;; script-src &#039;self&#039; &#039;unsafe-inline&#039; &#039;unsafe-eval&#039;; style-src &#039;self&#039; &#039;unsafe-inline&#039;;' get-csp-value
+  assert 'Europe/Madrid' get-timezone-value
+}
+
+@test "[${SUT_DESCRIPTION}] passes JENKINS_JAVA_OPTS as JVM options" {
+  start-jenkins-with-jvm-opts --env JENKINS_JAVA_OPTS="-Duser.timezone=Europe/Madrid -Dhudson.model.DirectoryBrowserSupport.CSP=\"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';\""
+
+  # JENKINS_JAVA_OPTS are used
+  assert 'default-src &#039;self&#039;; script-src &#039;self&#039; &#039;unsafe-inline&#039; &#039;unsafe-eval&#039;; style-src &#039;self&#039; &#039;unsafe-inline&#039;;' get-csp-value
+  assert 'Europe/Madrid' get-timezone-value
+}
+
+@test "[${SUT_DESCRIPTION}] JENKINS_JAVA_OPTS overrides JAVA_OPTS" {
+  start-jenkins-with-jvm-opts \
+    --env JAVA_OPTS="-Duser.timezone=Europe/Madrid -Dhudson.model.DirectoryBrowserSupport.CSP=\"default-src 'self'\"" \
+    --env JENKINS_JAVA_OPTS="-Dhudson.model.DirectoryBrowserSupport.CSP=\"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';\""
+
+  # JAVA_OPTS and JENKINS_JAVA_OPTS are used
+  assert 'default-src &#039;self&#039;; script-src &#039;self&#039; &#039;unsafe-inline&#039; &#039;unsafe-eval&#039;; style-src &#039;self&#039; &#039;unsafe-inline&#039;;' get-csp-value
+  assert 'Europe/Madrid' get-timezone-value
 }
