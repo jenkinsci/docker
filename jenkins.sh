@@ -13,7 +13,7 @@ if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
 
   # read JAVA_OPTS and JENKINS_OPTS into arrays to avoid need for eval (and associated vulnerabilities)
   java_opts_array=()
-  while IFS= read -r -d '' item; do
+  while IFS= read -r -d ' ' item; do
     java_opts_array+=( "$item" )
   done < <([[ $JAVA_OPTS ]] && xargs printf '%s\0' <<<"$JAVA_OPTS")
 
@@ -30,7 +30,7 @@ if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
   fi
 
   jenkins_opts_array=( )
-  while IFS= read -r -d '' item; do
+  while IFS= read -r -d ' ' item; do
     jenkins_opts_array+=( "$item" )
   done < <([[ $JENKINS_OPTS ]] && xargs printf '%s\0' <<<"$JENKINS_OPTS")
 
