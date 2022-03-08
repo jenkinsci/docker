@@ -10,6 +10,7 @@ ARG COMMIT_SHA
 
 ENV JENKINS_HOME $JENKINS_HOME
 ENV JENKINS_AGENT_PORT ${agent_port}
+ENV PLUGIN_DIR ${JENKINS_HOME}/plugins
 
 # Jenkins home directory is a volume, so configuration and build history
 # can be persisted and survive image upgrades

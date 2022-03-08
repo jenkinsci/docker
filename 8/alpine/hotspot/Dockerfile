@@ -47,6 +47,7 @@ ARG REF=/usr/share/jenkins/ref
 ENV JENKINS_HOME $JENKINS_HOME
 ENV JENKINS_SLAVE_AGENT_PORT ${agent_port}
 ENV REF $REF
+ENV PLUGIN_DIR ${JENKINS_HOME}/plugins
 
 # Jenkins is run with user `jenkins`, uid = 1000
 # If you bind mount a volume from the host or a data container,
