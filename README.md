@@ -175,7 +175,7 @@ COPY --chown=jenkins:jenkins custom.groovy /usr/share/jenkins/ref/init.groovy.d/
 
 ### Install plugins script
 
-You can rely on the install-plugins.sh script to pass a set of plugins to download with their dependencies. This script will perform downloads from update centers, and internet access is required for the default update centers.
+You can rely on the plugin manager CLI to pass a set of plugins to download with their dependencies. This tool will perform downloads from update centers, and internet access is required for the default update centers.
 
 ### Setting update centers
 
@@ -198,14 +198,6 @@ It is possible to override the environment variables in images.
 
 :exclamation: Note that changing update center variables **will not** change the Update Center being used by Jenkins runtime.
 
-### Plugin installation manager CLI (Preview)
-
-You can also use the `jenkins-plugin-cli` tool to install plugins.
-This CLI will perform downloads from update centers, and internet access is required for the default update centers.
-
-See the CLI's [documentation](https://github.com/jenkinsci/plugin-installation-manager-tool) for more information,
-or run `jenkins-plugin-cli --help` to see the available options.
-
 ### Installing Custom Plugins
 
 Installing prebuilt, custom plugins can be accomplished by copying the plugin HPI file into `/usr/share/jenkins/ref/plugins/` within the `Dockerfile`:
@@ -218,31 +210,12 @@ COPY --chown=jenkins:jenkins path/to/custom.hpi /usr/share/jenkins/ref/plugins/
 
 You can run the CLI manually in Dockerfile:
 
-#### Plugin installation manager CLI
-
 ```Dockerfile
 FROM jenkins/jenkins:lts-jdk11
 RUN jenkins-plugin-cli --plugins pipeline-model-definition github-branch-source:1.8
 ```
 
 Furthermore it is possible to pass a file that contains this set of plugins (with or without line breaks).
-
-#### install-plugins script (Deprecated)
-
-```Dockerfile
-FROM jenkins/jenkins:lts-jdk11
-RUN /usr/local/bin/install-plugins.sh pipeline-model-definition github-branch-source:1.8
-```
-
-#### install-plugins script
-
-```Dockerfile
-FROM jenkins/jenkins:lts-jdk11
-COPY --chown=jenkins:jenkins plugins.txt /usr/share/jenkins/ref/plugins.txt
-RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
-```
-
-#### Plugin installation manager CLI (Preview)
 
 ```Dockerfile
 FROM jenkins/jenkins:lts-jdk11
@@ -284,7 +257,7 @@ to indicate that this Jenkins installation is fully configured.
 Otherwise a banner will appear prompting the user to install additional plugins,
 which may be inappropriate.
 
-### Updating plugins file (Preview)
+### Updating plugins file
 
 The [plugin-installation-manager-tool](https://github.com/jenkinsci/plugin-installation-manager-tool) supports updating the plugin file for you.
 
@@ -296,14 +269,14 @@ docker run -it ${JENKINS_IMAGE} bash -c "stty -onlcr && jenkins-plugin-cli -f /u
 mv plugins2.txt plugins.txt
 ```
 
-# Upgrading
+## Upgrading
 
 All the data needed is in the /var/jenkins_home directory - so depending on how you manage that - depends on how you upgrade.
 Generally - you can copy it out - and then "docker pull" the image again - and you will have the latest LTS - you can then start up with -v pointing to that data (/var/jenkins_home) and everything will be as you left it.
 
 As always - please ensure that you know how to drive docker - especially volume handling!
 
-## Upgrading plugins
+### Upgrading plugins
 
 By default, plugins will be upgraded if they haven't been upgraded manually and if the version from the docker image is newer than the version in the container.
 Versions installed by the docker image are tracked through a marker file.
@@ -314,10 +287,10 @@ The default behaviour when upgrading from a docker image that didn't write marke
 If you want to upgrade existing plugins without marker you may run the docker image with `-e TRY_UPGRADE_IF_NO_MARKER=true`.
 Then plugins will be upgraded if the version provided by the docker image is newer.
 
-## Hacking
+### Hacking
 
 If you wish to contribute fixes to this repository, please refer to the [dedicated documentation](HACKING.adoc).
 
-# Questions?
+## Questions?
 
 We're on Gitter, https://gitter.im/jenkinsci/docker
