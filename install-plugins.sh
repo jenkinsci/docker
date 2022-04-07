@@ -198,13 +198,11 @@ installedPlugins() {
     done
 }
 
-jenkinsMajorMinorVersion() {
+jenkinsFullVersion() {
     if [[ -f "$JENKINS_WAR" ]]; then
-        local version major minor
+        local version
         version="$(java -jar "$JENKINS_WAR" --version)"
-        major="$(echo "$version" | cut -d '.' -f 1)"
-        minor="$(echo "$version" | cut -d '.' -f 2)"
-        echo "$major.$minor"
+        echo "$version"
     else
         echo ""
     fi
@@ -245,7 +243,7 @@ main() {
     installedPlugins="$(installedPlugins)"
 
     # Get the update center URL based on the jenkins version
-    jenkinsVersion="$(jenkinsMajorMinorVersion)"
+    jenkinsVersion="$(jenkinsFullVersion)"
     # shellcheck disable=SC2086
     jenkinsUcJson=$(curl ${CURL_OPTIONS:--sSfL} -o /dev/null -w "%{url_effective}" "${JENKINS_UC}/update-center.json?version=${jenkinsVersion}")
     if [ -n "${jenkinsUcJson}" ]; then
