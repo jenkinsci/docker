@@ -11,14 +11,17 @@ find "${REF}" \( -type f -o -type l \) -exec bash -c '. /usr/local/bin/jenkins-s
 # if `docker run` first argument start with `--` the user is passing jenkins launcher arguments
 if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
 
+  # shellcheck disable=SC2001
+  effective_java_opts=$(sed -e 's/^ $//' <<<"$JAVA_OPTS $JENKINS_JAVA_OPTS")
+
   # read JAVA_OPTS and JENKINS_OPTS into arrays to avoid need for eval (and associated vulnerabilities)
   java_opts_array=()
   while IFS= read -r -d '' item; do
     java_opts_array+=( "$item" )
-  done < <([[ $JAVA_OPTS ]] && xargs printf '%s\0' <<<"$JAVA_OPTS")
+  done < <([[ $effective_java_opts ]] && xargs printf '%s\0' <<<"$effective_java_opts")
 
   readonly agent_port_property='jenkins.model.Jenkins.slaveAgentPort'
-  if [ -n "${JENKINS_SLAVE_AGENT_PORT:-}" ] && [[ "${JAVA_OPTS:-}" != *"${agent_port_property}"* ]]; then
+  if [ -n "${JENKINS_SLAVE_AGENT_PORT:-}" ] && [[ "${effective_java_opts:-}" != *"${agent_port_property}"* ]]; then
     java_opts_array+=( "-D${agent_port_property}=${JENKINS_SLAVE_AGENT_PORT}" )
   fi
 

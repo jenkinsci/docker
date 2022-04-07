@@ -1,5 +1,5 @@
 # escape=`
-FROM jenkins/openjdk:11-hotspot-windowsservercore-ltsc2019
+FROM eclipse-temurin:11.0.14.1_1-jdk-windowsservercore-1809
 
 ARG user=jenkins
 ARG http_port=8080

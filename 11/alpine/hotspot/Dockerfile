@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk11:jdk-11.0.13_8-alpine AS jre-build
+FROM adoptopenjdk/openjdk11:jdk-11.0.14.1_1-alpine AS jre-build
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
@@ -11,7 +11,7 @@ RUN jlink \
          --compress=2 \
          --output /javaruntime
 
-FROM alpine:3.15.0
+FROM alpine:3.15.3
 
 RUN apk add --no-cache \
   bash \

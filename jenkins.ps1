@@ -18,10 +18,10 @@ Get-ChildItem -Recurse -File -Path 'C:/ProgramData/Jenkins/Reference' | ForEach-
 if(($args.Count -eq 0) -or ($args[0] -match "^--.*")) {
 
   # read JAVA_OPTS and JENKINS_OPTS into arrays to avoid need for eval (and associated vulnerabilities)
-  $java_opts_array = $env:JAVA_OPTS -split ' '
+  $java_opts_array = ($env:JAVA_OPTS -split ' ') + ($env:JENKINS_JAVA_OPTS -split ' ')
 
   $agent_port_property='jenkins.model.Jenkins.slaveAgentPort'
-  if(![System.String]::IsNullOrWhiteSpace($env:JENKINS_AGENT_PORT) -and ($env:JAVA_OPTS -notmatch "$agent_port_property")) {
+  if(![System.String]::IsNullOrWhiteSpace($env:JENKINS_AGENT_PORT) -and !($java_opts_array -match "$agent_port_property")) {
     $java_opts_array += "-D`"$agent_port_property=$env:JENKINS_AGENT_PORT`""
   }
 
