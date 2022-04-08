@@ -25,6 +25,11 @@ if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
     java_opts_array+=( "-D${agent_port_property}=${JENKINS_SLAVE_AGENT_PORT}" )
   fi
 
+  readonly lifecycle_property='hudson.lifecycle'
+  if [[ "${JAVA_OPTS:-}" != *"${lifecycle_property}"* ]]; then
+    java_opts_array+=( "-D${lifecycle_property}=hudson.lifecycle.ExitLifecycle" )
+  fi
+
   if [[ "$DEBUG" ]] ; then
     java_opts_array+=( \
       '-Xdebug' \
