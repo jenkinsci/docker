@@ -21,7 +21,7 @@ RUN yum install -y git curl freetype fontconfig unzip which && \
 
 ARG TARGETARCH
 ARG COMMIT_SHA
-ARG GIT_LFS_VERSION=3.0.2
+ARG GIT_LFS_VERSION=3.1.4
 
 # required for multi-arch support, revert to package cloud after:
 # https://github.com/git-lfs/git-lfs/issues/4546
