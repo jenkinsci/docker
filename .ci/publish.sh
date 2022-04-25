@@ -5,7 +5,7 @@
 #   -n dry run, do not build or publish images
 #   -d debug
 
-set -o pipefail
+set -eu -o pipefail
 
 . jenkins-support
 source ./.ci/common-functions.sh > /dev/null 2>&1
@@ -29,29 +29,45 @@ sort-versions() {
 }
 
 login-token() {
-    curl -q -sSL "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${JENKINS_REPO}:pull" | jq -r '.token'
+    curl --disable --fail --silent --show-error --location "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${JENKINS_REPO}:pull" | jq -r '.token'
 }
 
 is-published() {
-    local tag=$1
-    local opts=""
-    if [ "$debug" = true ]; then
-        opts="-v"
-    fi
-    local http_code;
-    http_code=$(curl $opts -q -fsL -o /dev/null -w "%{http_code}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $TOKEN" "https://index.docker.io/v2/${JENKINS_REPO}/manifests/$tag")
-    if [ "$http_code" -eq "404" ]; then
-        false
-    elif [ "$http_code" -eq "200" ]; then
-        true
-    else
-        echo "Received unexpected http code from Docker hub: $http_code"
-        exit 1
-    fi
+    local tag linux_cpu_archs
+    tag="$1"
+
+    ## A given tag is considered publish if, and only if, all the images associated with this tag, are published.
+    ## By "all images", we mean all the declinations but also all the CPU architectures.
+    linux_cpu_archs="$(make --silent show | jq -r '.target[].platforms' | jq -r '.[]' | sort | uniq)"
+
+    for linux_cpu_arch in ${linux_cpu_archs}
+    do
+        local cpu_arch
+
+        # Extract the cpu arch without the linux prefix, e.g. "Remove all the characters on the left of the '/' character" - https://tldp.org/LDP/abs/html/string-manipulation.html#SubstringRemoval
+        cpu_arch="${linux_cpu_arch##*/}"
+
+        for docker_image in $(JENKINS_VERSION="${tag}" make --silent show | jq -r '.target[] | select(.platforms[] | contains("'"${linux_cpu_arch}"'")) | .tags' | jq -r '.[]')
+        do
+            local tag_to_check manifest_url manifest
+
+            # Extract the tag, e.g. "Remove all the characters on the left of the ':' character" - https://tldp.org/LDP/abs/html/string-manipulation.html#SubstringRemoval
+            tag_to_check="${docker_image##*:}"
+            manifest_url="https://index.docker.io/v2/${JENKINS_REPO}/manifests/$tag_to_check"
+            manifest="$(curl --disable --fail --silent --show-error --location --header 'Accept: application/vnd.docker.distribution.manifest.list.v2+json' --header "Authorization: Bearer ${TOKEN}" "${manifest_url}")"
+
+            if ! echo "${manifest}" | jq -e -r '.manifests[] | select(.platform.architecture == "'"${cpu_arch}"'")' 1>/dev/null 2>&1
+            then
+                return 1
+            fi
+        done
+    done
+
+    return 0
 }
 
 get-latest-versions() {
-    curl -q -fsSL https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 30
+    curl --disable --fail --silent --show-error --location https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 30
 }
 
 publish() {
@@ -65,21 +81,16 @@ publish() {
         build_opts=()
     fi
 
-    sha=$(curl -q -fsSL "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/${version}/jenkins-war-${version}.war.sha256" )
+    sha="$(curl --disable --fail --silent --show-error --location "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/${version}/jenkins-war-${version}.war.sha256")"
 
-    export JENKINS_VERSION=$version
-    export JENKINS_SHA=$sha
-    export LATEST_WEEKLY=$latest_weekly
-    export LATEST_LTS=$latest_lts
-    export COMMIT_SHA=$(git rev-parse HEAD)
-    set -x
-    docker buildx bake --file docker-bake.hcl \
-                 "${build_opts[@]+"${build_opts[@]}"}" linux
-    set +x
-    if [ "$dry_run" = true ]; then
-        echo "Dry run mode: no docker push"
-    fi
+    JENKINS_VERSION=$version
+    JENKINS_SHA=$sha
+    LATEST_WEEKLY=$latest_weekly
+    LATEST_LTS=$latest_lts
+    COMMIT_SHA=$(git rev-parse HEAD)
+    export COMMIT_SHA JENKINS_VERSION JENKINS_SHA LATEST_WEEKLY LATEST_LTS
 
+    docker buildx bake --file docker-bake.hcl "${build_opts[@]+"${build_opts[@]}"}" linux
 }
 
 # Process arguments
@@ -110,6 +121,11 @@ while [[ $# -gt 0 ]]; do
 done
 
 
+if [ "$debug" = true ]; then
+    echo "Debug mode enabled"
+    set -x
+fi
+
 if [ "$dry_run" = true ]; then
     echo "Dry run, will not publish images"
 fi
@@ -127,15 +143,15 @@ for version in $versions; do
         echo "$version not published yet"
 
         if [[ $version == "${latest_weekly_version}" ]]; then
-          latest_weekly="true"
+            latest_weekly="true"
         else
-          latest_weekly="false"
+            latest_weekly="false"
         fi
 
         if [[ $version == "${latest_lts_version}" ]]; then
-          latest_lts="true"
+            latest_lts="true"
         else
-          latest_lts="false"
+            latest_lts="false"
         fi
 
         if versionLT "$start_after" "$version"; then # if start_after < version
