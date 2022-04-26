@@ -33,33 +33,64 @@ login-token() {
 }
 
 is-published() {
-    local tag linux_cpu_archs
-    tag="$1"
+    local JENKINS_VERSION="$1"
+    local LATEST_WEEKLY=$2
+    local LATEST_LTS=$3
+    local docker_bake_version_config
 
-    ## A given tag is considered publish if, and only if, all the images associated with this tag, are published.
+    ## Export values for docker bake (through the `make <target>` commands)
+    export JENKINS_VERSION JENKINS_SHA LATEST_WEEKLY LATEST_LTS
+
+    ## A given jenkins version is considered publish if, and only if, all the images associated with this tag, are published with the correct manifest.
     ## By "all images", we mean all the declinations but also all the CPU architectures.
-    linux_cpu_archs="$(make --silent show | jq -r '.target[].platforms' | jq -r '.[]' | sort | uniq)"
+    docker_bake_version_config="$(make --silent show)"
 
-    for linux_cpu_arch in ${linux_cpu_archs}
+    for docker_bake_target in $(echo "${docker_bake_version_config}" | jq -r '.target | keys | .[]')
     do
-        local cpu_arch
+        ## Count how much platforms are expected for this "target" (e.g. image)
+        local platform_amount
+        platform_amount="$(echo "${docker_bake_version_config}" | jq -r '.target.'"${docker_bake_target}"'.platforms | length')"
+        if test "${platform_amount}" -lt 1
+        then
+            echo "ERROR: could not get platforms for the docker bake target ${docker_bake_target}."
+            echo "  (For debugging purposes) docker_bake_version_config=${docker_bake_version_config}"
+            exit 1
+        fi
 
-        # Extract the cpu arch without the linux prefix, e.g. "Remove all the characters on the left of the '/' character" - https://tldp.org/LDP/abs/html/string-manipulation.html#SubstringRemoval
-        cpu_arch="${linux_cpu_arch##*/}"
-
-        for docker_image in $(JENKINS_VERSION="${tag}" make --silent show | jq -r '.target[] | select(.platforms[] | contains("'"${linux_cpu_arch}"'")) | .tags' | jq -r '.[]')
+        ## Check all the tags of each docker target.
+        for docker_image_fullname in $(echo "${docker_bake_version_config}" | jq -r '.target.'"${docker_bake_target}"'.tags | .[]')
         do
             local tag_to_check manifest_url manifest
 
             # Extract the tag, e.g. "Remove all the characters on the left of the ':' character" - https://tldp.org/LDP/abs/html/string-manipulation.html#SubstringRemoval
-            tag_to_check="${docker_image##*:}"
-            manifest_url="https://index.docker.io/v2/${JENKINS_REPO}/manifests/$tag_to_check"
-            manifest="$(curl --disable --fail --silent --show-error --location --header 'Accept: application/vnd.docker.distribution.manifest.list.v2+json' --header "Authorization: Bearer ${TOKEN}" "${manifest_url}")"
+            tag_to_check="${docker_image_fullname##*:}"
+            manifest_url="https://index.docker.io/v2/${JENKINS_REPO}/manifests/${tag_to_check}"
+            manifest="$(curl --disable --silent --show-error --location --header 'Accept: application/vnd.docker.distribution.manifest.list.v2+json' --header 'Accept: application/vnd.docker.distribution.manifest.v2+json' --header "Authorization: Bearer ${TOKEN}" "${manifest_url}")"
 
-            if ! echo "${manifest}" | jq -e -r '.manifests[] | select(.platform.architecture == "'"${cpu_arch}"'")' 1>/dev/null 2>&1
-            then
+            ## Error cases: no manifest content or no mediatype (or JSON not parseable)
+            manifest_kind="$(echo "${manifest}" | jq -e -r '.mediaType')"
+            set +u
+            case "${manifest_kind}" in
+            'application/vnd.docker.distribution.manifest.v2+json')
+                if test "${platform_amount}" -gt 1
+                then
+                    echo "WARNING: Image ${docker_image_fullname} has a manifest of kind 'application/vnd.docker.distribution.manifest.v2+json' but defines more than one platform." >&2
+                    return 1
+                fi
+                ;;
+            'application/vnd.docker.distribution.manifest.list.v2+json')
+                if test "${platform_amount}" -le 1
+                then
+                    echo "WARNING: Image ${docker_image_fullname} has a manifest of kind 'application/vnd.docker.distribution.manifest.list.v2+json' but only defines one platform." >&2
+                    return 1
+                fi
+                ;;
+            *)
+                echo "WARNING: could not get a valid manifest at the URL ${manifest_url}." >&2
+                echo "  (For debugging purposes) manifest=${manifest}"  >&2
                 return 1
-            fi
+                ;;
+            esac
         done
     done
 
@@ -135,30 +166,36 @@ latest_weekly_version=$(echo "${versions}" | tail -n 1)
 
 latest_lts_version=$(echo "${versions}" | grep -E '[0-9]\.[0-9]+\.[0-9]' | tail -n 1 || echo "No LTS versions")
 
-for version in $versions; do
+for version in ${versions}
+do
     TOKEN=$(login-token)
-    if is-published "$version"; then
-        echo "Tag is already published: $version"
+
+    if [[ "${version}" == "${latest_weekly_version}" ]]
+    then
+        latest_weekly="true"
+    else
+        latest_weekly="false"
+    fi
+
+    if [[ "${version}" == "${latest_lts_version}" ]]
+    then
+        latest_lts="true"
+    else
+        latest_lts="false"
+    fi
+
+    if is-published "${version}" "${latest_weekly}" "${latest_lts}"
+    then
+        echo "Tag is already published: ${version}"
     else
         echo "$version not published yet"
 
-        if [[ $version == "${latest_weekly_version}" ]]; then
-            latest_weekly="true"
+        if versionLT "${start_after}" "${version}" # if start_after < version
+        then
+            echo "Version $version higher than ${start_after}: publishing ${version} latest_weekly:${latest_weekly} latest_lts:${latest_lts}"
+            publish "${version}" "${latest_weekly}" "${latest_lts}"
         else
-            latest_weekly="false"
-        fi
-
-        if [[ $version == "${latest_lts_version}" ]]; then
-            latest_lts="true"
-        else
-            latest_lts="false"
-        fi
-
-        if versionLT "$start_after" "$version"; then # if start_after < version
-            echo "Version $version higher than $start_after: publishing $version latest_weekly:${latest_weekly} latest_lts:${latest_lts}"
-            publish "$version" "${latest_weekly}" "${latest_lts}"
-        else
-            echo "Version $version lower or equal to $start_after, no publishing."
+            echo "Version ${version} lower or equal to ${start_after}, no publishing."
         fi
     fi
 done
