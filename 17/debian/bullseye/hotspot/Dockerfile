@@ -1,16 +1,16 @@
-FROM eclipse-temurin:17.0.2_8-jdk-focal as jre-build
+FROM eclipse-temurin:17.0.3_7-jdk-focal as jre-build
 
 RUN jlink \
-         --add-modules ALL-MODULE-PATH \
-         --no-man-pages \
-         --compress=2 \
-         --output /javaruntime
+  --add-modules ALL-MODULE-PATH \
+  --no-man-pages \
+  --compress=2 \
+  --output /javaruntime
 
 FROM debian:bullseye-20220228
 
 RUN apt-get update && \
-    apt-get install -y git curl gpg unzip libfreetype6 libfontconfig1 && \
-    rm -rf /var/lib/apt/lists/*
+  apt-get install -y git curl gpg unzip libfreetype6 libfontconfig1 && \
+  rm -rf /var/lib/apt/lists/*
 
 ENV LANG C.UTF-8
 
@@ -22,15 +22,15 @@ ARG GIT_LFS_VERSION=3.1.4
 # https://github.com/git-lfs/git-lfs/issues/4546
 COPY git_lfs_pub.gpg /tmp/git_lfs_pub.gpg
 RUN GIT_LFS_ARCHIVE="git-lfs-linux-${TARGETARCH}-v${GIT_LFS_VERSION}.tar.gz" \
-    GIT_LFS_RELEASE_URL="https://github.com/git-lfs/git-lfs/releases/download/v${GIT_LFS_VERSION}/${GIT_LFS_ARCHIVE}"\
-    set -x; curl --fail --silent --location --show-error --output "/tmp/${GIT_LFS_ARCHIVE}" "${GIT_LFS_RELEASE_URL}" && \
-    curl --fail --silent --location --show-error --output "/tmp/git-lfs-sha256sums.asc" https://github.com/git-lfs/git-lfs/releases/download/v${GIT_LFS_VERSION}/sha256sums.asc && \
-    gpg --no-tty --import /tmp/git_lfs_pub.gpg && \
-    gpg -d /tmp/git-lfs-sha256sums.asc | grep "${GIT_LFS_ARCHIVE}" | (cd /tmp; sha256sum -c ) && \
-    mkdir -p /tmp/git-lfs && \
-    tar xzvf "/tmp/${GIT_LFS_ARCHIVE}" -C /tmp/git-lfs && \
-    bash -x /tmp/git-lfs/install.sh && \
-    rm -rf /tmp/git-lfs*
+  GIT_LFS_RELEASE_URL="https://github.com/git-lfs/git-lfs/releases/download/v${GIT_LFS_VERSION}/${GIT_LFS_ARCHIVE}"\
+  set -x; curl --fail --silent --location --show-error --output "/tmp/${GIT_LFS_ARCHIVE}" "${GIT_LFS_RELEASE_URL}" && \
+  curl --fail --silent --location --show-error --output "/tmp/git-lfs-sha256sums.asc" https://github.com/git-lfs/git-lfs/releases/download/v${GIT_LFS_VERSION}/sha256sums.asc && \
+  gpg --no-tty --import /tmp/git_lfs_pub.gpg && \
+  gpg -d /tmp/git-lfs-sha256sums.asc | grep "${GIT_LFS_ARCHIVE}" | (cd /tmp; sha256sum -c ) && \
+  mkdir -p /tmp/git-lfs && \
+  tar xzvf "/tmp/${GIT_LFS_ARCHIVE}" -C /tmp/git-lfs && \
+  bash -x /tmp/git-lfs/install.sh && \
+  rm -rf /tmp/git-lfs*
 
 ARG user=jenkins
 ARG group=jenkins
@@ -123,11 +123,11 @@ COPY install-plugins.sh /usr/local/bin/install-plugins.sh
 
 # metadata labels
 LABEL \
-    org.opencontainers.image.vendor="Jenkins project" \
-    org.opencontainers.image.title="Official Jenkins Docker image" \
-    org.opencontainers.image.description="The Jenkins Continuous Integration and Delivery server" \
-    org.opencontainers.image.version="${JENKINS_VERSION}" \
-    org.opencontainers.image.url="https://www.jenkins.io/" \
-    org.opencontainers.image.source="https://github.com/jenkinsci/docker" \
-    org.opencontainers.image.revision="${COMMIT_SHA}" \
-    org.opencontainers.image.licenses="MIT"
+  org.opencontainers.image.vendor="Jenkins project" \
+  org.opencontainers.image.title="Official Jenkins Docker image" \
+  org.opencontainers.image.description="The Jenkins Continuous Integration and Delivery server" \
+  org.opencontainers.image.version="${JENKINS_VERSION}" \
+  org.opencontainers.image.url="https://www.jenkins.io/" \
+  org.opencontainers.image.source="https://github.com/jenkinsci/docker" \
+  org.opencontainers.image.revision="${COMMIT_SHA}" \
+  org.opencontainers.image.licenses="MIT"
