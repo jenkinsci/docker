@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk11:jdk-11.0.14.1_1-alpine AS jre-build
+FROM eclipse-temurin:11.0.15_10-jdk-alpine AS jre-build
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
