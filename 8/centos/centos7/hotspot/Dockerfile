@@ -5,13 +5,13 @@ ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 ARG TARGETARCH
 ARG COMMIT_SHA
 
-RUN echo -e '[AdoptOpenJDK]\n\
-name=AdoptOpenJDK\n\
-baseurl=https://adoptopenjdk.jfrog.io/adoptopenjdk/rpm/centos/$releasever/$basearch\n\
+RUN echo -e '[Adoptium]\n\
+name=Adoptium\n\
+baseurl=https://packages.adoptium.net/artifactory/rpm/centos/\$releasever/\$basearch\n\
 enabled=1\n\
 gpgcheck=1\n\
-gpgkey=https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public' > /etc/yum.repos.d/adoptopenjdk.repo && \
-    yum update -y && yum install -y git curl adoptopenjdk-8-hotspot-8u292_b10-3 freetype fontconfig unzip which && \
+gpgkey=https://packages.adoptium.net/artifactory/api/gpg/key/public' > /etc/yum.repos.d/adoptium.repo && \
+    yum update -y && yum install -y git curl temurin-8-jdk freetype fontconfig unzip which && \
     yum clean all
 
 ARG TARGETARCH
