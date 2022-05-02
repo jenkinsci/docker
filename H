@@ -1,0 +1,1 @@
+docker pull jenkins/jenkins:lts-jdk11
