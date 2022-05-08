@@ -12,7 +12,8 @@ group "linux" {
     "debian_jdk17",
     "debian_slim_jdk8",
     "debian_slim_jdk11",
-    "rhel_ubi8_jdk11"
+    "rhel_ubi8_jdk11",
+    "rhel_ocp_ubi8_jdk11"
   ]
 }
 
@@ -293,6 +294,24 @@ target "rhel_ubi8_jdk11" {
     tag_lts(true, "lts-rhel-ubi8-jdk11")
   ]
   platforms = ["linux/amd64", "linux/arm64"]
+}
+
+target "rhel_ocp_ubi8_jdk11" {
+  dockerfile = "11/rhel/ubi8/hotspot/Dockerfile"
+  context = "."
+  args = {
+    JENKINS_VERSION = JENKINS_VERSION
+    JENKINS_SHA = JENKINS_SHA
+    COMMIT_SHA = COMMIT_SHA
+    uid = 1001
+    gid = 0
+  }
+  tags = [
+    tag(true, "rhel-ocp-ubi8-jdk11"),
+    tag_weekly(false, "rhel-ocp-ubi8-jdk11"),
+    tag_lts(false, "lts-rhel-ocp-ubi8-jdk11")
+  ]
+  platforms = ["linux/amd64"]
 }
 
 target "debian_jdk17" {
