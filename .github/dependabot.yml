@@ -16,18 +16,6 @@ updates:
   labels:
   - dependencies
 
-- package-ecosystem: docker
-  directory: "8/alpine/hotspot"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 2
-  target-branch: master
-  reviewers:
-  - MarkEWaite
-  - slide
-  labels:
-  - dependencies
-
 # AlmaLinux
 
 - package-ecosystem: docker
@@ -45,7 +33,7 @@ updates:
 # CentOS Linux
 
 - package-ecosystem: docker
-  directory: "8/centos/centos7/hotspot"
+  directory: "11/centos/centos7/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
@@ -71,30 +59,6 @@ updates:
 
 - package-ecosystem: docker
   directory: "11/debian/bullseye-slim/hotspot"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 2
-  target-branch: master
-  reviewers:
-  - MarkEWaite
-  - slide
-  labels:
-  - dependencies
-
-- package-ecosystem: docker
-  directory: "8/debian/bullseye/hotspot"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 2
-  target-branch: master
-  reviewers:
-  - MarkEWaite
-  - slide
-  labels:
-  - dependencies
-
-- package-ecosystem: docker
-  directory: "8/debian/bullseye-slim/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
