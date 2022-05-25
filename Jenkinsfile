@@ -55,8 +55,8 @@ stage('Build') {
 
             } else {
                 /* In our trusted.ci environment we only want to be publishing our
-                * containers from artifacts
-                */
+                 * containers from artifacts
+                 */
                 stage('Publish') {
                     infra.withDockerCredentials {
                         withEnv(['DOCKERHUB_ORGANISATION=jenkins','DOCKERHUB_REPO=jenkins']) {
