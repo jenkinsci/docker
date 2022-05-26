@@ -65,7 +65,7 @@ teardown() {
 }
 
 @test "[${SUT_DESCRIPTION}] has utf-8 locale" {
-  if [[ "${SUT_IMAGE}" == *"alpine"*  ]]; then
+  if [[ $IMAGE == 'alpine_jdk8' ]]; then
     run docker run --rm "${SUT_IMAGE}" /usr/glibc-compat/bin/locale charmap
   else
     run docker run --rm "${SUT_IMAGE}" locale charmap
