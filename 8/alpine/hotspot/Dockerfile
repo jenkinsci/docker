@@ -1,7 +1,6 @@
-# FIXME(oleg_nenashev): This is not an official AdoptOpenJDK Docker Image.
-# There is no official Alpine images at the moment.
-# Needs upgrade when/if there is an official alpine image.
-FROM adoptopenjdk/openjdk8:jdk8u322-b06-alpine
+FROM eclipse-temurin:8u332-b09-jdk-alpine as jre-build
+
+FROM alpine:3.16.0
 
 RUN apk add --no-cache \
   bash \
@@ -9,6 +8,9 @@ RUN apk add --no-cache \
   curl \
   git \
   gnupg \
+  libgcc \
+  musl-locales \
+  musl-locales-lang \
   openssh-client \
   tini \
   ttf-dejavu \
@@ -96,6 +98,10 @@ EXPOSE ${http_port}
 EXPOSE ${agent_port}
 
 ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
+
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH "${JAVA_HOME}/bin:${PATH}"
+COPY --from=jre-build /opt/java/openjdk $JAVA_HOME
 
 USER ${user}
 
