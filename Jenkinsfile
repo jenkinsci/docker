@@ -79,6 +79,7 @@ stage('Build') {
                 'debian_jdk8',
                 'debian_jdk11',
                 'debian_jdk17',
+                'debian_slim_jdk17',
                 'debian_slim_jdk11',
                 'debian_slim_jdk8',
                 'rhel_ubi8_jdk11',
