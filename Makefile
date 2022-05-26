@@ -40,7 +40,7 @@ check-reqs:
 	@$(call check_cli,jq)
 
 shellcheck:
-	$(ROOT_DIR)/tools/shellcheck -e SC1091 jenkins-support *.sh
+	$(ROOT_DIR)/tools/shellcheck -e SC1091 jenkins-support *.sh tests/test_helpers.bash tools/shellcheck .ci/publish.sh
 
 build: check-reqs
 	@set -x; $(bake_base_cli) --set '*.platform=linux/$(ARCH)' $(shell make --silent list)
