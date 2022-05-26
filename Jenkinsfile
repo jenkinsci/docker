@@ -72,6 +72,7 @@ stage('Build') {
         def images = [
                 'almalinux_jdk11',
                 'alpine_jdk11',
+                'alpine_jdk17',
                 'alpine_jdk8',
                 'centos7_jdk11',
                 'centos7_jdk8',
