@@ -108,6 +108,7 @@ target "almalinux_jdk11" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
     tag(true, "almalinux"),
