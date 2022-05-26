@@ -1,3 +1,4 @@
 FROM bats-jenkins
+# hadolint shell=powershell
 
 RUN mkdir C:/ProgramData/Jenkins/Reference/pester ; echo $null >> C:/ProgramData/Jenkins/Reference/pester/test.override
