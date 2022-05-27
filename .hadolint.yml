@@ -22,5 +22,4 @@ ignored:
   - DL3015  # Avoid additional packages by specifying --no-install-recommends
   - DL3046  # useradd without -l and high UID results in excessively large image
   - DL3059  # Multiple consecutive `RUN` instructions. Consider consolidation.
-  - DL4006  # Set the SHELL option -o pipefail before RUN with a pipe in
   - SC2098  # This expansion will not see the mentioned assignment
