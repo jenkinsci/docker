@@ -9,7 +9,7 @@ RUN jlink \
 FROM debian:bullseye-20220509
 
 RUN apt-get update \
-  && apt-get install -y \
+  && apt-get install -y --no-install-recommends \
     curl \
     git \
     gpg \

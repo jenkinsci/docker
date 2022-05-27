@@ -3,7 +3,7 @@ FROM eclipse-temurin:8u332-b09-jdk-focal as jre-build
 FROM debian:bullseye-20220509
 
 RUN apt-get update \
-  && apt-get install -y \
+  && apt-get install -y --no-install-recommends \
     curl \
     git \
     gpg \
