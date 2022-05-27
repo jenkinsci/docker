@@ -59,7 +59,7 @@ ENV REF $REF
 RUN mkdir -p $JENKINS_HOME \
   && chown ${uid}:${gid} $JENKINS_HOME \
   && groupadd -g ${gid} ${group} \
-  && useradd -d "$JENKINS_HOME" -u ${uid} -g ${gid} -m -s /bin/bash ${user}
+  && useradd -d -l "$JENKINS_HOME" -u ${uid} -g ${gid} -m -s /bin/bash ${user}
 
 # Jenkins home directory is a volume, so configuration and build history
 # can be persisted and survive image upgrades
