@@ -8,9 +8,15 @@ RUN jlink \
 
 FROM debian:bullseye-20220509
 
-RUN apt-get update && \
-    apt-get install -y git curl gpg unzip libfreetype6 libfontconfig1 && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+  && apt-get install -y \
+    curl \
+    git \
+    gpg \
+    libfontconfig1 \
+    libfreetype6 \
+    unzip \
+  && rm -rf /var/lib/apt/lists/*
 
 ENV LANG C.UTF-8
 

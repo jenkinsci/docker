@@ -17,11 +17,11 @@ ARG TARGETARCH
 ARG COMMIT_SHA
 
 RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs -y \
+        curl \
+        fontconfig \
+        freetype \
         git \
         git-lfs \
-        curl \
-        freetype \
-        fontconfig \
         unzip \
         which \
     && dnf clean --disableplugin=subscription-manager all
