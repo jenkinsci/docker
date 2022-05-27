@@ -12,7 +12,7 @@ export COMMIT_SHA=$(shell git rev-parse HEAD)
 current_arch := $(shell uname -m)
 export ARCH ?= $(shell case $(current_arch) in (x86_64) echo "amd64" ;; (i386) echo "386";; (aarch64|arm64) echo "arm64" ;; (armv6*) echo "arm/v6";; (armv7*) echo "arm/v7";; (ppc64*|s390*|riscv*) echo $(current_arch);; (*) echo "UNKNOWN-CPU";; esac)
 
-all: shellcheck build test
+all: hadolint shellcheck build test
 
 # Set to 'true' to disable parellel tests
 DISABLE_PARALLEL_TESTS ?= false
@@ -39,8 +39,11 @@ check-reqs:
 	@$(call check_cli,curl)
 	@$(call check_cli,jq)
 
+hadolint:
+	find . -type f -name 'Dockerfile*' -print0 | xargs -0 $(ROOT_DIR)/tools/hadolint
+
 shellcheck:
-	$(ROOT_DIR)/tools/shellcheck -e SC1091 jenkins-support *.sh tests/test_helpers.bash tools/shellcheck .ci/publish.sh
+	$(ROOT_DIR)/tools/shellcheck -e SC1091 jenkins-support *.sh tests/test_helpers.bash tools/hadolint tools/shellcheck .ci/publish.sh
 
 build: check-reqs
 	@set -x; $(bake_base_cli) --set '*.platform=linux/$(ARCH)' $(shell make --silent list)
@@ -101,4 +104,4 @@ clean:
 	rm -rf tests/test_helper/bats-*; \
 	rm -rf bats
 
-.PHONY: shellcheck check-reqs build clean test list test-install-plugins show
+.PHONY: hadolint shellcheck check-reqs build clean test list test-install-plugins show

@@ -1,5 +1,6 @@
 # escape=`
 FROM eclipse-temurin:11.0.15_10-jdk-windowsservercore-1809
+# hadolint shell=powershell
 
 ARG user=jenkins
 ARG http_port=8080

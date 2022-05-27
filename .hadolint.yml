@@ -1,0 +1,26 @@
+# Hadolint configuration file
+---
+# configure ignore rules
+# see https://github.com/hadolint/hadolint#rules for a list of available rules.
+
+ignored:
+  # Exclusions in this section have been triaged and determined to be false
+  # positives.
+  - DL3008  # Pin versions in apt-get install
+  - DL3018  # Pin versions in apk add
+  - DL3033  # Specify version with yum install -y <package>-<version>
+  - DL3041  # Specify version with dnf install -y <package>-<version>
+
+  # Here lies technical debt. Exclusions in this section have not yet been
+  # triaged. When working on on this section, pick an exclusion to triage, then:
+  # - If it is a false positive, add a "# hadolint ignore=<rule>" suppression,
+  #   then remove the exclusion from this section.
+  # - If it is not a false positive, fix the bug, then remove the exclusion from
+  #   this section.
+  - DL3003  # Use WORKDIR to switch to a directory
+  - DL3006  # Always tag the version of an image explicitly
+  - DL3015  # Avoid additional packages by specifying --no-install-recommends
+  - DL3046  # useradd without -l and high UID results in excessively large image
+  - DL3059  # Multiple consecutive `RUN` instructions. Consider consolidation.
+  - DL4006  # Set the SHELL option -o pipefail before RUN with a pipe in
+  - SC2098  # This expansion will not see the mentioned assignment

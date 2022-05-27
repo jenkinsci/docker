@@ -95,8 +95,8 @@ stage('Build') {
                         checkout scm
                     }
 
-                    stage('shellcheck') {
-                        sh 'make shellcheck'
+                    stage('Static analysis') {
+                        sh 'make hadolint shellcheck'
                     }
 
                     /* Outside of the trusted.ci environment, we're building and testing
