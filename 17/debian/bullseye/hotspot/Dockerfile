@@ -13,9 +13,11 @@ RUN apt-get update \
     ca-certificates \
     curl \
     git \
+    gnupg \
     gpg \
     libfontconfig1 \
     libfreetype6 \
+    ssh-client \
     unzip \
   && rm -rf /var/lib/apt/lists/*
 

@@ -7,10 +7,12 @@ RUN apt-get update \
     ca-certificates \
     curl \
     git \
+    gnupg \
     gpg \
     libfontconfig1 \
     libfreetype6 \
     procps \
+    ssh-client \
     unzip \
     wget \
   && rm -rf /var/lib/apt/lists/*
