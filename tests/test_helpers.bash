@@ -24,12 +24,14 @@ function retry {
 
     for ((i=0; i < attempts; i++)); do
         run "$@"
+        # shellcheck disable=SC2154
         if [ "$status" -eq 0 ]; then
             return 0
         fi
-        sleep $delay
+        sleep "${delay}"
     done
 
+    # shellcheck disable=SC2154
     echo "Command \"$*\" failed $attempts times. Status: $status. Output: $output" >&2
     false
 }
@@ -81,6 +83,7 @@ function get_jenkins_url {
     if [ -z "${DOCKER_HOST}" ]; then
         DOCKER_IP=localhost
     else
+        # shellcheck disable=SC2001
         DOCKER_IP=$(echo "$DOCKER_HOST" | sed -e 's|tcp://\(.*\):[0-9]*|\1|')
     fi
     echo "http://$DOCKER_IP:$(docker port "$(get_sut_container_name)" 8080 | cut -d: -f2)"
