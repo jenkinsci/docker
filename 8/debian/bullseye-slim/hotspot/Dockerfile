@@ -3,12 +3,15 @@ FROM eclipse-temurin:8u332-b09-jdk-focal as jre-build
 FROM debian:bullseye-20220509-slim
 
 RUN apt-get update \
-  && apt-get install -y \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates \
     curl \
     git \
+    gnupg \
     gpg \
     libfontconfig1 \
     libfreetype6 \
+    ssh-client \
     unzip \
   && rm -rf /var/lib/apt/lists/*
 

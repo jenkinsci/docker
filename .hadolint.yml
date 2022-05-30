@@ -19,6 +19,5 @@ ignored:
   #   this section.
   - DL3003  # Use WORKDIR to switch to a directory
   - DL3006  # Always tag the version of an image explicitly
-  - DL3015  # Avoid additional packages by specifying --no-install-recommends
   - DL3059  # Multiple consecutive `RUN` instructions. Consider consolidation.
   - SC2098  # This expansion will not see the mentioned assignment

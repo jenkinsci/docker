@@ -9,12 +9,15 @@ RUN jlink \
 FROM debian:bullseye-20220509
 
 RUN apt-get update \
-  && apt-get install -y \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates \
     curl \
     git \
+    gnupg \
     gpg \
     libfontconfig1 \
     libfreetype6 \
+    ssh-client \
     unzip \
   && rm -rf /var/lib/apt/lists/*
 
