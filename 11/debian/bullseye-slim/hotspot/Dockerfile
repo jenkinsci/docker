@@ -23,7 +23,9 @@ RUN apt-get update \
     unzip \
   && rm -rf /var/lib/apt/lists/*
 
-RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash \
+RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh -o /tmp/script.deb.sh \
+  && bash /tmp/script.deb.sh \
+  && rm -f /tmp/script.deb.sh \
   && apt-get install -y --no-install-recommends \
     git-lfs \
   && rm -rf /var/lib/apt/lists/* \

@@ -25,7 +25,9 @@ RUN yum install -y \
     which \
   && yum clean all
 
-RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.rpm.sh | bash \
+RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.rpm.sh -o /tmp/script.rpm.sh \
+  && bash /tmp/script.rpm.sh \
+  && rm -f /tmp/script.rpm.sh \
   && yum install -y \
     git-lfs \
   && yum clean all \

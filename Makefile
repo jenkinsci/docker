@@ -40,7 +40,7 @@ check-reqs:
 	@$(call check_cli,jq)
 
 hadolint:
-	find . -type f -name 'Dockerfile*' -print0 | xargs -0 $(ROOT_DIR)/tools/hadolint
+	find . -type f -name 'Dockerfile*' -not -path "./bats/*" -print0 | xargs -0 $(ROOT_DIR)/tools/hadolint
 
 shellcheck:
 	$(ROOT_DIR)/tools/shellcheck -e SC1091 jenkins-support *.sh tests/test_helpers.bash tools/hadolint tools/shellcheck .ci/publish.sh
