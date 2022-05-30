@@ -17,7 +17,5 @@ ignored:
   #   then remove the exclusion from this section.
   # - If it is not a false positive, fix the bug, then remove the exclusion from
   #   this section.
-  - DL3003  # Use WORKDIR to switch to a directory
   - DL3006  # Always tag the version of an image explicitly
   - DL3059  # Multiple consecutive `RUN` instructions. Consider consolidation.
-  - SC2098  # This expansion will not see the mentioned assignment
