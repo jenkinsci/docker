@@ -15,38 +15,25 @@ RUN jlink \
 FROM alpine:3.16.0
 
 RUN apk add --no-cache \
-  bash \
-  coreutils \
-  curl \
-  git \
-  gnupg \
-  musl-locales \
-  musl-locales-lang \
-  openssh-client \
-  tini \
-  ttf-dejavu \
-  tzdata \
-  unzip
+    bash \
+    coreutils \
+    curl \
+    git \
+    git-lfs \
+    gnupg \
+    musl-locales \
+    musl-locales-lang \
+    openssh-client \
+    tini \
+    ttf-dejavu \
+    tzdata \
+    unzip \
+  && git lfs install
 
 ENV LANG C.UTF-8
 
 ARG TARGETARCH
 ARG COMMIT_SHA
-ARG GIT_LFS_VERSION=3.1.4
-
-# required for multi-arch support, revert to package cloud after:
-# https://github.com/git-lfs/git-lfs/issues/4546
-COPY git_lfs_pub.gpg /tmp/git_lfs_pub.gpg
-RUN GIT_LFS_ARCHIVE="git-lfs-linux-${TARGETARCH}-v${GIT_LFS_VERSION}.tar.gz" \
-    GIT_LFS_RELEASE_URL="https://github.com/git-lfs/git-lfs/releases/download/v${GIT_LFS_VERSION}/${GIT_LFS_ARCHIVE}"\
-    set -x; curl --fail --silent --location --show-error --output "/tmp/${GIT_LFS_ARCHIVE}" "${GIT_LFS_RELEASE_URL}" && \
-    curl --fail --silent --location --show-error --output "/tmp/git-lfs-sha256sums.asc" https://github.com/git-lfs/git-lfs/releases/download/v${GIT_LFS_VERSION}/sha256sums.asc && \
-    gpg --no-tty --import /tmp/git_lfs_pub.gpg && \
-    gpg -d /tmp/git-lfs-sha256sums.asc | grep "${GIT_LFS_ARCHIVE}" | (cd /tmp; sha256sum -c ) && \
-    mkdir -p /tmp/git-lfs && \
-    tar xzvf "/tmp/${GIT_LFS_ARCHIVE}" -C /tmp/git-lfs && \
-    bash -x /tmp/git-lfs/install.sh && \
-    rm -rf /tmp/git-lfs*
 
 ARG user=jenkins
 ARG group=jenkins
@@ -91,7 +78,9 @@ ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-w
 # could use ADD but this one does not check Last-Modified header neither does it allow to control checksum
 # see https://github.com/docker/docker/issues/8331
 RUN curl -fsSL ${JENKINS_URL} -o /usr/share/jenkins/jenkins.war \
-  && echo "${JENKINS_SHA}  /usr/share/jenkins/jenkins.war" | sha256sum -c -
+  && echo "${JENKINS_SHA}  /usr/share/jenkins/jenkins.war" >/tmp/jenkins_sha \
+  && sha256sum -c --strict /tmp/jenkins_sha \
+  && rm -f /tmp/jenkins_sha
 
 ENV JENKINS_UC https://updates.jenkins.io
 ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental

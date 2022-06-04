@@ -63,10 +63,6 @@ variable "LATEST_LTS" {
   default = "false"
 }
 
-variable "GIT_LFS_VERSION" {
-  default = "3.1.4"
-}
-
 variable "PLUGIN_CLI_VERSION" {
   default = "2.12.6"
 }
@@ -127,7 +123,6 @@ target "alpine_jdk8" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
-    GIT_LFS_VERSION = GIT_LFS_VERSION
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
@@ -145,7 +140,6 @@ target "alpine_jdk11" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
-    GIT_LFS_VERSION = GIT_LFS_VERSION
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
@@ -166,7 +160,6 @@ target "alpine_jdk17" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
-    GIT_LFS_VERSION = GIT_LFS_VERSION
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
@@ -184,7 +177,6 @@ target "centos7_jdk8" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
-    GIT_LFS_VERSION = GIT_LFS_VERSION
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
@@ -202,7 +194,6 @@ target "centos7_jdk11" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
-    GIT_LFS_VERSION = GIT_LFS_VERSION
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
@@ -223,7 +214,6 @@ target "debian_jdk8" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
-    GIT_LFS_VERSION = GIT_LFS_VERSION
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
@@ -242,7 +232,6 @@ target "debian_jdk11" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
-    GIT_LFS_VERSION = GIT_LFS_VERSION
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
@@ -259,6 +248,25 @@ target "debian_jdk11" {
   platforms = ["linux/amd64", "linux/arm64", "linux/s390x"]
 }
 
+target "debian_jdk17" {
+  dockerfile = "17/debian/bullseye/hotspot/Dockerfile"
+  context = "."
+  args = {
+    JENKINS_VERSION = JENKINS_VERSION
+    JENKINS_SHA = JENKINS_SHA
+    COMMIT_SHA = COMMIT_SHA
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+  }
+  tags = [
+    tag(true, "jdk17-preview"),
+    tag_weekly(false, "latest-jdk17-preview"),
+    tag_weekly(false, "jdk17-preview"),
+    tag_lts(false, "lts-jdk17-preview"),
+    tag_lts(true, "lts-jdk17-preview")
+  ]
+  platforms = ["linux/amd64", "linux/arm64"]
+}
+
 target "debian_slim_jdk8" {
   dockerfile = "8/debian/bullseye-slim/hotspot/Dockerfile"
   context = "."
@@ -266,7 +274,6 @@ target "debian_slim_jdk8" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
-    GIT_LFS_VERSION = GIT_LFS_VERSION
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
@@ -284,7 +291,6 @@ target "debian_slim_jdk11" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
-    GIT_LFS_VERSION = GIT_LFS_VERSION
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
@@ -305,7 +311,6 @@ target "debian_slim_jdk17" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
-    GIT_LFS_VERSION = GIT_LFS_VERSION
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
@@ -330,26 +335,6 @@ target "rhel_ubi8_jdk11" {
     tag_weekly(false, "rhel-ubi8-jdk11"),
     tag_lts(false, "lts-rhel-ubi8-jdk11"),
     tag_lts(true, "lts-rhel-ubi8-jdk11")
-  ]
-  platforms = ["linux/amd64", "linux/arm64"]
-}
-
-target "debian_jdk17" {
-  dockerfile = "17/debian/bullseye/hotspot/Dockerfile"
-  context = "."
-  args = {
-    JENKINS_VERSION = JENKINS_VERSION
-    JENKINS_SHA = JENKINS_SHA
-    COMMIT_SHA = COMMIT_SHA
-    GIT_LFS_VERSION = GIT_LFS_VERSION
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-  }
-  tags = [
-    tag(true, "jdk17-preview"),
-    tag_weekly(false, "latest-jdk17-preview"),
-    tag_weekly(false, "jdk17-preview"),
-    tag_lts(false, "lts-jdk17-preview"),
-    tag_lts(true, "lts-jdk17-preview")
   ]
   platforms = ["linux/amd64", "linux/arm64"]
 }

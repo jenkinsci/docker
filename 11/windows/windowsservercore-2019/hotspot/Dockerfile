@@ -19,6 +19,7 @@ VOLUME $JENKINS_HOME
 # Jenkins is run with user `jenkins`
 # If you bind mount a volume from the host or a data container,
 # ensure you use the same uid
+# hadolint ignore=DL4006
 RUN New-LocalUser -Name $env:user -AccountNeverExpires -Description 'Jenkins User' -NoPassword -UserMayNotChangePassword | Out-Null ; `
     Set-Localuser -Name $env:user -PasswordNeverExpires $true | Out-Null ; `
     Add-LocalGroupMember -Group "Administrators" -Member "${env:user}" ; `
@@ -34,6 +35,7 @@ USER ${user}
 # `C:/ProgramData/Jenkins/Reference/` contains all reference configuration we want
 # to set on a fresh new installation. Use it to bundle additional plugins
 # or config file with your custom jenkins Docker image.
+# hadolint ignore=DL4006
 RUN New-Item -ItemType Directory -Force -Path C:/ProgramData/Jenkins/Reference/init.groovy.d | Out-Null
 
 # jenkins version being bundled in this docker image
