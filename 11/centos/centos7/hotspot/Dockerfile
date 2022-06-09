@@ -11,11 +11,6 @@ RUN jlink \
 
 FROM centos:centos7.9.2009
 
-ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
-
-ARG TARGETARCH
-ARG COMMIT_SHA
-
 RUN yum install -y \
     curl \
     fontconfig \
@@ -32,6 +27,8 @@ RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.r
     git-lfs \
   && yum clean all \
   && git lfs install
+
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 ARG TARGETARCH
 ARG COMMIT_SHA
