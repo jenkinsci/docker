@@ -19,4 +19,3 @@ ignored:
   #   this section.
   - DL3006  # Always tag the version of an image explicitly
   - DL3059  # Multiple consecutive `RUN` instructions. Consider consolidation.
-  - SC2098  # This expansion will not see the mentioned assignment
