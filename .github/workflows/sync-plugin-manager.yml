@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3.0.2
 
       - name: PLUGIN_CLI_VERSION
         id: lts
@@ -46,7 +46,7 @@ jobs:
           git diff
           # update the changelog
           
-      - uses: tibdex/github-app-token@v1
+      - uses: tibdex/github-app-token@v1.5.0
         id: generate-token
         with:
           app_id: ${{ secrets.JENKINS_DEPENDENCY_UPDATER_APP_ID }}
@@ -54,7 +54,7 @@ jobs:
 
       - name: Create Pull Request
         id: cpr
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4.0.4
         if: ${{ steps.update.outputs.available == 'true' }}
         with:
           token: ${{ steps.generate-token.outputs.token }}
