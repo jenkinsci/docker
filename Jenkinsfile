@@ -72,10 +72,12 @@ stage('Build') {
         def images = [
                 'almalinux_jdk11',
                 'alpine_jdk11',
+                'alpine_jdk17',
                 'centos7_jdk11',
                 'debian_jdk11',
                 'debian_jdk17',
                 'debian_slim_jdk11',
+                'debian_slim_jdk17',
                 'rhel_ubi8_jdk11',
         ]
         for (i in images) {
@@ -89,8 +91,8 @@ stage('Build') {
                         checkout scm
                     }
 
-                    stage('shellcheck') {
-                        sh 'make shellcheck'
+                    stage('Static analysis') {
+                        sh 'make hadolint shellcheck'
                     }
 
                     /* Outside of the trusted.ci environment, we're building and testing

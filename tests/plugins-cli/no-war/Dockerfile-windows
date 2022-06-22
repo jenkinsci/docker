@@ -1,4 +1,5 @@
 FROM bats-jenkins
+# hadolint shell=powershell
 
 COPY plugins.txt C:/ProgramData/Jenkins/Reference/plugins.txt
 RUN Remove-Item -Force C:/ProgramData/Jenkins/jenkins.war

@@ -1,4 +1,4 @@
-FROM eclipse-temurin:11.0.15_10-jdk-focal as jre-build
+FROM eclipse-temurin:17.0.3_7-jdk-focal as jre-build
 
 RUN jlink \
          --add-modules ALL-MODULE-PATH \
@@ -100,6 +100,7 @@ EXPOSE ${http_port}
 EXPOSE ${agent_port}
 
 ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
+ENV JENKINS_ENABLE_FUTURE_JAVA=true
 
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH "${JAVA_HOME}/bin:${PATH}"
