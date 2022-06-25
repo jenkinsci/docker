@@ -46,15 +46,15 @@ function get_sut_image {
 }
 
 function get_jenkins_version() {
-  test -n "${IMAGE:?"[sut_image] Please set the variable 'IMAGE' to the name of the image to test in 'docker-bake.hcl'."}"
+    test -n "${IMAGE:?"[sut_image] Please set the variable 'IMAGE' to the name of the image to test in 'docker-bake.hcl'."}"
 
-  make --silent show | jq -r ".target.${IMAGE}.args.JENKINS_VERSION"
+    make --silent show | jq -r ".target.${IMAGE}.args.JENKINS_VERSION"
 }
 
 function get_commit_sha() {
-  test -n "${IMAGE:?"[sut_image] Please set the variable 'IMAGE' to the name of the image to test in 'docker-bake.hcl'."}"
+    test -n "${IMAGE:?"[sut_image] Please set the variable 'IMAGE' to the name of the image to test in 'docker-bake.hcl'."}"
 
-  make --silent show | jq -r ".target.${IMAGE}.args.COMMIT_SHA"
+    make --silent show | jq -r ".target.${IMAGE}.args.COMMIT_SHA"
 }
 
 function get_test_image {
@@ -73,10 +73,10 @@ function docker_build_child {
     local dir=$1; shift
     local build_opts=("$@")
     local tmp
-    tmp=$(mktemp "$dir/Dockerfile.XXXXXX")
-    sed -e "s#FROM bats-jenkins.*#FROM ${parent}#g" "$dir/Dockerfile" > "$tmp"
-    docker build --tag "$tag" --no-cache "${build_opts[@]}" --file "${tmp}" "${dir}" 2>&1
-    rm "$tmp"
+    tmp=$(mktemp "$dir/Dockerfile.XXXXXX") \
+    && sed -e "s#FROM bats-jenkins.*#FROM ${parent}#g" "$dir/Dockerfile" > "$tmp" \
+    && docker build --tag "$tag" --no-cache "${build_opts[@]}" --file "${tmp}" "${dir}" \
+    && rm "$tmp"
 }
 
 function get_jenkins_url {
