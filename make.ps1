@@ -19,8 +19,8 @@ if(![String]::IsNullOrWhiteSpace($env:DOCKERHUB_ORGANISATION)) {
     $Organization = $env:DOCKERHUB_ORGANISATION
 }
 
-# this is the jdk version that will be used for the 'bare tag' images, e.g., jdk8-windowsservercore-1809 -> windowsserver-1809
-$defaultBuild = '8'
+# this is the jdk version that will be used for the 'bare tag' images, e.g., jdk11-windowsservercore-1809 -> windowsserver-1809
+$defaultBuild = '11'
 $defaultJvm = 'hotspot'
 $builds = @{}
 
