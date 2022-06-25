@@ -4,7 +4,7 @@ load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
 load test_helpers
 
-SUT_IMAGE=$(get_sut_image)
+SUT_IMAGE="$(get_sut_image)"
 SUT_DESCRIPTION="${IMAGE}-install-plugins"
 
 teardown() {
@@ -13,7 +13,7 @@ teardown() {
 
 @test "[${SUT_DESCRIPTION}] plugins are installed with install-plugins.sh" {
   local custom_sut_image="$(get_test_image)"
-  run docker_build_child "${SUT_IMAGE}" "${custom_sut_image}" "${BATS_TEST_DIRNAME}/install-plugins" --no-cache
+  run docker_build_child "${SUT_IMAGE}" "${custom_sut_image}" "${BATS_TEST_DIRNAME}/install-plugins"
   assert_success
   refute_line --partial 'Skipping already installed dependency'
 
