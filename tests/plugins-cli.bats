@@ -12,8 +12,9 @@ teardown() {
 }
 
 @test "[${SUT_DESCRIPTION}] plugins are installed with jenkins-plugin-cli" {
-  local custom_sut_image="$(get_test_image)"
-  run docker_build_child "${SUT_IMAGE}" "${custom_sut_image}" "${BATS_TEST_DIRNAME}/plugins-cli" --no-cache
+  local custom_sut_image
+  custom_sut_image="$(get_test_image)"
+  run docker_build_child "${SUT_IMAGE}" "${custom_sut_image}" "${BATS_TEST_DIRNAME}/plugins-cli"
   assert_success
   refute_line --partial 'Skipping already installed dependency'
 
@@ -42,11 +43,12 @@ teardown() {
 }
 
 @test "[${SUT_DESCRIPTION}] plugins are installed with jenkins-plugin-cli with non-default REF" {
-  local custom_sut_image="$(get_test_image)"
-  local custom_ref=/var/lib/jenkins/ref
+  local custom_sut_image custom_ref
+  custom_sut_image="$(get_test_image)"
+  custom_ref=/var/lib/jenkins/ref
 
   # Build a custom image to validate the build time behavior
-  run docker_build_child "${SUT_IMAGE}" "${custom_sut_image}" "${BATS_TEST_DIRNAME}/plugins-cli/ref" --build-arg REF="${custom_ref}" --no-cache
+  run docker_build_child "${SUT_IMAGE}" "${custom_sut_image}" "${BATS_TEST_DIRNAME}/plugins-cli/ref" --build-arg REF="${custom_ref}"
   assert_success
   refute_line --partial 'Skipping already installed dependency'
 
@@ -66,7 +68,8 @@ teardown() {
 }
 
 @test "[${SUT_DESCRIPTION}] plugins are installed with jenkins-plugin-cli from a plugins file" {
-  local custom_sut_image="$(get_test_image)"
+  local custom_sut_image
+  custom_sut_image="$(get_test_image)"
 
   # Then proceed with child
   run docker_build_child "${SUT_IMAGE}" "${custom_sut_image}" "${BATS_TEST_DIRNAME}/plugins-cli/pluginsfile"
@@ -201,21 +204,24 @@ teardown() {
 
 
 @test "[${SUT_DESCRIPTION}] plugins are installed with jenkins-plugin-cli and no war" {
-  local custom_sut_image="$(get_test_image)"
+  local custom_sut_image
+  custom_sut_image="$(get_test_image)"
   run docker_build_child "${SUT_IMAGE}" "${custom_sut_image}" "${BATS_TEST_DIRNAME}/plugins-cli/no-war"
   assert_success
 }
 
 @test "[${SUT_DESCRIPTION}] Use a custom jenkins.war" {
-  local custom_sut_image="$(get_test_image)"
+  local custom_sut_image
+  custom_sut_image="$(get_test_image)"
   # Build the image using the right Dockerfile setting a new war with JENKINS_WAR env and with a weird plugin inside
-  run docker_build_child "${SUT_IMAGE}" "${custom_sut_image}" "${BATS_TEST_DIRNAME}/plugins-cli/custom-war" --no-cache
+  run docker_build_child "${SUT_IMAGE}" "${custom_sut_image}" "${BATS_TEST_DIRNAME}/plugins-cli/custom-war"
   assert_success
 }
 
 @test "[${SUT_DESCRIPTION}] JAVA_OPTS environment variable is used with jenkins-plugin-cli" {
-  local custom_sut_image="$(get_test_image)"
-  run docker_build_child "${SUT_IMAGE}" "${custom_sut_image}" "${BATS_TEST_DIRNAME}/plugins-cli/java-opts" --no-cache
+  local custom_sut_image
+  custom_sut_image="$(get_test_image)"
+  run docker_build_child "${SUT_IMAGE}" "${custom_sut_image}" "${BATS_TEST_DIRNAME}/plugins-cli/java-opts"
   assert_success
   # Assert JAVA_OPTS has been used and 'java.opts.test' has been set to JVM
   assert_line --regexp 'java.opts.test.*=.*true'

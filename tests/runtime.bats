@@ -13,7 +13,8 @@ teardown() {
 }
 
 @test "[${SUT_DESCRIPTION}] test version in docker metadata" {
-  local version=$(get_jenkins_version)
+  local version
+  version=$(get_jenkins_version)
   assert "${version}" docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.version"}}' $SUT_IMAGE
 }
 
@@ -23,7 +24,8 @@ teardown() {
 }
 
 @test "[${SUT_DESCRIPTION}] test commit SHA in docker metadata" {
-  local revision=$(get_commit_sha)
+  local revision
+  revision=$(get_commit_sha)
   assert "${revision}" docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision"}}' $SUT_IMAGE
 }
 
