@@ -34,7 +34,7 @@ Tests currently do not work on Mac M1 due to a link:https://docs.docker.com/dock
 make build
 
 ## only build a specific linux image
-make build-debian_jdk8 # or build-alpine_jdk8 build-debian_slim_jdk8 build-debian_jdk11 ...
+make build-debian_jdk11 # or build-alpine_jdk11 build-debian_slim_jdk11 build-debian_jdk11 ...
 
 --
 
@@ -70,13 +70,13 @@ to the path of the bats test harness file to execute alone.
 make test
 
 ## Run tests for a specific linux platform
-make test-debian_jdk8 # or test-alpine_jdk8 test-debian_slim_jdk8 test-debian_jdk11 ...
+make test-debian_jdk11 # or test-alpine_jdk11 test-debian_slim_jdk11 test-debian_jdk11 ...
 
-## Run tests for Alpine Linux JDK8 platform in sequential mode
-DISABLE_PARALLEL_TESTS=true make test-alpine_jdk8
+## Run tests for Alpine Linux JDK11 platform in sequential mode
+DISABLE_PARALLEL_TESTS=true make test-alpine_jdk11
 
-## Only run the test suite `functions.bats` for the CentOS 7 JDK8 platform
-TEST_SUITES=./tests/functions.bats make test-centos7_jdk8
+## Only run the test suite `functions.bats` for the CentOS 7 JDK11 platform
+TEST_SUITES=./tests/functions.bats make test-centos7_jdk11
 --
 
 == Multiarch support

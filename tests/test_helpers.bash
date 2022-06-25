@@ -75,7 +75,7 @@ function docker_build_child {
     local tmp
     tmp=$(mktemp "$dir/Dockerfile.XXXXXX")
     sed -e "s#FROM bats-jenkins.*#FROM ${parent}#g" "$dir/Dockerfile" > "$tmp"
-    docker build --tag "$tag" "${build_opts[@]}" --file "${tmp}" "${dir}" 2>&1
+    docker build --tag "$tag" --no-cache "${build_opts[@]}" --file "${tmp}" "${dir}" 2>&1
     rm "$tmp"
 }
 
