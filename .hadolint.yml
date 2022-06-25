@@ -18,4 +18,3 @@ ignored:
   # - If it is not a false positive, fix the bug, then remove the exclusion from
   #   this section.
   - DL3006  # Always tag the version of an image explicitly
-  - DL3059  # Multiple consecutive `RUN` instructions. Consider consolidation.

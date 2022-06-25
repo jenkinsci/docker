@@ -11,7 +11,9 @@ COPY WEB-INF/ WEB-INF/
 RUN Copy-Item C:/ProgramData/Jenkins/jenkins.war $env:JENKINS_WAR 
 
 # Add the weird plugin to the new custom war
+# hadolint ignore=DL3059
 RUN jar -uf my-custom-jenkins.war WEB-INF/* 
 
 # Run the jenkins-plugin-cli script
+# hadolint ignore=DL3059
 RUN C:/ProgramData/Jenkins/jenkins-plugin-cli.ps1 --war $env:JENKINS_WAR --plugins junit:1.6
