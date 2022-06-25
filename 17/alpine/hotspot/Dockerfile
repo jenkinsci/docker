@@ -3,8 +3,8 @@ FROM eclipse-temurin:17.0.3_7-jdk-alpine AS jre-build
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
 # while still saving space (approx 200mb from the full distribution)
-RUN apk add --no-cache binutils
-RUN jlink \
+RUN apk add --no-cache binutils \
+  && jlink \
          --add-modules ALL-MODULE-PATH \
          --strip-debug \
          --no-man-pages \
