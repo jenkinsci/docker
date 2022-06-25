@@ -25,19 +25,15 @@ stage('Build') {
                 * the Dockerfile in this repository, but not publishing to docker hub
                 */
                 stage('Build') {
-                    infra.withDockerCredentials {
-                        powershell './make.ps1'
-                    }
+                  powershell './make.ps1'
                 }
 
                 stage('Test') {
-                    infra.withDockerCredentials {
-                        def windowsTestStatus = powershell(script: './make.ps1 test', returnStatus: true)
-                        junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
-                        if (windowsTestStatus > 0) {
-                            // If something bad happened let's clean up the docker images
-                            error('Windows test stage failed.')
-                        }
+                    def windowsTestStatus = powershell(script: './make.ps1 test', returnStatus: true)
+                    junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
+                    if (windowsTestStatus > 0) {
+                        // If something bad happened let's clean up the docker images
+                        error('Windows test stage failed.')
                     }
                 }
 
@@ -99,17 +95,13 @@ stage('Build') {
                     * the Dockerfile in this repository, but not publishing to docker hub
                     */
                     stage("Build linux-${imageToBuild}") {
-                        infra.withDockerCredentials {
-                            sh "make build-${imageToBuild}"
-                        }
+                        sh "make build-${imageToBuild}"
                     }
 
                     stage("Test linux-${imageToBuild}") {
                         sh "make prepare-test"
                         try {
-                            infra.withDockerCredentials {
-                                sh "make test-${imageToBuild}"
-                            }
+                            sh "make test-${imageToBuild}"
                         } catch (err) {
                             error("${err.toString()}")
                         } finally {
@@ -128,13 +120,11 @@ stage('Build') {
 
                 // sanity check that proves all images build on declared platforms
                 stage('Multi arch build') {
-                    infra.withDockerCredentials {
-                        sh '''
-                            docker buildx create --use
-                            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-                            docker buildx bake --file docker-bake.hcl linux
-                        '''
-                    }
+                    sh '''
+                        docker buildx create --use
+                        docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+                        docker buildx bake --file docker-bake.hcl linux
+                    '''
                 }
             }
         }
