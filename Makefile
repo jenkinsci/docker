@@ -61,7 +61,7 @@ list: check-reqs
 bats:
 	git clone https://github.com/bats-core/bats-core bats ;\
 	cd bats ;\
-	git checkout eac1e9d047b2b8137d85307fc94439c90bdc25ae
+	git checkout 410dd229a5ed005c68167cc90ed0712ad2a1c909; # v1.7.0
 
 prepare-test: bats check-reqs
 	git submodule update --init --recursive
