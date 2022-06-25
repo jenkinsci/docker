@@ -76,7 +76,7 @@ function docker_build_child {
     tmp=$(mktemp "$dir/Dockerfile.XXXXXX") \
     && sed -e "s#FROM bats-jenkins.*#FROM ${parent}#g" "$dir/Dockerfile" > "$tmp" \
     && docker build --tag "$tag" --no-cache "${build_opts[@]}" --file "${tmp}" "${dir}" \
-    && rm "$tmp"
+    && rm -f "$tmp"
 }
 
 function get_jenkins_url {
