@@ -22,7 +22,7 @@ jobs:
       - name: Check if update is available
         id: update
         run: |
-          CURRENT_VERSION=$(docker buildx bake -f docker-bake.hcl --print alpine_jdk8 | jq -r ".target.alpine_jdk8.args.PLUGIN_CLI_VERSION")
+          CURRENT_VERSION=$(docker buildx bake -f docker-bake.hcl --print alpine_jdk11 | jq -r ".target.alpine_jdk11.args.PLUGIN_CLI_VERSION")
           if [ "$CURRENT_VERSION" = "${{ steps.lts.outputs.next-version }}" ]; then
             echo "::set-output name=available::false"
           else
