@@ -94,9 +94,6 @@ test-%: prepare-test
 test: prepare-test
 	@make --silent list | while read image; do make --silent "test-$${image}"; done
 
-test-install-plugins: prepare-test
-	@make --silent test TEST_SUITES=tests/install-plugins.bats tests/plugins-cli.bats
-
 publish:
 	./.ci/publish.sh
 
@@ -104,4 +101,4 @@ clean:
 	rm -rf tests/test_helper/bats-*; \
 	rm -rf bats
 
-.PHONY: hadolint shellcheck check-reqs build clean test list test-install-plugins show
+.PHONY: hadolint shellcheck check-reqs build clean test list show

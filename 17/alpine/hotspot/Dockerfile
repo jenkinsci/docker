@@ -111,9 +111,6 @@ COPY jenkins-plugin-cli.sh /bin/jenkins-plugin-cli
 
 ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
-# from a derived Dockerfile, can use `RUN install-plugins.sh active.txt` to setup $REF/plugins from a support bundle
-COPY install-plugins.sh /usr/local/bin/install-plugins.sh
-
 # metadata labels
 LABEL \
     org.opencontainers.image.vendor="Jenkins project" \
