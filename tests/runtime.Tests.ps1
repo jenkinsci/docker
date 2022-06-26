@@ -100,11 +100,11 @@ Describe "[$TEST_TAG] passing JVM parameters" {
     }
 
     function Get-Csp-Value() {
-      return (Get-JenkinsWebpage $SUT_CONTAINER "/systemInfo").Replace("</tr>","</tr>`n").Replace("<wbr>", "").Split("`n") | Select-String -Pattern '<td class="pane">hudson.model.DirectoryBrowserSupport.CSP</td>' 
+      return (Run-In-Script-Console $SUT_CONTAINER "System.getProperty('hudson.model.DirectoryBrowserSupport.CSP')")
     }
 
     function Get-Timezone-Value() {
-      return (Get-JenkinsWebpage $SUT_CONTAINER "/systemInfo").Replace("</tr>","</tr>`n").Replace("<wbr>", "").Split("`n") | Select-String -Pattern '<td class="pane">user.timezone</td>' 
+      return (Run-In-Script-Console $SUT_CONTAINER "System.getProperty('user.timezone')")
     }
   }
 

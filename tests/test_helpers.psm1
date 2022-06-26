@@ -154,6 +154,29 @@ function Get-JenkinsWebpage($Container, $Url) {
     return $null    
 }
 
+function Run-In-Script-Console($Container, $Script) {
+    $jenkinsPassword = Get-JenkinsPassword $Container
+    $jenkinsUrl = Get-JenkinsUrl $Container
+    if ($null -ne $jenkinsPassword) {
+        $pair = "admin:$($jenkinsPassword)"
+        $encodedCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($pair))
+        $basicAuthValue = "Basic $encodedCreds"
+        $Headers = @{
+            Authorization = $basicAuthValue
+        }
+        $crumb = (Invoke-RestMethod -Uri $('{0}{1}' -f $jenkinsUrl, '/crumbIssuer/api/json') -Headers $headers -TimeoutSec 60 -Method Get).crumb
+        $crumbHeaders = @{
+            "Jenkins-Crumb" = $crumb
+            Authorization = $basicAuthValue
+        }
+        $res = Invoke-WebRequest -Uri $('{0}{1}' -f $jenkinsUrl, '/scriptText') -Headers $crumbHeaders -TimeoutSec 60 -Method Post -Body "script=\"$Script\""
+        if ($res.StatusCode -eq 200) {
+            return $res.Content.replace('Result: ', '')
+        }
+    }
+    return $null
+}
+
 function Test-Url($Container, $Url) {
     $jenkinsPassword = Get-JenkinsPassword $Container
     $jenkinsUrl = Get-JenkinsUrl $Container
