@@ -71,7 +71,7 @@ Describe "[$TEST_TAG] passing JVM parameters" {
     $cspSetting = @'
 -Dhudson.model.DirectoryBrowserSupport.CSP=\"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';\"
 '@
-    $cspRegex = [regex]::Escape("default-src &#039;self&#039;; script-src &#039;self&#039; &#039;unsafe-inline&#039; &#039;unsafe-eval&#039;; style-src &#039;self&#039; &#039;unsafe-inline&#039;;")
+    $cspRegex = [regex]::Escape("default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';")
 
     function Start-With-Opts() {
       Param (
