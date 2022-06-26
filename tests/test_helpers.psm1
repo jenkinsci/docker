@@ -161,15 +161,13 @@ function Run-In-Script-Console($Container, $Script) {
         $pair = "admin:$($jenkinsPassword)"
         $encodedCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($pair))
         $basicAuthValue = "Basic $encodedCreds"
-        $Headers = @{
-            Authorization = $basicAuthValue
+        $headers = @{ Authorization = $basicAuthValue }
+        $crumb = (Invoke-RestMethod -Uri $('{0}{1}' -f $jenkinsUrl, '/crumbIssuer/api/json') -Headers $headers -TimeoutSec 60 -Method Get -SessionVariable session -UseBasicParsing).crumb
+        if ($null -ne $crumb) {
+            $headers += @{ "Jenkins-Crumb" = $crumb }
         }
-        $crumb = (Invoke-RestMethod -Uri $('{0}{1}' -f $jenkinsUrl, '/crumbIssuer/api/json') -Headers $headers -TimeoutSec 60 -Method Get).crumb
-        $crumbHeaders = @{
-            "Jenkins-Crumb" = $crumb
-            Authorization = $basicAuthValue
-        }
-        $res = Invoke-WebRequest -Uri $('{0}{1}' -f $jenkinsUrl, '/scriptText') -Headers $crumbHeaders -TimeoutSec 60 -Method Post -Body "script=\"$Script\""
+        $body = @{ script = $Script }
+        $res = Invoke-WebRequest -Uri $('{0}{1}' -f $jenkinsUrl, '/scriptText') -Headers $headers -TimeoutSec 60 -Method Post -WebSession $session -UseBasicParsing -Body $body
         if ($res.StatusCode -eq 200) {
             return $res.Content.replace('Result: ', '')
         }
