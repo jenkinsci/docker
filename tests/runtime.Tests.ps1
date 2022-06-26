@@ -71,7 +71,7 @@ Describe "[$TEST_TAG] passing JVM parameters" {
     $cspSetting = @'
 -Dhudson.model.DirectoryBrowserSupport.CSP=\"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';\"
 '@
-    $cspRegex = [regex]::Escape("default-src &#039;self&#039;; script-src &#039;self&#039; &#039;unsafe-inline&#039; &#039;unsafe-eval&#039;; style-src &#039;self&#039; &#039;unsafe-inline&#039;;")
+    $cspRegex = [regex]::Escape("default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';")
 
     function Start-With-Opts() {
       Param (
@@ -100,11 +100,11 @@ Describe "[$TEST_TAG] passing JVM parameters" {
     }
 
     function Get-Csp-Value() {
-      return (Get-JenkinsWebpage $SUT_CONTAINER "/systemInfo").Replace("</tr>","</tr>`n").Replace("<wbr>", "").Split("`n") | Select-String -Pattern '<td class="pane">hudson.model.DirectoryBrowserSupport.CSP</td>' 
+      return (Run-In-Script-Console $SUT_CONTAINER "System.getProperty('hudson.model.DirectoryBrowserSupport.CSP')")
     }
 
     function Get-Timezone-Value() {
-      return (Get-JenkinsWebpage $SUT_CONTAINER "/systemInfo").Replace("</tr>","</tr>`n").Replace("<wbr>", "").Split("`n") | Select-String -Pattern '<td class="pane">user.timezone</td>' 
+      return (Run-In-Script-Console $SUT_CONTAINER "System.getProperty('user.timezone')")
     }
   }
 
