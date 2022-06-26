@@ -148,7 +148,7 @@ function Run-In-Script-Console($Container, $Script) {
 
         $crumb = (Invoke-RestMethod -Uri $('{0}{1}' -f $jenkinsUrl, '/crumbIssuer/api/json') -Headers $Headers -TimeoutSec 60 -Method Get -SessionVariable session -UseBasicParsing).crumb
         if ($null -ne $crumb) {
-            $headers += @{ "Jenkins-Crumb" = $crumb }
+            $Headers += @{ "Jenkins-Crumb" = $crumb }
         }
         $body = @{ script = $Script }
         $res = Invoke-WebRequest -Uri $('{0}{1}' -f $jenkinsUrl, '/scriptText') -Headers $Headers -TimeoutSec 60 -Method Post -WebSession $session -UseBasicParsing -Body $body
