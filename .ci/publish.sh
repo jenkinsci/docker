@@ -121,7 +121,11 @@ publish() {
     COMMIT_SHA=$(git rev-parse HEAD)
     export COMMIT_SHA JENKINS_VERSION JENKINS_SHA LATEST_WEEKLY LATEST_LTS
 
-    docker buildx bake --file docker-bake.hcl "${build_opts[@]+"${build_opts[@]}"}" linux
+    if [ "$dry_run" = true ]; then
+        echo docker buildx bake --file docker-bake.hcl "${build_opts[@]+"${build_opts[@]}"}" linux
+    else
+        docker buildx bake --file docker-bake.hcl "${build_opts[@]+"${build_opts[@]}"}" linux
+    fi
 }
 
 # Process arguments
@@ -161,21 +165,31 @@ if [ "$dry_run" = true ]; then
     echo "Dry run, will not publish images"
 fi
 
-versions=$(get-latest-versions)
-latest_weekly_version=$(echo "${versions}" | tail -n 1)
+## Static list of versions to be rebuilt as per https://github.com/jenkinsci/docker/issues/1415#issuecomment-1172873810
+# versions=$(get-latest-versions)
+versions="2.329 2.330 2.331 2.332 2.332.1 2.332.2 2.332.3 2.332.4 2.333 2.334 2.335 2.336 2.337 2.338 2.339 2.340 2.341 2.342 2.343 2.344 2.345 2.346 2.346.1 2.347 2.348 2.349 2.350 2.354 2.355 2.356"
 
-latest_lts_version=$(echo "${versions}" | grep -E '[0-9]\.[0-9]+\.[0-9]' | tail -n 1 || echo "No LTS versions")
+## The latest weekly (2.357 or +) is not expected to be rebuilt: we set it outside of the range above
+#latest_weekly_version=$(echo "${versions}" | tail -n 1)
+latest_weekly_version=2.357
+echo "latest_weekly_version=$latest_weekly_version"
+
+## Latest LTS is also already known but is part of the range though
+# latest_lts_version=$(echo "${versions}" | grep -E '[0-9]\.[0-9]+\.[0-9]' | tail -n 1 || echo "No LTS versions")
+latest_lts_version="2.346.1"
+echo "latest_lts_version=$latest_lts_version"
 
 for version in ${versions}
 do
     TOKEN=$(login-token)
 
-    if [[ "${version}" == "${latest_weekly_version}" ]]
-    then
-        latest_weekly="true"
-    else
-        latest_weekly="false"
-    fi
+    ## No latest weekly at all.
+    # if [[ "${version}" == "${latest_weekly_version}" ]]
+    # then
+    #     latest_weekly="true"
+    # else
+    latest_weekly="false"
+    # fi
 
     if [[ "${version}" == "${latest_lts_version}" ]]
     then
@@ -184,18 +198,21 @@ do
         latest_lts="false"
     fi
 
-    if is-published "${version}" "${latest_weekly}" "${latest_lts}"
-    then
-        echo "Tag is already published: ${version}"
-    else
-        echo "$version not published yet"
+    ## As per https://github.com/jenkinsci/docker/issues/1415#issuecomment-1172896638
+    # if is-published "${version}" "${latest_weekly}" "${latest_lts}"
+    # then
+    #     echo "Tag is already published: ${version}"
+    # else
+    #     echo "$version not published yet"
 
-        if versionLT "${start_after}" "${version}" # if start_after < version
-        then
-            echo "Version $version higher than ${start_after}: publishing ${version} latest_weekly:${latest_weekly} latest_lts:${latest_lts}"
-            publish "${version}" "${latest_weekly}" "${latest_lts}"
-        else
-            echo "Version ${version} lower or equal to ${start_after}, no publishing."
-        fi
+    if versionLT "${start_after}" "${version}" # if start_after < version
+    then
+        echo "Version $version higher than ${start_after}: publishing ${version} latest_weekly:${latest_weekly} latest_lts:${latest_lts}"
+        publish "${version}" "${latest_weekly}" "${latest_lts}"
+    else
+        echo "Version ${version} lower or equal to ${start_after}, no publishing."
     fi
+
+    ## As per https://github.com/jenkinsci/docker/issues/1415#issuecomment-1172896638
+    # fi
 done
