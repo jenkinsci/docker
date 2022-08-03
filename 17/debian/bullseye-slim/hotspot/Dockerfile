@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17.0.3_7-jdk-focal as jre-build
+FROM eclipse-temurin:17.0.4_8-jdk-focal as jre-build
 
 RUN jlink \
          --add-modules ALL-MODULE-PATH \
