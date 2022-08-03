@@ -1,4 +1,4 @@
-FROM eclipse-temurin:11.0.15_10-jdk-centos7 as jre-build
+FROM eclipse-temurin:11.0.16_8-jdk-centos7 as jre-build
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
