@@ -1,4 +1,4 @@
-FROM eclipse-temurin:8u332-b09-jdk-centos7 as jre-build
+FROM eclipse-temurin:8u345-b01-jdk-centos7 as jre-build
 
 FROM centos:centos7.9.2009
 
