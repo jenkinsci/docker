@@ -98,7 +98,7 @@ is-published() {
 }
 
 get-latest-versions() {
-    curl --disable --fail --silent --show-error --location https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 30
+    curl --disable --fail --silent --show-error --location https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '2\.346\.[0-9]+' | sort-versions | uniq | tail -n 30
 }
 
 publish() {
@@ -162,20 +162,14 @@ if [ "$dry_run" = true ]; then
 fi
 
 versions=$(get-latest-versions)
-latest_weekly_version=$(echo "${versions}" | tail -n 1)
-
 latest_lts_version=$(echo "${versions}" | grep -E '[0-9]\.[0-9]+\.[0-9]' | tail -n 1 || echo "No LTS versions")
 
 for version in ${versions}
 do
     TOKEN=$(login-token)
 
-    if [[ "${version}" == "${latest_weekly_version}" ]]
-    then
-        latest_weekly="true"
-    else
-        latest_weekly="false"
-    fi
+    # Only stable for this branch
+    latest_weekly="false"
 
     if [[ "${version}" == "${latest_lts_version}" ]]
     then
