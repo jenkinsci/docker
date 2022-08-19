@@ -98,7 +98,7 @@ is-published() {
 }
 
 get-latest-versions() {
-    curl --disable --fail --silent --show-error --location https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 30
+    curl --disable --fail --silent --show-error --location https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '2\.346\.[0-9]+' | sort-versions | uniq | tail -n 30
 }
 
 publish() {
@@ -121,7 +121,18 @@ publish() {
     COMMIT_SHA=$(git rev-parse HEAD)
     export COMMIT_SHA JENKINS_VERSION JENKINS_SHA LATEST_WEEKLY LATEST_LTS
 
-    docker buildx bake --file docker-bake.hcl "${build_opts[@]+"${build_opts[@]}"}" linux
+    # Build and publish JDK8 images
+    docker buildx bake --file docker-bake.hcl "${build_opts[@]+"${build_opts[@]}"}" linux_jdk8
+
+    # Republish 'jdk17-preview' images from their 'jdk17' counterpart
+    for jdk17preview_image in $(make show | jq -r '.target[].tags[]' | grep 'jdk17-preview$' | sort | uniq)
+    do
+        # Remove the "-preview" prefix
+        jdk17_image="${jdk17preview_image/"-preview"/}"
+        echo "Copying ${jdk17_image} to ${jdk17preview_image}..."
+        docker run --rm --platform=linux/amd64 quay.io/skopeo/stable:latest \
+            copy docker://"${jdk17_image}" docker://"${jdk17preview_image}"
+    done
 }
 
 # Process arguments
@@ -162,20 +173,14 @@ if [ "$dry_run" = true ]; then
 fi
 
 versions=$(get-latest-versions)
-latest_weekly_version=$(echo "${versions}" | tail -n 1)
-
 latest_lts_version=$(echo "${versions}" | grep -E '[0-9]\.[0-9]+\.[0-9]' | tail -n 1 || echo "No LTS versions")
 
 for version in ${versions}
 do
     TOKEN=$(login-token)
 
-    if [[ "${version}" == "${latest_weekly_version}" ]]
-    then
-        latest_weekly="true"
-    else
-        latest_weekly="false"
-    fi
+    # Only stable for this branch
+    latest_weekly="false"
 
     if [[ "${version}" == "${latest_lts_version}" ]]
     then

@@ -31,7 +31,7 @@ if(($args.Count -eq 0) -or ($args[0] -match "^--.*")) {
   }
 
   $jenkins_opts_array = $env:JENKINS_OPTS -split ' '
-  $proc = Start-Process -NoNewWindow -Wait -PassThru -FilePath 'java.exe' -ArgumentList "-D`"user.home='$JENKINS_HOME'`" $java_opts_array -jar $JENKINS_WAR $jenkins_opts_array $args"
+  $proc = Start-Process -NoNewWindow -Wait -PassThru -FilePath 'java.exe' -ArgumentList "-D`"user.home=$JENKINS_HOME`" $java_opts_array -jar $JENKINS_WAR $jenkins_opts_array $args"
   if($null -ne $proc) {
     $proc.WaitForExit()
   }
