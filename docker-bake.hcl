@@ -12,6 +12,15 @@ group "linux" {
   ]
 }
 
+group "linux_jdk8" {
+  targets = [
+    "alpine_jdk8",
+    "centos7_jdk8",
+    "debian_jdk8",
+    "debian_slim_jdk8",
+  ]
+}
+
 group "linux-arm64" {
   targets = [
     "debian_jdk17",

@@ -121,7 +121,8 @@ publish() {
     COMMIT_SHA=$(git rev-parse HEAD)
     export COMMIT_SHA JENKINS_VERSION JENKINS_SHA LATEST_WEEKLY LATEST_LTS
 
-    docker buildx bake --file docker-bake.hcl "${build_opts[@]+"${build_opts[@]}"}" linux
+    # Build and publish JDK8 images
+    docker buildx bake --file docker-bake.hcl "${build_opts[@]+"${build_opts[@]}"}" linux_jdk8
 }
 
 # Process arguments
