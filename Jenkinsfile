@@ -71,12 +71,9 @@ stage('Build') {
     if (!infra.isTrusted()) {
         def images = [
                 'alpine_jdk8',
-                'alpine_jdk17',
                 'centos7_jdk8',
                 'debian_jdk8',
-                'debian_jdk17',
                 'debian_slim_jdk8',
-                'debian_slim_jdk17',
         ]
         for (i in images) {
             def imageToBuild = i
