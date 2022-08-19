@@ -123,6 +123,16 @@ publish() {
 
     # Build and publish JDK8 images
     docker buildx bake --file docker-bake.hcl "${build_opts[@]+"${build_opts[@]}"}" linux_jdk8
+
+    # Republish 'jdk17-preview' images from their 'jdk17' counterpart
+    for jdk17preview_image in $(make show | jq -r '.target[].tags[]' | grep 'jdk17-preview$' | sort | uniq)
+    do
+        # Remove the "-preview" prefix
+        jdk17_image="${jdk17preview_image/"-preview"/}"
+        echo "Copying ${jdk17_image} to ${jdk17preview_image}..."
+        docker run --rm --platform=linux/amd64 quay.io/skopeo/stable:latest \
+            copy docker://"${jdk17_image}" docker://"${jdk17preview_image}"
+    done
 }
 
 # Process arguments
