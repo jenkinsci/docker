@@ -47,7 +47,7 @@ variable "JENKINS_VERSION" {
 }
 
 variable "JENKINS_SHA" {
-  default = "1163c4554dc93439c5eef02b06a8d74f98ca920bbc012c2b8a089d414cfa8075"
+  default = "141e8c5890a31a5cf37a970ce3e15273c1c74d8759e4a5873bb5511c50b47d89" # 2.346.3
 }
 
 variable "REGISTRY" {
