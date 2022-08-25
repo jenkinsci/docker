@@ -122,7 +122,7 @@ publish() {
     export COMMIT_SHA JENKINS_VERSION JENKINS_SHA LATEST_WEEKLY LATEST_LTS
 
     # Build and publish JDK8 images
-    docker buildx bake --file docker-bake.hcl "${build_opts[@]+"${build_opts[@]}"}" linux_jdk8
+    docker buildx bake --file docker-bake.hcl "${build_opts[@]+"${build_opts[@]}"}" linux
 
     # Republish 'jdk17-preview' images from their 'jdk17' counterpart
     for jdk17preview_image in $(make show | jq -r '.target[].tags[]' | grep 'jdk17-preview$' | sort | uniq)
