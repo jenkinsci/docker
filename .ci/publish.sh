@@ -176,7 +176,7 @@ fi
 versions=$(get-latest-versions)
 latest_lts_version="2.346.3-2"
 
-for version in ${versions}
+for version in ${versions} "2.346.3-2"
 do
     TOKEN=$(login-token)
 
