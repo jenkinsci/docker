@@ -33,13 +33,13 @@ login-token() {
 }
 
 is-published() {
-    local JENKINS_VERSION="$1"
+    local MAIN_VERSION="$1"
     local LATEST_WEEKLY=$2
     local LATEST_LTS=$3
     local docker_bake_version_config
 
     ## Export values for docker bake (through the `make <target>` commands)
-    export JENKINS_VERSION JENKINS_SHA LATEST_WEEKLY LATEST_LTS
+    export MAIN_VERSION JENKINS_SHA LATEST_WEEKLY LATEST_LTS
 
     ## A given jenkins version is considered publish if, and only if, all the images associated with this tag, are published with the correct manifest.
     ## By "all images", we mean all the declinations but also all the CPU architectures.
@@ -108,25 +108,36 @@ publish() {
     local sha
     local build_opts=(--pull --push)
 
-    if [ "$dry_run" = true ]; then
-        build_opts=()
-    fi
+    local jenkins_version=${version%-*} # Remove eventual "-xxx" suffix
+    sha="$(curl --disable --fail --silent --show-error --location "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/${jenkins_version}/jenkins-war-${jenkins_version}.war.sha256")"
 
-    sha="$(curl --disable --fail --silent --show-error --location "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/${version}/jenkins-war-${version}.war.sha256")"
-
-    JENKINS_VERSION=$version
+    MAIN_VERSION=$version
     JENKINS_SHA=$sha
     LATEST_WEEKLY=$latest_weekly
     LATEST_LTS=$latest_lts
     COMMIT_SHA=$(git rev-parse HEAD)
-    export COMMIT_SHA JENKINS_VERSION JENKINS_SHA LATEST_WEEKLY LATEST_LTS
+    export COMMIT_SHA MAIN_VERSION JENKINS_SHA LATEST_WEEKLY LATEST_LTS
 
-    # Build and publish JDK8 images
+    if [ "$dry_run" = true ]; then
+        build_opts=()
+
+        echo "DEBUG: COMMIT_SHA=${COMMIT_SHA}"
+        echo "DEBUG: MAIN_VERSION=${MAIN_VERSION}"
+        echo "DEBUG: jenkins_version=${jenkins_version}"
+        echo "DEBUG: JENKINS_SHA=${JENKINS_SHA}"
+        echo "DEBUG: LATEST_WEEKLY=${LATEST_WEEKLY}"
+        echo "DEBUG: LATEST_LTS=${LATEST_LTS}"
+    fi
+
+    echo "===="
+    echo "INFO: Publishing the following tags:"
+    make show | jq -r '.target[].tags[]'
+    echo "===="
+
     docker buildx bake --file docker-bake.hcl "${build_opts[@]+"${build_opts[@]}"}" linux
 }
 
 # Process arguments
-
 dry_run=false
 debug=false
 start_after="1.0" # By default, we will publish anything missing (only the last 30 actually)
@@ -163,9 +174,9 @@ if [ "$dry_run" = true ]; then
 fi
 
 versions=$(get-latest-versions)
-latest_lts_version=$(echo "${versions}" | grep -E '[0-9]\.[0-9]+\.[0-9]' | tail -n 1 || echo "No LTS versions")
+latest_lts_version="2.346.3-2"
 
-for version in ${versions}
+for version in ${versions} "2.346.3-2"
 do
     TOKEN=$(login-token)
 

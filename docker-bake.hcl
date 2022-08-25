@@ -38,13 +38,16 @@ group "linux-ppc64le" {
 }
 
 # ---- variables ----
+variable "MAIN_VERSION" {
+  default = "2.346.3-1"
+}
 
 variable "JENKINS_VERSION" {
-  default = "2.356"
+  default = _jenkins_version("${MAIN_VERSION}")
 }
 
 variable "JENKINS_SHA" {
-  default = "1163c4554dc93439c5eef02b06a8d74f98ca920bbc012c2b8a089d414cfa8075"
+  default = "141e8c5890a31a5cf37a970ce3e15273c1c74d8759e4a5873bb5511c50b47d89" # 2.346.3
 }
 
 variable "REGISTRY" {
@@ -73,10 +76,15 @@ variable "COMMIT_SHA" {
 
 # ----  user-defined functions ----
 
+# return the Jenkins version from a string that could have a "-XXX" suffix
+function "_jenkins_version" {
+  params = [main_version]
+  result = split("-", main_version)[0]
+}
 # return a tag prefixed by the Jenkins version
 function "_tag_jenkins_version" {
   params = [tag]
-  result = notequal(tag, "") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-${tag}" : "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}"
+  result = notequal(tag, "") ? "${REGISTRY}/${JENKINS_REPO}:${MAIN_VERSION}-${tag}" : "${REGISTRY}/${JENKINS_REPO}:${MAIN_VERSION}"
 }
 
 # return a tag optionaly prefixed by the Jenkins version

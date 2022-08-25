@@ -27,7 +27,7 @@ check_cli = type "$(1)" >/dev/null 2>&1 || { echo "Error: command '$(1)' require
 ## Check if a given image exists in the current manifest docker-bake.hcl
 check_image = make --silent list | grep -w '$(1)' >/dev/null 2>&1 || { echo "Error: the image '$(1)' does not exist in manifest for the platform 'linux/$(ARCH)'. Please check the output of 'make list'. Exiting." ; exit 1 ; }
 ## Base "docker buildx base" command to be reused everywhere
-bake_base_cli := docker buildx bake -f docker-bake.hcl --load
+bake_base_cli := docker buildx bake --file docker-bake.hcl --load
 
 check-reqs:
 ## Build requirements
