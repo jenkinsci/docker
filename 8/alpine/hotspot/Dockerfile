@@ -1,6 +1,6 @@
 FROM eclipse-temurin:8u345-b01-jdk-alpine as jre-build
 
-FROM alpine:3.16.0
+FROM alpine:3.16.2
 
 RUN apk add --no-cache \
     bash \
