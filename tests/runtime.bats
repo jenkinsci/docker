@@ -89,20 +89,27 @@ start-jenkins-with-jvm-opts() {
 }
 
 get-csp-value() {
-  local sed_expr='s/<wbr>//g;s/<td class="pane">.*<\/td><td class.*normal">//g;s/<t.>//g;s/<\/t.>//g'
-  bash -c "curl -fsSL --user \"admin:$(get_jenkins_password)\" $(get_jenkins_url)/systemInfo | sed 's/<\/tr>/<\/tr>\'$'\n/g' | grep '<td class=\"pane\">hudson.model.DirectoryBrowserSupport.CSP</td>' | sed -e '${sed_expr}'"
+  runInScriptConsole "System.getProperty('hudson.model.DirectoryBrowserSupport.CSP')"
 }
 
 get-timezone-value() {
-  local sed_expr='s/<wbr>//g;s/<td class="pane">.*<\/td><td class.*normal">//g;s/<t.>//g;s/<\/t.>//g'
-  bash -c "curl -fsSL --user \"admin:$(get_jenkins_password)\" $(get_jenkins_url)/systemInfo | sed 's/<\/tr>/<\/tr>\'$'\n/g' | grep '<td class=\"pane\">user.timezone</td>' | sed -e '${sed_expr}'"
+  runInScriptConsole "System.getProperty('user.timezone')"
+}
+
+runInScriptConsole() {
+  SERVER="$(get_jenkins_url)"
+  COOKIEJAR="$(mktemp)"
+  PASSWORD="$(get_jenkins_password)"
+  CRUMB=$(curl -u "admin:$PASSWORD" --cookie-jar "$COOKIEJAR" "$SERVER/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,%22:%22,//crumb)")
+
+  bash -c "curl -fssL -X POST -u \"admin:$PASSWORD\" --cookie \"$COOKIEJAR\" -H \"$CRUMB\" \"$SERVER\"/scriptText -d script=\"$1\" | sed -e 's/Result: //'"
 }
 
 @test "[${SUT_DESCRIPTION}] passes JAVA_OPTS as JVM options" {
   start-jenkins-with-jvm-opts --env JAVA_OPTS="-Duser.timezone=Europe/Madrid -Dhudson.model.DirectoryBrowserSupport.CSP=\"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';\""
 
   # JAVA_OPTS are used
-  assert 'default-src &#039;self&#039;; script-src &#039;self&#039; &#039;unsafe-inline&#039; &#039;unsafe-eval&#039;; style-src &#039;self&#039; &#039;unsafe-inline&#039;;' get-csp-value
+  assert "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';" get-csp-value
   assert 'Europe/Madrid' get-timezone-value
 }
 
@@ -110,7 +117,7 @@ get-timezone-value() {
   start-jenkins-with-jvm-opts --env JENKINS_JAVA_OPTS="-Duser.timezone=Europe/Madrid -Dhudson.model.DirectoryBrowserSupport.CSP=\"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';\""
 
   # JENKINS_JAVA_OPTS are used
-  assert 'default-src &#039;self&#039;; script-src &#039;self&#039; &#039;unsafe-inline&#039; &#039;unsafe-eval&#039;; style-src &#039;self&#039; &#039;unsafe-inline&#039;;' get-csp-value
+  assert "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';" get-csp-value
   assert 'Europe/Madrid' get-timezone-value
 }
 
@@ -120,6 +127,6 @@ get-timezone-value() {
     --env JENKINS_JAVA_OPTS="-Dhudson.model.DirectoryBrowserSupport.CSP=\"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';\""
 
   # JAVA_OPTS and JENKINS_JAVA_OPTS are used
-  assert 'default-src &#039;self&#039;; script-src &#039;self&#039; &#039;unsafe-inline&#039; &#039;unsafe-eval&#039;; style-src &#039;self&#039; &#039;unsafe-inline&#039;;' get-csp-value
+  assert "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';" get-csp-value
   assert 'Europe/Madrid' get-timezone-value
 }
