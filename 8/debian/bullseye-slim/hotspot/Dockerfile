@@ -1,6 +1,6 @@
 FROM eclipse-temurin:8u345-b01-jdk-focal as jre-build
 
-FROM debian:bullseye-20220801-slim
+FROM debian:bullseye-20220822-slim
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
