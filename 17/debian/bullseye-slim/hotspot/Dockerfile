@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17.0.4_8-jdk-focal as jre-build
+FROM eclipse-temurin:17.0.4.1_1-jdk-focal as jre-build
 
 RUN jlink \
          --add-modules ALL-MODULE-PATH \
@@ -8,7 +8,7 @@ RUN jlink \
          --compress=2 \
          --output /javaruntime
 
-FROM debian:bullseye-20220801-slim
+FROM debian:bullseye-20220822-slim
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
