@@ -165,7 +165,10 @@ target "alpine_jdk17" {
   tags = [
     tag(true, "alpine-jdk17-preview"),
     tag_weekly(false, "alpine-jdk17-preview"),
-    tag_lts(false, "lts-alpine-jdk17-preview")
+    tag_lts(false, "lts-alpine-jdk17-preview"),
+    tag(true, "alpine-jdk17"),
+    tag_weekly(false, "alpine-jdk17"),
+    tag_lts(false, "lts-alpine-jdk17")
   ]
   platforms = ["linux/amd64"]
 }
@@ -262,7 +265,12 @@ target "debian_jdk17" {
     tag_weekly(false, "latest-jdk17-preview"),
     tag_weekly(false, "jdk17-preview"),
     tag_lts(false, "lts-jdk17-preview"),
-    tag_lts(true, "lts-jdk17-preview")
+    tag_lts(true, "lts-jdk17-preview"),
+    tag(true, "jdk17"),
+    tag_weekly(false, "latest-jdk17"),
+    tag_weekly(false, "jdk17"),
+    tag_lts(false, "lts-jdk17"),
+    tag_lts(true, "lts-jdk17")
   ]
   platforms = ["linux/amd64", "linux/arm64"]
 }
@@ -317,6 +325,9 @@ target "debian_slim_jdk17" {
     tag(true, "slim-jdk17-preview"),
     tag_weekly(false, "slim-jdk17-preview"),
     tag_lts(false, "lts-slim-jdk17-preview"),
+    tag(true, "slim-jdk17"),
+    tag_weekly(false, "slim-jdk17"),
+    tag_lts(false, "lts-slim-jdk17"),
   ]
   platforms = ["linux/amd64"]
 }
