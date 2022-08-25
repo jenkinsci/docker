@@ -123,7 +123,6 @@ target "alpine_jdk8" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
     tag(true, "alpine-jdk8"),
@@ -180,7 +179,6 @@ target "centos7_jdk8" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
     tag(true, "centos7-jdk8"),
@@ -217,7 +215,6 @@ target "debian_jdk8" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
     tag(true, "jdk8"),
@@ -282,7 +279,6 @@ target "debian_slim_jdk8" {
     JENKINS_VERSION = JENKINS_VERSION
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
   }
   tags = [
     tag(true, "slim-jdk8"),
