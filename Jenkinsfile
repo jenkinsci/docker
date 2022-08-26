@@ -155,7 +155,7 @@ stage('Build') {
                         sh '''
                             docker buildx create --use
                             docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-                            make publish
+                            bash -x ./.ci/publish.sh # -n # Uncomment the flag to enable "dry run" mode
                             '''
                     }
                 }
