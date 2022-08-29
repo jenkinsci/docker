@@ -37,7 +37,7 @@ If you _really_ need to bind mount jenkins_home, ensure that the directory on th
 docker run -d -v jenkins_home:/var/jenkins_home -p 8080:8080 -p 50000:50000 --restart=on-failure jenkins/jenkins:lts-jdk11
 ```
 
-this will run Jenkins in detached mode with port forwarding and volume added. You can access logs with command 'docker logs CONTAINER_ID' in order to check first login token. ID of container will be returned from output of command above.
+This will run Jenkins in detached mode with port forwarding and volume added. You can access logs with command 'docker logs CONTAINER_ID' in order to check first login token. ID of container will be returned from output of command above.
 
 ## Backing up data
 
@@ -47,7 +47,7 @@ If you bind mount in a volume - you can simply back up that directory
 This is highly recommended. Treat the jenkins_home directory as you would a database - in Docker you would generally put a database on a volume.
 
 If your volume is inside a container - you can use `docker cp $ID:/var/jenkins_home` command to extract the data, or other options to find where the volume data is.
-Note that some symlinks on some OSes may be converted to copies (this can confuse jenkins with lastStableBuild links etc)
+Note that some symlinks on some OSes may be converted to copies (this can confuse jenkins with lastStableBuild links, etc)
 
 For more info check Docker docs section on [Use volumes](https://docs.docker.com/storage/volumes/)
 
