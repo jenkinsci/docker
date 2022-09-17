@@ -60,7 +60,7 @@ variable "LATEST_LTS" {
 }
 
 variable "PLUGIN_CLI_VERSION" {
-  default = "2.12.9"
+  default = "null"
 }
 
 variable "COMMIT_SHA" {
