@@ -29,10 +29,6 @@ group "linux-s390x" {
   ]
 }
 
-group "linux-ppc64le" {
-  targets = []
-}
-
 # ---- variables ----
 
 variable "JENKINS_VERSION" {

@@ -88,7 +88,6 @@ Planned supported architectures:
 * amd64
 * arm64
 * s390x
-* ppc64le
 
 == Debugging
 
