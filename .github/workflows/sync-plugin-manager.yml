@@ -17,17 +17,17 @@ jobs:
         id: lts
         run: | 
           NEXT_VERSION=$(curl -sL  https://api.github.com/repos/jenkinsci/plugin-installation-manager-tool/releases/latest | jq -r ".tag_name")
-          echo "::set-output name=next-version::$NEXT_VERSION"
+          echo "next-version=$NEXT_VERSION" >> $GITHUB_OUTPUT
 
       - name: Check if update is available
         id: update
         run: |
           CURRENT_VERSION=$(docker buildx bake -f docker-bake.hcl --print alpine_jdk11 | jq -r ".target.alpine_jdk11.args.PLUGIN_CLI_VERSION")
           if [ "$CURRENT_VERSION" = "${{ steps.lts.outputs.next-version }}" ]; then
-            echo "::set-output name=available::false"
+            echo "available=false" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=available::true"
-            echo "::set-output name=current-version::$CURRENT_VERSION"
+            echo "available=true" >> $GITHUB_OUTPUT
+            echo "current-version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           fi
 
       - name: Update LTS version in files
