@@ -163,7 +163,7 @@ USER jenkins
 ```
 
 In such a derived image, you can customize your jenkins instance with hook scripts or additional plugins.
-For this purpose, use `/usr/share/jenkins/ref` as a place to define the default JENKINS_HOME content you
+For this purpose, use `/user/share/jenkins/ref` as a place to define the default JENKINS_HOME content you
 wish the target installation to look like :
 
 ```
@@ -251,7 +251,7 @@ script-security:1.13
 
 For 2.x-derived images, you may also want to
 
-    RUN echo 2.0 > /usr/share/jenkins/ref/jenkins.install.UpgradeWizard.state
+    RUN echo 2.0 > /user/share/jenkins/ref/jenkins.install.UpgradeWizard.state
 
 to indicate that this Jenkins installation is fully configured.
 Otherwise a banner will appear prompting the user to install additional plugins,
