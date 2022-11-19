@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17.0.4.1_1-jdk-alpine AS jre-build
+FROM eclipse-temurin:17.0.5_8-jdk-alpine AS jre-build
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
