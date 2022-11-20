@@ -6,7 +6,7 @@ RUN jlink \
          --compress=2 \
          --output /javaruntime
 
-FROM debian:bullseye-20221024
+FROM debian:bullseye-20221114
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
