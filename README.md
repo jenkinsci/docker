@@ -283,28 +283,33 @@ You can use these tags to pull the corresponding Jenkins images from Docker Hub 
 To use Docker Compose with Jenkins, you can define a docker-compose.yml file that includes a Jenkins service and any other services that your Jenkins instance depends on, such as a database or cache. For example, the following docker-compose.yml file defines a Jenkins service that uses a MySQL database and a Redis cache:
 
 ```
-version: "3"
-
+version: '3.8'
 services:
   jenkins:
     image: jenkins/jenkins:lts
     ports:
       - "8080:8080"
     volumes:
-      - "./jenkins_home:/var/jenkins_home"
-    links:
-      - "mysql:mysql"
-      - "redis:redis"
-  mysql:
-    image: mysql:5.7
+      - jenkins_home:/var/jenkins_home
     environment:
-      MYSQL_ROOT_PASSWORD: "rootpassword"
-  redis:
-    image: redis:5.0
+      - JENKINS_OPTS=-Dhudson.slaves.NodeProvisioner.initialDelay=0
+  ssh-agent:
+    image: jenkins/ssh-agent
+    volumes:
+      - ssh-agent-volume:/ssh-agent
+volumes:
+  jenkins_home:
+  ssh-agent-volume:
+
 
 ```
 
-In this example, the Jenkins service is based on the jenkins/jenkins:lts image, and it exposes port 8080 on the host system and maps it to port 8080 in the container. It also mounts a volume at ./jenkins_home on the host to the /var/jenkins_home directory in the container, where Jenkins stores its data. The Jenkins service is linked to the MySQL and Redis services, which allows it to connect to those services using their service names as hostnames.
+This docker-compose.yml file creates two containers: one for Jenkins and one for the ssh-agent. The Jenkins container is based on the jenkins/jenkins:lts image and exposes the Jenkins web interface on port 8080 and the Jenkins agent communication port on port 50000.
+The jenkins_home volume is a named volume that is created and managed by Docker. It is mounted at /var/jenkins_home in the Jenkins container, and it will persist the Jenkins configuration and data.
+
+Using a named volume can be a good alternative to a bind mount from the host if you want to store the data in a location that is managed by Docker and separate from the host file system. It can also be more portable, as the data is stored within the Docker ecosystem and is not tied to a specific host directory.
+
+The ssh-agent container is based on the jenkins/ssh-agent image and mounts a named volume ssh-agent-volume at /ssh-agent to persist the ssh keys.
 
 To start the Jenkins instance and the other services defined in the docker-compose.yml file, you can use the docker-compose up command. This will pull the necessary images from Docker Hub, if they are not already present on your system, and start the services in the background. You can then access the Jenkins web interface on port 8080 on your host system to configure and manage your Jenkins instance using `docker-compose up -d`.
 
