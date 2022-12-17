@@ -266,21 +266,17 @@ which may be inappropriate.
 
 ### Access logs
 
-To enable Jenkins user access logs from Jenkins home directory inside docker container, you can use `JENKINS_OPTS` under ENV section (in ansible role).
-
-```
-JENKINS_OPTS: "--accessLoggerClassName=winstone.accesslog.SimpleAccessLogger --simpleAccessLogger.format=combined --simpleAccessLogger.file=/var/jenkins_home/logs/access_log"
-```
+To enable Jenkins user access logs from Jenkins home directory inside a docker container, set the `JENKINS_OPTS` environment variable value to `--accessLoggerClassName=winstone.accesslog.SimpleAccessLogger --simpleAccessLogger.format=combined --simpleAccessLogger.file=/var/jenkins_home/logs/access_log`
 
 ### Naming convention in tags
 
-The naming convention for the tags on Docker Hub follows the format <repository_name>:<tag>, where the repository name is jenkins/jenkins and the tag specifies the version of the image. In the case of the LTS and latest versions, the tags are lts and latest, respectively.
+The naming convention for the tags on Docker Hub follows the format `<repository_name>:<tag>`, where the repository name is jenkins/jenkins and where the tag specifies the image version. In the case of the LTS and latest versions, the tags are `lts` and `latest`, respectively.
 
-You can use these tags to pull the corresponding Jenkins images from Docker Hub and run them on your system. For example, you can use the following command to pull the LTS version of the Jenkins image: `docker pull jenkins/jenkins:lts`
+You can use these tags to pull the corresponding Jenkins images from Docker Hub and run them on your system. For example, to pull the LTS version of the Jenkins image use this command: `docker pull jenkins/jenkins:lts`
 
 ### Docker Compose with Jenkins
 
-To use Docker Compose with Jenkins, you can define a docker-compose.yml file that includes a Jenkins service and any other services that your Jenkins instance depends on, such as a database or ssh-agent. For example, the following docker-compose.yml file defines a Jenkins service that uses a Jenkins ssh-agent:
+To use Docker Compose with Jenkins, you can define a docker-compose.yml file including a Jenkins instance and any other services it depends on. For example, the following docker-compose.yml file defines a Jenkins controller and a Jenkins SSH agent:
 
 ```
 version: '3.8'
@@ -299,17 +295,20 @@ volumes:
   jenkins_home:
   ssh-agent-volume:
 
-
 ```
 
 This docker-compose.yml file creates two containers: one for Jenkins and one for the ssh-agent. The Jenkins container is based on the jenkins/jenkins:lts image and exposes the Jenkins web interface on port 8080.
 The jenkins_home volume is a named volume that is created and managed by Docker. It is mounted at /var/jenkins_home in the Jenkins container, and it will persist the Jenkins configuration and data.
 
-Using a named volume can be a good alternative to a bind mount from the host if you want to store the data in a location that is managed by Docker and separate from the host file system. It can also be more portable, as the data is stored within the Docker ecosystem and is not tied to a specific host directory.
+`jenkins_home` is a named volume created and managed by Docker. It is mounted at /var/jenkins_home in the Jenkins container, and will persist Jenkins configuration and data.
 
-The ssh-agent container is based on the jenkins/ssh-agent image and mounts a named volume ssh-agent-volume at /ssh-agent to persist the ssh keys.
+Using a named volume can be a good alternative to a bind mount from the host if you want to store the data in a location managed by Docker and separated from the host file system. It can also be more portable as the data is stored within the Docker ecosystem and not tied to a specific host directory.
 
-To start the Jenkins instance and the other services defined in the docker-compose.yml file, you can use the docker-compose up command. This will pull the necessary images from Docker Hub, if they are not already present on your system, and start the services in the background. You can then access the Jenkins web interface on port 8080 on your host system to configure and manage your Jenkins instance using `docker-compose up -d`.
+The ssh-agent container is based on the jenkins/ssh-agent image and mounts a named volume `ssh-agent-volume` at /ssh-agent to persist the ssh keys.
+
+To start the Jenkins instance and the other services defined in the docker-compose.yml file, you can use the `docker compose up` command.
+This will pull the necessary images from Docker Hub if they are not already present on your system, and start the services in the background.
+You can then access the Jenkins web interface on port 8080 on your host system to configure and manage your Jenkins instance using `docker compose up -d`.
 
 ### Updating plugins file
 
@@ -330,7 +329,9 @@ Generally - you can copy it out - and then "docker pull" the image again - and y
 
 As always - please ensure that you know how to drive docker - especially volume handling!
 
-If you mount the Jenkins home directory to a directory on your Docker host up front, then the upgrade consists of "docker pull" and nothing more. We recommend using `docker-compose`, especially in cases where the user is also running a parallel nginx/apache container as a reverse proxy for the Jenkins container.
+If you mount the Jenkins home directory to a directory on your Docker host up front, then the upgrade consists of `docker pull` and nothing more.
+
+We recommend using `docker compose`, especially in cases where the user is also running a parallel nginx/apache container as a reverse proxy for the Jenkins container.
 
 ### Upgrading plugins
 
