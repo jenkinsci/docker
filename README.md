@@ -280,7 +280,7 @@ You can use these tags to pull the corresponding Jenkins images from Docker Hub 
 
 ### Docker Compose with Jenkins
 
-To use Docker Compose with Jenkins, you can define a docker-compose.yml file that includes a Jenkins service and any other services that your Jenkins instance depends on, such as a database or cache. For example, the following docker-compose.yml file defines a Jenkins service that uses a MySQL database and a Redis cache:
+To use Docker Compose with Jenkins, you can define a docker-compose.yml file that includes a Jenkins service and any other services that your Jenkins instance depends on, such as a database or ssh-agent. For example, the following docker-compose.yml file defines a Jenkins service that uses a Jenkins ssh-agent:
 
 ```
 version: '3.8'
