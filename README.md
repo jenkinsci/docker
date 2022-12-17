@@ -270,13 +270,16 @@ To enable Jenkins user access logs from Jenkins home directory inside a docker c
 
 ### Naming convention in tags
 
-The naming convention for the tags on Docker Hub follows the format `<repository_name>:<tag>`, where the repository name is jenkins/jenkins and where the tag specifies the image version. In the case of the LTS and latest versions, the tags are `lts` and `latest`, respectively.
+The naming convention for the tags on Docker Hub follows the format `<repository_name>:<tag>`, where the repository name is jenkins/jenkins and where the tag specifies the image version.
+In the case of the LTS and latest versions, the tags are `lts` and `latest`, respectively.
 
-You can use these tags to pull the corresponding Jenkins images from Docker Hub and run them on your system. For example, to pull the LTS version of the Jenkins image use this command: `docker pull jenkins/jenkins:lts`
+You can use these tags to pull the corresponding Jenkins images from Docker Hub and run them on your system.
+For example, to pull the LTS version of the Jenkins image use this command: `docker pull jenkins/jenkins:lts`
 
 ### Docker Compose with Jenkins
 
-To use Docker Compose with Jenkins, you can define a docker-compose.yml file including a Jenkins instance and any other services it depends on. For example, the following docker-compose.yml file defines a Jenkins controller and a Jenkins SSH agent:
+To use Docker Compose with Jenkins, you can define a docker-compose.yml file including a Jenkins instance and any other services it depends on.
+For example, the following docker-compose.yml file defines a Jenkins controller and a Jenkins SSH agent:
 
 ```
 version: '3.8'
