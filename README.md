@@ -291,8 +291,6 @@ services:
       - "8080:8080"
     volumes:
       - jenkins_home:/var/jenkins_home
-    environment:
-      - JENKINS_OPTS=-Dhudson.slaves.NodeProvisioner.initialDelay=0
   ssh-agent:
     image: jenkins/ssh-agent
     volumes:
@@ -304,7 +302,7 @@ volumes:
 
 ```
 
-This docker-compose.yml file creates two containers: one for Jenkins and one for the ssh-agent. The Jenkins container is based on the jenkins/jenkins:lts image and exposes the Jenkins web interface on port 8080 and the Jenkins agent communication port on port 50000.
+This docker-compose.yml file creates two containers: one for Jenkins and one for the ssh-agent. The Jenkins container is based on the jenkins/jenkins:lts image and exposes the Jenkins web interface on port 8080.
 The jenkins_home volume is a named volume that is created and managed by Docker. It is mounted at /var/jenkins_home in the Jenkins container, and it will persist the Jenkins configuration and data.
 
 Using a named volume can be a good alternative to a bind mount from the host if you want to store the data in a location that is managed by Docker and separate from the host file system. It can also be more portable, as the data is stored within the Docker ecosystem and is not tied to a specific host directory.
