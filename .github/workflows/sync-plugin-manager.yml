@@ -17,6 +17,10 @@ jobs:
         id: lts
         run: | 
           NEXT_VERSION=$(curl -sL  https://api.github.com/repos/jenkinsci/plugin-installation-manager-tool/releases/latest | jq -r ".tag_name")
+          if [ -z "$NEXT_VERSION" ] || [ $NEXT_VERSION = "null" ]; then
+            echo "ERROR: Empty or 'null' latest plugin-installation-manager-tool version returned by GitHub API."
+            exit 1
+          fi
           echo "next-version=$NEXT_VERSION" >> $GITHUB_OUTPUT
 
       - name: Check if update is available

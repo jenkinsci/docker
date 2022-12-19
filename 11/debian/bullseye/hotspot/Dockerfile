@@ -1,4 +1,4 @@
-FROM eclipse-temurin:11.0.16.1_1-jdk-focal as jre-build
+FROM eclipse-temurin:11.0.17_8-jdk-focal as jre-build
 
 RUN jlink \
          --add-modules ALL-MODULE-PATH \
@@ -6,7 +6,7 @@ RUN jlink \
          --compress=2 \
          --output /javaruntime
 
-FROM debian:bullseye-20221004
+FROM debian:bullseye-20221205
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
@@ -107,7 +107,6 @@ USER ${user}
 
 COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
-COPY tini-shim.sh /sbin/tini
 COPY jenkins-plugin-cli.sh /bin/jenkins-plugin-cli
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
