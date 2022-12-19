@@ -282,7 +282,6 @@ To use Docker Compose with Jenkins, you can define a docker-compose.yml file inc
 For example, the following docker-compose.yml file defines a Jenkins controller and a Jenkins SSH agent:
 
 ```yaml
-version: "3.8"
 services:
   jenkins:
     image: jenkins/jenkins:lts
