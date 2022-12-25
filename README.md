@@ -264,6 +264,116 @@ to indicate that this Jenkins installation is fully configured.
 Otherwise a banner will appear prompting the user to install additional plugins,
 which may be inappropriate.
 
+## Uninstalling Plugins
+
+**To uninstall a plugin in Jenkins using the web UI, follow these steps:**
+
+- Open Jenkins in your web browser and log in as an administrator.
+- Click on the "Manage Jenkins" link in the left menu.
+- Click on the "Manage Plugins" link.
+- In the "Installed" tab, find the plugin you want to uninstall and click on the checkbox next to it.
+- Click on the "Uninstall" button at the bottom of the page.
+- A message will appear asking you to confirm the uninstallation. Click on the "Yes" button to confirm.
+
+Jenkins will uninstall the plugin and restart the server to apply the changes. Once the server has restarted, the plugin will be uninstalled and will no longer be available in Jenkins.
+
+**To uninstall a plugin in Jenkins using the CLI, follow these steps:**
+
+- Open a terminal window and connect to your Jenkins server using the ssh command. For example:
+
+`ssh jenkins@your-server-name`
+
+- Once you are logged in to the Jenkins server, enter the following command to list all the installed plugins:
+
+`java -jar jenkins-cli.jar -s http://localhost:8080/ list-plugins`
+
+- Find the short name of the plugin you want to uninstall from the list of installed plugins. The short name is the name of the plugin as it appears in the `.hpi` or `.jpi` file, without the file extension.
+
+- To uninstall the plugin, enter the following command, replacing `PLUGIN_SHORT_NAME` with the short name of the plugin you want to uninstall:
+
+`java -jar jenkins-cli.jar -s http://localhost:8080/ uninstall-plugin PLUGIN_SHORT_NAME`
+
+- Jenkins will uninstall the plugin and restart the server to apply the changes. Once the server has restarted, the plugin will be uninstalled and will no longer be available in Jenkins.
+
+**Note**: Some plugins may have dependencies on other plugins, which means that uninstalling one plugin may also uninstall other plugins that depend on it. Make sure to carefully review the list of plugins that will be uninstalled before confirming the uninstallation.
+
+To check the dependencies, use the following command:
+
+`java -jar jenkins-cli.jar -s http://localhost:8080/ list-dependencies PLUGIN_SHORT_NAME`
+
+Replace `PLUGIN_SHORT_NAME` with the short name of the plugin you want to check the dependencies for. The command will output a list of the plugins that the selected plugin is dependent on.
+
+**To remove a plugin from Jenkins using a custom Dockerfile, you can follow these steps:**
+
+- Create a file called `plugins.txt` in the root directory of your Jenkins project. This file should contain the short names of the plugins you want to remove, one plugin per line.
+- In your Dockerfile, add the following command to copy the plugins.txt file into the Jenkins container:
+
+`COPY plugins.txt /usr/share/jenkins/ref/`
+
+- Add the following command to your Dockerfile to remove the plugins specified in the `plugins.txt` file:
+
+`RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt`
+
+- Build your Docker image and run the container. The plugins specified in the plugins.txt file will be removed from Jenkins.
+
+Here is an example of a Dockerfile that can be used to remove the "WMI" windows-slave plugin from Jenkins:
+
+Create the custom Dockerfile:
+
+```DockerFile
+FROM jenkins/jenkins:latest
+
+# Copy the plugins.txt file into the Jenkins container
+COPY plugins.txt /usr/share/jenkins/ref/
+
+# Remove the plugins specified in the plugins.txt file
+RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
+```
+
+In this example, the `plugins.txt` file should contain the following line:
+
+`wmi-windows-slaves`
+
+When you build the Docker image and run the container, the "WMI" windows-slave plugin will be removed from Jenkins.
+
+Note that when you uninstall a plugin from Jenkins, the plugin files are not deleted from the `$JENKINS_HOME/plugins/` directory by default. This is because the `$JENKINS_HOME` directory is typically used as a data volume or bind mounted volume, and deleting the plugin files could potentially cause data loss or other issues.
+
+To completely remove the plugin from Jenkins, you will need to delete the plugin files from the `$JENKINS_HOME/plugins` directory and restart the Jenkins container. You can do this by manually deleting the files and restarting the container using the command line.
+
+**To remove the plugin files using the command line, follow these steps:**
+
+- Connect to the Jenkins server using the ssh command.
+- Navigate to the `$JENKINS_HOME/plugins/` directory using the `cd $JENKINS_HOME/plugins/` command.
+- Find the plugin files you want to delete. The plugin files are typically named after the short name of the plugin, with a `.hpi` or `.jpi` file extension.
+- Use the `rm` command to delete the plugin files: `rm PLUGIN_SHORT_NAME.hpi`
+- Restart the Jenkins container to apply the changes: `docker restart jenkins`
+
+Once the plugin files have been deleted and the Jenkins container has been restarted, the plugin will be completely removed from Jenkins.
+
+## Self-Diagonosis
+
+To self-diagnose the plugin removal step in your Jenkins setup, you can follow these steps:
+
+- Connect to the Jenkins server using the command line interface (CLI). This can be done using the ssh command, for example:
+
+`ssh jenkins@your-server-name`
+
+- Once you are logged in to the Jenkins server, you can use the following command to list all the installed plugins:
+
+`java -jar jenkins-cli.jar -s http://localhost:8080/ list-plugins`
+
+- Check the list of installed plugins and verify that the plugin you intended to remove is not present. If the plugin is still listed, it has not been successfully removed.
+
+- If the plugin is still present, you can try uninstalling it using the Jenkins web UI or the jenkins-cli tool as described above.
+
+- If the plugin is still present after attempting to uninstall it, you may need to check for any dependencies that the plugin has on other plugins. Some plugins may not be able to be uninstalled if they are required by other plugins. In this case, you will need to uninstall the dependent plugins first.
+
+- You can also check the `/usr/share/jenkins/ref/plugins` directory to verify that the plugin files are no longer present. If the plugin files are still present in this directory, the plugin has not been successfully removed.
+
+- If you are using a custom Dockerfile to remove the plugins, you can check the Dockerfile and the `plugins.txt` file to make sure that the plugin removal steps are correctly configured. You can also check the build logs for any errors or issues that may have occurred during the build process.
+
+By following these steps, you should be able to diagnose and troubleshoot any issues with plugin removal in your Jenkins setup.
+
 ### Access logs
 
 To enable Jenkins user access logs from Jenkins home directory inside a docker container, set the `JENKINS_OPTS` environment variable value to `--accessLoggerClassName=winstone.accesslog.SimpleAccessLogger --simpleAccessLogger.format=combined --simpleAccessLogger.file=/var/jenkins_home/logs/access_log`
