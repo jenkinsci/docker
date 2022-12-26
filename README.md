@@ -350,7 +350,7 @@ To completely remove the plugin from Jenkins, you will need to delete the plugin
 
 Once the plugin files have been deleted and the Jenkins container has been restarted, the plugin will be completely removed from Jenkins.
 
-## Self-Diagonosis
+## Self-Diagnosis
 
 To self-diagnose the plugin removal step in your Jenkins setup, you can follow these steps:
 
