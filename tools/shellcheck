@@ -3,4 +3,4 @@
 exec docker run --rm \
     -w "${PWD}" \
     -v "${PWD}:${PWD}" \
-    koalaman/shellcheck:v0.8.0 "$@"
+    koalaman/shellcheck:v0.9.0 "$@"
