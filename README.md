@@ -305,16 +305,16 @@ Replace `PLUGIN_SHORT_NAME` with the short name of the plugin you want to check 
 
 **To remove a plugin from Jenkins using a custom Dockerfile, you can follow these steps:**
 
-- Create a file called `plugins.txt` in the root directory of your Jenkins project. This file should contain the short names of the plugins you want to remove, one plugin per line.
+- While installing the plugins, you will need to create a file called `plugins.txt` in the root directory of your Jenkins project. Remove the plugin name from this file which you wish to uninstall.
 - In your Dockerfile, add the following command to copy the plugins.txt file into the Jenkins container:
 
 `COPY plugins.txt /usr/share/jenkins/ref/`
 
-- Add the following command to your Dockerfile to remove the plugins specified in the `plugins.txt` file:
+- Add the following command to your Dockerfile to uninstall the plugins that you removed from the `plugins.txt` file:
 
-`RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt`
+`RUN jenkins-plugin-cli --clean-download-directory`
 
-- Build your Docker image and run the container. The plugins specified in the plugins.txt file will be removed from Jenkins.
+- Build your Docker image and run the container. The plugins removed from the plugins.txt file will be uninstalled from Jenkins.
 
 Here is an example of a Dockerfile that can be used to remove the "WMI" windows-slave plugin from Jenkins:
 
@@ -324,13 +324,13 @@ Create the custom Dockerfile:
 FROM jenkins/jenkins:latest
 
 # Copy the plugins.txt file into the Jenkins container
-COPY plugins.txt /usr/share/jenkins/ref/
+COPY --chown=jenkins:jenkins plugins.txt $REF/plugins.txt
 
-# Remove the plugins specified in the plugins.txt file
-RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
+# Remove the plugins not exist in plugins.txt file
+RUN jenkins-plugin-cli --plugin-file $REF/plugins.txt
 ```
 
-In this example, the `plugins.txt` file should contain the following line:
+In this example, update the `plugins.txt` file by removing the following line:
 
 `wmi-windows-slaves`
 
@@ -338,7 +338,7 @@ When you build the Docker image and run the container, the "WMI" windows-slave p
 
 Note that when you uninstall a plugin from Jenkins, the plugin files are not deleted from the `$JENKINS_HOME/plugins/` directory by default. This is because the `$JENKINS_HOME` directory is typically used as a data volume or bind mounted volume, and deleting the plugin files could potentially cause data loss or other issues.
 
-To completely remove the plugin from Jenkins, you will need to delete the plugin files from the `$JENKINS_HOME/plugins` directory and restart the Jenkins container. You can do this by manually deleting the files and restarting the container using the command line.
+To completely remove the plugin from Jenkins, you will need to delete the pluginspecified in the files from the `$JENKINS_HOME/plugins` directory and restart the Jenkins container. You can do this by manually deleting the files and restarting the container using the command line.
 
 **To remove the plugin files using the command line, follow these steps:**
 
@@ -349,6 +349,17 @@ To completely remove the plugin from Jenkins, you will need to delete the plugin
 - Restart the Jenkins container to apply the changes: `docker restart jenkins`
 
 Once the plugin files have been deleted and the Jenkins container has been restarted, the plugin will be completely removed from Jenkins.
+
+**To remove a plugin from a Jenkins instance that is using a data volume to preserve the configuration, follow these steps:**
+
+- Remove the plugin from the `plugins.txt` file.
+- Rebuild the Docker image using the updated `plugins.txt` file.
+- Stop the existing Jenkins container.
+- Remove the plugin files from the `$JENKINS_HOME/plugins/` directory in the data volume.
+- You can do this by attaching the data volume to another container and deleting the plugin files directly, or by using a tool such as `rsync` to delete the files from the host machine.
+- Start the Jenkins container using the updated Docker image.
+
+This process will ensure that the Jenkins instance is using the updated set of plugins specified in the `plugins.txt` file.
 
 ## Self-Diagnosis
 
