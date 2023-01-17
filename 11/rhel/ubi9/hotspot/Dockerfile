@@ -17,7 +17,6 @@ ARG TARGETARCH
 ARG COMMIT_SHA
 
 RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs -y \
-        curl \
         fontconfig \
         freetype \
         git \
