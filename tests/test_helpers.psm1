@@ -22,6 +22,10 @@ if(-Not (Test-CommandExists docker)) {
     Write-Error "docker is not available"
 }
 
+if(-Not (Test-CommandExists ps)) {
+    Write-Error "ps is not available"
+}
+
 function Retry-Command {
     [CmdletBinding()]
     param (

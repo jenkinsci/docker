@@ -17,6 +17,7 @@ RUN apt-get update \
     gpg \
     libfontconfig1 \
     libfreetype6 \
+    procps \
     ssh-client \
     tini \
     unzip \
