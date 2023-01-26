@@ -120,7 +120,7 @@ updates:
     - dependencies
 
 - package-ecosystem: docker
-  directory: "11/rhel/ubi9/hotspot"
+  directory: "17/rhel/ubi9/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
