@@ -1,4 +1,4 @@
-FROM eclipse-temurin:11.0.17_8-jdk-focal as jre-build
+FROM eclipse-temurin:11.0.18_10-jdk-focal as jre-build
 
 RUN jlink \
          --add-modules ALL-MODULE-PATH \
@@ -19,6 +19,7 @@ RUN apt-get update \
     gpg \
     libfontconfig1 \
     libfreetype6 \
+    procps \
     ssh-client \
     tini \
     unzip \
