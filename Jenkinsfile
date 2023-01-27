@@ -79,6 +79,7 @@ stage('Build') {
                 'debian_slim_jdk11',
                 'debian_slim_jdk17',
                 'rhel_ubi8_jdk11',
+                'rhel_ubi9_jdk17',
         ]
         for (i in images) {
             def imageToBuild = i

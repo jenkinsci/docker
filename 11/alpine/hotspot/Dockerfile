@@ -1,4 +1,4 @@
-FROM eclipse-temurin:11.0.17_8-jdk-alpine AS jre-build
+FROM eclipse-temurin:11.0.18_10-jdk-alpine AS jre-build
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
@@ -11,7 +11,7 @@ RUN jlink \
          --compress=2 \
          --output /javaruntime
 
-FROM alpine:3.17.0
+FROM alpine:3.17.1
 
 RUN apk add --no-cache \
     bash \

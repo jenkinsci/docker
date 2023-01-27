@@ -1,40 +1,29 @@
-FROM eclipse-temurin:11.0.18_10-jdk-focal as jre-build
+FROM eclipse-temurin:17.0.6_10-jdk-centos7 as jre-build
 
+# Generate smaller java runtime without unneeded files
+# for now we include the full module path to maintain compatibility
+# while still saving space (approx 200mb from the full distribution)
 RUN jlink \
          --add-modules ALL-MODULE-PATH \
          --no-man-pages \
          --compress=2 \
          --output /javaruntime
 
-FROM debian:bullseye-20230109
-
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    curl \
-    git \
-    gnupg \
-    gpg \
-    libfontconfig1 \
-    libfreetype6 \
-    procps \
-    ssh-client \
-    tini \
-    unzip \
-  && rm -rf /var/lib/apt/lists/*
-
-RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh -o /tmp/script.deb.sh \
-  && bash /tmp/script.deb.sh \
-  && rm -f /tmp/script.deb.sh \
-  && apt-get install -y --no-install-recommends \
-    git-lfs \
-  && rm -rf /var/lib/apt/lists/* \
-  && git lfs install
+FROM registry.access.redhat.com/ubi9/ubi:9.1.0-1750
 
 ENV LANG C.UTF-8
 
 ARG TARGETARCH
 ARG COMMIT_SHA
+
+RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs -y \
+        fontconfig \
+        freetype \
+        git \
+        git-lfs \
+        unzip \
+        which \
+    && dnf clean --disableplugin=subscription-manager all
 
 ARG user=jenkins
 ARG group=jenkins
@@ -55,7 +44,7 @@ ENV REF $REF
 RUN mkdir -p $JENKINS_HOME \
   && chown ${uid}:${gid} $JENKINS_HOME \
   && groupadd -g ${gid} ${group} \
-  && useradd -d "$JENKINS_HOME" -u ${uid} -g ${gid} -l -m -s /bin/bash ${user}
+  && useradd -N -d "$JENKINS_HOME" -u ${uid} -g ${gid} -l -m -s /bin/bash ${user}
 
 # Jenkins home directory is a volume, so configuration and build history
 # can be persisted and survive image upgrades
@@ -65,6 +54,16 @@ VOLUME $JENKINS_HOME
 # to set on a fresh new installation. Use it to bundle additional plugins
 # or config file with your custom jenkins Docker image.
 RUN mkdir -p ${REF}/init.groovy.d
+
+# Use tini as subreaper in Docker container to adopt zombie processes
+ARG TINI_VERSION=v0.19.0
+COPY tini_pub.gpg "${JENKINS_HOME}/tini_pub.gpg"
+RUN curl -fsSL "https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-${TARGETARCH}" -o /sbin/tini \
+  && curl -fsSL "https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-${TARGETARCH}.asc" -o /sbin/tini.asc \
+  && gpg --no-tty --import "${JENKINS_HOME}/tini_pub.gpg" \
+  && gpg --verify /sbin/tini.asc \
+  && rm -rf /sbin/tini.asc /root/.gnupg \
+  && chmod +x /sbin/tini
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
@@ -110,7 +109,7 @@ COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
 COPY jenkins-plugin-cli.sh /bin/jenkins-plugin-cli
 
-ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
+ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
 # from a derived Dockerfile, can use `RUN install-plugins.sh active.txt` to setup $REF/plugins from a support bundle
 COPY install-plugins.sh /usr/local/bin/install-plugins.sh
