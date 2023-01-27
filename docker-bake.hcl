@@ -10,7 +10,8 @@ group "linux" {
     "debian_jdk17",
     "debian_slim_jdk11",
     "debian_slim_jdk17",
-    "rhel_ubi8_jdk11"
+    "rhel_ubi8_jdk11",
+    "rhel_ubi9_jdk17",
   ]
 }
 
@@ -20,6 +21,7 @@ group "linux-arm64" {
     "debian_jdk11",
     "debian_jdk17",
     "rhel_ubi8_jdk11",
+    "rhel_ubi9_jdk17",
   ]
 }
 
@@ -258,6 +260,24 @@ target "rhel_ubi8_jdk11" {
     tag_weekly(false, "rhel-ubi8-jdk11"),
     tag_lts(false, "lts-rhel-ubi8-jdk11"),
     tag_lts(true, "lts-rhel-ubi8-jdk11")
+  ]
+  platforms = ["linux/amd64", "linux/arm64"]
+}
+
+target "rhel_ubi9_jdk17" {
+  dockerfile = "17/rhel/ubi9/hotspot/Dockerfile"
+  context = "."
+  args = {
+    JENKINS_VERSION = JENKINS_VERSION
+    JENKINS_SHA = JENKINS_SHA
+    COMMIT_SHA = COMMIT_SHA
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+  }
+  tags = [
+    tag(true, "rhel-ubi9-jdk17"),
+    tag_weekly(false, "rhel-ubi9-jdk17"),
+    tag_lts(false, "lts-rhel-ubi9-jdk17"),
+    tag_lts(true, "lts-rhel-ubi9-jdk17")
   ]
   platforms = ["linux/amd64", "linux/arm64"]
 }
