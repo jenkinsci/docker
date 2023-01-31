@@ -98,7 +98,7 @@ is-published() {
 }
 
 get-latest-versions() {
-    curl --disable --fail --silent --show-error --location https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 30
+    curl --disable --fail --silent --show-error --location https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 3
 }
 
 publish() {
