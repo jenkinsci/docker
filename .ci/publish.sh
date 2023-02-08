@@ -98,7 +98,20 @@ is-published() {
 }
 
 get-latest-versions() {
-    curl --disable --fail --silent --show-error --location https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml | grep '<version>.*</version>' | grep -E -o '[0-9]+(\.[0-9]+)+' | sort-versions | uniq | tail -n 3
+    # Check the past 2 weekly versions
+    curl --disable --fail --silent --show-error --location \
+        https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml \
+    | grep '<version>.*</version>' | grep -E -o '[0-9]\.[0-9]+' | sort-versions | uniq | tail -n 2 \
+    > weekly-versions.txt
+
+    # Check only the 2 latest LTS versions
+    curl --disable --fail --silent --show-error --location \
+        https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml \
+    | grep '<version>.*</version>' | grep -E -o '[0-9]\.[0-9]+\.[0-9]' | sort-versions | uniq | tail -n 2 \
+    > lts-version.txt
+
+    cat weekly-versions.txt lts-version.txt
+    rm -f weekly-versions.txt lts-version.txt
 }
 
 publish() {
