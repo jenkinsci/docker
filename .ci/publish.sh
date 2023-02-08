@@ -28,10 +28,6 @@ sort-versions() {
     fi
 }
 
-login-token() {
-    curl --disable --fail --silent --show-error --location "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${JENKINS_REPO}:pull" | jq -r '.token'
-}
-
 is-published() {
     local JENKINS_VERSION="$1"
     local LATEST_WEEKLY=$2
@@ -60,37 +56,18 @@ is-published() {
         ## Check all the tags of each docker target.
         for docker_image_fullname in $(echo "${docker_bake_version_config}" | jq -r '.target.'"${docker_bake_target}"'.tags | .[]')
         do
-            local tag_to_check manifest_url manifest
+            local tag_to_check manifest
 
             # Extract the tag, e.g. "Remove all the characters on the left of the ':' character" - https://tldp.org/LDP/abs/html/string-manipulation.html#SubstringRemoval
             tag_to_check="${docker_image_fullname##*:}"
-            manifest_url="https://index.docker.io/v2/${JENKINS_REPO}/manifests/${tag_to_check}"
-            manifest="$(curl --disable --silent --show-error --location --header 'Accept: application/vnd.docker.distribution.manifest.list.v2+json' --header 'Accept: application/vnd.docker.distribution.manifest.v2+json' --header "Authorization: Bearer ${TOKEN}" "${manifest_url}")"
 
-            ## Error cases: no manifest content or no mediatype (or JSON not parseable)
-            manifest_kind="$(echo "${manifest}" | jq -e -r '.mediaType')"
-            set +u
-            case "${manifest_kind}" in
-            'application/vnd.docker.distribution.manifest.v2+json')
-                if test "${platform_amount}" -gt 1
-                then
-                    echo "WARNING: Image ${docker_image_fullname} has a manifest of kind 'application/vnd.docker.distribution.manifest.v2+json' but defines more than one platform." >&2
-                    return 1
-                fi
-                ;;
-            'application/vnd.docker.distribution.manifest.list.v2+json')
-                if test "${platform_amount}" -le 1
-                then
-                    echo "WARNING: Image ${docker_image_fullname} has a manifest of kind 'application/vnd.docker.distribution.manifest.list.v2+json' but only defines one platform." >&2
-                    return 1
-                fi
-                ;;
-            *)
-                echo "WARNING: could not get a valid manifest at the URL ${manifest_url}." >&2
-                echo "  (For debugging purposes) manifest=${manifest}"  >&2
-                return 1
-                ;;
-            esac
+            set +e
+            manifest="$(docker buildx imagetools inspect --raw "${JENKINS_REPO}":"${tag_to_check}")"
+            published_platforms="$(echo "${manifest}" | jq -r '[.manifests[].platform | select(.architecture != "unknown")] | length')"
+            set -e
+
+            test -n "${manifest}"
+            test "${published_platforms}" -eq "${platform_amount}"
         done
     done
 
@@ -181,8 +158,6 @@ latest_lts_version=$(echo "${versions}" | grep -E '[0-9]\.[0-9]+\.[0-9]' | tail 
 
 for version in ${versions}
 do
-    TOKEN=$(login-token)
-
     if [[ "${version}" == "${latest_weekly_version}" ]]
     then
         latest_weekly="true"
