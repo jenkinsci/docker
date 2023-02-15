@@ -67,6 +67,9 @@ is-published() {
             set -e
 
             test -n "${manifest}"
+            if test -z "${published_platforms}"; then
+                return 1
+            fi
             test "${published_platforms}" -eq "${platform_amount}"
         done
     done
