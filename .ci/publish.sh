@@ -153,9 +153,11 @@ if [ "$dry_run" = true ]; then
 fi
 
 versions=$(get-latest-versions)
-latest_weekly_version=$(echo "${versions}" | tail -n 1)
 
+# The regexp '[0-9]\.[0-9]+\.[0-9]' captures only the LTS version (e.g. "3 numbers" such as 2.375.3 for instance).
+# Weekly versions are all the non-LTS versions
 latest_lts_version=$(echo "${versions}" | grep -E '[0-9]\.[0-9]+\.[0-9]' | tail -n 1 || echo "No LTS versions")
+latest_weekly_version=$(echo "${versions}" | grep -v -E '[0-9]\.[0-9]+\.[0-9]' | tail -n 1)
 
 for version in ${versions}
 do
