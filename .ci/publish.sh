@@ -56,7 +56,7 @@ is-published() {
         ## Check all the tags of each docker target.
         for docker_image_fullname in $(echo "${docker_bake_version_config}" | jq -r '.target.'"${docker_bake_target}"'.tags | .[]')
         do
-            local tag_to_check manifest
+            local tag_to_check manifest published_platforms
 
             # Extract the tag, e.g. "Remove all the characters on the left of the ':' character" - https://tldp.org/LDP/abs/html/string-manipulation.html#SubstringRemoval
             tag_to_check="${docker_image_fullname##*:}"
@@ -66,11 +66,9 @@ is-published() {
             published_platforms="$(echo "${manifest}" | jq -r '[.manifests[].platform | select(.architecture != "unknown")] | length')"
             set -e
 
-            test -n "${manifest}"
-            if test -z "${published_platforms}"; then
-                return 1
-            fi
-            test "${published_platforms}" -eq "${platform_amount}"
+            test -n "${manifest}" || return 1
+            test -n "${published_platforms}" || return 1
+            test "${published_platforms}" -eq "${platform_amount}" || return 1
         done
     done
 
@@ -137,8 +135,8 @@ while [[ $# -gt 0 ]]; do
         shift
         ;;
         *)
-        echo "Unknown option: $key"
-        return 1
+        echo "ERROR: Unknown option: $key"
+        exit 1
         ;;
     esac
     shift
@@ -155,9 +153,11 @@ if [ "$dry_run" = true ]; then
 fi
 
 versions=$(get-latest-versions)
-latest_weekly_version=$(echo "${versions}" | tail -n 1)
 
+# The regexp '[0-9]\.[0-9]+\.[0-9]' captures only the LTS version (e.g. "3 numbers" such as 2.375.3 for instance).
+# Weekly versions are all the non-LTS versions
 latest_lts_version=$(echo "${versions}" | grep -E '[0-9]\.[0-9]+\.[0-9]' | tail -n 1 || echo "No LTS versions")
+latest_weekly_version=$(echo "${versions}" | grep -v -E '[0-9]\.[0-9]+\.[0-9]' | tail -n 1)
 
 for version in ${versions}
 do
