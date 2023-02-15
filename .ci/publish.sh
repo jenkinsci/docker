@@ -135,8 +135,8 @@ while [[ $# -gt 0 ]]; do
         shift
         ;;
         *)
-        echo "Unknown option: $key"
-        return 1
+        echo "ERROR: Unknown option: $key"
+        exit 1
         ;;
     esac
     shift
