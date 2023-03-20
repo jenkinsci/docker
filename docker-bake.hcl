@@ -31,6 +31,13 @@ group "linux-s390x" {
   ]
 }
 
+group "linux-ppc64le" {
+  targets = [
+    "debian_jdk11",
+    "rhel_ubi9_jdk17",
+  ]
+}
+
 # ---- variables ----
 
 variable "JENKINS_VERSION" {
@@ -187,7 +194,7 @@ target "debian_jdk11" {
     tag_lts(true, "lts"),
     tag_lts(true, "lts-jdk11")
   ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/s390x"]
+  platforms = ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"]
 }
 
 target "debian_jdk17" {
@@ -279,5 +286,5 @@ target "rhel_ubi9_jdk17" {
     tag_lts(false, "lts-rhel-ubi9-jdk17"),
     tag_lts(true, "lts-rhel-ubi9-jdk17")
   ]
-  platforms = ["linux/amd64", "linux/arm64"]
+  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le"]
 }
