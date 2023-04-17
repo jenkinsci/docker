@@ -9,7 +9,7 @@ RUN jlink \
          --compress=2 \
          --output /javaruntime
 
-FROM registry.access.redhat.com/ubi9/ubi:9.1.0-1782
+FROM registry.access.redhat.com/ubi9/ubi:9.1.0-1817
 
 ENV LANG C.UTF-8
 
