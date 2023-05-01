@@ -350,7 +350,7 @@ If you wish to contribute fixes to this repository, please refer to the [dedicat
 
 # Security
 
-For information related to the security of the Docker image, please refer to the [dedicated documentation](README.md).
+For information related to the security of this Docker image, please refer to the [dedicated documentation](SECURITY.md).
 
 # Questions?
 

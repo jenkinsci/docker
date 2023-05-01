@@ -24,7 +24,7 @@ We will reject reports coming from scanners without additional explanations.
 
 ## Vulnerability Management
 
-Once the report is considered legit, a new image is published with the latest packages.
+Once the report is considered legitimate, a new image is published with the latest packages.
 In the case the adjustment has to be done in the building process (e.g. in the Dockerfile), the correction will be prioritized and applied as soon as possible.
 
 By default we do not plan to publish advisories for vulnerabilities at the Docker level. 
