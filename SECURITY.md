@@ -3,24 +3,37 @@
 The Jenkins project takes security seriously.
 We make every possible effort to ensure users can adequately secure their automation infrastructure.
 
+You can find more information in the [general Security Policy](https://github.com/jenkinsci/.github/blob/master/SECURITY.md), this policy is specific to our Docker images.
+
 ## Docker Image Publication
 
 When an image is published, the latest image and the latest available packages are used.
 
 We rely on the base image provider for the security of the system libraries.
+The default base image is Debian but multiple other variants are proposed, that could potentially better fit your needs.
 
 ## Reporting Security Vulnerabilities
 
-Before reporting a vulnerability, here are some instructions.
+If you have identified a security vulnerability and would like to report it, please be aware of those requirements.
 
-If the finding is coming from a Software Composition Analysis (SCA) scanner:
+
+For findings from a **Software Composition Analysis (SCA) scanner report**, all of the following points must be satisfied:
 - The scan must have been done on the latest version of the image.
+Vulnerabilities are discovered in a continuous way, so it is expected that past releases could contain some.
 - The package should have a fixed version provided in the base image that is not yet included in our image.
+We rely on the base image provider to propose the corrections.
+- The correction should have existed at the time the image was created.
+Normally our update workflow ensures that the latest available versions are used.
 
-If the finding is coming from a manual audit:
-- Please follow the process about [Reporting Security Vulnerabilities](https://jenkins.io/security/reporting/).
+The objective is to reduce the number of reports we receive that are not relevant to the security of the project.
 
-We will reject reports coming from scanners without additional explanations.
+
+For findings from a **manual audit**, the report must contain either reproduction steps or a sufficiently well described proof to demonstrate the impact.
+
+
+Once the report is ready, please follow the process about [Reporting Security Vulnerabilities](https://jenkins.io/security/reporting/).
+
+We will reject reports that are not satisfying those requirements.
 
 ## Vulnerability Management
 
