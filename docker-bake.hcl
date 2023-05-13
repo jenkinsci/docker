@@ -94,7 +94,7 @@ function "tag_lts" {
 # ---- targets ----
 
 target "almalinux_jdk11" {
-  dockerfile = "11/almalinux/almalinux8/hotspot/Dockerfile"
+  dockerfile = "11/almalinux/almalinux9/hotspot/Dockerfile"
   context = "."
   args = {
     JENKINS_VERSION = JENKINS_VERSION

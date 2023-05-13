@@ -31,7 +31,7 @@ updates:
 # AlmaLinux
 
 - package-ecosystem: docker
-  directory: "11/almalinux/almalinux8/hotspot"
+  directory: "11/almalinux/almalinux9/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
