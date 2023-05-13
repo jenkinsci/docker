@@ -348,6 +348,10 @@ Then plugins will be upgraded if the version provided by the docker image is new
 
 If you wish to contribute fixes to this repository, please refer to the [dedicated documentation](HACKING.adoc).
 
+# Security
+
+For information related to the security of this Docker image, please refer to the [dedicated documentation](SECURITY.md).
+
 # Questions?
 
 We're on Gitter, https://gitter.im/jenkinsci/docker
