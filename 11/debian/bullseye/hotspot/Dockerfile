@@ -1,4 +1,4 @@
-FROM eclipse-temurin:11.0.18_10-jdk-focal as jre-build
+FROM eclipse-temurin:11.0.19_7-jdk-focal as jre-build
 
 RUN jlink \
          --add-modules ALL-MODULE-PATH \
@@ -6,7 +6,7 @@ RUN jlink \
          --compress=2 \
          --output /javaruntime
 
-FROM debian:bullseye-20230320
+FROM debian:bullseye-20230502
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \

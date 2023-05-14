@@ -51,7 +51,7 @@ Note that some symlinks on some OSes may be converted to copies (this can confus
 
 For more info check Docker docs section on [Use volumes](https://docs.docker.com/storage/volumes/)
 
-# Setting the number of executors
+## Setting the number of executors
 
 You can define the number of executors on the Jenkins built-in node using a groovy script.
 By default it is set to 2 executors, but you can extend the image and change it to your desired number of executors (recommended 0 executors on the built-in node) :
@@ -70,7 +70,7 @@ FROM jenkins/jenkins:lts
 COPY --chown=jenkins:jenkins executors.groovy /usr/share/jenkins/ref/init.groovy.d/executors.groovy
 ```
 
-# Connecting agents
+## Connecting agents
 
 You can run builds on the controller out of the box.
 The Jenkins project recommends that no executors be enabled on the controller.
@@ -81,7 +81,7 @@ That port will be used when you connect agents to the controller.
 If you are only using [SSH (outbound) build agents](https://plugins.jenkins.io/ssh-slaves/), this port is not required, as connections are established from the controller.
 If you connect agents using web sockets (since Jenkins 2.217), the TCP agent port is not used either.
 
-# Passing JVM parameters
+## Passing JVM parameters
 
 You might need to customize the JVM running Jenkins, typically to adjust [system properties](https://www.jenkins.io/doc/book/managing/system-properties/) or tweak heap memory settings.
 Use the `JAVA_OPTS` or `JENKINS_JAVA_OPTS` environment variables for this purpose :
@@ -92,7 +92,7 @@ docker run --name myjenkins -p 8080:8080 -p 50000:50000 --restart=on-failure --e
 
 JVM options specifically for the Jenkins controller should be set through `JENKINS_JAVA_OPTS`, as other tools might also respond to the `JAVA_OPTS` environment variable.
 
-# Configuring logging
+## Configuring logging
 
 Jenkins logging can be configured through a properties file and `java.util.logging.config.file` Java property.
 For example:
@@ -107,14 +107,14 @@ EOF
 docker run --name myjenkins -p 8080:8080 -p 50000:50000 --restart=on-failure --env JAVA_OPTS="-Djava.util.logging.config.file=/var/jenkins_home/log.properties" -v `pwd`/data:/var/jenkins_home jenkins/jenkins:lts-jdk11
 ```
 
-# Configuring reverse proxy
+## Configuring reverse proxy
 
 If you want to install Jenkins behind a reverse proxy with a prefix, example: mysite.com/jenkins, you need to add environment variable `JENKINS_OPTS="--prefix=/jenkins"` and then follow the below procedures to configure your reverse proxy, which will depend if you have Apache or Nginx:
 
 - [Apache](https://www.jenkins.io/doc/book/system-administration/reverse-proxy-configuration-apache/)
 - [Nginx](https://www.jenkins.io/doc/book/system-administration/reverse-proxy-configuration-nginx/)
 
-# Passing Jenkins launcher parameters
+## Passing Jenkins launcher parameters
 
 Arguments you pass to docker running the Jenkins image are passed to jenkins launcher, so for example you can run:
 
@@ -344,10 +344,14 @@ The default behaviour when upgrading from a docker image that didn't write marke
 If you want to upgrade existing plugins without marker you may run the docker image with `-e TRY_UPGRADE_IF_NO_MARKER=true`.
 Then plugins will be upgraded if the version provided by the docker image is newer.
 
-### Hacking
+# Hacking
 
 If you wish to contribute fixes to this repository, please refer to the [dedicated documentation](HACKING.adoc).
 
-## Questions?
+# Security
+
+For information related to the security of this Docker image, please refer to the [dedicated documentation](SECURITY.md).
+
+# Questions?
 
 We're on Gitter, https://gitter.im/jenkinsci/docker
