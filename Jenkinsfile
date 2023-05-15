@@ -54,13 +54,17 @@ stage('Build') {
                 //}
 
             } else {
-                /* In our trusted.ci environment we only want to be publishing our
-                * containers from artifacts
-                */
-                stage('Publish') {
-                    infra.withDockerCredentials {
-                        withEnv(['DOCKERHUB_ORGANISATION=jenkins','DOCKERHUB_REPO=jenkins']) {
-                            powershell './make.ps1 publish'
+                // Only publish when a tag triggered the build
+                if (env.TAG_NAME) {
+                    // Split to ensure any suffix is not taken in account (but allow suffix tags to trigger rebuilds)
+                    jenkins_version = env.TAG_NAME.split('-')[0]
+                    withEnv(["JENKINS_VERSION=${jenkins_version}"]) {
+                        stage('Publish') {
+                            infra.withDockerCredentials {
+                                withEnv(['DOCKERHUB_ORGANISATION=jenkins','DOCKERHUB_REPO=jenkins']) {
+                                    powershell './make.ps1 publish'
+                                }
+                            }
                         }
                     }
                 }
@@ -140,19 +144,26 @@ stage('Build') {
             }
         }
     } else {
-        builds['linux'] = {
-            nodeWithTimeout('docker') {
-                stage('Checkout') {
-                    checkout scm
-                }
+        // Only publish when a tag triggered the build
+        if (env.TAG_NAME) {
+            // Split to ensure any suffix is not taken in account (but allow suffix tags to trigger rebuilds)
+            jenkins_version = env.TAG_NAME.split('-')[0]
+            withEnv(["JENKINS_VERSION=${jenkins_version}"]) {
+                builds['linux'] = {
+                    nodeWithTimeout('docker') {
+                        stage('Checkout') {
+                            checkout scm
+                        }
 
-                stage('Publish') {
-                    infra.withDockerCredentials {
-                        sh '''
-                            docker buildx create --use
-                            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-                            make publish
-                            '''
+                        stage('Publish') {
+                            infra.withDockerCredentials {
+                                sh '''
+                                    docker buildx create --use
+                                    docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+                                    make publish
+                                    '''
+                            }
+                        }
                     }
                 }
             }
