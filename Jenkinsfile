@@ -148,8 +148,8 @@ stage('Build') {
         if (env.TAG_NAME) {
             // Split to ensure any suffix is not taken in account (but allow suffix tags to trigger rebuilds)
             jenkins_version = env.TAG_NAME.split('-')[0]
-            withEnv(["JENKINS_VERSION=${jenkins_version}"]) {
-                builds['linux'] = {
+            builds['linux'] = {
+                withEnv(["JENKINS_VERSION=${jenkins_version}"]) {
                     nodeWithTimeout('docker') {
                         stage('Checkout') {
                             checkout scm
