@@ -1,3 +1,5 @@
 * @jenkinsci/team-docker-packaging
 */rhel/ubi*/ @olivergondza
 */almalinux/almalinux9/ @saper
+*/debian/bullseye/hotspot @ksalerno99
+*/rhel/ubi9/hotspot @ksalerno99
