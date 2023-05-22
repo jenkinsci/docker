@@ -41,6 +41,10 @@ updates:
   - slide
   labels:
   - dependencies
+  ignore:
+  # Ignore proposals to update to Alma Linux 9 or later
+  - dependency-name: "almalinux"
+    update-types: ["version-update:semver-major"]
 
 # CentOS Linux
 
