@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17.0.7_7-jdk-ubi9-minimal as jre-build
+FROM eclipse-temurin:19.0.2_7-jdk-ubi9-minimal as jre-build
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
