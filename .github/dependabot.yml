@@ -15,6 +15,10 @@ updates:
   - slide
   labels:
   - dependencies
+  ignore:
+  # Ignore proposals to update to new major versions of Java
+  - dependency-name: "eclipse-temurin"
+    update-types: ["version-update:semver-major"]
 
 - package-ecosystem: docker
   directory: "11/alpine/hotspot"
@@ -27,6 +31,10 @@ updates:
   - slide
   labels:
   - dependencies
+  ignore:
+  # Ignore proposals to update to new major versions of Java
+  - dependency-name: "eclipse-temurin"
+    update-types: ["version-update:semver-major"]
 
 # AlmaLinux
 
