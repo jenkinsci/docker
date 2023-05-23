@@ -15,6 +15,10 @@ updates:
   - slide
   labels:
   - dependencies
+  ignore:
+  # Ignore proposals to update to new major versions of Java
+  - dependency-name: "eclipse-temurin"
+    update-types: ["version-update:semver-major"]
 
 - package-ecosystem: docker
   directory: "11/alpine/hotspot"
@@ -27,6 +31,10 @@ updates:
   - slide
   labels:
   - dependencies
+  ignore:
+  # Ignore proposals to update to new major versions of Java
+  - dependency-name: "eclipse-temurin"
+    update-types: ["version-update:semver-major"]
 
 # AlmaLinux
 
@@ -41,6 +49,10 @@ updates:
   - slide
   labels:
   - dependencies
+  ignore:
+  # Ignore proposals to update to Alma Linux 9 or later
+  - dependency-name: "almalinux"
+    update-types: ["version-update:semver-major"]
 
 # CentOS Linux
 
@@ -54,6 +66,10 @@ updates:
   - slide
   labels:
   - dependencies
+  ignore:
+  # Ignore proposals to update to new major versions of Java
+  - dependency-name: "eclipse-temurin"
+    update-types: ["version-update:semver-major"]
 
 # Debian Linux
 
@@ -68,6 +84,10 @@ updates:
   - slide
   labels:
   - dependencies
+  ignore:
+  # Ignore proposals to update to new major versions of Java
+  - dependency-name: "eclipse-temurin"
+    update-types: ["version-update:semver-major"]
 
 - package-ecosystem: docker
   directory: "17/debian/bullseye-slim/hotspot"
@@ -80,6 +100,10 @@ updates:
   - slide
   labels:
   - dependencies
+  ignore:
+  # Ignore proposals to update to new major versions of Java
+  - dependency-name: "eclipse-temurin"
+    update-types: ["version-update:semver-major"]
 
 - package-ecosystem: docker
   directory: "11/debian/bullseye/hotspot"
@@ -92,6 +116,10 @@ updates:
   - slide
   labels:
   - dependencies
+  ignore:
+  # Ignore proposals to update to new major versions of Java
+  - dependency-name: "eclipse-temurin"
+    update-types: ["version-update:semver-major"]
 
 - package-ecosystem: docker
   directory: "11/debian/bullseye-slim/hotspot"
@@ -104,6 +132,10 @@ updates:
   - slide
   labels:
   - dependencies
+  ignore:
+  # Ignore proposals to update to new major versions of Java
+  - dependency-name: "eclipse-temurin"
+    update-types: ["version-update:semver-major"]
 
 # RHEL UBI
 
@@ -118,6 +150,10 @@ updates:
     - slide
   labels:
     - dependencies
+  ignore:
+  # Ignore proposals to update to new major versions of Java
+  - dependency-name: "eclipse-temurin"
+    update-types: ["version-update:semver-major"]
 
 - package-ecosystem: docker
   directory: "17/rhel/ubi9/hotspot"
@@ -130,6 +166,10 @@ updates:
     - slide
   labels:
     - dependencies
+  ignore:
+  # Ignore proposals to update to new major versions of Java
+  - dependency-name: "eclipse-temurin"
+    update-types: ["version-update:semver-major"]
 
 # Windows
 
