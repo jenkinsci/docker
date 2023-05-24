@@ -73,6 +73,10 @@ variable "COMMIT_SHA" {
   default = ""
 }
 
+variable "JAVA_11_VERSION" {
+  default = "11.0.19+7"
+}
+
 # ----  user-defined functions ----
 
 # return a tag prefixed by the Jenkins version
@@ -163,6 +167,7 @@ target "centos7_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    JAVA_VERSION = JAVA_11_VERSION
   }
   tags = [
     tag(true, "centos7"),
