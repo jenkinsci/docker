@@ -1,14 +1,3 @@
-FROM eclipse-temurin:11.0.19_7-jdk-centos7 as jre-build
-
-# Generate smaller java runtime without unneeded files
-# for now we include the full module path to maintain compatibility
-# while still saving space (approx 200mb from the full distribution)
-RUN jlink \
-         --add-modules ALL-MODULE-PATH \
-         --no-man-pages \
-         --compress=2 \
-         --output /javaruntime
-
 FROM centos:centos7.9.2009
 
 RUN yum install -y \
@@ -19,7 +8,6 @@ RUN yum install -y \
     unzip \
     which \
   && yum clean all
-
 RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.rpm.sh -o /tmp/script.rpm.sh \
   && bash /tmp/script.rpm.sh \
   && rm -f /tmp/script.rpm.sh \
@@ -109,7 +97,51 @@ ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH "${JAVA_HOME}/bin:${PATH}"
-COPY --from=jre-build /javaruntime $JAVA_HOME
+ARG JAVA_VERSION 11.0.19+7
+ENV JAVA_VERSION $JAVA_VERSION
+
+RUN set -eux; \
+    ARCH="$(objdump="$(command -v objdump)" && objdump --file-headers "$objdump" | awk -F '[:,]+[[:space:]]+' '$1 == "architecture" { print $2 }')"; \
+    export JAVA_VERSION=$JAVA_VERSION; \
+    # Encode the Java version using sed because it's used in a URL \
+    ENCODED_JAVA_VERSION=$(echo $JAVA_VERSION | sed 's/+/%2B/g'); \
+    # Encode the Java version using sed because Temurin changed the '+' into '_' \
+    UNDERSCORED_JAVA_VERSION=$(echo "$JAVA_VERSION" | sed 's/\+/_/g'); \
+    case "${ARCH}" in \
+       aarch64|arm64) \
+         ESUM='0c7763a19b4af4ef5fbae831781b5184e988d6f131d264482399eeaf51b6e254'; \
+         BINARY_URL="https://github.com/adoptium/temurin11-binaries/releases/download/jdk-${ENCODED_JAVA_VERSION}/OpenJDK11U-jdk_aarch64_linux_hotspot_${UNDERSCORED_JAVA_VERSION}.tar.gz"; \
+         ;; \
+       ppc64el|powerpc:common64) \
+         ESUM='1e3704c8e155f8f894953c2a6708a52e6f449bbf5a85450be6fbb2ec76581700'; \
+         BINARY_URL="https://github.com/adoptium/temurin11-binaries/releases/download/jdk-${ENCODED_JAVA_VERSION}/OpenJDK11U-jdk_ppc64le_linux_hotspot_${UNDERSCORED_JAVA_VERSION}.tar.gz"; \
+         ;; \
+       amd64|i386:x86-64) \
+         ESUM='5f19fb28aea3e28fcc402b73ce72f62b602992d48769502effe81c52ca39a581'; \
+         BINARY_URL="https://github.com/adoptium/temurin11-binaries/releases/download/jdk-${ENCODED_JAVA_VERSION}/OpenJDK11U-jdk_x64_linux_hotspot_${UNDERSCORED_JAVA_VERSION}.tar.gz"; \
+         ;; \
+       *) \
+         echo "Unsupported arch: ${ARCH}"; \
+         exit 1; \
+         ;; \
+    esac; \
+	  curl -L -o /tmp/openjdk.tar.gz "${BINARY_URL}"; \
+	  echo "${ESUM} */tmp/openjdk.tar.gz" | sha256sum -c -; \
+	  mkdir -p "$JAVA_HOME"; \
+      mkdir -p "/tmp${JAVA_HOME}"; \
+	  tar --extract \
+	      --file /tmp/openjdk.tar.gz \
+	      --directory "/tmp$JAVA_HOME" \
+	      --strip-components 1 \
+	      --no-same-owner \
+	  ; \
+    rm -f /tmp/openjdk.tar.gz ${JAVA_HOME}/src.zip; \
+    rm -fr ${JAVA_HOME}; \
+    "/tmp/$JAVA_HOME/bin/jlink" \
+             --add-modules ALL-MODULE-PATH \
+             --no-man-pages \
+             --compress=2 \
+             --output ${JAVA_HOME}
 
 USER ${user}
 
