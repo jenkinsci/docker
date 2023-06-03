@@ -41,6 +41,10 @@ group "linux-ppc64le" {
 
 # ---- variables ----
 
+variable "DOWNLOAD_DIR" {
+  default = "war"
+}
+
 variable "JENKINS_VERSION" {
   default = "2.356"
 }
@@ -109,6 +113,7 @@ target "almalinux_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    DOWNLOAD_DIR = DOWNLOAD_DIR
   }
   tags = [
     tag(true, "almalinux"),
@@ -126,6 +131,7 @@ target "alpine_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    DOWNLOAD_DIR = DOWNLOAD_DIR
   }
   tags = [
     tag(true, "alpine"),
@@ -146,6 +152,7 @@ target "alpine_jdk17" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    DOWNLOAD_DIR = DOWNLOAD_DIR
   }
   tags = [
     tag(true, "alpine-jdk17"),
@@ -163,6 +170,7 @@ target "centos7_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    DOWNLOAD_DIR = DOWNLOAD_DIR
   }
   tags = [
     tag(true, "centos7"),
@@ -183,6 +191,7 @@ target "debian_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    DOWNLOAD_DIR = DOWNLOAD_DIR
   }
   tags = [
     tag(true, ""),
@@ -206,6 +215,7 @@ target "debian_jdk17" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    DOWNLOAD_DIR = DOWNLOAD_DIR
   }
   tags = [
     tag(true, "jdk17"),
@@ -225,6 +235,7 @@ target "debian_slim_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    DOWNLOAD_DIR = DOWNLOAD_DIR
   }
   tags = [
     tag(true, "slim"),
@@ -245,6 +256,7 @@ target "debian_slim_jdk17" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    DOWNLOAD_DIR = DOWNLOAD_DIR
   }
   tags = [
     tag(true, "slim-jdk17"),
@@ -262,6 +274,7 @@ target "rhel_ubi8_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    DOWNLOAD_DIR = DOWNLOAD_DIR
   }
   tags = [
     tag(true, "rhel-ubi8-jdk11"),
@@ -280,6 +293,7 @@ target "rhel_ubi9_jdk17" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    DOWNLOAD_DIR = DOWNLOAD_DIR
   }
   tags = [
     tag(true, "rhel-ubi9-jdk17"),

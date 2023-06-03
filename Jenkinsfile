@@ -58,7 +58,12 @@ stage('Build') {
                 if (env.TAG_NAME) {
                     // Split to ensure any suffix is not taken in account (but allow suffix tags to trigger rebuilds)
                     jenkins_version = env.TAG_NAME.split('-')[0]
-                    withEnv(["JENKINS_VERSION=${jenkins_version}"]) {
+                    if (jenkins_version.split('[.]').size() == 3) {
+                        downloadDir = 'DOWNLOAD_DIR=war-stable'
+                    } else {
+                        downloadDir = 'DOWNLOAD_DIR=war'
+                    }
+                    withEnv(["JENKINS_VERSION=${jenkins_version}", downloadDir]) {
                         stage('Publish') {
                             infra.withDockerCredentials {
                                 withEnv(['DOCKERHUB_ORGANISATION=jenkins','DOCKERHUB_REPO=jenkins']) {
@@ -149,7 +154,12 @@ stage('Build') {
             // Split to ensure any suffix is not taken in account (but allow suffix tags to trigger rebuilds)
             jenkins_version = env.TAG_NAME.split('-')[0]
             builds['linux'] = {
-                withEnv(["JENKINS_VERSION=${jenkins_version}"]) {
+                if (jenkins_version.split('[.]').size() == 3) {
+                    downloadDir = 'DOWNLOAD_DIR=war-stable'
+                } else {
+                    downloadDir = 'DOWNLOAD_DIR=war'
+                }
+                withEnv(["JENKINS_VERSION=${jenkins_version}", downloadDir]) {
                     nodeWithTimeout('docker') {
                         stage('Checkout') {
                             checkout scm

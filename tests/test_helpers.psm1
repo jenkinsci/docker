@@ -113,7 +113,13 @@ function Build-Docker {
     $FOLDER = $FOLDER.Trim()
 
     if(-not [System.String]::IsNullOrWhiteSpace($env:JENKINS_VERSION)) {
-        return (Run-Program 'docker.exe' "build --build-arg JENKINS_VERSION=$env:JENKINS_VERSION --build-arg JENKINS_SHA=$env:JENKINS_SHA $args $FOLDER")
+        if([regex]::Matches($env:JENKINS_VERSION, "[.]").count -gt 1) {
+            # Building the LTS version
+            return (Run-Program 'docker.exe' "build --build-arg JENKINS_VERSION=$env:JENKINS_VERSION --build-arg JENKINS_SHA=$env:JENKINS_SHA --build-arg DOWNLOAD_DIR=war-stable $args $FOLDER")
+        } else {
+            # Building the weekly version
+            return (Run-Program 'docker.exe' "build --build-arg JENKINS_VERSION=$env:JENKINS_VERSION --build-arg JENKINS_SHA=$env:JENKINS_SHA $args $FOLDER")
+        }
     } 
     return (Run-Program 'docker.exe' "build $args $FOLDER")
 }
