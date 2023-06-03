@@ -59,9 +59,9 @@ stage('Build') {
                     // Split to ensure any suffix is not taken in account (but allow suffix tags to trigger rebuilds)
                     jenkins_version = env.TAG_NAME.split('-')[0]
                     if (jenkins_version.split('[.]').size() == 3) {
-                        downloadDir = 'DOWNLOAD_DIR=war-stable'
+                        downloadDir = 'RELEASE_LINE=war-stable'
                     } else {
-                        downloadDir = 'DOWNLOAD_DIR=war'
+                        downloadDir = 'RELEASE_LINE=war'
                     }
                     withEnv(["JENKINS_VERSION=${jenkins_version}", downloadDir]) {
                         stage('Publish') {
@@ -155,9 +155,9 @@ stage('Build') {
             jenkins_version = env.TAG_NAME.split('-')[0]
             builds['linux'] = {
                 if (jenkins_version.split('[.]').size() == 3) {
-                    downloadDir = 'DOWNLOAD_DIR=war-stable'
+                    downloadDir = 'RELEASE_LINE=war-stable'
                 } else {
-                    downloadDir = 'DOWNLOAD_DIR=war'
+                    downloadDir = 'RELEASE_LINE=war'
                 }
                 withEnv(["JENKINS_VERSION=${jenkins_version}", downloadDir]) {
                     nodeWithTimeout('docker') {

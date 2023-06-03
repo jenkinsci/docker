@@ -67,8 +67,8 @@ VOLUME $JENKINS_HOME
 RUN mkdir -p ${REF}/init.groovy.d
 
 # Download directory, usually either `war` for weekly or `war-stable` for LTS
-ARG DOWNLOAD_DIR
-ENV DOWNLOAD_DIR ${DOWNLOAD_DIR:-war}
+ARG RELEASE_LINE
+ENV RELEASE_LINE ${RELEASE_LINE:-war}
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
@@ -78,7 +78,7 @@ ENV JENKINS_VERSION ${JENKINS_VERSION:-2.356}
 ARG JENKINS_SHA=1163c4554dc93439c5eef02b06a8d74f98ca920bbc012c2b8a089d414cfa8075
 
 # Can be used to customize jenkins.war download location
-ARG JENKINS_URL=https://get.jenkins.io/${DOWNLOAD_DIR}/${JENKINS_VERSION}/jenkins.war
+ARG JENKINS_URL=https://get.jenkins.io/${RELEASE_LINE}/${JENKINS_VERSION}/jenkins.war
 
 # could use ADD but this one does not check Last-Modified header neither does it allow to control checksum
 # see https://github.com/docker/docker/issues/8331

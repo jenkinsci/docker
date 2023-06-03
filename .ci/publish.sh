@@ -64,19 +64,19 @@ latest_weekly_version="$(echo "${all_jenkins_versions}" | grep -E -o '[0-9]\.[0-
 if [[ "${JENKINS_VERSION}" == "${latest_weekly_version}" ]]
 then
     LATEST_WEEKLY="true"
-    DOWNLOAD_DIR="war"
+    RELEASE_LINE="war"
 else
     LATEST_WEEKLY="false"
-    DOWNLOAD_DIR="war-stable"
+    RELEASE_LINE="war-stable"
 fi
 
 if [[ "${JENKINS_VERSION}" == "${latest_lts_version}" ]]
 then
     LATEST_LTS="true"
-    DOWNLOAD_DIR="war-stable"
+    RELEASE_LINE="war-stable"
 else
     LATEST_LTS="false"
-    DOWNLOAD_DIR="war"
+    RELEASE_LINE="war"
 fi
 
 build_opts=("--pull")
@@ -98,7 +98,7 @@ Using the following settings:
 * COMMIT_SHA: ${COMMIT_SHA}
 * LATEST_WEEKLY: ${LATEST_WEEKLY}
 * LATEST_LTS: ${LATEST_LTS}
-* DOWNLOAD_DIR: ${DOWNLOAD_DIR}
+* RELEASE_LINE: ${RELEASE_LINE}
 EOF
 
 docker buildx bake --file docker-bake.hcl "${build_opts[@]}" linux
