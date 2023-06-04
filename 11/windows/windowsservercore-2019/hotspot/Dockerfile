@@ -38,16 +38,15 @@ USER ${user}
 # hadolint ignore=DL4006
 RUN New-Item -ItemType Directory -Force -Path C:/ProgramData/Jenkins/Reference/init.groovy.d | Out-Null
 
-# Download directory, usually either `war` for weekly or `war-stable` for LTS
-ARG RELEASE_LINE
-ENV RELEASE_LINE ${RELEASE_LINE:-war}
-
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
 ENV JENKINS_VERSION ${JENKINS_VERSION:-2.356}
 
 # jenkins.war checksum, download will be validated using it
 ARG JENKINS_SHA=1163c4554dc93439c5eef02b06a8d74f98ca920bbc012c2b8a089d414cfa8075
+
+# Download directory, either `war` for weekly or `war-stable` for LTS
+ARG RELEASE_LINE
 
 # Can be used to customize jenkins.war download location
 ARG JENKINS_URL=https://get.jenkins.io/${RELEASE_LINE}/${JENKINS_VERSION}/jenkins.war

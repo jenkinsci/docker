@@ -68,16 +68,15 @@ VOLUME $JENKINS_HOME
 # or config file with your custom jenkins Docker image.
 RUN mkdir -p ${REF}/init.groovy.d
 
-# Download directory, usually either `war` for weekly or `war-stable` for LTS
-ARG RELEASE_LINE
-ENV RELEASE_LINE ${RELEASE_LINE:-war}
-
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
 ENV JENKINS_VERSION ${JENKINS_VERSION:-2.356}
 
 # jenkins.war checksum, download will be validated using it
 ARG JENKINS_SHA=1163c4554dc93439c5eef02b06a8d74f98ca920bbc012c2b8a089d414cfa8075
+
+# Download directory, either `war` for weekly or `war-stable` for LTS
+ARG RELEASE_LINE
 
 # Can be used to customize jenkins.war download location
 ARG JENKINS_URL=https://get.jenkins.io/${RELEASE_LINE}/${JENKINS_VERSION}/jenkins.war
