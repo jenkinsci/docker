@@ -121,7 +121,7 @@ function Build-Docker {
             return (Run-Program 'docker.exe' "build --build-arg JENKINS_VERSION=$env:JENKINS_VERSION --build-arg JENKINS_SHA=$env:JENKINS_SHA --build-arg RELEASE_LINE=war-stable $args $FOLDER")
         }
     } 
-    return (Run-Program 'docker.exe' "build $args $FOLDER")
+    return (Run-Program 'docker.exe' "build --build-arg RELEASE_LINE=war $args $FOLDER")
 }
 
 function Build-DockerChild($tag, $dir) {
