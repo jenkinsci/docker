@@ -28,6 +28,9 @@ if(-not [System.String]::IsNullOrWhiteSpace($JenkinsVersion)) {
         # Building the LTS version
         $AdditionalArgs = $AdditionalArgs + ' --build-arg RELEASE_LINE=war-stable'
     }
+} else {
+    # Building the weekly version
+    $AdditionalArgs = $AdditionalArgs + ' --build-arg RELEASE_LINE=war'
 } 
 
 # this is the jdk version that will be used for the 'bare tag' images, e.g., jdk11-windowsservercore-1809 -> windowsserver-1809
