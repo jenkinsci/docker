@@ -64,18 +64,25 @@ latest_weekly_version="$(echo "${all_jenkins_versions}" | grep -E -o '[0-9]\.[0-
 if [[ "${JENKINS_VERSION}" == "${latest_weekly_version}" ]]
 then
     LATEST_WEEKLY="true"
-    RELEASE_LINE="war"
 else
     LATEST_WEEKLY="false"
-    RELEASE_LINE="war-stable"
 fi
 
 if [[ "${JENKINS_VERSION}" == "${latest_lts_version}" ]]
 then
     LATEST_LTS="true"
-    RELEASE_LINE="war-stable"
 else
     LATEST_LTS="false"
+fi
+
+# https://stackoverflow.com/questions/16679369/count-occurrences-of-a-char-in-a-string-using-bash
+# Remove all characters from JENKINS_VERSION that are not '.'
+dots_in_jenkins_version="${JENKINS_VERSION//[^.]}"
+# If there are 2 dots in the version, then use the LTS release line
+if [[ "$dots_in_jenkins_version" == ".." ]]
+then
+    RELEASE_LINE="war-stable"
+else
     RELEASE_LINE="war"
 fi
 
