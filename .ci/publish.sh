@@ -75,17 +75,6 @@ else
     LATEST_LTS="false"
 fi
 
-# https://stackoverflow.com/questions/16679369/count-occurrences-of-a-char-in-a-string-using-bash
-# Remove all characters from JENKINS_VERSION that are not '.'
-dots_in_jenkins_version="${JENKINS_VERSION//[^.]}"
-# If there are 2 dots in the version, then use the LTS release line
-if [[ "$dots_in_jenkins_version" == ".." ]]
-then
-    RELEASE_LINE="war-stable"
-else
-    RELEASE_LINE="war"
-fi
-
 build_opts=("--pull")
 if test "${dry_run}" == "true"; then
     build_opts+=("--load")
@@ -95,7 +84,7 @@ fi
 
 JENKINS_SHA="$(curl --disable --fail --silent --show-error --location "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war.sha256")"
 COMMIT_SHA=$(git rev-parse HEAD)
-export COMMIT_SHA JENKINS_VERSION JENKINS_SHA LATEST_WEEKLY LATEST_LTS RELEASE_LINE
+export COMMIT_SHA JENKINS_VERSION JENKINS_SHA LATEST_WEEKLY LATEST_LTS
 
 cat <<EOF
 Using the following settings:
@@ -105,7 +94,6 @@ Using the following settings:
 * COMMIT_SHA: ${COMMIT_SHA}
 * LATEST_WEEKLY: ${LATEST_WEEKLY}
 * LATEST_LTS: ${LATEST_LTS}
-* RELEASE_LINE: ${RELEASE_LINE}
 EOF
 
 docker buildx bake --file docker-bake.hcl "${build_opts[@]}" linux
