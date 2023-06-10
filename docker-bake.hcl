@@ -41,6 +41,10 @@ group "linux-ppc64le" {
 
 # ---- variables ----
 
+variable "RELEASE_LINE" {
+  default = "war"
+}
+
 variable "JENKINS_VERSION" {
   default = "2.356"
 }
@@ -99,6 +103,16 @@ function "tag_lts" {
   result =  equal(LATEST_LTS, "true") ? tag(prepend_jenkins_version, tag) : ""
 }
 
+# return release line based on Jenkins version
+function "release_line" {
+  # If there is more than one sequence of digits with a trailing literal '.', this is LTS
+  # 2.407 has only one sequence of digits with a trailing literal '.'
+  # 2.401.1 has two sequences of digits with a trailing literal '.'
+  # https://developer.hashicorp.com/terraform/language/functions/regexall describes the technique
+  params = []
+  result = length(regexall("[0-9]+[.]", JENKINS_VERSION)) < 2 ? "war" : "war-stable"
+}
+
 # ---- targets ----
 
 target "almalinux_jdk11" {
@@ -109,6 +123,7 @@ target "almalinux_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    RELEASE_LINE = release_line()
   }
   tags = [
     tag(true, "almalinux"),
@@ -126,6 +141,7 @@ target "alpine_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    RELEASE_LINE = release_line()
   }
   tags = [
     tag(true, "alpine"),
@@ -146,6 +162,7 @@ target "alpine_jdk17" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    RELEASE_LINE = release_line()
   }
   tags = [
     tag(true, "alpine-jdk17"),
@@ -163,6 +180,7 @@ target "centos7_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    RELEASE_LINE = release_line()
   }
   tags = [
     tag(true, "centos7"),
@@ -183,6 +201,7 @@ target "debian_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    RELEASE_LINE = release_line()
   }
   tags = [
     tag(true, ""),
@@ -206,6 +225,7 @@ target "debian_jdk17" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    RELEASE_LINE = release_line()
   }
   tags = [
     tag(true, "jdk17"),
@@ -225,6 +245,7 @@ target "debian_slim_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    RELEASE_LINE = release_line()
   }
   tags = [
     tag(true, "slim"),
@@ -245,6 +266,7 @@ target "debian_slim_jdk17" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    RELEASE_LINE = release_line()
   }
   tags = [
     tag(true, "slim-jdk17"),
@@ -262,6 +284,7 @@ target "rhel_ubi8_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    RELEASE_LINE = release_line()
   }
   tags = [
     tag(true, "rhel-ubi8-jdk11"),
@@ -280,6 +303,7 @@ target "rhel_ubi9_jdk17" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    RELEASE_LINE = release_line()
   }
   tags = [
     tag(true, "rhel-ubi9-jdk17"),
