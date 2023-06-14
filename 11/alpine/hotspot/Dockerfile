@@ -1,4 +1,6 @@
-FROM eclipse-temurin:11.0.19_7-jdk-alpine AS jre-build
+ARG JAVA_VERSION="11.0.19_7"
+ARG ALPINE_TAG=3.18.0
+FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-alpine AS jre-build
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
@@ -11,7 +13,7 @@ RUN jlink \
          --compress=2 \
          --output /javaruntime
 
-FROM alpine:3.18.0
+FROM alpine:"${ALPINE_TAG}" AS build
 
 RUN apk add --no-cache \
     bash \
