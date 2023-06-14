@@ -1,18 +1,28 @@
-FROM eclipse-temurin:17.0.7_7-jdk-alpine AS jre-build
+ARG JAVA_VERSION="17.0.7_7"
+ARG ALPINE_TAG=3.18.0
+FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-alpine AS jre-build
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
 # while still saving space (approx 200mb from the full distribution)
-RUN apk add --no-cache binutils \
-  && jlink \
-         --add-modules ALL-MODULE-PATH \
-         --strip-debug \
-         --no-man-pages \
-         --no-header-files \
-         --compress=2 \
-         --output /javaruntime
+RUN if [ "$TARGETPLATFORM" != 'linux/arm/v7' ]; then \
+    case "$(jlink --version 2>&1)" in \
+      # jlink version 11 has less features than JDK17+
+      "11."*) strip_java_debug_flags="--strip-debug" ;; \
+      *) strip_java_debug_flags="--strip-java-debug-attributes" ;; \
+    esac; \
+    jlink \
+      --add-modules ALL-MODULE-PATH \
+      "$strip_java_debug_flags" \
+      --no-man-pages \
+      --no-header-files \
+      --compress=2 \
+      --output /javaruntime; \
+  else \
+    cp -r /opt/java/openjdk /javaruntime; \
+  fi
 
-FROM alpine:3.18.0
+FROM alpine:"${ALPINE_TAG}" AS build
 
 RUN apk add --no-cache \
     bash \

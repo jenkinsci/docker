@@ -77,6 +77,21 @@ variable "COMMIT_SHA" {
   default = ""
 }
 
+variable "ALPINE_FULL_TAG" {
+  default = "3.18.0"
+}
+
+variable "ALPINE_SHORT_TAG" {
+  default = regex_replace(ALPINE_FULL_TAG, "\\.\\d+$", "")
+}
+
+variable "JAVA11_VERSION" {
+  default = "11.0.19_7"
+}
+
+variable "JAVA17_VERSION" {
+  default = "17.0.7_7"
+}
 # ----  user-defined functions ----
 
 # return a tag prefixed by the Jenkins version
@@ -142,14 +157,17 @@ target "alpine_jdk11" {
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     RELEASE_LINE = release_line()
+    ALPINE_TAG = ALPINE_FULL_TAG
+    JAVA_VERSION = JAVA11_VERSION
   }
   tags = [
     tag(true, "alpine"),
     tag_weekly(false, "alpine"),
     tag_weekly(false, "alpine-jdk11"),
+    tag_weekly(false, "alpine${ALPINE_SHORT_TAG}-jdk11"),
     tag_lts(false, "lts-alpine"),
     tag_lts(false, "lts-alpine-jdk11"),
-    tag_lts(true, "lts-alpine"),
+    tag_lts(true, "lts-alpine")
   ]
   platforms = ["linux/amd64"]
 }
@@ -163,10 +181,13 @@ target "alpine_jdk17" {
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     RELEASE_LINE = release_line()
+    ALPINE_TAG = ALPINE_FULL_TAG
+    JAVA_VERSION = JAVA17_VERSION
   }
   tags = [
     tag(true, "alpine-jdk17"),
     tag_weekly(false, "alpine-jdk17"),
+    tag_weekly(false, "alpine${ALPINE_SHORT_TAG}-jdk17"),
     tag_lts(false, "lts-alpine-jdk17")
   ]
   platforms = ["linux/amd64"]
