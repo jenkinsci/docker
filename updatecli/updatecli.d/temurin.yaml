@@ -1,0 +1,104 @@
+---
+name: Bump Temurin's JDK17 version
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "{{ .github.branch }}"
+
+sources:
+  lastVersion:
+    kind: githubrelease
+    name: Get the latest Temurin JDK17 version
+    spec:
+      owner: "adoptium"
+      repository: "temurin17-binaries"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      versionfilter:
+        kind: regex
+        # jdk-17.0.2+8(https://github.com/adoptium/temurin17-binaries/releases/tag/jdk-17.0.2%2B8) is OK
+        # jdk-17.0.4.1+1(https://github.com/adoptium/temurin17-binaries/releases/tag/jdk-17.0.4.1%2B1) is OK
+        pattern: "^jdk-17.(\\d*).(\\d*).(\\d*)(.(\\d*))+(\\d*)$"
+    transformers:
+      - trimprefix: "jdk-"
+      - replacer:
+          from: +
+          to: _
+
+conditions:
+  checkTemurinAlpineDockerImage:
+    kind: dockerimage
+    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-alpine" is available
+    disablesourceinput: true
+    spec:
+      architecture: amd64
+      image: eclipse-temurin
+      tag: '{{source "lastVersion" }}-jdk-alpine'
+  checkTemurinDebianDockerImages:
+    kind: dockerimage
+    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-focal" is available
+    disablesourceinput: true
+    spec:
+      architectures:
+        - amd64
+        - arm64
+        - s390x
+        - arm/v7
+      image: eclipse-temurin
+      tag: '{{source "lastVersion" }}-jdk-focal'
+  checkTemurinWindowsCoreDockerImage:
+    kind: dockerimage
+    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-windowsservercore-1809" is available
+    disablesourceinput: true
+    spec:
+      architecture: amd64
+      image: eclipse-temurin
+      tag: '{{source "lastVersion" }}-jdk-windowsservercore-1809'
+
+targets:
+  setJDK17VersionDockerBake:
+    name: "Bump JDK17 version for Linux images in the docker-bake.hcl file"
+    kind: file
+    spec:
+      file: docker-bake.hcl
+      matchpattern: >-
+        variable(.*)"JAVA17_VERSION"(.*){(.*)(\r\n|\r|\n)(.*)default(.*)=(.*)
+      replacepattern: >-
+        variable${1}"JAVA17_VERSION"${2}{${3}${4}${5}default${6}= "{{ source "lastVersion" }}"
+    scmid: default
+  setJDK17VersionAlpine:
+    name: "Bump JDK17 default ARG version on Alpine Dockerfile"
+    kind: dockerfile
+    spec:
+      file: alpine/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
+  setJDK17VersionDebian:
+    name: "Bump JDK17 default ARG version on Debian Dockerfile"
+    kind: dockerfile
+    spec:
+      file: debian/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
+
+actions:
+  default:
+    kind: github/pullrequest
+    scmid: default
+    title: Bump JDK17 version to {{ source "lastVersion" }}
+    spec:
+      labels:
+        - dependencies
+        - jdk17
