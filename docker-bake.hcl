@@ -223,6 +223,7 @@ target "debian_jdk11" {
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     RELEASE_LINE = release_line()
+    JAVA_VERSION = JAVA11_VERSION
   }
   tags = [
     tag(true, ""),
@@ -247,6 +248,7 @@ target "debian_jdk17" {
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     RELEASE_LINE = release_line()
+    JAVA_VERSION = JAVA17_VERSION
   }
   tags = [
     tag(true, "jdk17"),
@@ -267,6 +269,7 @@ target "debian_slim_jdk11" {
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     RELEASE_LINE = release_line()
+    JAVA_VERSION = JAVA11_VERSION
   }
   tags = [
     tag(true, "slim"),
@@ -288,6 +291,7 @@ target "debian_slim_jdk17" {
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     RELEASE_LINE = release_line()
+    JAVA_VERSION = JAVA17_VERSION
   }
   tags = [
     tag(true, "slim-jdk17"),

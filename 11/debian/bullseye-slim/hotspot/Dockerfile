@@ -1,4 +1,5 @@
-FROM eclipse-temurin:11.0.19_7-jdk-focal as jre-build
+ARG JAVA_VERSION="11.0.19_7"
+FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-focal as jre-build
 
 RUN jlink \
          --add-modules ALL-MODULE-PATH \
