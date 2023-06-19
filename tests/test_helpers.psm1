@@ -30,7 +30,7 @@ function Retry-Command {
         [scriptblock] $ScriptBlock,
         [int] $RetryCount = 3,
         [int] $Delay = 30,
-        [string] $SuccessMessage = "Command executed successfuly!",
+        [string] $SuccessMessage = "Command executed successfully!",
         [string] $FailureMessage = "Failed to execute the command"
         )
         
