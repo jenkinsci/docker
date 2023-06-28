@@ -92,6 +92,11 @@ variable "JAVA11_VERSION" {
 variable "JAVA17_VERSION" {
   default = "17.0.7_7"
 }
+
+variable "BULLSEYE_TAG" {
+  default = "20230612"
+}
+
 # ----  user-defined functions ----
 
 # return a tag prefixed by the Jenkins version
@@ -224,6 +229,7 @@ target "debian_jdk11" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     RELEASE_LINE = release_line()
     JAVA_VERSION = JAVA11_VERSION
+    BULLSEYE_TAG = BULLSEYE_TAG
   }
   tags = [
     tag(true, ""),
@@ -249,6 +255,7 @@ target "debian_jdk17" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     RELEASE_LINE = release_line()
     JAVA_VERSION = JAVA17_VERSION
+    BULLSEYE_TAG = BULLSEYE_TAG
   }
   tags = [
     tag(true, "jdk17"),
@@ -270,6 +277,7 @@ target "debian_slim_jdk11" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     RELEASE_LINE = release_line()
     JAVA_VERSION = JAVA11_VERSION
+    BULLSEYE_TAG = BULLSEYE_TAG
   }
   tags = [
     tag(true, "slim"),
@@ -292,6 +300,7 @@ target "debian_slim_jdk17" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     RELEASE_LINE = release_line()
     JAVA_VERSION = JAVA17_VERSION
+    BULLSEYE_TAG = BULLSEYE_TAG
   }
   tags = [
     tag(true, "slim-jdk17"),

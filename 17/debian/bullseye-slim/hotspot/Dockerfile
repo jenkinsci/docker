@@ -1,4 +1,5 @@
 ARG JAVA_VERSION="17.0.7_7"
+ARG BULLSEYE_TAG="20230612"
 FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-focal as jre-build
 
 RUN jlink \
@@ -9,7 +10,7 @@ RUN jlink \
          --compress=2 \
          --output /javaruntime
 
-FROM debian:bullseye-20230612-slim
+FROM debian:bullseye-"${BULLSEYE_TAG}"-slim
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
