@@ -5,4 +5,4 @@ github:
   token: "UPDATECLI_GITHUB_TOKEN"
   branch: "master"
   owner: "jenkinsci"
-  repository: "docker-ssh-agent"
+  repository: "docker"
