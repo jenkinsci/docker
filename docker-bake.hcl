@@ -94,7 +94,7 @@ variable "JAVA17_VERSION" {
 }
 
 variable "BULLSEYE_TAG" {
-  default = "20230612"
+  default = "bullseye-20230612"
 }
 
 # ----  user-defined functions ----
