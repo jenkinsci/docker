@@ -17,6 +17,8 @@ sources:
   bullseyeLatestVersion:
     kind: dockerimage
     name: "Get the latest Debian Bullseye Linux version"
+    transformers:
+      - trimprefix: "bullseye-"
     spec:
       image: "debian"
       tagFilter: "bullseye-*"
@@ -27,6 +29,8 @@ sources:
   bullseyeSlimLatestVersion:
     kind: dockerimage
     name: "Get the latest Debian Bullseye Linux version"
+    transformers:
+      - trimprefix: "bullseye-"
     spec:
       image: "debian"
       tagFilter: "bullseye-*"
