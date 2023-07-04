@@ -18,6 +18,7 @@ RUN yum install -y \
     git \
     unzip \
     which \
+    tzdata \
   && yum clean all
 
 RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.rpm.sh -o /tmp/script.rpm.sh \
