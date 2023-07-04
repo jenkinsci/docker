@@ -23,6 +23,7 @@ RUN apt-get update \
     ssh-client \
     tini \
     unzip \
+    tzdata \
   && rm -rf /var/lib/apt/lists/*
 
 RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh -o /tmp/script.deb.sh \
