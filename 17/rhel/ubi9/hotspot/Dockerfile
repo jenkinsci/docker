@@ -23,6 +23,7 @@ RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=
         git-lfs \
         unzip \
         which \
+        tzdata \
     && dnf clean --disableplugin=subscription-manager all
 
 ARG user=jenkins
