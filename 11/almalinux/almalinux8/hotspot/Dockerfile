@@ -21,7 +21,7 @@ RUN dnf --setopt=install_weak_deps=0 --setopt=tsflags=nodocs install -y \
 	freetype \
 	git-lfs \
 	unzip \
-    tzdata \
+	tzdata \
 	&& \
     dnf clean all
 
