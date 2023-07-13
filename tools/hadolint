@@ -1,6 +1,4 @@
 #!/bin/sh -e
 
-exec docker run --rm \
-	-w "${PWD}" \
-	-v "${PWD}:${PWD}" \
-	ghcr.io/hadolint/hadolint:v2.12.0-debian hadolint "$@"
+image_name="ghcr.io/hadolint/hadolint:v2.12.0-debian"
+docker run --rm -w "${PWD}" -v "${PWD}:${PWD}" "${image_name}" hadolint "$@"
