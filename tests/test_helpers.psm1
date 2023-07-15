@@ -30,7 +30,7 @@ function Retry-Command {
         [scriptblock] $ScriptBlock,
         [int] $RetryCount = 3,
         [int] $Delay = 30,
-        [string] $SuccessMessage = "Command executed successfuly!",
+        [string] $SuccessMessage = "Command executed successfully!",
         [string] $FailureMessage = "Failed to execute the command"
         )
         
@@ -113,9 +113,15 @@ function Build-Docker {
     $FOLDER = $FOLDER.Trim()
 
     if(-not [System.String]::IsNullOrWhiteSpace($env:JENKINS_VERSION)) {
-        return (Run-Program 'docker.exe' "build --build-arg JENKINS_VERSION=$env:JENKINS_VERSION --build-arg JENKINS_SHA=$env:JENKINS_SHA $args $FOLDER")
+        if([regex]::Matches($env:JENKINS_VERSION, "[0-9]+[.]").count -lt 2) {
+            # Building the weekly version
+            return (Run-Program 'docker.exe' "build --build-arg JENKINS_VERSION=$env:JENKINS_VERSION --build-arg JENKINS_SHA=$env:JENKINS_SHA --build-arg RELEASE_LINE=war $args $FOLDER")
+        } else {
+            # Building the LTS version
+            return (Run-Program 'docker.exe' "build --build-arg JENKINS_VERSION=$env:JENKINS_VERSION --build-arg JENKINS_SHA=$env:JENKINS_SHA --build-arg RELEASE_LINE=war-stable $args $FOLDER")
+        }
     } 
-    return (Run-Program 'docker.exe' "build $args $FOLDER")
+    return (Run-Program 'docker.exe' "build --build-arg RELEASE_LINE=war $args $FOLDER")
 }
 
 function Build-DockerChild($tag, $dir) {

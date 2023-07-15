@@ -31,7 +31,19 @@ group "linux-s390x" {
   ]
 }
 
+group "linux-ppc64le" {
+  targets = [
+    "debian_jdk11",
+    "debian_jdk17",
+    "rhel_ubi9_jdk17",
+  ]
+}
+
 # ---- variables ----
+
+variable "RELEASE_LINE" {
+  default = "war"
+}
 
 variable "JENKINS_VERSION" {
   default = "2.356"
@@ -58,11 +70,31 @@ variable "LATEST_LTS" {
 }
 
 variable "PLUGIN_CLI_VERSION" {
-  default = "2.12.11"
+  default = "2.12.13"
 }
 
 variable "COMMIT_SHA" {
   default = ""
+}
+
+variable "ALPINE_FULL_TAG" {
+  default = "3.18.0"
+}
+
+variable "ALPINE_SHORT_TAG" {
+  default = regex_replace(ALPINE_FULL_TAG, "\\.\\d+$", "")
+}
+
+variable "JAVA11_VERSION" {
+  default = "11.0.19_7"
+}
+
+variable "JAVA17_VERSION" {
+  default = "17.0.7_7"
+}
+
+variable "BULLSEYE_TAG" {
+  default = "20230703"
 }
 
 # ----  user-defined functions ----
@@ -91,6 +123,16 @@ function "tag_lts" {
   result =  equal(LATEST_LTS, "true") ? tag(prepend_jenkins_version, tag) : ""
 }
 
+# return release line based on Jenkins version
+function "release_line" {
+  # If there is more than one sequence of digits with a trailing literal '.', this is LTS
+  # 2.407 has only one sequence of digits with a trailing literal '.'
+  # 2.401.1 has two sequences of digits with a trailing literal '.'
+  # https://developer.hashicorp.com/terraform/language/functions/regexall describes the technique
+  params = []
+  result = length(regexall("[0-9]+[.]", JENKINS_VERSION)) < 2 ? "war" : "war-stable"
+}
+
 # ---- targets ----
 
 target "almalinux_jdk11" {
@@ -101,6 +143,7 @@ target "almalinux_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    RELEASE_LINE = release_line()
   }
   tags = [
     tag(true, "almalinux"),
@@ -118,14 +161,18 @@ target "alpine_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    RELEASE_LINE = release_line()
+    ALPINE_TAG = ALPINE_FULL_TAG
+    JAVA_VERSION = JAVA11_VERSION
   }
   tags = [
     tag(true, "alpine"),
     tag_weekly(false, "alpine"),
     tag_weekly(false, "alpine-jdk11"),
+    tag_weekly(false, "alpine${ALPINE_SHORT_TAG}-jdk11"),
     tag_lts(false, "lts-alpine"),
     tag_lts(false, "lts-alpine-jdk11"),
-    tag_lts(true, "lts-alpine"),
+    tag_lts(true, "lts-alpine")
   ]
   platforms = ["linux/amd64"]
 }
@@ -138,10 +185,14 @@ target "alpine_jdk17" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    RELEASE_LINE = release_line()
+    ALPINE_TAG = ALPINE_FULL_TAG
+    JAVA_VERSION = JAVA17_VERSION
   }
   tags = [
     tag(true, "alpine-jdk17"),
     tag_weekly(false, "alpine-jdk17"),
+    tag_weekly(false, "alpine${ALPINE_SHORT_TAG}-jdk17"),
     tag_lts(false, "lts-alpine-jdk17")
   ]
   platforms = ["linux/amd64"]
@@ -155,6 +206,7 @@ target "centos7_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    RELEASE_LINE = release_line()
   }
   tags = [
     tag(true, "centos7"),
@@ -175,6 +227,9 @@ target "debian_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    RELEASE_LINE = release_line()
+    JAVA_VERSION = JAVA11_VERSION
+    BULLSEYE_TAG = BULLSEYE_TAG
   }
   tags = [
     tag(true, ""),
@@ -187,7 +242,7 @@ target "debian_jdk11" {
     tag_lts(true, "lts"),
     tag_lts(true, "lts-jdk11")
   ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/s390x"]
+  platforms = ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"]
 }
 
 target "debian_jdk17" {
@@ -198,6 +253,9 @@ target "debian_jdk17" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    RELEASE_LINE = release_line()
+    JAVA_VERSION = JAVA17_VERSION
+    BULLSEYE_TAG = BULLSEYE_TAG
   }
   tags = [
     tag(true, "jdk17"),
@@ -206,7 +264,7 @@ target "debian_jdk17" {
     tag_lts(false, "lts-jdk17"),
     tag_lts(true, "lts-jdk17")
   ]
-  platforms = ["linux/amd64", "linux/arm64"]
+  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le"]
 }
 
 target "debian_slim_jdk11" {
@@ -217,6 +275,9 @@ target "debian_slim_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    RELEASE_LINE = release_line()
+    JAVA_VERSION = JAVA11_VERSION
+    BULLSEYE_TAG = BULLSEYE_TAG
   }
   tags = [
     tag(true, "slim"),
@@ -237,6 +298,9 @@ target "debian_slim_jdk17" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    RELEASE_LINE = release_line()
+    JAVA_VERSION = JAVA17_VERSION
+    BULLSEYE_TAG = BULLSEYE_TAG
   }
   tags = [
     tag(true, "slim-jdk17"),
@@ -254,6 +318,7 @@ target "rhel_ubi8_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    RELEASE_LINE = release_line()
   }
   tags = [
     tag(true, "rhel-ubi8-jdk11"),
@@ -272,6 +337,7 @@ target "rhel_ubi9_jdk17" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    RELEASE_LINE = release_line()
   }
   tags = [
     tag(true, "rhel-ubi9-jdk17"),
@@ -279,5 +345,5 @@ target "rhel_ubi9_jdk17" {
     tag_lts(false, "lts-rhel-ubi9-jdk17"),
     tag_lts(true, "lts-rhel-ubi9-jdk17")
   ]
-  platforms = ["linux/amd64", "linux/arm64"]
+  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le"]
 }

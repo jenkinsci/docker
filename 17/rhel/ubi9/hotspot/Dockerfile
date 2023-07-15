@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17.0.6_10-jdk-centos7 as jre-build
+FROM eclipse-temurin:17.0.7_7-jdk-ubi9-minimal as jre-build
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
@@ -9,7 +9,7 @@ RUN jlink \
          --compress=2 \
          --output /javaruntime
 
-FROM registry.access.redhat.com/ubi9/ubi:9.1.0-1750.1675784955
+FROM registry.access.redhat.com/ubi9/ubi:9.2-696
 
 ENV LANG C.UTF-8
 
@@ -23,6 +23,7 @@ RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=
         git-lfs \
         unzip \
         which \
+        tzdata \
     && dnf clean --disableplugin=subscription-manager all
 
 ARG user=jenkins
@@ -67,13 +68,16 @@ RUN curl -fsSL "https://github.com/krallin/tini/releases/download/${TINI_VERSION
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION ${JENKINS_VERSION:-2.356}
+ENV JENKINS_VERSION ${JENKINS_VERSION:-2.410}
 
 # jenkins.war checksum, download will be validated using it
-ARG JENKINS_SHA=1163c4554dc93439c5eef02b06a8d74f98ca920bbc012c2b8a089d414cfa8075
+ARG JENKINS_SHA=20e3436e1c05f1fa8c441d7fb41f2a797604194fd9f8e774acb74d47b6187e45
 
-# Can be used to customize where jenkins.war get downloaded from
-ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war
+# Download directory, either `war` for weekly or `war-stable` for LTS
+ARG RELEASE_LINE
+
+# Can be used to customize jenkins.war download location
+ARG JENKINS_URL=https://get.jenkins.io/${RELEASE_LINE}/${JENKINS_VERSION}/jenkins.war
 
 # could use ADD but this one does not check Last-Modified header neither does it allow to control checksum
 # see https://github.com/docker/docker/issues/8331
@@ -87,7 +91,7 @@ ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
 ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 RUN chown -R ${user} "$JENKINS_HOME" "$REF"
 
-ARG PLUGIN_CLI_VERSION=2.12.11
+ARG PLUGIN_CLI_VERSION=2.12.13
 ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
 RUN curl -fsSL ${PLUGIN_CLI_URL} -o /opt/jenkins-plugin-manager.jar
 

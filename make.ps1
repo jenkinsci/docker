@@ -19,6 +19,20 @@ if(![String]::IsNullOrWhiteSpace($env:DOCKERHUB_ORGANISATION)) {
     $Organization = $env:DOCKERHUB_ORGANISATION
 }
 
+# Set RELEASE_LINE to either `war` for weekly or `war-stable` for LTS
+if(-not [System.String]::IsNullOrWhiteSpace($JenkinsVersion)) {
+    if([regex]::Matches($JenkinsVersion, "[0-9]+[.]").count -lt 2) {
+        # Building the weekly version
+        $AdditionalArgs = $AdditionalArgs + ' --build-arg RELEASE_LINE=war'
+    } else {
+        # Building the LTS version
+        $AdditionalArgs = $AdditionalArgs + ' --build-arg RELEASE_LINE=war-stable'
+    }
+} else {
+    # Building the weekly version
+    $AdditionalArgs = $AdditionalArgs + ' --build-arg RELEASE_LINE=war'
+} 
+
 # this is the jdk version that will be used for the 'bare tag' images, e.g., jdk11-windowsservercore-1809 -> windowsserver-1809
 $defaultBuild = '11'
 $defaultJvm = 'hotspot'
