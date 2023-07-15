@@ -264,126 +264,100 @@ to indicate that this Jenkins installation is fully configured.
 Otherwise a banner will appear prompting the user to install additional plugins,
 which may be inappropriate.
 
-## Uninstalling Plugins
+# Uninstalling Deprecated Plugins in Jenkins (with Docker)
 
-**To uninstall a plugin in Jenkins using the web UI, follow these steps:**
+This guide provides detailed instructions on how to uninstall deprecated plugins in Jenkins when using Docker. Removing deprecated plugins is crucial to maintain the security and stability of your Jenkins instance.
 
-- Open Jenkins in your web browser and log in as an administrator.
-- Click on the "Manage Jenkins" link in the left menu.
-- Click on the "Manage Plugins" link.
-- In the "Installed" tab, find the plugin you want to uninstall and click on the checkbox next to it.
-- Click on the "Uninstall" button at the bottom of the page.
-- A message will appear asking you to confirm the uninstallation. Click on the "Yes" button to confirm.
+## Prerequisites
 
-Jenkins will uninstall the plugin and restart the server to apply the changes. Once the server has restarted, the plugin will be uninstalled and will no longer be available in Jenkins.
+- Docker and Docker Compose are installed on your system.
+- Basic knowledge of Docker and Jenkins.
 
-**To uninstall a plugin in Jenkins using the CLI, follow these steps:**
+## Steps
 
-- Open a terminal window and connect to your Jenkins server using the ssh command. For example:
+1. **Locate `plugins.txt`**: Find the `plugins.txt` file in your Jenkins Docker setup. This file defines the plugins installed in your Jenkins instance. It can be found in the Dockerfile or a related configuration directory.
 
-`ssh jenkins@your-server-name`
+Example content of `plugins.txt`:
 
-- Once you are logged in to the Jenkins server, enter the following command to list all the installed plugins:
-
-`java -jar jenkins-cli.jar -s http://localhost:8080/ list-plugins`
-
-- Find the short name of the plugin you want to uninstall from the list of installed plugins. The short name is the name of the plugin as it appears in the `.hpi` or `.jpi` file, without the file extension.
-
-- To uninstall the plugin, enter the following command, replacing `PLUGIN_SHORT_NAME` with the short name of the plugin you want to uninstall:
-
-`java -jar jenkins-cli.jar -s http://localhost:8080/ uninstall-plugin PLUGIN_SHORT_NAME`
-
-- Jenkins will uninstall the plugin and restart the server to apply the changes. Once the server has restarted, the plugin will be uninstalled and will no longer be available in Jenkins.
-
-**Note**: Some plugins may have dependencies on other plugins, which means that uninstalling one plugin may also uninstall other plugins that depend on it. Make sure to carefully review the list of plugins that will be uninstalled before confirming the uninstallation.
-
-To check the dependencies, use the following command:
-
-`java -jar jenkins-cli.jar -s http://localhost:8080/ list-dependencies PLUGIN_SHORT_NAME`
-
-Replace `PLUGIN_SHORT_NAME` with the short name of the plugin you want to check the dependencies for. The command will output a list of the plugins that the selected plugin is dependent on.
-
-**To remove a plugin from Jenkins using a custom Dockerfile, you can follow these steps:**
-
-- While installing the plugins, you will need to create a file called `plugins.txt` in the root directory of your Jenkins project. Remove the plugin name from this file which you wish to uninstall.
-- In your Dockerfile, add the following command to copy the plugins.txt file into the Jenkins container:
-
-`COPY plugins.txt /usr/share/jenkins/ref/`
-
-- Add the following command to your Dockerfile to uninstall the plugins that you removed from the `plugins.txt` file:
-
-`RUN jenkins-plugin-cli --clean-download-directory`
-
-- Build your Docker image and run the container. The plugins removed from the plugins.txt file will be uninstalled from Jenkins.
-
-Here is an example of a Dockerfile that can be used to remove the "WMI" windows-slave plugin from Jenkins:
-
-Create the custom Dockerfile:
-
-```DockerFile
-FROM jenkins/jenkins:latest
-
-# Copy the plugins.txt file into the Jenkins container
-COPY --chown=jenkins:jenkins plugins.txt $REF/plugins.txt
-
-# Remove the plugins not exist in plugins.txt file
-RUN jenkins-plugin-cli --plugin-file $REF/plugins.txt
+```plaintext
+# See https://github.com/jenkinsci/docker#usage-1
+ant:1.11
+bootstrap4-api:4.6.0-3
+popper-js:2.9.2-1
 ```
 
-In this example, update the `plugins.txt` file by removing the following line:
+2. **Update plugins.txt**: Open the plugins.txt file and identify the plugins that are deprecated. These plugins are indicated by the deprecation warning or message in the Jenkins UI. Remove the lines corresponding to the deprecated plugins from the plugins.txt file. Save the changes.
 
-`wmi-windows-slaves`
+Example updated plugins.txt (with deprecated plugins removed):
 
-When you build the Docker image and run the container, the "WMI" windows-slave plugin will be removed from Jenkins.
+```plaintext
+# See https://github.com/jenkinsci/docker#usage-1
+ant:1.11
+```
 
-Note that when you uninstall a plugin from Jenkins, the plugin files are not deleted from the `$JENKINS_HOME/plugins/` directory by default. This is because the `$JENKINS_HOME` directory is typically used as a data volume or bind mounted volume, and deleting the plugin files could potentially cause data loss or other issues.
+3. **Rebuild the Jenkins Image**: In your terminal, navigate to the directory containing the Docker configuration files for your Jenkins instance. Rebuild the Jenkins image to apply the changes made in the plugins.txt file using the following command:
 
-To completely remove the plugin from Jenkins, you will need to delete the pluginspecified in the files from the `$JENKINS_HOME/plugins` directory and restart the Jenkins container. You can do this by manually deleting the files and restarting the container using the command line.
+```
+docker-compose build jenkins
+```
 
-**To remove the plugin files using the command line, follow these steps:**
+4. Recreate the Jenkins Container: Once the image is successfully rebuilt, recreate the Jenkins container using the updated image. Use the following command:
 
-- Connect to the Jenkins server using the ssh command.
-- Navigate to the `$JENKINS_HOME/plugins/` directory using the `cd $JENKINS_HOME/plugins/` command.
-- Find the plugin files you want to delete. The plugin files are typically named after the short name of the plugin, with a `.hpi` or `.jpi` file extension.
-- Use the `rm` command to delete the plugin files: `rm PLUGIN_SHORT_NAME.hpi`
-- Restart the Jenkins container to apply the changes: `docker restart jenkins`
+```
+docker-compose up -d --build --force-recreate jenkins
+```
 
-Once the plugin files have been deleted and the Jenkins container has been restarted, the plugin will be completely removed from Jenkins.
+5. Verify Plugin Removal: To verify if the deprecated plugins have been removed, enter the running Jenkins container by executing the following command:
 
-**To remove a plugin from a Jenkins instance that is using a data volume to preserve the configuration, follow these steps:**
+```
+docker-compose exec jenkins bash
+```
 
-- Remove the plugin from the `plugins.txt` file.
-- Rebuild the Docker image using the updated `plugins.txt` file.
-- Stop the existing Jenkins container.
-- Remove the plugin files from the `$JENKINS_HOME/plugins/` directory in the data volume.
-- You can do this by attaching the data volume to another container and deleting the plugin files directly, or by using a tool such as `rsync` to delete the files from the host machine.
-- Start the Jenkins container using the updated Docker image.
+6. Once inside the container, navigate to the Jenkins plugin directory:
 
-This process will ensure that the Jenkins instance is using the updated set of plugins specified in the `plugins.txt` file.
+```
+cd /usr/share/jenkins/
+```
 
-## Self-Diagnosis
+7. Check the plugins.txt file to ensure the references to the deprecated plugins are gone:
 
-To self-diagnose the plugin removal step in your Jenkins setup, you can follow these steps:
+```
+cat plugins.txt | grep <plugin-name>
+```
 
-- Connect to the Jenkins server using the command line interface (CLI). This can be done using the ssh command, for example:
+Replace <plugin-name> with the name of the deprecated plugin you want to uninstall. If no results are returned, it means the plugin references have been removed successfully.
 
-`ssh jenkins@your-server-name`
+8. Uninstall Plugins in the Jenkins UI: Access the Jenkins web interface by visiting http://localhost:8080 in your web browser. Log in with your admin credentials.
 
-- Once you are logged in to the Jenkins server, you can use the following command to list all the installed plugins:
+9. Navigate to Manage Jenkins and select Manage Plugins.
 
-`java -jar jenkins-cli.jar -s http://localhost:8080/ list-plugins`
+10. In the Installed tab, search for the name of the deprecated plugin you want to uninstall.
 
-- Check the list of installed plugins and verify that the plugin you intended to remove is not present. If the plugin is still listed, it has not been successfully removed.
+11. If the plugin appears in the list, click the Uninstall button (red cross) next to it. If the button is disabled then it means that the plugin has a dependency on another plugin, just hover on the red cross to know the parent plugin and search that plugin and remove it first.
 
-- If the plugin is still present, you can try uninstalling it using the Jenkins web UI or the jenkins-cli tool as described above.
+12. Confirm the removal when prompted.
 
-- If the plugin is still present after attempting to uninstall it, you may need to check for any dependencies that the plugin has on other plugins. Some plugins may not be able to be uninstalled if they are required by other plugins. In this case, you will need to uninstall the dependent plugins first.
+13. Restart Jenkins: To complete the removal process, Jenkins needs to be restarted. Restart Jenkins by hitting the
+    `/safeRestart` endpoint or using the Jenkins UI.
 
-- You can also check the `/usr/share/jenkins/ref/plugins` directory to verify that the plugin files are no longer present. If the plugin files are still present in this directory, the plugin has not been successfully removed.
+14. Optional: Remove Plugin Remnants from Docker Volume: If you want to remove any remnants of the deprecated plugins from the Docker volume, follow these steps:
 
-- If you are using a custom Dockerfile to remove the plugins, you can check the Dockerfile and the `plugins.txt` file to make sure that the plugin removal steps are correctly configured. You can also check the build logs for any errors or issues that may have occurred during the build process.
+- Enter the running Jenkins container using the command mentioned in step 5.
+- Navigate to the plugin directory:
 
-By following these steps, you should be able to diagnose and troubleshoot any issues with plugin removal in your Jenkins setup.
+`cd ~/plugins`
+
+- List the contents of the directory to identify the remnants of the deprecated plugins:
+
+`ls -artl *`
+
+- Remove the remnants of the deprecated plugins using the rm command. For example:
+
+`rm -fr <plugin-name>*`
+
+Replace <plugin-name> with the name of the deprecated plugin you want to remove.
+
+To deep dive into the removal, refer to this [guide](https://www.jenkins.io/blog/2023/06/20/remove-outdated-plugins-while-using-docker/).
 
 ### Access logs
 
