@@ -1,5 +1,5 @@
-ARG JAVA_VERSION="17.0.7_7"
-ARG BULLSEYE_TAG=20230703
+ARG JAVA_VERSION="17.0.8_7"
+ARG BULLSEYE_TAG=20230725
 FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-focal as jre-build
 
 RUN jlink \
@@ -76,11 +76,8 @@ ENV JENKINS_VERSION ${JENKINS_VERSION:-2.410}
 # jenkins.war checksum, download will be validated using it
 ARG JENKINS_SHA=20e3436e1c05f1fa8c441d7fb41f2a797604194fd9f8e774acb74d47b6187e45
 
-# Download directory, either `war` for weekly or `war-stable` for LTS
-ARG RELEASE_LINE
-
-# Can be used to customize jenkins.war download location
-ARG JENKINS_URL=https://get.jenkins.io/${RELEASE_LINE}/${JENKINS_VERSION}/jenkins.war
+# Can be used to customize where jenkins.war get downloaded from
+ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war
 
 # could use ADD but this one does not check Last-Modified header neither does it allow to control checksum
 # see https://github.com/docker/docker/issues/8331
