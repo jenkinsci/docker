@@ -1,5 +1,5 @@
 # escape=`
-FROM eclipse-temurin:11.0.20_8-jdk-windowsservercore-1809
+FROM eclipse-temurin:19-jdk-windowsservercore-1809
 # hadolint shell=powershell
 
 ARG user=jenkins
