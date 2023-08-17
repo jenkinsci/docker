@@ -74,7 +74,7 @@ updates:
 # Debian Linux
 
 - package-ecosystem: docker
-  directory: "17/debian/bullseye/hotspot"
+  directory: "17/debian/bookworm/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
@@ -90,7 +90,7 @@ updates:
     update-types: ["version-update:semver-major"]
 
 - package-ecosystem: docker
-  directory: "17/debian/bullseye-slim/hotspot"
+  directory: "17/debian/bookworm-slim/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
@@ -106,7 +106,7 @@ updates:
     update-types: ["version-update:semver-major"]
 
 - package-ecosystem: docker
-  directory: "11/debian/bullseye/hotspot"
+  directory: "11/debian/bookworm/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
@@ -122,7 +122,7 @@ updates:
     update-types: ["version-update:semver-major"]
 
 - package-ecosystem: docker
-  directory: "11/debian/bullseye-slim/hotspot"
+  directory: "11/debian/bookworm-slim/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
