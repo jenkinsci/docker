@@ -77,13 +77,17 @@ stage('Build') {
                 'almalinux_jdk11',
                 'alpine_jdk11',
                 'alpine_jdk17',
+                'alpine_jdk21',
                 'centos7_jdk11',
                 'debian_jdk11',
                 'debian_jdk17',
+                'debian_jdk21',
                 'debian_slim_jdk11',
                 'debian_slim_jdk17',
+                'debian_slim_jdk21',
                 'rhel_ubi8_jdk11',
                 'rhel_ubi9_jdk17',
+                'rhel_ubi9_jdk21',
         ]
         for (i in images) {
             def imageToBuild = i

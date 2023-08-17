@@ -5,13 +5,17 @@ group "linux" {
     "almalinux_jdk11",
     "alpine_jdk11",
     "alpine_jdk17",
+    "alpine_jdk21",
     "centos7_jdk11",
     "debian_jdk11",
     "debian_jdk17",
+    "debian_jdk21",
     "debian_slim_jdk11",
     "debian_slim_jdk17",
+    "debian_slim_jdk21",
     "rhel_ubi8_jdk11",
     "rhel_ubi9_jdk17",
+    "rhel_ubi9_jdk21",
   ]
 }
 
@@ -20,8 +24,10 @@ group "linux-arm64" {
     "almalinux_jdk11",
     "debian_jdk11",
     "debian_jdk17",
+    "debian_jdk21",
     "rhel_ubi8_jdk11",
     "rhel_ubi9_jdk17",
+    "rhel_ubi9_jdk21",
   ]
 }
 
@@ -35,6 +41,7 @@ group "linux-ppc64le" {
   targets = [
     "debian_jdk11",
     "debian_jdk17",
+    "debian_jdk21",
     "rhel_ubi9_jdk17",
   ]
 }
@@ -42,11 +49,11 @@ group "linux-ppc64le" {
 # ---- variables ----
 
 variable "JENKINS_VERSION" {
-  default = "2.410"
+  default = "2.419"
 }
 
 variable "JENKINS_SHA" {
-  default = "20e3436e1c05f1fa8c441d7fb41f2a797604194fd9f8e774acb74d47b6187e45"
+  default = "895a90dd5929a38c8cc8c0342478d27a6e01470cd7e8da8c4ae51f26aa1bdf85"
 }
 
 variable "REGISTRY" {
@@ -87,6 +94,12 @@ variable "JAVA11_VERSION" {
 
 variable "JAVA17_VERSION" {
   default = "17.0.8_7"
+}
+
+# not passed through currently as inconsistent versions are published (2023-08-14)
+# alpine not published on 34, but x64 on 35 isn't published for linux
+variable "JAVA21_VERSION" {
+  default = "21+35"
 }
 
 variable "BOOKWORM_TAG" {
@@ -181,6 +194,26 @@ target "alpine_jdk17" {
   platforms = ["linux/amd64"]
 }
 
+target "alpine_jdk21" {
+  dockerfile = "21/alpine/hotspot/Dockerfile"
+  context = "."
+  args = {
+    JENKINS_VERSION = JENKINS_VERSION
+    JENKINS_SHA = JENKINS_SHA
+    COMMIT_SHA = COMMIT_SHA
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    ALPINE_TAG = ALPINE_FULL_TAG
+    #JAVA_VERSION = JAVA21_VERSION
+  }
+  tags = [
+    tag(true, "alpine-jdk21-preview"),
+    tag_weekly(false, "alpine-jdk21-preview"),
+    tag_weekly(false, "alpine${ALPINE_SHORT_TAG}-jdk21-preview"),
+    tag_lts(false, "lts-alpine-jdk21-preview")
+  ]
+  platforms = ["linux/amd64", "linux/arm64"]
+}
+
 target "centos7_jdk11" {
   dockerfile = "11/centos/centos7/hotspot/Dockerfile"
   context = "."
@@ -247,6 +280,27 @@ target "debian_jdk17" {
   platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le"]
 }
 
+target "debian_jdk21" {
+  dockerfile = "21/debian/bookworm/hotspot/Dockerfile"
+  context = "."
+  args = {
+    JENKINS_VERSION = JENKINS_VERSION
+    JENKINS_SHA = JENKINS_SHA
+    COMMIT_SHA = COMMIT_SHA
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    #JAVA_VERSION = JAVA21_VERSION
+    BOOKWORM_TAG = BOOKWORM_TAG
+  }
+  tags = [
+    tag(true, "jdk21"),
+    tag_weekly(false, "latest-jdk21-preview"),
+    tag_weekly(false, "jdk21"),
+    tag_lts(false, "lts-jdk21-preview"),
+    tag_lts(true, "lts-jdk21-preview")
+  ]
+  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le"]
+}
+
 target "debian_slim_jdk11" {
   dockerfile = "11/debian/bookworm-slim/hotspot/Dockerfile"
   context = "."
@@ -288,6 +342,25 @@ target "debian_slim_jdk17" {
   platforms = ["linux/amd64"]
 }
 
+target "debian_slim_jdk21" {
+  dockerfile = "21/debian/bookworm-slim/hotspot/Dockerfile"
+  context = "."
+  args = {
+    JENKINS_VERSION = JENKINS_VERSION
+    JENKINS_SHA = JENKINS_SHA
+    COMMIT_SHA = COMMIT_SHA
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    #JAVA_VERSION = JAVA21_VERSION
+    BOOKWORM_TAG = BOOKWORM_TAG
+  }
+  tags = [
+    tag(true, "slim-jdk21-preview"),
+    tag_weekly(false, "slim-jdk21-preview"),
+    tag_lts(false, "lts-slim-jdk21-preview"),
+  ]
+  platforms = ["linux/amd64", "linux/arm64"]
+}
+
 target "rhel_ubi8_jdk11" {
   dockerfile = "11/rhel/ubi8/hotspot/Dockerfile"
   context = "."
@@ -320,6 +393,24 @@ target "rhel_ubi9_jdk17" {
     tag_weekly(false, "rhel-ubi9-jdk17"),
     tag_lts(false, "lts-rhel-ubi9-jdk17"),
     tag_lts(true, "lts-rhel-ubi9-jdk17")
+  ]
+  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le"]
+}
+
+target "rhel_ubi9_jdk21" {
+  dockerfile = "21/rhel/ubi9/hotspot/Dockerfile"
+  context = "."
+  args = {
+    JENKINS_VERSION = JENKINS_VERSION
+    JENKINS_SHA = JENKINS_SHA
+    COMMIT_SHA = COMMIT_SHA
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+  }
+  tags = [
+    tag(true, "rhel-ubi9-jdk21-preview"),
+    tag_weekly(false, "rhel-ubi9-jdk21-preview"),
+    tag_lts(false, "lts-rhel-ubi9-jdk21-preview"),
+    tag_lts(true, "lts-rhel-ubi9-jdk21-preview")
   ]
   platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le"]
 }
