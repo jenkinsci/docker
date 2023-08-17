@@ -1,5 +1,5 @@
 ARG JAVA_VERSION="11.0.20_8"
-ARG BOOKWORM_TAG=20230725
+ARG BOOKWORM_TAG=20230814
 FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-focal as jre-build
 
 RUN jlink \
