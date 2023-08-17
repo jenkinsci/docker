@@ -20,7 +20,7 @@ We recommend https://www.gnu.org/software/parallel/[GNU Parallel] for parallel t
 // On Apple Silicon in native arm64 containers, older versions of libssl in
 // debian:buster, ubuntu:20.04 and centos:8 will segfault when connected to some TLS
 // servers, for example curl https://dl.yarnpkg.com. The bug is fixed in newer versions
-// of libssl in debian:bullseye, ubuntu:21.04 and fedora:35.
+// of libssl in debian:bookworm, ubuntu:21.04 and fedora:35.
 
 Tests currently do not work on Mac M1 due to a link:https://docs.docker.com/docker-for-mac/release-notes/#known-issues[known issue] in 'Docker Desktop 3.4.0'.
 

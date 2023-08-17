@@ -89,7 +89,7 @@ variable "JAVA17_VERSION" {
   default = "17.0.8_7"
 }
 
-variable "BULLSEYE_TAG" {
+variable "BOOKWORM_TAG" {
   default = "20230725"
 }
 
@@ -202,7 +202,7 @@ target "centos7_jdk11" {
 }
 
 target "debian_jdk11" {
-  dockerfile = "11/debian/bullseye/hotspot/Dockerfile"
+  dockerfile = "11/debian/bookworm/hotspot/Dockerfile"
   context = "."
   args = {
     JENKINS_VERSION = JENKINS_VERSION
@@ -210,7 +210,7 @@ target "debian_jdk11" {
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     JAVA_VERSION = JAVA11_VERSION
-    BULLSEYE_TAG = BULLSEYE_TAG
+    BOOKWORM_TAG = BOOKWORM_TAG
   }
   tags = [
     tag(true, ""),
@@ -227,7 +227,7 @@ target "debian_jdk11" {
 }
 
 target "debian_jdk17" {
-  dockerfile = "17/debian/bullseye/hotspot/Dockerfile"
+  dockerfile = "17/debian/bookworm/hotspot/Dockerfile"
   context = "."
   args = {
     JENKINS_VERSION = JENKINS_VERSION
@@ -235,7 +235,7 @@ target "debian_jdk17" {
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     JAVA_VERSION = JAVA17_VERSION
-    BULLSEYE_TAG = BULLSEYE_TAG
+    BOOKWORM_TAG = BOOKWORM_TAG
   }
   tags = [
     tag(true, "jdk17"),
@@ -248,7 +248,7 @@ target "debian_jdk17" {
 }
 
 target "debian_slim_jdk11" {
-  dockerfile = "11/debian/bullseye-slim/hotspot/Dockerfile"
+  dockerfile = "11/debian/bookworm-slim/hotspot/Dockerfile"
   context = "."
   args = {
     JENKINS_VERSION = JENKINS_VERSION
@@ -256,7 +256,7 @@ target "debian_slim_jdk11" {
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     JAVA_VERSION = JAVA11_VERSION
-    BULLSEYE_TAG = BULLSEYE_TAG
+    BOOKWORM_TAG = BOOKWORM_TAG
   }
   tags = [
     tag(true, "slim"),
@@ -270,7 +270,7 @@ target "debian_slim_jdk11" {
 }
 
 target "debian_slim_jdk17" {
-  dockerfile = "17/debian/bullseye-slim/hotspot/Dockerfile"
+  dockerfile = "17/debian/bookworm-slim/hotspot/Dockerfile"
   context = "."
   args = {
     JENKINS_VERSION = JENKINS_VERSION
@@ -278,7 +278,7 @@ target "debian_slim_jdk17" {
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     JAVA_VERSION = JAVA17_VERSION
-    BULLSEYE_TAG = BULLSEYE_TAG
+    BOOKWORM_TAG = BOOKWORM_TAG
   }
   tags = [
     tag(true, "slim-jdk17"),

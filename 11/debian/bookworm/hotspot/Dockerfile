@@ -1,5 +1,5 @@
 ARG JAVA_VERSION="11.0.20_8"
-ARG BULLSEYE_TAG=20230725
+ARG BOOKWORM_TAG=20230725
 FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-focal as jre-build
 
 RUN jlink \
@@ -8,7 +8,7 @@ RUN jlink \
          --compress=2 \
          --output /javaruntime
 
-FROM debian:bullseye-"${BULLSEYE_TAG}"
+FROM debian:bookworm-"${BOOKWORM_TAG}"
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \

@@ -1,5 +1,5 @@
 ---
-name: Bump Debian Bullseye version
+name: Bump Debian Bookworm version
 
 scms:
   default:
@@ -14,133 +14,133 @@ scms:
       branch: "{{ .github.branch }}"
 
 sources:
-  bullseyeLatestVersion:
+  bookwormLatestVersion:
     kind: dockerimage
-    name: "Get the latest Debian Bullseye Linux version"
+    name: "Get the latest Debian Bookworm Linux version"
     transformers:
-      - trimprefix: "bullseye-"
+      - trimprefix: "bookworm-"
     spec:
       image: "debian"
-      tagFilter: "bullseye-*"
+      tagFilter: "bookworm-*"
       versionfilter:
         kind: regex
         pattern: >-
-          bullseye-\d+$
-  bullseyeSlimLatestVersion:
+          bookworm-\d+$
+  bookwormSlimLatestVersion:
     kind: dockerimage
-    name: "Get the latest Debian Bullseye Linux version"
+    name: "Get the latest Debian Bookworm Linux version"
     transformers:
-      - trimprefix: "bullseye-"
+      - trimprefix: "bookworm-"
     spec:
       image: "debian"
-      tagFilter: "bullseye-*"
+      tagFilter: "bookworm-*"
       versionfilter:
         kind: regex
         pattern: >-
-          bullseye-\d+-slim$
+          bookworm-\d+-slim$
 
 conditions:
   testDockerfileArgJDK11:
-    name: "Does the Dockerfile have an ARG instruction for the Debian Bullseye Linux version?"
+    name: "Does the Dockerfile have an ARG instruction for the Debian Bookworm Linux version?"
     kind: dockerfile
     disablesourceinput: true
     spec:
-      file: 11/debian/bullseye/hotspot/Dockerfile
+      file: 11/debian/bookworm/hotspot/Dockerfile
       instruction:
         keyword: "ARG"
-        matcher: "BULLSEYE_TAG"
+        matcher: "BOOKWORM_TAG"
   testDockerfileArgJDK17:
-    name: "Does the Dockerfile have an ARG instruction for the Debian Bullseye Linux version?"
+    name: "Does the Dockerfile have an ARG instruction for the Debian Bookworm Linux version?"
     kind: dockerfile
     disablesourceinput: true
     spec:
-      file: 17/debian/bullseye/hotspot/Dockerfile
+      file: 17/debian/bookworm/hotspot/Dockerfile
       instruction:
         keyword: "ARG"
-        matcher: "BULLSEYE_TAG"
+        matcher: "BOOKWORM_TAG"
   testDockerfileArgJDK11Slim:
-    name: "Does the Dockerfile have an ARG instruction for the Debian Bullseye Linux version?"
+    name: "Does the Dockerfile have an ARG instruction for the Debian Bookworm Linux version?"
     kind: dockerfile
     disablesourceinput: true
     spec:
-      file: 11/debian/bullseye-slim/hotspot/Dockerfile
+      file: 11/debian/bookworm-slim/hotspot/Dockerfile
       instruction:
         keyword: "ARG"
-        matcher: "BULLSEYE_TAG"
+        matcher: "BOOKWORM_TAG"
   testDockerfileArgJDK17Slim:
-    name: "Does the Dockerfile have an ARG instruction for the Debian Bullseye Linux version?"
+    name: "Does the Dockerfile have an ARG instruction for the Debian Bookworm Linux version?"
     kind: dockerfile
     disablesourceinput: true
     spec:
-      file: 17/debian/bullseye-slim/hotspot/Dockerfile
+      file: 17/debian/bookworm-slim/hotspot/Dockerfile
       instruction:
         keyword: "ARG"
-        matcher: "BULLSEYE_TAG"
+        matcher: "BOOKWORM_TAG"
   testVersionInBakeFile:
-    name: "Does the bake file have variable BULLSEYE_TAG"
+    name: "Does the bake file have variable BOOKWORM_TAG"
     kind: file
     disablesourceinput: true
     spec:
       file: docker-bake.hcl
-      matchpattern: "(.*BULLSEYE_TAG.*)"
+      matchpattern: "(.*BOOKWORM_TAG.*)"
 
 targets:
   updateDockerfileJDK11:
-    name: "Update the value of the base image (ARG BULLSEYE_TAG) in the Dockerfile"
+    name: "Update the value of the base image (ARG BOOKWORM_TAG) in the Dockerfile"
     kind: dockerfile
-    sourceid: bullseyeLatestVersion
+    sourceid: bookwormLatestVersion
     spec:
-      file: 11/debian/bullseye/hotspot/Dockerfile
+      file: 11/debian/bookworm/hotspot/Dockerfile
       instruction:
         keyword: "ARG"
-        matcher: "BULLSEYE_TAG"
+        matcher: "BOOKWORM_TAG"
     scmid: default
   updateDockerfileJDK17:
-    name: "Update the value of the base image (ARG BULLSEYE_TAG) in the Dockerfile"
+    name: "Update the value of the base image (ARG BOOKWORM_TAG) in the Dockerfile"
     kind: dockerfile
-    sourceid: bullseyeLatestVersion
+    sourceid: bookwormLatestVersion
     spec:
-      file: 17/debian/bullseye/hotspot/Dockerfile
+      file: 17/debian/bookworm/hotspot/Dockerfile
       instruction:
         keyword: "ARG"
-        matcher: "BULLSEYE_TAG"
+        matcher: "BOOKWORM_TAG"
     scmid: default
   updateDockerfileJDK11Slim:
-    name: "Update the value of the base image (ARG BULLSEYE_TAG) in the Dockerfile"
+    name: "Update the value of the base image (ARG BOOKWORM_TAG) in the Dockerfile"
     kind: dockerfile
-    sourceid: bullseyeLatestVersion
+    sourceid: bookwormLatestVersion
     spec:
-      file: 11/debian/bullseye-slim/hotspot/Dockerfile
+      file: 11/debian/bookworm-slim/hotspot/Dockerfile
       instruction:
         keyword: "ARG"
-        matcher: "BULLSEYE_TAG"
+        matcher: "BOOKWORM_TAG"
     scmid: default
   updateDockerfileJDK17Slim:
-    name: "Update the value of the base image (ARG BULLSEYE_TAG) in the Dockerfile"
+    name: "Update the value of the base image (ARG BOOKWORM_TAG) in the Dockerfile"
     kind: dockerfile
-    sourceid: bullseyeLatestVersion
+    sourceid: bookwormLatestVersion
     spec:
-      file: 17/debian/bullseye-slim/hotspot/Dockerfile
+      file: 17/debian/bookworm-slim/hotspot/Dockerfile
       instruction:
         keyword: "ARG"
-        matcher: "BULLSEYE_TAG"
+        matcher: "BOOKWORM_TAG"
     scmid: default
   updateDockerBake:
-    name: "Update the value of the base image (ARG BULLSEYE_TAG) in the docker-bake.hcl"
+    name: "Update the value of the base image (ARG BOOKWORM_TAG) in the docker-bake.hcl"
     kind: file
-    sourceid: bullseyeLatestVersion
+    sourceid: bookwormLatestVersion
     spec:
       file: docker-bake.hcl
       matchpattern: >-
-        variable(.*)"BULLSEYE_TAG"(.*){(.*)(\r\n|\r|\n)(.*)default(.*)=(.*)
+        variable(.*)"BOOKWORM_TAG"(.*){(.*)(\r\n|\r|\n)(.*)default(.*)=(.*)
       replacepattern: >-
-        variable${1}"BULLSEYE_TAG"${2}{${3}${4}${5}default${6}= "{{ source "bullseyeLatestVersion" }}"
+        variable${1}"BOOKWORM_TAG"${2}{${3}${4}${5}default${6}= "{{ source "bookwormLatestVersion" }}"
     scmid: default
 actions:
   default:
     kind: github/pullrequest
     scmid: default
-    title: Bump Debian Bullseye Linux Version to {{ source "bullseyeLatestVersion" }}
+    title: Bump Debian Bookworm Linux Version to {{ source "bookwormLatestVersion" }}
     spec:
       labels:
         - dependencies
