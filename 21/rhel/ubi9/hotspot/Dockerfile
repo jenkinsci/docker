@@ -9,8 +9,8 @@ RUN set -x; yum install -y jq wget \
   && JAVA_VERSION_ENCODED=$(echo "$JAVA_VERSION" | jq "@uri" -jRr) \
   && CONVERTED_ARCH=$(arch | sed 's/x86_64/x64/') \
   && wget --quiet https://github.com/adoptium/temurin21-binaries/releases/download/jdk-"${JAVA_VERSION_ENCODED}"-ea-beta/OpenJDK21U-jdk_"${CONVERTED_ARCH}"_linux_hotspot_ea_21-0-"${BUILD_NUMBER}".tar.gz -O /tmp/jdk.tar.gz \
-  && yum clean all
-RUN tar -xzf /tmp/jdk.tar.gz -C /opt/ \
+  && yum clean all \
+  && tar -xzf /tmp/jdk.tar.gz -C /opt/ \
   && rm -f /tmp/jdk.tar.gz
 
 ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
