@@ -358,7 +358,7 @@ target "debian_slim_jdk21" {
     tag_weekly(false, "slim-jdk21-preview"),
     tag_lts(false, "lts-slim-jdk21-preview"),
   ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x"]
+  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x", "linux/arm/v7"]
 }
 
 target "rhel_ubi8_jdk11" {
