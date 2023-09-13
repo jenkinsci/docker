@@ -298,7 +298,7 @@ target "debian_jdk21" {
     tag_lts(false, "lts-jdk21-preview"),
     tag_lts(true, "lts-jdk21-preview")
   ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x"]
+  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x", "linux/arm/v7"]
 }
 
 target "debian_slim_jdk11" {

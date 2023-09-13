@@ -19,11 +19,17 @@ RUN set -x; apt-get update \
 
 ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
 
-RUN jlink \
-  --add-modules ALL-MODULE-PATH \
-  --no-man-pages \
-  --compress=zip-6 \
-  --output /javaruntime
+RUN if test "${TARGETPLATFORM}" != 'linux/arm/v7'; then \
+      jlink \
+        --add-modules ALL-MODULE-PATH \
+        --no-man-pages \
+        --compress=zip-6 \
+        --output /javaruntime; \
+    # It is acceptable to have a larger image in arm/v7 (arm 32 bits) environment.
+    # Because jlink fails with the error "jmods: Value too large for defined data type" error.
+    else  \
+      cp -r "/opt/jdk-${JAVA_VERSION}" /javaruntime; \
+    fi
 
 FROM debian:bookworm-"${BOOKWORM_TAG}"
 
