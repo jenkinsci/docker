@@ -1,6 +1,6 @@
-ARG BOOKWORM_TAG=20230725
+ARG BOOKWORM_TAG=20230904
 FROM debian:bookworm-"${BOOKWORM_TAG}"-slim as jre-build
-ARG BUILD_NUMBER=34
+ARG BUILD_NUMBER=35
 ARG JAVA_VERSION=21+${BUILD_NUMBER}
 ARG TARGETPLATFORM
 
@@ -12,7 +12,7 @@ RUN set -x; apt-get update \
     jq \
     wget \
   && JAVA_VERSION_ENCODED=$(echo "$JAVA_VERSION" | jq "@uri" -jRr) \
-  && CONVERTED_ARCH=$(arch | sed 's/x86_64/x64/') \
+  && CONVERTED_ARCH=$(arch | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/') \
   && wget --quiet https://github.com/adoptium/temurin21-binaries/releases/download/jdk-"${JAVA_VERSION_ENCODED}"-ea-beta/OpenJDK21U-jdk_"${CONVERTED_ARCH}"_linux_hotspot_ea_21-0-"${BUILD_NUMBER}".tar.gz -O /tmp/jdk.tar.gz \
   && tar -xzf /tmp/jdk.tar.gz -C /opt/ \
   && rm -f /tmp/jdk.tar.gz
