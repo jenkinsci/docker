@@ -142,6 +142,7 @@ target "almalinux_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    JAVA_VERSION = JAVA11_VERSION
   }
   tags = [
     tag(true, "almalinux"),
@@ -369,6 +370,7 @@ target "rhel_ubi8_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    JAVA_VERSION = JAVA11_VERSION
   }
   tags = [
     tag(true, "rhel-ubi8-jdk11"),
