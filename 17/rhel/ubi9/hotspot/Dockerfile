@@ -1,5 +1,4 @@
-ARG JAVA_VERSION=17.0.8.1_1
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-ubi9-minimal as jre-build
+FROM eclipse-temurin:17.0.8.1_1-jdk-ubi9-minimal as jre-build
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
