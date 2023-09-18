@@ -15,7 +15,7 @@ jobs:
 
       - name: PLUGIN_CLI_VERSION
         id: lts
-        run: | 
+        run: |
           NEXT_VERSION=$(curl -sL  https://api.github.com/repos/jenkinsci/plugin-installation-manager-tool/releases/latest | jq -r ".tag_name")
           if [ -z "$NEXT_VERSION" ] || [ $NEXT_VERSION = "null" ]; then
             echo "ERROR: Empty or 'null' latest plugin-installation-manager-tool version returned by GitHub API."
@@ -38,19 +38,19 @@ jobs:
         if: ${{ steps.update.outputs.available == 'true' }}
         run: |
           grep -ilr ${{ steps.update.outputs.current-version }} ./ | grep -v CHANGELOG.md | xargs sed -i 's/${{ steps.update.outputs.current-version }}/${{ steps.lts.outputs.next-version }}/g'
-     
+
       - name: Changelog
         if: ${{ steps.update.outputs.available == 'true' }}
         run: |
           sed -i '/git commit to be able to get more details./a \\n## ${{ steps.nextversion.outputs.version }}\n\nUpdate Jenkins  plugin cli verions to jenkins plugin cli lts release version ${{ steps.lts.outputs.next-version }}\n' CHANGELOG.md
-     
+
       - name: Git Diff
         if: ${{ steps.update.outputs.available == 'true' }}
         run: |
           git diff
           # update the changelog
-          
-      - uses: tibdex/github-app-token@v1
+
+      - uses: tibdex/github-app-token@v2
         id: generate-token
         with:
           app_id: ${{ secrets.JENKINS_DEPENDENCY_UPDATER_APP_ID }}
@@ -58,7 +58,7 @@ jobs:
 
       - name: Create Pull Request
         id: cpr
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v5
         if: ${{ steps.update.outputs.available == 'true' }}
         with:
           token: ${{ steps.generate-token.outputs.token }}
