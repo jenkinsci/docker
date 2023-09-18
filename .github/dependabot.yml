@@ -50,6 +50,8 @@ updates:
   labels:
   - dependencies
   ignore:
+  - dependency-name: "eclipse-temurin"
+    update-types: ["version-update:semver-major"]
   # Ignore proposals to update to Alma Linux 9 or later
   - dependency-name: "almalinux"
     update-types: ["version-update:semver-major"]
