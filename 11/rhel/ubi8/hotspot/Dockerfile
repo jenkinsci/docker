@@ -1,13 +1,23 @@
-FROM eclipse-temurin:11.0.20.1_1-jdk-jammy as jre-build
+ARG JAVA_VERSION=11.0.20.1_1
+FROM registry.access.redhat.com/ubi8/ubi:8.8-1032.1692772289 as jre-build
+ARG JAVA_VERSION
 
-# Generate smaller java runtime without unneeded files
-# for now we include the full module path to maintain compatibility
-# while still saving space (approx 200mb from the full distribution)
-RUN jlink \
-         --add-modules ALL-MODULE-PATH \
-         --no-man-pages \
-         --compress=2 \
-         --output /javaruntime
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+RUN set -x \
+  && dnf -y upgrade-minimal --security \
+  && dnf install -y ca-certificates jq wget \
+  && JAVA_MAJOR_VERSION=$(echo "$JAVA_VERSION" | awk -F'.' '{print $1}') \
+  && JAVA_VERSION_ENCODED=$(echo "$JAVA_VERSION" | tr '_' '+' | jq "@uri" -jRr) \
+  && JAVA_VERSION_FILENAME=$(echo "$JAVA_VERSION" | tr '_' '+') \
+  && CONVERTED_ARCH=$(arch | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/') \
+  && wget --quiet https://github.com/adoptium/temurin"${JAVA_MAJOR_VERSION}"-binaries/releases/download/jdk-"${JAVA_VERSION_ENCODED}"/OpenJDK"${JAVA_MAJOR_VERSION}"U-jdk_"${CONVERTED_ARCH}"_linux_hotspot_"${JAVA_VERSION}".tar.gz -O /tmp/jdk.tar.gz \
+  && mkdir -p /opt/jdk-"${JAVA_VERSION_FILENAME}" \
+  && tar -xzf /tmp/jdk.tar.gz -C /opt/jdk-"${JAVA_VERSION_FILENAME}" --strip-components=1 \
+  && rm -f /tmp/jdk.tar.gz \
+  && export PATH=/opt/jdk-"${JAVA_VERSION_FILENAME}"/bin:$PATH \
+  && jlink --add-modules ALL-MODULE-PATH --no-man-pages --compress=2 --output /javaruntime \
+  && dnf clean all
 
 FROM registry.access.redhat.com/ubi8/ubi:8.8-1032.1692772289
 
