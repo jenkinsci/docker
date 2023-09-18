@@ -1,4 +1,4 @@
-FROM eclipse-temurin:11.0.20_8-jdk-jammy as jre-build
+FROM eclipse-temurin:19.0.2_7-jdk-jammy as jre-build
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
