@@ -6,6 +6,7 @@ ARG TARGETPLATFORM
 
 # hadolint ignore=DL4006
 RUN apk add --no-cache jq wget \
+  && BUILD_NUMBER=$(echo $JAVA_VERSION | cut -d'+' -f2) \
   && JAVA_VERSION_ENCODED=$(echo $JAVA_VERSION | jq '@uri' -jRr) \
   && CONVERTED_ARCH=$(arch | sed 's/x86_64/x64/') \
   && wget --quiet https://github.com/adoptium/temurin21-binaries/releases/download/jdk-"${JAVA_VERSION_ENCODED}"-ea-beta/OpenJDK21U-jdk_"${CONVERTED_ARCH}"_alpine-linux_hotspot_ea_21-0-"${BUILD_NUMBER}".tar.gz -O /tmp/jdk.tar.gz \

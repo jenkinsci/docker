@@ -142,6 +142,7 @@ target "almalinux_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    JAVA_VERSION = JAVA11_VERSION
   }
   tags = [
     tag(true, "almalinux"),
@@ -203,7 +204,7 @@ target "alpine_jdk21" {
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     ALPINE_TAG = ALPINE_FULL_TAG
-    #JAVA_VERSION = JAVA21_VERSION
+    JAVA_VERSION = JAVA21_VERSION
   }
   tags = [
     tag(true, "alpine-jdk21-preview"),
@@ -222,6 +223,7 @@ target "centos7_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    JAVA_VERSION = JAVA11_VERSION
   }
   tags = [
     tag(true, "centos7"),
@@ -288,7 +290,7 @@ target "debian_jdk21" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    #JAVA_VERSION = JAVA21_VERSION
+    JAVA_VERSION = JAVA21_VERSION
     BOOKWORM_TAG = BOOKWORM_TAG
   }
   tags = [
@@ -350,7 +352,7 @@ target "debian_slim_jdk21" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    #JAVA_VERSION = JAVA21_VERSION
+    JAVA_VERSION = JAVA21_VERSION
     BOOKWORM_TAG = BOOKWORM_TAG
   }
   tags = [
@@ -369,6 +371,7 @@ target "rhel_ubi8_jdk11" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    JAVA_VERSION = JAVA11_VERSION
   }
   tags = [
     tag(true, "rhel-ubi8-jdk11"),
@@ -387,6 +390,7 @@ target "rhel_ubi9_jdk17" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    JAVA_VERSION = JAVA17_VERSION
   }
   tags = [
     tag(true, "rhel-ubi9-jdk17"),
@@ -405,6 +409,7 @@ target "rhel_ubi9_jdk21" {
     JENKINS_SHA = JENKINS_SHA
     COMMIT_SHA = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    JAVA_VERSION = JAVA21_VERSION
   }
   tags = [
     tag(true, "rhel-ubi9-jdk21-preview"),
