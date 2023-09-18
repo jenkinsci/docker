@@ -1,0 +1,60 @@
+---
+name: Bump JDK21 version for all Linux images
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "{{ .github.branch }}"
+  temurin21-binaries:
+    kind: "github"
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "adoptium"
+      repository: "temurin21-binaries"
+      token: '{{ requiredEnv .github.token }}'
+      branch: "main"
+
+sources:
+  getLatestJDK21EAVersion:
+    name: Get the latest Adoptium JDK21 version
+    kind: gittag
+    scmid: temurin21-binaries
+    spec:
+      versionfilter:
+        kind: regex
+        pattern: ".*-ea-.*"
+    transformers:
+      - trimprefix: "jdk-"
+      - trimsuffix: "-ea-beta"
+
+conditions:
+  checkIfReleaseIsAvailable:
+    kind: shell
+    spec:
+      command: bash ./updatecli/scripts/check-jdk.sh # source input value passed as argument
+
+targets:
+  setJDK21Version:
+    name: "Bump JDK21 version for Linux images in the docker-bake.hcl file"
+    kind: hcl
+    spec:
+      file: docker-bake.hcl
+      path: variable.JAVA21_VERSION.default
+    scmid: default
+
+actions:
+  default:
+    kind: github/pullrequest
+    scmid: default
+    title: Bump JDK21 version to {{ source "getLatestJDK21EAVersion" }}
+    spec:
+      labels:
+        - dependencies
