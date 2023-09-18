@@ -185,3 +185,12 @@ updates:
   - slide
   labels:
   - dependencies
+
+# GitHub actions
+
+- package-ecosystem: "github-actions"
+  target-branch: master
+  directory: "/"
+  schedule:
+    # Check for updates to GitHub Actions every week
+    interval: "weekly"
