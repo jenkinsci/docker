@@ -7,15 +7,15 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN set -x \
   && dnf -y upgrade-minimal --security \
   && dnf install -y ca-certificates jq wget \
-  && JAVA_MAJOR_VERSION=$(echo $JAVA_VERSION | awk -F'.' '{print $1}') \
+  && JAVA_MAJOR_VERSION=$(echo "$JAVA_VERSION" | awk -F'.' '{print $1}') \
   && JAVA_VERSION_ENCODED=$(echo "$JAVA_VERSION" | tr '_' '+' | jq "@uri" -jRr) \
-  && JAVA_VERSION_FILENAME=$(echo $JAVA_VERSION | tr '_' '+') \
+  && JAVA_VERSION_FILENAME=$(echo "$JAVA_VERSION" | tr '_' '+') \
   && CONVERTED_ARCH=$(arch | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/') \
   && wget --quiet https://github.com/adoptium/temurin"${JAVA_MAJOR_VERSION}"-binaries/releases/download/jdk-"${JAVA_VERSION_ENCODED}"/OpenJDK"${JAVA_MAJOR_VERSION}"U-jdk_"${CONVERTED_ARCH}"_linux_hotspot_"${JAVA_VERSION}".tar.gz -O /tmp/jdk.tar.gz \
-  && mkdir -p /opt/jdk-${JAVA_VERSION_FILENAME} \
-  && tar -xzf /tmp/jdk.tar.gz -C /opt/jdk-${JAVA_VERSION_FILENAME} --strip-components=1 \
+  && mkdir -p /opt/jdk-"${JAVA_VERSION_FILENAME}" \
+  && tar -xzf /tmp/jdk.tar.gz -C /opt/jdk-"${JAVA_VERSION_FILENAME}" --strip-components=1 \
   && rm -f /tmp/jdk.tar.gz \
-  && export PATH=/opt/jdk-${JAVA_VERSION_FILENAME}/bin:$PATH \
+  && export PATH=/opt/jdk-"${JAVA_VERSION_FILENAME}"/bin:$PATH \
   && jlink --add-modules ALL-MODULE-PATH --no-man-pages --compress=2 --output /javaruntime \
   && dnf clean all
 
