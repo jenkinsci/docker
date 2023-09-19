@@ -1,6 +1,5 @@
-ARG JAVA_VERSION="17.0.8.1_1"
 ARG BOOKWORM_TAG=20230904
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-jammy as jre-build
+FROM eclipse-temurin:17.0.8.1_1-jdk-jammy as jre-build
 
 RUN jlink \
   --add-modules ALL-MODULE-PATH \
