@@ -42,14 +42,45 @@ conditions:
       command: bash ./updatecli/scripts/check-jdk.sh # source input value passed as argument
 
 targets:
-  setJDK21Version:
+  setJDK21VersionDockerBake:
     name: "Bump JDK21 version for Linux images in the docker-bake.hcl file"
     kind: hcl
     spec:
       file: docker-bake.hcl
       path: variable.JAVA21_VERSION.default
     scmid: default
-
+  setJDK21VersionAlpine:
+    name: "Bump JDK21 version for Linux images in the Alpine Linux Dockerfile"
+    kind: dockerfile
+    spec:
+      file: 21/alpine/hotspot/Dockerfile
+      instruction:
+        keyword: "ARG"
+        matcher: "JAVA_VERSION"
+  setJDK21VersionDebian:
+    name: "Bump JDK21 version for Linux images in the Debian Dockerfile"
+    kind: dockerfile
+    spec:
+      file: 21/debian/bookworm/hotspot/Dockerfile
+      instruction:
+        keyword: "ARG"
+        matcher: "JAVA_VERSION"
+  setJDK21VersionDebianSlim:
+    name: "Bump JDK21 version for Linux images in the Debian Slim Dockerfile"
+    kind: dockerfile
+    spec:
+      file: 21/debian/bookworm-slim/hotspot/Dockerfile
+      instruction:
+        keyword: "ARG"
+        matcher: "JAVA_VERSION"
+  setJDK21VersionRhel:
+    name: "Bump JDK21 version for Linux images in the Rhel Dockerfile"
+    kind: dockerfile
+    spec:
+      file: 21/rhel/ubi9/hotspot/Dockerfile
+      instruction:
+        keyword: "ARG"
+        matcher: "JAVA_VERSION"
 actions:
   default:
     kind: github/pullrequest
