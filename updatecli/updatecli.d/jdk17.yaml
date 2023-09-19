@@ -91,7 +91,7 @@ targets:
       path: variable.JAVA17_VERSION.default
     scmid: default
   setJDK17VersionAlpine:
-    name: "Bump JDK17 version for Linux images for Alpine Linux Dockerfile"
+    name: "Bump JDK17 version for Linux images in the Alpine Linux Dockerfile"
     kind: dockerfile
     spec:
       file: 17/alpine/hotspot/Dockerfile
@@ -102,7 +102,7 @@ targets:
       - addsuffix: "-jdk-alpine"
     scmid: default
   setJDK17VersionDebian:
-    name: "Bump JDK17 version for Linux images for Debian Dockerfile"
+    name: "Bump JDK17 version for Linux images in the Debian Dockerfile"
     kind: dockerfile
     spec:
       file: 17/debian/bookworm/hotspot/Dockerfile
@@ -113,7 +113,7 @@ targets:
       - addsuffix: "-jdk-jammy"
     scmid: default
   setJDK17VersionDebianSlim:
-    name: "Bump JDK17 version for Linux images for Debian Slim Dockerfile"
+    name: "Bump JDK17 version for Linux images in the Debian Slim Dockerfile"
     kind: dockerfile
     spec:
       file: 17/debian/bookworm-slim/hotspot/Dockerfile
@@ -124,7 +124,7 @@ targets:
       - addsuffix: "-jdk-jammy"
     scmid: default
   setJDK17VersionRhel:
-    name: "Bump JDK17 version for Linux images for Rhel Dockerfile"
+    name: "Bump JDK17 version for Linux images in the Rhel Dockerfile"
     kind: dockerfile
     spec:
       file: 17/rhel/ubi9/hotspot/Dockerfile

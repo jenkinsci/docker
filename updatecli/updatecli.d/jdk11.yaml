@@ -94,7 +94,7 @@ targets:
       path: variable.JAVA11_VERSION.default
     scmid: default
   setJDK11VersionAlmaLinux8:
-    name: "Bump JDK11 version for Linux images for Alma Linux 8 Dockerfile"
+    name: "Bump JDK11 version for Linux images in the Alma Linux 8 Dockerfile"
     kind: dockerfile
     spec:
       file: 11/almalinux/almalinux8/hotspot/Dockerfile
@@ -103,7 +103,7 @@ targets:
         matcher: JAVA_VERSION
     scmid: default
   setJDK11VersionAlpine:
-    name: "Bump JDK11 version for Linux images for Alpine Linux Dockerfile"
+    name: "Bump JDK11 version for Linux images in the Alpine Linux Dockerfile"
     kind: dockerfile
     spec:
       file: 11/alpine/hotspot/Dockerfile
@@ -114,7 +114,7 @@ targets:
       - addsuffix: "-jdk-alpine"
     scmid: default
   setJDK11VersionDebian:
-    name: "Bump JDK11 version for Linux images for Debian Dockerfile"
+    name: "Bump JDK11 version for Linux images in the Debian Dockerfile"
     kind: dockerfile
     spec:
       file: 11/debian/bookworm/hotspot/Dockerfile
@@ -123,7 +123,7 @@ targets:
         matcher: JAVA_VERSION
     scmid: default
   setJDK11VersionDebianSlim:
-    name: "Bump JDK11 version for Linux images for Debian Slim Dockerfile"
+    name: "Bump JDK11 version for Linux images in the Debian Slim Dockerfile"
     kind: dockerfile
     spec:
       file: 11/debian/bookworm-slim/hotspot/Dockerfile
@@ -132,7 +132,7 @@ targets:
         matcher: JAVA_VERSION
     scmid: default
   setJDK11VersionRhel:
-    name: "Bump JDK11 version for Linux images for Rhel Dockerfile"
+    name: "Bump JDK11 version for Linux images in the Rhel Dockerfile"
     kind: dockerfile
     spec:
       file: 11/rhel/ubi8/hotspot/Dockerfile
@@ -141,7 +141,7 @@ targets:
         matcher: JAVA_VERSION
     scmid: default
   setJDK11VersionWindows:
-    name: "Bump JDK11 version for Linux images for Windows Dockerfile"
+    name: "Bump JDK11 version for Linux images in the Windows Dockerfile"
     kind: dockerfile
     spec:
       file: 11/windows/windowsservercore-2019/hotspot/Dockerfile
