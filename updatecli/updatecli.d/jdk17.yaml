@@ -39,7 +39,6 @@ conditions:
     name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-alpine" is available
     disablesourceinput: true
     spec:
-      architecture: amd64
       image: eclipse-temurin
       tag: '{{source "lastVersion" }}-jdk-alpine'
   checkTemurinDebianDockerImages:
@@ -51,7 +50,7 @@ conditions:
         - amd64
         - arm64
         - s390x
-        - arm/v7
+        - linux/arm/v7
       image: eclipse-temurin
       tag: '{{source "lastVersion" }}-jdk-focal'
   checkTemurinNanoserver2019DockerImage:
@@ -59,7 +58,6 @@ conditions:
     name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-nanoserver-1809" is available
     disablesourceinput: true
     spec:
-      architecture: amd64
       image: eclipse-temurin
       tag: '{{source "lastVersion" }}-jdk-nanoserver-1809'
   checkTemurinWindowsCore2019DockerImage:
@@ -67,7 +65,6 @@ conditions:
     name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-windowsservercore-1809" is available
     disablesourceinput: true
     spec:
-      architecture: amd64
       image: eclipse-temurin
       tag: '{{source "lastVersion" }}-jdk-windowsservercore-1809'
   checkTemurinNanoserver2022DockerImage:
@@ -75,7 +72,6 @@ conditions:
     name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-nanoserver-ltsc2022" is available
     disablesourceinput: true
     spec:
-      architecture: amd64
       image: eclipse-temurin
       tag: '{{source "lastVersion" }}-jdk-nanoserver-ltsc2022'
   checkTemurinWindowsCore2022DockerImage:
@@ -83,7 +79,6 @@ conditions:
     name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-windowsservercore-18ltsc202209" is available
     disablesourceinput: true
     spec:
-      architecture: amd64
       image: eclipse-temurin
       tag: '{{source "lastVersion" }}-jdk-windowsservercore-ltsc2022'
 
@@ -101,8 +96,10 @@ targets:
     spec:
       file: 17/alpine/hotspot/Dockerfile
       instruction:
-        keyword: ARG
-        matcher: JAVA_VERSION
+        keyword: "FROM"
+        matcher: "eclipse-temurin"
+    transformers:
+      - addsuffix: "-jdk-alpine"
     scmid: default
   setJDK17VersionDebian:
     name: "Bump JDK17 version for Linux images for Debian Dockerfile"
@@ -110,8 +107,10 @@ targets:
     spec:
       file: 17/debian/bookworm/hotspot/Dockerfile
       instruction:
-        keyword: ARG
-        matcher: JAVA_VERSION
+        keyword: "FROM"
+        matcher: "eclipse-temurin"
+    transformers:
+      - addsuffix: "-jdk-jammy"
     scmid: default
   setJDK17VersionDebianSlim:
     name: "Bump JDK17 version for Linux images for Debian Slim Dockerfile"
@@ -119,8 +118,10 @@ targets:
     spec:
       file: 17/debian/bookworm-slim/hotspot/Dockerfile
       instruction:
-        keyword: ARG
-        matcher: JAVA_VERSION
+        keyword: "FROM"
+        matcher: "eclipse-temurin"
+    transformers:
+      - addsuffix: "-jdk-jammy"
     scmid: default
   setJDK17VersionRhel:
     name: "Bump JDK17 version for Linux images for Rhel Dockerfile"
@@ -128,8 +129,10 @@ targets:
     spec:
       file: 17/rhel/ubi9/hotspot/Dockerfile
       instruction:
-        keyword: ARG
-        matcher: JAVA_VERSION
+        keyword: "FROM"
+        matcher: "eclipse-temurin"
+    transformers:
+      - addsuffix: "-jdk-ubi9-minimal"
     scmid: default
 
 actions:
