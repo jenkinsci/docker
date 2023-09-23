@@ -1,6 +1,5 @@
 FROM registry.access.redhat.com/ubi9/ubi:9.2-722 as jre-build
-ARG BUILD_NUMBER=34
-ARG JAVA_VERSION=21+${BUILD_NUMBER}
+ARG JAVA_VERSION=21+35
 ARG TARGETPLATFORM
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
