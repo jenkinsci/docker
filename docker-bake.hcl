@@ -103,7 +103,7 @@ variable "JAVA21_VERSION" {
 }
 
 variable "BOOKWORM_TAG" {
-  default = "20230904"
+  default = "20230919"
 }
 
 # ----  user-defined functions ----
