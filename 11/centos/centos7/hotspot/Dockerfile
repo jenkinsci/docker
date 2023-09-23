@@ -1,5 +1,5 @@
 ARG JAVA_VERSION=11.0.20.1_1
-FROM eclipse-temurin:"$JAVA_VERSION"-jdk-centos7 as jre-build
+FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-centos7 as jre-build
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
