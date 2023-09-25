@@ -96,10 +96,8 @@ targets:
     spec:
       file: 17/alpine/hotspot/Dockerfile
       instruction:
-        keyword: "FROM"
-        matcher: "eclipse-temurin"
-    transformers:
-      - addsuffix: "-jdk-alpine"
+        keyword: ARG
+        matcher: JAVA_VERSION
     scmid: default
   setJDK17VersionDebian:
     name: "Bump JDK17 version for Linux images in the Debian Dockerfile"
@@ -107,10 +105,8 @@ targets:
     spec:
       file: 17/debian/bookworm/hotspot/Dockerfile
       instruction:
-        keyword: "FROM"
-        matcher: "eclipse-temurin"
-    transformers:
-      - addsuffix: "-jdk-jammy"
+        keyword: ARG
+        matcher: JAVA_VERSION
     scmid: default
   setJDK17VersionDebianSlim:
     name: "Bump JDK17 version for Linux images in the Debian Slim Dockerfile"
@@ -118,10 +114,8 @@ targets:
     spec:
       file: 17/debian/bookworm-slim/hotspot/Dockerfile
       instruction:
-        keyword: "FROM"
-        matcher: "eclipse-temurin"
-    transformers:
-      - addsuffix: "-jdk-jammy"
+        keyword: ARG
+        matcher: JAVA_VERSION
     scmid: default
   setJDK17VersionRhel:
     name: "Bump JDK17 version for Linux images in the Rhel Dockerfile"
@@ -129,10 +123,8 @@ targets:
     spec:
       file: 17/rhel/ubi9/hotspot/Dockerfile
       instruction:
-        keyword: "FROM"
-        matcher: "eclipse-temurin"
-    transformers:
-      - addsuffix: "-jdk-ubi9-minimal"
+        keyword: ARG
+        matcher: JAVA_VERSION
     scmid: default
 
 actions:

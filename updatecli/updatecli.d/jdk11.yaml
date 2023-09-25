@@ -108,10 +108,8 @@ targets:
     spec:
       file: 11/alpine/hotspot/Dockerfile
       instruction:
-        keyword: "FROM"
-        matcher: "eclipse-temurin"
-    transformers:
-      - addsuffix: "-jdk-alpine"
+        keyword: ARG
+        matcher: JAVA_VERSION
     scmid: default
   setJDK11VersionDebian:
     name: "Bump JDK11 version for Linux images in the Debian Dockerfile"
@@ -146,10 +144,8 @@ targets:
     spec:
       file: 11/windows/windowsservercore-2019/hotspot/Dockerfile
       instruction:
-        keyword: "FROM"
-        matcher: "eclipse-temurin"
-    transformers:
-      - addsuffix: "-jdk-windowsservercore-1809"
+        keyword: ARG
+        matcher: JAVA_VERSION
     scmid: default
 
 actions:
