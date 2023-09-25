@@ -16,9 +16,8 @@ updates:
   labels:
   - dependencies
   ignore:
-  # Ignore proposals to update to new major versions of Java
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
   - dependency-name: "eclipse-temurin"
-    update-types: ["version-update:semver-major"]
 
 - package-ecosystem: docker
   directory: "11/alpine/hotspot"
@@ -32,9 +31,8 @@ updates:
   labels:
   - dependencies
   ignore:
-  # Ignore proposals to update to new major versions of Java
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
   - dependency-name: "eclipse-temurin"
-    update-types: ["version-update:semver-major"]
 
 # AlmaLinux
 
@@ -50,8 +48,8 @@ updates:
   labels:
   - dependencies
   ignore:
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
   - dependency-name: "eclipse-temurin"
-    update-types: ["version-update:semver-major"]
   # Ignore proposals to update to Alma Linux 9 or later
   - dependency-name: "almalinux"
     update-types: ["version-update:semver-major"]
@@ -69,9 +67,8 @@ updates:
   labels:
   - dependencies
   ignore:
-  # Ignore proposals to update to new major versions of Java
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
   - dependency-name: "eclipse-temurin"
-    update-types: ["version-update:semver-major"]
 
 # Debian Linux
 
@@ -87,9 +84,8 @@ updates:
   labels:
   - dependencies
   ignore:
-  # Ignore proposals to update to new major versions of Java
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
   - dependency-name: "eclipse-temurin"
-    update-types: ["version-update:semver-major"]
 
 - package-ecosystem: docker
   directory: "17/debian/bookworm-slim/hotspot"
@@ -103,9 +99,8 @@ updates:
   labels:
   - dependencies
   ignore:
-  # Ignore proposals to update to new major versions of Java
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
   - dependency-name: "eclipse-temurin"
-    update-types: ["version-update:semver-major"]
 
 - package-ecosystem: docker
   directory: "11/debian/bookworm/hotspot"
@@ -119,9 +114,8 @@ updates:
   labels:
   - dependencies
   ignore:
-  # Ignore proposals to update to new major versions of Java
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
   - dependency-name: "eclipse-temurin"
-    update-types: ["version-update:semver-major"]
 
 - package-ecosystem: docker
   directory: "11/debian/bookworm-slim/hotspot"
@@ -135,9 +129,8 @@ updates:
   labels:
   - dependencies
   ignore:
-  # Ignore proposals to update to new major versions of Java
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
   - dependency-name: "eclipse-temurin"
-    update-types: ["version-update:semver-major"]
 
 # RHEL UBI
 
@@ -153,9 +146,8 @@ updates:
   labels:
     - dependencies
   ignore:
-  # Ignore proposals to update to new major versions of Java
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
   - dependency-name: "eclipse-temurin"
-    update-types: ["version-update:semver-major"]
 
 - package-ecosystem: docker
   directory: "17/rhel/ubi9/hotspot"
@@ -169,9 +161,8 @@ updates:
   labels:
     - dependencies
   ignore:
-  # Ignore proposals to update to new major versions of Java
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
   - dependency-name: "eclipse-temurin"
-    update-types: ["version-update:semver-major"]
 
 # Windows
 
@@ -185,6 +176,9 @@ updates:
   - slide
   labels:
   - dependencies
+  ignore:
+    # Ignore proposals to update to new versions of Java because updatecli takes care of that.
+    - dependency-name: "eclipse-temurin"
 
 # GitHub actions
 
