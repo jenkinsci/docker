@@ -1,4 +1,3 @@
-ARG JAVA_VERSION=11.0.20.1_1
 FROM registry.access.redhat.com/ubi8/ubi:8.8-1032.1692772289 as jre-build
 ARG JAVA_VERSION=11.0.20.1_1
 
