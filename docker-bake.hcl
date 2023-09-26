@@ -164,13 +164,10 @@ target "alpine_jdk11" {
     JAVA_VERSION = JAVA11_VERSION
   }
   tags = [
-    tag(true, "alpine"),
-    tag_weekly(false, "alpine"),
+    tag(true, "alpine-jdk11"),
     tag_weekly(false, "alpine-jdk11"),
     tag_weekly(false, "alpine${ALPINE_SHORT_TAG}-jdk11"),
-    tag_lts(false, "lts-alpine"),
-    tag_lts(false, "lts-alpine-jdk11"),
-    tag_lts(true, "lts-alpine")
+    tag_lts(false, "lts-alpine-jdk11")
   ]
   platforms = ["linux/amd64"]
 }
@@ -187,10 +184,13 @@ target "alpine_jdk17" {
     JAVA_VERSION = JAVA17_VERSION
   }
   tags = [
-    tag(true, "alpine-jdk17"),
+    tag(true, "alpine"),
+    tag_weekly(false, "alpine"),
     tag_weekly(false, "alpine-jdk17"),
     tag_weekly(false, "alpine${ALPINE_SHORT_TAG}-jdk17"),
-    tag_lts(false, "lts-alpine-jdk17")
+    tag_lts(false, "lts-alpine"),
+    tag_lts(false, "lts-alpine-jdk17"),
+    tag_lts(true, "lts-alpine")
   ]
   platforms = ["linux/amd64"]
 }
@@ -248,14 +248,10 @@ target "debian_jdk11" {
     JAVA_VERSION = JAVA11_VERSION
   }
   tags = [
-    tag(true, ""),
     tag(true, "jdk11"),
-    tag_weekly(false, "latest"),
     tag_weekly(false, "latest-jdk11"),
     tag_weekly(false, "jdk11"),
-    tag_lts(false, "lts"),
     tag_lts(false, "lts-jdk11"),
-    tag_lts(true, "lts"),
     tag_lts(true, "lts-jdk11")
   ]
   platforms = ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"]
@@ -273,10 +269,14 @@ target "debian_jdk17" {
     JAVA_VERSION = JAVA17_VERSION
   }
   tags = [
+    tag(true, ""),
     tag(true, "jdk17"),
+    tag_weekly(false, "latest"),
     tag_weekly(false, "latest-jdk17"),
     tag_weekly(false, "jdk17"),
+    tag_lts(false, "lts"),
     tag_lts(false, "lts-jdk17"),
+    tag_lts(true, "lts"),
     tag_lts(true, "lts-jdk17")
   ]
   platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le"]
@@ -315,12 +315,9 @@ target "debian_slim_jdk11" {
     JAVA_VERSION = JAVA11_VERSION
   }
   tags = [
-    tag(true, "slim"),
-    tag_weekly(false, "slim"),
+    tag(true, "slim-jdk11"),
     tag_weekly(false, "slim-jdk11"),
-    tag_lts(false, "lts-slim"),
     tag_lts(false, "lts-slim-jdk11"),
-    tag_lts(true, "lts-slim"),
   ]
   platforms = ["linux/amd64"]
 }
@@ -337,9 +334,12 @@ target "debian_slim_jdk17" {
     JAVA_VERSION = JAVA17_VERSION
   }
   tags = [
-    tag(true, "slim-jdk17"),
+    tag(true, "slim"),
+    tag_weekly(false, "slim"),
     tag_weekly(false, "slim-jdk17"),
+    tag_lts(false, "lts-slim"),
     tag_lts(false, "lts-slim-jdk17"),
+    tag_lts(true, "lts-slim"),
   ]
   platforms = ["linux/amd64"]
 }
