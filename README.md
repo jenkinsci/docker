@@ -14,7 +14,7 @@ This is a fully functional Jenkins server.
 # Usage
 
 ```
-docker run -p 8080:8080 -p 50000:50000 --restart=on-failure jenkins/jenkins:lts-jdk11
+docker run -p 8080:8080 -p 50000:50000 --restart=on-failure jenkins/jenkins:lts-jdk17
 ```
 
 NOTE: read the section [_Connecting agents_](#connecting-agents) below for the role of the `50000` port mapping.
@@ -24,7 +24,7 @@ All Jenkins data lives in there - including plugins and configuration.
 You will probably want to make that an explicit volume so you can manage it and attach to another container for upgrades :
 
 ```
-docker run -p 8080:8080 -p 50000:50000 --restart=on-failure -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts-jdk11
+docker run -p 8080:8080 -p 50000:50000 --restart=on-failure -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts-jdk17
 ```
 
 This will automatically create a 'jenkins_home' [docker volume](https://docs.docker.com/storage/volumes/) on the host machine.
@@ -34,7 +34,7 @@ NOTE: Avoid using a [bind mount](https://docs.docker.com/storage/bind-mounts/) f
 If you _really_ need to bind mount jenkins_home, ensure that the directory on the host is accessible by the jenkins user inside the container (jenkins user - uid 1000) or use `-u some_other_user` parameter with `docker run`.
 
 ```
-docker run -d -v jenkins_home:/var/jenkins_home -p 8080:8080 -p 50000:50000 --restart=on-failure jenkins/jenkins:lts-jdk11
+docker run -d -v jenkins_home:/var/jenkins_home -p 8080:8080 -p 50000:50000 --restart=on-failure jenkins/jenkins:lts-jdk17
 ```
 
 This will run Jenkins in detached mode with port forwarding and volume added. You can access logs with command 'docker logs CONTAINER_ID' in order to check first login token. ID of container will be returned from output of command above.
@@ -87,7 +87,7 @@ You might need to customize the JVM running Jenkins, typically to adjust [system
 Use the `JAVA_OPTS` or `JENKINS_JAVA_OPTS` environment variables for this purpose :
 
 ```
-docker run --name myjenkins -p 8080:8080 -p 50000:50000 --restart=on-failure --env JAVA_OPTS=-Dhudson.footerURL=http://mycompany.com jenkins/jenkins:lts-jdk11
+docker run --name myjenkins -p 8080:8080 -p 50000:50000 --restart=on-failure --env JAVA_OPTS=-Dhudson.footerURL=http://mycompany.com jenkins/jenkins:lts-jdk17
 ```
 
 JVM options specifically for the Jenkins controller should be set through `JENKINS_JAVA_OPTS`, as other tools might also respond to the `JAVA_OPTS` environment variable.
@@ -104,7 +104,7 @@ handlers=java.util.logging.ConsoleHandler
 jenkins.level=FINEST
 java.util.logging.ConsoleHandler.level=FINEST
 EOF
-docker run --name myjenkins -p 8080:8080 -p 50000:50000 --restart=on-failure --env JAVA_OPTS="-Djava.util.logging.config.file=/var/jenkins_home/log.properties" -v `pwd`/data:/var/jenkins_home jenkins/jenkins:lts-jdk11
+docker run --name myjenkins -p 8080:8080 -p 50000:50000 --restart=on-failure --env JAVA_OPTS="-Djava.util.logging.config.file=/var/jenkins_home/log.properties" -v `pwd`/data:/var/jenkins_home jenkins/jenkins:lts-jdk17
 ```
 
 ## Configuring reverse proxy
@@ -119,7 +119,7 @@ If you want to install Jenkins behind a reverse proxy with a prefix, example: my
 Arguments you pass to docker running the Jenkins image are passed to jenkins launcher, so for example you can run:
 
 ```
-docker run jenkins/jenkins:lts-jdk11 --version
+docker run jenkins/jenkins:lts-jdk17 --version
 ```
 
 This will show the Jenkins version, the same as when you run Jenkins from an executable war.
@@ -129,7 +129,7 @@ launcher in a derived Jenkins image. The following sample Dockerfile uses this o
 to force use of HTTPS with a certificate included in the image.
 
 ```
-FROM jenkins/jenkins:lts-jdk11
+FROM jenkins/jenkins:lts-jdk17
 
 COPY --chown=jenkins:jenkins certificate.pfx /var/lib/jenkins/certificate.pfx
 COPY --chown=jenkins:jenkins https.key /var/lib/jenkins/pk
@@ -140,14 +140,14 @@ EXPOSE 8083
 You can also change the default agent port for Jenkins by defining `JENKINS_SLAVE_AGENT_PORT` in a sample Dockerfile.
 
 ```
-FROM jenkins/jenkins:lts-jdk11
+FROM jenkins/jenkins:lts-jdk17
 ENV JENKINS_SLAVE_AGENT_PORT 50001
 ```
 
 or as a parameter to docker,
 
 ```
-docker run --name myjenkins -p 8080:8080 -p 50001:50001 --restart=on-failure --env JENKINS_SLAVE_AGENT_PORT=50001 jenkins/jenkins:lts-jdk11
+docker run --name myjenkins -p 8080:8080 -p 50001:50001 --restart=on-failure --env JENKINS_SLAVE_AGENT_PORT=50001 jenkins/jenkins:lts-jdk17
 ```
 
 **Note**: This environment variable will be used to set the
@@ -161,7 +161,7 @@ docker run --name myjenkins -p 8080:8080 -p 50001:50001 --restart=on-failure --e
 You can run your container as root - and install via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile to customise, for example:
 
 ```
-FROM jenkins/jenkins:lts-jdk11
+FROM jenkins/jenkins:lts-jdk17
 # if we want to install via apt
 USER root
 RUN apt-get update && apt-get install -y ruby make more-thing-here
@@ -174,7 +174,7 @@ For this purpose, use `/usr/share/jenkins/ref` as a place to define the default 
 wish the target installation to look like :
 
 ```
-FROM jenkins/jenkins:lts-jdk11
+FROM jenkins/jenkins:lts-jdk17
 COPY --chown=jenkins:jenkins custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
 ```
 
@@ -218,14 +218,14 @@ COPY --chown=jenkins:jenkins path/to/custom.hpi /usr/share/jenkins/ref/plugins/
 You can run the CLI manually in Dockerfile:
 
 ```Dockerfile
-FROM jenkins/jenkins:lts-jdk11
+FROM jenkins/jenkins:lts-jdk17
 RUN jenkins-plugin-cli --plugins pipeline-model-definition github-branch-source:1.8
 ```
 
 Furthermore it is possible to pass a file that contains this set of plugins (with or without line breaks).
 
 ```Dockerfile
-FROM jenkins/jenkins:lts-jdk11
+FROM jenkins/jenkins:lts-jdk17
 COPY --chown=jenkins:jenkins plugins.txt /usr/share/jenkins/ref/plugins.txt
 RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
 ```
@@ -317,7 +317,7 @@ The [plugin-installation-manager-tool](https://github.com/jenkinsci/plugin-insta
 Example command:
 
 ```command
-JENKINS_IMAGE=jenkins/jenkins:lts-jdk11
+JENKINS_IMAGE=jenkins/jenkins:lts-jdk17
 docker run -it ${JENKINS_IMAGE} bash -c "stty -onlcr && jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt --available-updates --output txt" >  plugins2.txt
 mv plugins2.txt plugins.txt
 ```
