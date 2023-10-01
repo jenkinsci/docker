@@ -1,0 +1,110 @@
+---
+name: Bump Alpine version
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "{{ .github.branch }}"
+
+sources:
+  latestVersion:
+    kind: githubrelease
+    name: "Get the latest Alpine Linux version"
+    spec:
+      owner: "alpinelinux"
+      repository: "aports" # Its release process follows Alpine's
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      versionfilter:
+        kind: semver
+        pattern: "~3"
+    transformers:
+      - trimprefix: "v"
+
+conditions:
+  testDockerfileArgJDK11:
+    name: "Does the JDK11 Dockerfile have an ARG instruction for the Alpine Linux version?"
+    kind: dockerfile
+    disablesourceinput: true
+    spec:
+      file: 11/alpine/hotspot/Dockerfile
+      instruction:
+        keyword: "ARG"
+        matcher: "ALPINE_TAG"
+  testDockerfileArgJDK17:
+    name: "Does the JDK17 Dockerfile have an ARG instruction for the Alpine Linux version?"
+    kind: dockerfile
+    disablesourceinput: true
+    spec:
+      file: 17/alpine/hotspot/Dockerfile
+      instruction:
+        keyword: "ARG"
+        matcher: "ALPINE_TAG"
+  testDockerfileArgJDK21:
+    name: "Does the JDK21 Dockerfile have an ARG instruction for the Alpine Linux version?"
+    kind: dockerfile
+    disablesourceinput: true
+    spec:
+      file: 21/alpine/hotspot/Dockerfile
+      instruction:
+        keyword: "ARG"
+        matcher: "ALPINE_TAG"
+  testDockerImageExists:
+    name: "Does the Docker Image exist on the Docker Hub?"
+    kind: dockerimage
+    sourceid: latestVersion
+    spec:
+      image: "alpine"
+      # tag come from the source
+      architecture: amd64
+
+targets:
+  updateDockerfileJDK11:
+    name: "Update the value of the JDK11 base image (ARG ALPINE_TAG) in the Dockerfile"
+    kind: dockerfile
+    spec:
+      file: 11/alpine/hotspot/Dockerfile
+      instruction:
+        keyword: "ARG"
+        matcher: "ALPINE_TAG"
+    scmid: default
+    updateDockerfileJDK17:
+      name: "Update the value of the JDK17 base image (ARG ALPINE_TAG) in the Dockerfile"
+      kind: dockerfile
+      spec:
+        file: 17/alpine/hotspot/Dockerfile
+        instruction:
+          keyword: "ARG"
+          matcher: "ALPINE_TAG"
+      scmid: default
+  updateDockerfileJDK21:
+    name: "Update the value of the JDK21 base image (ARG ALPINE_TAG) in the Dockerfile"
+    kind: dockerfile
+    spec:
+      file: 21/alpine/hotspot/Dockerfile
+      instruction:
+        keyword: "ARG"
+        matcher: "ALPINE_TAG"
+    scmid: default
+  updateDockerBake:
+    name: "Update the value of the base image (ARG ALPINE_TAG) in the docker-bake.hcl"
+    kind: hcl
+    spec:
+      file: docker-bake.hcl
+      path: variable.ALPINE_FULL_TAG.default
+    scmid: default
+actions:
+  default:
+    kind: github/pullrequest
+    scmid: default
+    title: Bump Alpine Linux Version to {{ source "latestVersion" }}
+    spec:
+      labels:
+        - dependencies
