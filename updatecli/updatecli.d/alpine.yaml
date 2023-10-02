@@ -108,3 +108,4 @@ actions:
     spec:
       labels:
         - dependencies
+        - alpine
