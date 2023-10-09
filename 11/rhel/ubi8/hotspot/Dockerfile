@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi:8.8-1067 as jre-build
+FROM registry.access.redhat.com/ubi8/ubi:8.8-1067.1696517599 as jre-build
 ARG JAVA_VERSION=11.0.20.1_1
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -18,7 +18,7 @@ RUN set -x \
   && jlink --add-modules ALL-MODULE-PATH --no-man-pages --compress=2 --output /javaruntime \
   && dnf clean all
 
-FROM registry.access.redhat.com/ubi8/ubi:8.8-1067
+FROM registry.access.redhat.com/ubi8/ubi:8.8-1067.1696517599
 
 ENV LANG C.UTF-8
 
