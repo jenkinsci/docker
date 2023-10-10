@@ -17,7 +17,7 @@ This is a fully functional Jenkins server.
 docker run -p 8080:8080 -p 50000:50000 --restart=on-failure jenkins/jenkins:lts-jdk17
 ```
 
-NOTE: read the section [_Connecting agents_](#connecting-agents) below for the role of the `50000` port mapping.
+NOTE: Please read the section [_Connecting agents_](#connecting-agents) below for the role of the `50000` port mapping.
 
 This will store the workspace in `/var/jenkins_home`.
 All Jenkins data lives in there - including plugins and configuration.
