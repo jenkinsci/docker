@@ -41,7 +41,7 @@ group "linux-ppc64le" {
   targets = [
     "debian_jdk11",
     "debian_jdk17",
-    "debian_jdk21",
+    # "debian_jdk21",
     "rhel_ubi9_jdk17",
   ]
 }
@@ -304,7 +304,8 @@ target "debian_jdk21" {
     tag_lts(false, "lts-jdk21"),
     tag_lts(true, "lts-jdk21")
   ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x", "linux/arm/v7"]
+  # platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x", "linux/arm/v7"]
+  platforms = ["linux/amd64", "linux/arm64"]
 }
 
 target "debian_slim_jdk11" {
@@ -364,7 +365,8 @@ target "debian_slim_jdk21" {
     tag_weekly(false, "slim-jdk21"),
     tag_lts(false, "lts-slim-jdk21"),
   ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x", "linux/arm/v7"]
+  # platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x", "linux/arm/v7"]
+  platforms = ["linux/amd64", "linux/arm64"]
 }
 
 target "rhel_ubi8_jdk11" {
