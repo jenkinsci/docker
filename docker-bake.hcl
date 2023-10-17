@@ -10,9 +10,11 @@ group "linux" {
     "debian_jdk11",
     "debian_jdk17",
     "debian_jdk21",
+    "debian_jdk21_preview",
     "debian_slim_jdk11",
     "debian_slim_jdk17",
     "debian_slim_jdk21",
+    "debian_slim_jdk21_preview",
     "rhel_ubi8_jdk11",
     "rhel_ubi9_jdk17",
     "rhel_ubi9_jdk21",
@@ -41,7 +43,7 @@ group "linux-ppc64le" {
   targets = [
     "debian_jdk11",
     "debian_jdk17",
-    # "debian_jdk21",
+    "debian_jdk21_preview",
     "rhel_ubi9_jdk17",
   ]
 }
@@ -308,6 +310,27 @@ target "debian_jdk21" {
   platforms = ["linux/amd64", "linux/arm64"]
 }
 
+target "debian_jdk21_preview" {
+  dockerfile = "21/debian/bookworm/hotspot/preview/Dockerfile"
+  context = "."
+  args = {
+    JENKINS_VERSION = JENKINS_VERSION
+    JENKINS_SHA = JENKINS_SHA
+    COMMIT_SHA = COMMIT_SHA
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    BOOKWORM_TAG = BOOKWORM_TAG
+    JAVA_VERSION = JAVA21_PREVIEW_VERSION
+  }
+  tags = [
+    tag(true, "jdk21-preview"),
+    tag_weekly(false, "latest-jdk21-preview"),
+    tag_weekly(false, "jdk21-preview"),
+    tag_lts(false, "lts-jdk21-preview"),
+    tag_lts(true, "lts-jdk21-preview")
+  ]
+  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x", "linux/arm/v7"]
+}
+
 target "debian_slim_jdk11" {
   dockerfile = "11/debian/bookworm-slim/hotspot/Dockerfile"
   context = "."
@@ -365,8 +388,27 @@ target "debian_slim_jdk21" {
     tag_weekly(false, "slim-jdk21"),
     tag_lts(false, "lts-slim-jdk21"),
   ]
-  # platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x", "linux/arm/v7"]
   platforms = ["linux/amd64", "linux/arm64"]
+}
+
+target "debian_slim_jdk21_preview" {
+  dockerfile = "21/debian/bookworm-slim/hotspot/preview/Dockerfile"
+  context = "."
+  args = {
+    JENKINS_VERSION = JENKINS_VERSION
+    JENKINS_SHA = JENKINS_SHA
+    COMMIT_SHA = COMMIT_SHA
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    BOOKWORM_TAG = BOOKWORM_TAG
+    JAVA_VERSION = JAVA21_PREVIEW_VERSION
+  }
+  tags = [
+    tag(true, "slim-jdk21-preview"),
+    tag_weekly(false, "slim-jdk21-preview"),
+    tag_lts(false, "lts-slim-jdk21-preview"),
+  ]
+  # platforms = ["linux/ppc64le", "linux/s390x", "linux/arm/v7"]
+  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x", "linux/arm/v7"]
 }
 
 target "rhel_ubi8_jdk11" {
