@@ -306,7 +306,8 @@ target "debian_jdk21" {
     tag_lts(false, "lts-jdk21"),
     tag_lts(true, "lts-jdk21")
   ]
-  # platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x", "linux/arm/v7"]
+  ## TODO: restore architectures when available for https://hub.docker.com/_/eclipse-temurin/tags?page=1&name=21-jdk-jammy
+  # platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/arm/v7"]
   platforms = ["linux/amd64", "linux/arm64"]
 }
 
@@ -407,7 +408,6 @@ target "debian_slim_jdk21_preview" {
     tag_weekly(false, "slim-jdk21-preview"),
     tag_lts(false, "lts-slim-jdk21-preview"),
   ]
-  # platforms = ["linux/ppc64le", "linux/s390x", "linux/arm/v7"]
   platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x", "linux/arm/v7"]
 }
 
