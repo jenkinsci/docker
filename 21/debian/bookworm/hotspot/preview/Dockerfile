@@ -1,43 +1,60 @@
-ARG ALPINE_TAG=3.18.4
-ARG JAVA_VERSION=21_35
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-alpine AS jre-build
+ARG BOOKWORM_TAG=20230904
+FROM debian:bookworm-"${BOOKWORM_TAG}"-slim as jre-build
+ARG JAVA_VERSION=21+35
+ARG TARGETPLATFORM
 
-# Generate smaller java runtime without unneeded files
-# for now we include the full module path to maintain compatibility
-# while still saving space (approx 200mb from the full distribution)
-RUN if [ "$TARGETPLATFORM" != 'linux/arm/v7' ]; then \
-    case "$(jlink --version 2>&1)" in \
-      # jlink version 11 has less features than JDK17+
-      "11."*) strip_java_debug_flags="--strip-debug" ;; \
-      *) strip_java_debug_flags="--strip-java-debug-attributes" ;; \
-    esac; \
-    jlink \
-      --add-modules ALL-MODULE-PATH \
-      "$strip_java_debug_flags" \
-      --no-man-pages \
-      --no-header-files \
-      --compress=zip-6 \
-      --output /javaruntime; \
-  else \
-    cp -r /opt/java/openjdk /javaruntime; \
-  fi
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-FROM alpine:"${ALPINE_TAG}" AS build
+RUN set -x; apt-get update \
+  && apt-get install --no-install-recommends -y \
+    ca-certificates \
+    jq \
+    wget \
+  && BUILD_NUMBER=$(echo $JAVA_VERSION | cut -d'+' -f2) \
+  && JAVA_VERSION_ENCODED=$(echo "$JAVA_VERSION" | jq "@uri" -jRr) \
+  && CONVERTED_ARCH=$(arch | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/') \
+  && wget --quiet https://github.com/adoptium/temurin21-binaries/releases/download/jdk-"${JAVA_VERSION_ENCODED}"-ea-beta/OpenJDK21U-jdk_"${CONVERTED_ARCH}"_linux_hotspot_ea_21-0-"${BUILD_NUMBER}".tar.gz -O /tmp/jdk.tar.gz \
+  && tar -xzf /tmp/jdk.tar.gz -C /opt/ \
+  && rm -f /tmp/jdk.tar.gz
 
-RUN apk add --no-cache \
-    bash \
-    coreutils \
+ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
+
+RUN if test "${TARGETPLATFORM}" != 'linux/arm/v7'; then \
+      jlink \
+        --add-modules ALL-MODULE-PATH \
+        --no-man-pages \
+        --compress=zip-6 \
+        --output /javaruntime; \
+    # It is acceptable to have a larger image in arm/v7 (arm 32 bits) environment.
+    # Because jlink fails with the error "jmods: Value too large for defined data type" error.
+    else  \
+      cp -r "/opt/jdk-${JAVA_VERSION}" /javaruntime; \
+    fi
+
+FROM debian:bookworm-"${BOOKWORM_TAG}"
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates \
     curl \
     git \
-    git-lfs \
     gnupg \
-    musl-locales \
-    musl-locales-lang \
-    openssh-client \
+    gpg \
+    libfontconfig1 \
+    libfreetype6 \
+    procps \
+    ssh-client \
     tini \
-    ttf-dejavu \
-    tzdata \
     unzip \
+    tzdata \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh -o /tmp/script.deb.sh \
+  && bash /tmp/script.deb.sh \
+  && rm -f /tmp/script.deb.sh \
+  && apt-get install -y --no-install-recommends \
+    git-lfs \
+  && rm -rf /var/lib/apt/lists/* \
   && git lfs install
 
 ENV LANG C.UTF-8
@@ -63,8 +80,8 @@ ENV REF $REF
 # ensure you use the same uid
 RUN mkdir -p $JENKINS_HOME \
   && chown ${uid}:${gid} $JENKINS_HOME \
-  && addgroup -g ${gid} ${group} \
-  && adduser -h "$JENKINS_HOME" -u ${uid} -G ${group} -s /bin/bash -D ${user}
+  && groupadd -g ${gid} ${group} \
+  && useradd -d "$JENKINS_HOME" -u ${uid} -g ${gid} -l -m -s /bin/bash ${user}
 
 # Jenkins home directory is a volume, so configuration and build history
 # can be persisted and survive image upgrades
@@ -119,15 +136,15 @@ COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
 COPY jenkins-plugin-cli.sh /bin/jenkins-plugin-cli
 
-ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
 # metadata labels
 LABEL \
-    org.opencontainers.image.vendor="Jenkins project" \
-    org.opencontainers.image.title="Official Jenkins Docker image" \
-    org.opencontainers.image.description="The Jenkins Continuous Integration and Delivery server" \
-    org.opencontainers.image.version="${JENKINS_VERSION}" \
-    org.opencontainers.image.url="https://www.jenkins.io/" \
-    org.opencontainers.image.source="https://github.com/jenkinsci/docker" \
-    org.opencontainers.image.revision="${COMMIT_SHA}" \
-    org.opencontainers.image.licenses="MIT"
+  org.opencontainers.image.vendor="Jenkins project" \
+  org.opencontainers.image.title="Official Jenkins Docker image" \
+  org.opencontainers.image.description="The Jenkins Continuous Integration and Delivery server" \
+  org.opencontainers.image.version="${JENKINS_VERSION}" \
+  org.opencontainers.image.url="https://www.jenkins.io/" \
+  org.opencontainers.image.source="https://github.com/jenkinsci/docker" \
+  org.opencontainers.image.revision="${COMMIT_SHA}" \
+  org.opencontainers.image.licenses="MIT"
