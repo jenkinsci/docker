@@ -1,5 +1,5 @@
 ---
-name: Bump JDK21 version for all Linux images
+name: Bump JDK21 preview version (EA) for all Linux images
 
 scms:
   default:
@@ -23,14 +23,14 @@ scms:
       branch: "main"
 
 sources:
-  getLatestJDK21EAVersion:
-    name: Get the latest Adoptium JDK21 version
+  getLatestJDK21PreviewVersion:
+    name: Get the latest Adoptium JDK21 preview version (EA)
     kind: gittag
     scmid: temurin21-binaries
     spec:
       versionfilter:
         kind: regex
-        pattern: "\\d$"
+        pattern: ".*-ea-.*"
     transformers:
       - trimprefix: "jdk-"
 
@@ -41,55 +41,37 @@ conditions:
       command: bash ./updatecli/scripts/check-jdk.sh # source input value passed as argument
 
 targets:
-  setJDK21VersionDockerBake:
-    name: "Bump JDK21 version for Linux images in the docker-bake.hcl file"
+  setJDK21PreviewVersionDockerBake:
+    name: "Bump JDK21 preview version (EA) for Linux images in the docker-bake.hcl file"
     kind: hcl
     spec:
       file: docker-bake.hcl
-      path: variable.JAVA21_VERSION.default
+      path: variable.JAVA21_PREVIEW_VERSION.default
+    transformers:
+      - trimsuffix: "-ea-beta"
     scmid: default
-    transformers:
-      - replacer:
-          from: "+"
-          to: "_"
-  setJDK21VersionAlpine:
-    name: "Bump JDK21 version for Linux images in the Alpine Linux Dockerfile"
+  setJDK21PreviewVersionDebian:
+    name: "Bump JDK21 preview version (EA) for Linux images in the Debian Dockerfile"
     kind: dockerfile
     spec:
-      file: 21/alpine/hotspot/Dockerfile
+      file: 21/debian/bookworm/hotspot/preview/Dockerfile
       instruction:
         keyword: "ARG"
         matcher: "JAVA_VERSION"
     transformers:
-      - replacer:
-          from: "+"
-          to: "_"
-  setJDK21VersionDebian:
-    name: "Bump JDK21 version for Linux images in the Debian Dockerfile"
+      - trimsuffix: "-ea-beta"
+  setJDK21PreviewVersionDebianSlim:
+    name: "Bump JDK21 preview version (EA) for Linux images in the Debian Slim Dockerfile"
     kind: dockerfile
     spec:
-      file: 21/debian/bookworm/hotspot/Dockerfile
+      file: 21/debian/bookworm-slim/hotspot/preview/Dockerfile
       instruction:
         keyword: "ARG"
         matcher: "JAVA_VERSION"
     transformers:
-      - replacer:
-          from: "+"
-          to: "_"
-  setJDK21VersionDebianSlim:
-    name: "Bump JDK21 version for Linux images in the Debian Slim Dockerfile"
-    kind: dockerfile
-    spec:
-      file: 21/debian/bookworm-slim/hotspot/Dockerfile
-      instruction:
-        keyword: "ARG"
-        matcher: "JAVA_VERSION"
-    transformers:
-      - replacer:
-          from: "+"
-          to: "_"
-  setJDK21VersionRhel:
-    name: "Bump JDK21 version for Linux images in the Rhel Dockerfile"
+      - trimsuffix: "-ea-beta"
+  setJDK21PreviewVersionRhel:
+    name: "Bump JDK21 preview version (EA) for Linux images in the Rhel Dockerfile"
     kind: dockerfile
     spec:
       file: 21/rhel/ubi9/hotspot/Dockerfile
@@ -97,15 +79,13 @@ targets:
         keyword: "ARG"
         matcher: "JAVA_VERSION"
     transformers:
-      - replacer:
-          from: "+"
-          to: "_"
+      - trimsuffix: "-ea-beta"
 actions:
   default:
     kind: github/pullrequest
     scmid: default
-    title: Bump JDK21 version to {{ source "getLatestJDK21EAVersion" }}
+    title: Bump JDK21 preview version (EA) to {{ source "getLatestJDK21PreviewVersion" }}
     spec:
       labels:
         - dependencies
-        - jdk21
+        - jdk21-preview
