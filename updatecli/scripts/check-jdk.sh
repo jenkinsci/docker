@@ -36,7 +36,7 @@ function get_jdk_download_url() {
       ##    https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.1%2B12-ea-beta/OpenJDK21U-jdk_x64_linux_hotspot_ea_21-0-1-12.tar.gz
       dashJDKVersion="${jdk_version//+/-}"
       completeDashJDKVersion="${dashJDKVersion//./-}"
-      echo "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-${jdk_version//+/%2B}-ea-beta/OpenJDK21U-jdk_${platform}_hotspot_ea_21-0-${completeDashJDKVersion}"
+      echo "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-${jdk_version//+/%2B}-ea-beta/OpenJDK21U-jdk_${platform}_hotspot_ea_${completeDashJDKVersion}"
       return 0;;
     21*)
       ## JDK21 URLs have an underscore ('_') instead of a plus ('+') in their archive names
