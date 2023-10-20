@@ -23,7 +23,7 @@ scms:
       branch: "main"
 
 sources:
-  getLatestJDK21EAVersion:
+  getLatestJDK21Version:
     name: Get the latest Adoptium JDK21 version
     kind: gittag
     scmid: temurin21-binaries
@@ -88,23 +88,11 @@ targets:
       - replacer:
           from: "+"
           to: "_"
-  setJDK21VersionRhel:
-    name: "Bump JDK21 version for Linux images in the Rhel Dockerfile"
-    kind: dockerfile
-    spec:
-      file: 21/rhel/ubi9/hotspot/Dockerfile
-      instruction:
-        keyword: "ARG"
-        matcher: "JAVA_VERSION"
-    transformers:
-      - replacer:
-          from: "+"
-          to: "_"
 actions:
   default:
     kind: github/pullrequest
     scmid: default
-    title: Bump JDK21 version to {{ source "getLatestJDK21EAVersion" }}
+    title: Bump JDK21 version to {{ source "getLatestJDK21Version" }}
     spec:
       labels:
         - dependencies
