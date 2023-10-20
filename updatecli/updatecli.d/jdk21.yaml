@@ -33,12 +33,19 @@ sources:
         pattern: "\\d$"
     transformers:
       - trimprefix: "jdk-"
+      - replacer:
+          from: "+"
+          to: "_"
 
 conditions:
   checkIfReleaseIsAvailable:
     kind: shell
     spec:
       command: bash ./updatecli/scripts/check-jdk.sh # source input value passed as argument
+    transformers:
+      - replacer:
+          from: "_"
+          to: "+"
 
 targets:
   setJDK21VersionDockerBake:
@@ -48,10 +55,6 @@ targets:
       file: docker-bake.hcl
       path: variable.JAVA21_VERSION.default
     scmid: default
-    transformers:
-      - replacer:
-          from: "+"
-          to: "_"
   setJDK21VersionAlpine:
     name: "Bump JDK21 version for Linux images in the Alpine Linux Dockerfile"
     kind: dockerfile
@@ -60,10 +63,6 @@ targets:
       instruction:
         keyword: "ARG"
         matcher: "JAVA_VERSION"
-    transformers:
-      - replacer:
-          from: "+"
-          to: "_"
   setJDK21VersionDebian:
     name: "Bump JDK21 version for Linux images in the Debian Dockerfile"
     kind: dockerfile
@@ -72,10 +71,6 @@ targets:
       instruction:
         keyword: "ARG"
         matcher: "JAVA_VERSION"
-    transformers:
-      - replacer:
-          from: "+"
-          to: "_"
   setJDK21VersionDebianSlim:
     name: "Bump JDK21 version for Linux images in the Debian Slim Dockerfile"
     kind: dockerfile
@@ -84,10 +79,7 @@ targets:
       instruction:
         keyword: "ARG"
         matcher: "JAVA_VERSION"
-    transformers:
-      - replacer:
-          from: "+"
-          to: "_"
+
 actions:
   default:
     kind: github/pullrequest
