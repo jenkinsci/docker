@@ -33,12 +33,15 @@ sources:
         pattern: ".*-ea-.*"
     transformers:
       - trimprefix: "jdk-"
+      - trimsuffix: "-ea-beta"
 
 conditions:
   checkIfReleaseIsAvailable:
     kind: shell
     spec:
       command: bash ./updatecli/scripts/check-jdk.sh # source input value passed as argument
+    transformers:
+      - addsuffix: "-ea-beta"
 
 targets:
   setJDK21PreviewVersionDockerBake:
@@ -47,8 +50,6 @@ targets:
     spec:
       file: docker-bake.hcl
       path: variable.JAVA21_PREVIEW_VERSION.default
-    transformers:
-      - trimsuffix: "-ea-beta"
     scmid: default
   setJDK21PreviewVersionDebian:
     name: "Bump JDK21 preview version (EA) for Linux images in the Debian Dockerfile"
@@ -58,8 +59,6 @@ targets:
       instruction:
         keyword: "ARG"
         matcher: "JAVA_VERSION"
-    transformers:
-      - trimsuffix: "-ea-beta"
   setJDK21PreviewVersionDebianSlim:
     name: "Bump JDK21 preview version (EA) for Linux images in the Debian Slim Dockerfile"
     kind: dockerfile
@@ -68,8 +67,6 @@ targets:
       instruction:
         keyword: "ARG"
         matcher: "JAVA_VERSION"
-    transformers:
-      - trimsuffix: "-ea-beta"
   setJDK21PreviewVersionRhel:
     name: "Bump JDK21 preview version (EA) for Linux images in the Rhel Dockerfile"
     kind: dockerfile
@@ -78,8 +75,7 @@ targets:
       instruction:
         keyword: "ARG"
         matcher: "JAVA_VERSION"
-    transformers:
-      - trimsuffix: "-ea-beta"
+
 actions:
   default:
     kind: github/pullrequest
