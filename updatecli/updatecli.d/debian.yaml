@@ -21,7 +21,7 @@ sources:
       - trimprefix: "bookworm-"
     spec:
       image: "debian"
-      tagFilter: "bookworm-*"
+      tagfilter: "bookworm-*"
       versionfilter:
         kind: regex
         pattern: >-
@@ -33,7 +33,7 @@ sources:
       - trimprefix: "bookworm-"
     spec:
       image: "debian"
-      tagFilter: "bookworm-*"
+      tagfilter: "bookworm-*"
       versionfilter:
         kind: regex
         pattern: >-
