@@ -220,4 +220,4 @@ actions:
     spec:
       labels:
         - dependencies
-        - linux-debian
+        - debian
