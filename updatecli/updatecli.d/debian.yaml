@@ -103,7 +103,7 @@ conditions:
       instruction:
         keyword: "ARG"
         matcher: "BOOKWORM_TAG"
-  testDockerfileArgJDK21Slim:
+  testDockerfileArgJDK21SlimPreview:
     name: "Does the Dockerfile have an ARG instruction for the Debian Bookworm Linux version?"
     kind: dockerfile
     disablesourceinput: true
