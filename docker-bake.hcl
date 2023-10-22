@@ -101,7 +101,7 @@ variable "JAVA17_VERSION" {
 # not passed through currently as inconsistent versions are published (2023-08-14)
 # alpine not published on 34, but x64 on 35 isn't published for linux
 variable "JAVA21_PREVIEW_VERSION" {
-  default = "21+35"
+  default = "21.0.1+12"
 }
 
 variable "JAVA21_VERSION" {
@@ -129,26 +129,26 @@ function "tag" {
 # return a weekly optionaly prefixed by the Jenkins version
 function "tag_weekly" {
   params = [prepend_jenkins_version, tag]
-  result =  equal(LATEST_WEEKLY, "true") ? tag(prepend_jenkins_version, tag) : ""
+  result = equal(LATEST_WEEKLY, "true") ? tag(prepend_jenkins_version, tag) : ""
 }
 
 # return a LTS optionaly prefixed by the Jenkins version
 function "tag_lts" {
   params = [prepend_jenkins_version, tag]
-  result =  equal(LATEST_LTS, "true") ? tag(prepend_jenkins_version, tag) : ""
+  result = equal(LATEST_LTS, "true") ? tag(prepend_jenkins_version, tag) : ""
 }
 
 # ---- targets ----
 
 target "almalinux_jdk11" {
   dockerfile = "11/almalinux/almalinux8/hotspot/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    JENKINS_VERSION = JENKINS_VERSION
-    JENKINS_SHA = JENKINS_SHA
-    COMMIT_SHA = COMMIT_SHA
+    JENKINS_VERSION    = JENKINS_VERSION
+    JENKINS_SHA        = JENKINS_SHA
+    COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    JAVA_VERSION = JAVA11_VERSION
+    JAVA_VERSION       = JAVA11_VERSION
   }
   tags = [
     tag(true, "almalinux"),
@@ -160,14 +160,14 @@ target "almalinux_jdk11" {
 
 target "alpine_jdk11" {
   dockerfile = "11/alpine/hotspot/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    JENKINS_VERSION = JENKINS_VERSION
-    JENKINS_SHA = JENKINS_SHA
-    COMMIT_SHA = COMMIT_SHA
+    JENKINS_VERSION    = JENKINS_VERSION
+    JENKINS_SHA        = JENKINS_SHA
+    COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    ALPINE_TAG = ALPINE_FULL_TAG
-    JAVA_VERSION = JAVA11_VERSION
+    ALPINE_TAG         = ALPINE_FULL_TAG
+    JAVA_VERSION       = JAVA11_VERSION
   }
   tags = [
     tag(true, "alpine-jdk11"),
@@ -180,14 +180,14 @@ target "alpine_jdk11" {
 
 target "alpine_jdk17" {
   dockerfile = "17/alpine/hotspot/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    JENKINS_VERSION = JENKINS_VERSION
-    JENKINS_SHA = JENKINS_SHA
-    COMMIT_SHA = COMMIT_SHA
+    JENKINS_VERSION    = JENKINS_VERSION
+    JENKINS_SHA        = JENKINS_SHA
+    COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    ALPINE_TAG = ALPINE_FULL_TAG
-    JAVA_VERSION = JAVA17_VERSION
+    ALPINE_TAG         = ALPINE_FULL_TAG
+    JAVA_VERSION       = JAVA17_VERSION
   }
   tags = [
     tag(true, "alpine"),
@@ -203,14 +203,14 @@ target "alpine_jdk17" {
 
 target "alpine_jdk21" {
   dockerfile = "21/alpine/hotspot/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    JENKINS_VERSION = JENKINS_VERSION
-    JENKINS_SHA = JENKINS_SHA
-    COMMIT_SHA = COMMIT_SHA
+    JENKINS_VERSION    = JENKINS_VERSION
+    JENKINS_SHA        = JENKINS_SHA
+    COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    ALPINE_TAG = ALPINE_FULL_TAG
-    JAVA_VERSION = JAVA21_VERSION
+    ALPINE_TAG         = ALPINE_FULL_TAG
+    JAVA_VERSION       = JAVA21_VERSION
   }
   tags = [
     tag(true, "alpine-jdk21"),
@@ -223,13 +223,13 @@ target "alpine_jdk21" {
 
 target "centos7_jdk11" {
   dockerfile = "11/centos/centos7/hotspot/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    JENKINS_VERSION = JENKINS_VERSION
-    JENKINS_SHA = JENKINS_SHA
-    COMMIT_SHA = COMMIT_SHA
+    JENKINS_VERSION    = JENKINS_VERSION
+    JENKINS_SHA        = JENKINS_SHA
+    COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    JAVA_VERSION = JAVA11_VERSION
+    JAVA_VERSION       = JAVA11_VERSION
   }
   tags = [
     tag(true, "centos7"),
@@ -244,14 +244,14 @@ target "centos7_jdk11" {
 
 target "debian_jdk11" {
   dockerfile = "11/debian/bookworm/hotspot/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    JENKINS_VERSION = JENKINS_VERSION
-    JENKINS_SHA = JENKINS_SHA
-    COMMIT_SHA = COMMIT_SHA
+    JENKINS_VERSION    = JENKINS_VERSION
+    JENKINS_SHA        = JENKINS_SHA
+    COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    BOOKWORM_TAG = BOOKWORM_TAG
-    JAVA_VERSION = JAVA11_VERSION
+    BOOKWORM_TAG       = BOOKWORM_TAG
+    JAVA_VERSION       = JAVA11_VERSION
   }
   tags = [
     tag(true, "jdk11"),
@@ -265,14 +265,14 @@ target "debian_jdk11" {
 
 target "debian_jdk17" {
   dockerfile = "17/debian/bookworm/hotspot/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    JENKINS_VERSION = JENKINS_VERSION
-    JENKINS_SHA = JENKINS_SHA
-    COMMIT_SHA = COMMIT_SHA
+    JENKINS_VERSION    = JENKINS_VERSION
+    JENKINS_SHA        = JENKINS_SHA
+    COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    BOOKWORM_TAG = BOOKWORM_TAG
-    JAVA_VERSION = JAVA17_VERSION
+    BOOKWORM_TAG       = BOOKWORM_TAG
+    JAVA_VERSION       = JAVA17_VERSION
   }
   tags = [
     tag(true, ""),
@@ -290,14 +290,14 @@ target "debian_jdk17" {
 
 target "debian_jdk21" {
   dockerfile = "21/debian/bookworm/hotspot/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    JENKINS_VERSION = JENKINS_VERSION
-    JENKINS_SHA = JENKINS_SHA
-    COMMIT_SHA = COMMIT_SHA
+    JENKINS_VERSION    = JENKINS_VERSION
+    JENKINS_SHA        = JENKINS_SHA
+    COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    BOOKWORM_TAG = BOOKWORM_TAG
-    JAVA_VERSION = JAVA21_VERSION
+    BOOKWORM_TAG       = BOOKWORM_TAG
+    JAVA_VERSION       = JAVA21_VERSION
   }
   tags = [
     tag(true, "jdk21"),
@@ -313,14 +313,14 @@ target "debian_jdk21" {
 
 target "debian_jdk21_preview" {
   dockerfile = "21/debian/bookworm/hotspot/preview/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    JENKINS_VERSION = JENKINS_VERSION
-    JENKINS_SHA = JENKINS_SHA
-    COMMIT_SHA = COMMIT_SHA
+    JENKINS_VERSION    = JENKINS_VERSION
+    JENKINS_SHA        = JENKINS_SHA
+    COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    BOOKWORM_TAG = BOOKWORM_TAG
-    JAVA_VERSION = JAVA21_PREVIEW_VERSION
+    BOOKWORM_TAG       = BOOKWORM_TAG
+    JAVA_VERSION       = JAVA21_PREVIEW_VERSION
   }
   tags = [
     tag(true, "jdk21-preview"),
@@ -334,14 +334,14 @@ target "debian_jdk21_preview" {
 
 target "debian_slim_jdk11" {
   dockerfile = "11/debian/bookworm-slim/hotspot/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    JENKINS_VERSION = JENKINS_VERSION
-    JENKINS_SHA = JENKINS_SHA
-    COMMIT_SHA = COMMIT_SHA
+    JENKINS_VERSION    = JENKINS_VERSION
+    JENKINS_SHA        = JENKINS_SHA
+    COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    BOOKWORM_TAG = BOOKWORM_TAG
-    JAVA_VERSION = JAVA11_VERSION
+    BOOKWORM_TAG       = BOOKWORM_TAG
+    JAVA_VERSION       = JAVA11_VERSION
   }
   tags = [
     tag(true, "slim-jdk11"),
@@ -353,14 +353,14 @@ target "debian_slim_jdk11" {
 
 target "debian_slim_jdk17" {
   dockerfile = "17/debian/bookworm-slim/hotspot/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    JENKINS_VERSION = JENKINS_VERSION
-    JENKINS_SHA = JENKINS_SHA
-    COMMIT_SHA = COMMIT_SHA
+    JENKINS_VERSION    = JENKINS_VERSION
+    JENKINS_SHA        = JENKINS_SHA
+    COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    BOOKWORM_TAG = BOOKWORM_TAG
-    JAVA_VERSION = JAVA17_VERSION
+    BOOKWORM_TAG       = BOOKWORM_TAG
+    JAVA_VERSION       = JAVA17_VERSION
   }
   tags = [
     tag(true, "slim"),
@@ -375,14 +375,14 @@ target "debian_slim_jdk17" {
 
 target "debian_slim_jdk21" {
   dockerfile = "21/debian/bookworm-slim/hotspot/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    JENKINS_VERSION = JENKINS_VERSION
-    JENKINS_SHA = JENKINS_SHA
-    COMMIT_SHA = COMMIT_SHA
+    JENKINS_VERSION    = JENKINS_VERSION
+    JENKINS_SHA        = JENKINS_SHA
+    COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    BOOKWORM_TAG = BOOKWORM_TAG
-    JAVA_VERSION = JAVA21_VERSION
+    BOOKWORM_TAG       = BOOKWORM_TAG
+    JAVA_VERSION       = JAVA21_VERSION
   }
   tags = [
     tag(true, "slim-jdk21"),
@@ -394,14 +394,14 @@ target "debian_slim_jdk21" {
 
 target "debian_slim_jdk21_preview" {
   dockerfile = "21/debian/bookworm-slim/hotspot/preview/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    JENKINS_VERSION = JENKINS_VERSION
-    JENKINS_SHA = JENKINS_SHA
-    COMMIT_SHA = COMMIT_SHA
+    JENKINS_VERSION    = JENKINS_VERSION
+    JENKINS_SHA        = JENKINS_SHA
+    COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    BOOKWORM_TAG = BOOKWORM_TAG
-    JAVA_VERSION = JAVA21_PREVIEW_VERSION
+    BOOKWORM_TAG       = BOOKWORM_TAG
+    JAVA_VERSION       = JAVA21_PREVIEW_VERSION
   }
   tags = [
     tag(true, "slim-jdk21-preview"),
@@ -413,13 +413,13 @@ target "debian_slim_jdk21_preview" {
 
 target "rhel_ubi8_jdk11" {
   dockerfile = "11/rhel/ubi8/hotspot/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    JENKINS_VERSION = JENKINS_VERSION
-    JENKINS_SHA = JENKINS_SHA
-    COMMIT_SHA = COMMIT_SHA
+    JENKINS_VERSION    = JENKINS_VERSION
+    JENKINS_SHA        = JENKINS_SHA
+    COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    JAVA_VERSION = JAVA11_VERSION
+    JAVA_VERSION       = JAVA11_VERSION
   }
   tags = [
     tag(true, "rhel-ubi8-jdk11"),
@@ -432,13 +432,13 @@ target "rhel_ubi8_jdk11" {
 
 target "rhel_ubi9_jdk17" {
   dockerfile = "17/rhel/ubi9/hotspot/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    JENKINS_VERSION = JENKINS_VERSION
-    JENKINS_SHA = JENKINS_SHA
-    COMMIT_SHA = COMMIT_SHA
+    JENKINS_VERSION    = JENKINS_VERSION
+    JENKINS_SHA        = JENKINS_SHA
+    COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    JAVA_VERSION = JAVA17_VERSION
+    JAVA_VERSION       = JAVA17_VERSION
   }
   tags = [
     tag(true, "rhel-ubi9-jdk17"),
@@ -451,13 +451,13 @@ target "rhel_ubi9_jdk17" {
 
 target "rhel_ubi9_jdk21" {
   dockerfile = "21/rhel/ubi9/hotspot/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    JENKINS_VERSION = JENKINS_VERSION
-    JENKINS_SHA = JENKINS_SHA
-    COMMIT_SHA = COMMIT_SHA
+    JENKINS_VERSION    = JENKINS_VERSION
+    JENKINS_SHA        = JENKINS_SHA
+    COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    JAVA_VERSION = JAVA21_PREVIEW_VERSION
+    JAVA_VERSION       = JAVA21_PREVIEW_VERSION
   }
   tags = [
     tag(true, "rhel-ubi9-jdk21-preview"),
