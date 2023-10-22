@@ -4,11 +4,17 @@ ARG TARGETPLATFORM
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+## Example of preview (EA) jdk21 JAVA_VERSION values:
+# 21+35
+# 21.0.1+12
+## Example of preview (EA) release download link:
+# https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21%2B35-ea-beta/OpenJDK21U-jdk_x64_linux_hotspot_ea_21-0-35.tar.gz
+# https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.1%2B12-ea-beta/OpenJDK21U-jdk_x64_alpine-linux_hotspot_ea_21-0-1-12.tar.gz
 RUN set -x; yum install -y jq wget \
-  && JAVA_VERSION_DASHED=$(echo "ea_${JAVA_VERSION}" | sed -e 's/\./-/g' -e 's/+/-/' -e 's/ea_21-35/21_35/') \
+  && JAVA_DASHED_VERSION=$(echo "${JAVA_VERSION}" | sed -e 's/\./-/g' -e 's/+/-/' -e 's/21-35/21-0-35/') \
   && JAVA_VERSION_ENCODED=$(echo "$JAVA_VERSION" | jq "@uri" -jRr) \
   && CONVERTED_ARCH=$(arch | sed 's/x86_64/x64/') \
-  && wget --quiet https://github.com/adoptium/temurin21-binaries/releases/download/jdk-"${JAVA_VERSION_ENCODED}"-ea-beta/OpenJDK21U-jdk_"${CONVERTED_ARCH}"_linux_hotspot_"${JAVA_VERSION_DASHED}".tar.gz -O /tmp/jdk.tar.gz \
+  && wget --quiet https://github.com/adoptium/temurin21-binaries/releases/download/jdk-"${JAVA_VERSION_ENCODED}"-ea-beta/OpenJDK21U-jdk_"${CONVERTED_ARCH}"_linux_hotspot_"${JAVA_DASHED_VERSION}".tar.gz -O /tmp/jdk.tar.gz \
   && yum clean all \
   && tar -xzf /tmp/jdk.tar.gz -C /opt/ \
   && rm -f /tmp/jdk.tar.gz
