@@ -10,7 +10,7 @@ RUN set -x; apt-get update \
     ca-certificates \
     jq \
     wget \
-  && JAVA_VERSION_DASHED=$(echo "ea_${JAVA_VERSION}" | sed -e 's/\./-/g' -e 's/+/-/' -e 's/ea_21_35/21_35/') \
+  && JAVA_VERSION_DASHED=$(echo "ea_${JAVA_VERSION}" | sed -e 's/\./-/g' -e 's/+/-/' -e 's/ea_21-35/21_35/') \
   && JAVA_VERSION_ENCODED=$(echo "$JAVA_VERSION" | jq "@uri" -jRr) \
   && CONVERTED_ARCH=$(arch | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/') \
   && wget --quiet https://github.com/adoptium/temurin21-binaries/releases/download/jdk-"${JAVA_VERSION_ENCODED}"-ea-beta/OpenJDK21U-jdk_"${CONVERTED_ARCH}"_linux_hotspot_"${JAVA_VERSION_DASHED}".tar.gz -O /tmp/jdk.tar.gz \
