@@ -29,11 +29,18 @@ function get_jdk_download_url() {
       ## JDK19 URLs have an underscore ('_') instead of a plus ('+') in their archive names
       echo "https://github.com/adoptium/temurin19-binaries/releases/download/jdk-${jdk_version}/OpenJDK19U-jdk_${platform}_hotspot_${jdk_version//+/_}";
       return 0;;
-    21*)
-      # JDK version (21+35-ea-beta)
+    21*-ea-beta)
+      # JDK preview version (21+35-ea-beta, 21.0.1+12-ea-beta)
+      jdk_version="${jdk_version//-ea-beta}"
       ##    https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21%2B35-ea-beta/OpenJDK21U-jdk_aarch64_linux_hotspot_ea_21-0-35.tar.gz
-      urlEncodedJDKVersion="${jdk_version//+/%2B}"
-      echo "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-${urlEncodedJDKVersion}-ea-beta/OpenJDK21U-jdk_${platform}_hotspot_ea_21-0-$(echo ${jdk_version} | cut -d '+' -f 2 | cut -d '-' -f 1)"
+      ##    https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.1%2B12-ea-beta/OpenJDK21U-jdk_x64_linux_hotspot_ea_21-0-1-12.tar.gz
+      dashJDKVersion="${jdk_version//+/-}"
+      completeDashJDKVersion="${dashJDKVersion//./-}"
+      echo "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-${jdk_version//+/%2B}-ea-beta/OpenJDK21U-jdk_${platform}_hotspot_ea_${completeDashJDKVersion}"
+      return 0;;
+    21*)
+      ## JDK21 URLs have an underscore ('_') instead of a plus ('+') in their archive names
+      echo "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-${jdk_version}/OpenJDK21U-jdk_${platform}_hotspot_${jdk_version//+/_}";
       return 0;;
     *)
       echo "ERROR: unsupported JDK version (${jdk_version}).";
@@ -51,8 +58,10 @@ case "${1}" in
     platforms=("x64_linux" "x64_windows" "aarch64_linux" "s390x_linux");;
   19.*+*)
     platforms=("x64_linux" "x64_windows" "aarch64_linux" "s390x_linux");;
-  21*+*)
+  21*+*-ea-beta)
     platforms=("x64_linux" "x64_windows" "aarch64_linux" "s390x_linux");;
+  21*+*)
+    platforms=("x64_linux" "x64_windows" "aarch64_linux");;
   *)
     echo "ERROR: unsupported JDK version (${1}).";
     exit 1;;
