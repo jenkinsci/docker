@@ -1,4 +1,4 @@
-ARG JAVA_VERSION=11.0.20.1_1
+ARG JAVA_VERSION=11.0.21_9
 ARG BOOKWORM_TAG=20231009
 FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-jammy as jre-build
 
