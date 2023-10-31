@@ -1,5 +1,5 @@
 FROM almalinux:8.8 as jre-build
-ARG JAVA_VERSION=11.0.20.1_1
+ARG JAVA_VERSION=11.0.21_9
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
