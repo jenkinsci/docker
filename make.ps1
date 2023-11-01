@@ -58,19 +58,6 @@ if(![System.String]::IsNullOrWhiteSpace($Build) -and $builds.ContainsKey($Build)
                 Invoke-Expression $cmd
             }
         }
-
-        if($PushVersions) {
-            $buildTag = "$JenkinsVersion-$tag"
-            if($tag -eq 'latest') {
-                $buildTag = "$JenkinsVersion"
-            }
-            Write-Host "Building $Build => tag=$buildTag"
-            $cmd = "docker build -t {0}/{1}:{2} {3} {4}" -f $Organization, $Repository, $buildTag, $AdditionalArgs, $builds[$Build]['Folder']
-            switch ($DryRun) {
-                $true { Write-Host "(dry-run) $cmd" }
-                $false { Invoke-Expression $cmd}
-            }
-        }
     }
 } else {
     foreach($b in $builds.Keys) {
@@ -84,19 +71,6 @@ if(![System.String]::IsNullOrWhiteSpace($Build) -and $builds.ContainsKey($Build)
                     Copy-Item -Path 'jenkins-support.psm1' -Destination (Join-Path $builds[$b]['Folder'] 'jenkins-support.psm1') -Force
                     Copy-Item -Path 'jenkins-plugin-cli.ps1' -Destination (Join-Path $builds[$b]['Folder'] 'jenkins-plugin-cli.ps1') -Force
                     Invoke-Expression $cmd
-                }
-            }
-
-            if($PushVersions) {
-                $buildTag = "$JenkinsVersion-$tag"
-                if($tag -eq 'latest') {
-                    $buildTag = "$JenkinsVersion"
-                }
-                Write-Host "Building $Build => tag=$buildTag"
-                $cmd = "docker build -t {0}/{1}:{2} {3} {4}" -f $Organization, $Repository, $buildTag, $AdditionalArgs, $builds[$b]['Folder']
-                switch ($DryRun) {
-                    $true { Write-Host "(dry-run) $cmd" }
-                    $false { Invoke-Expression $cmd}
                 }
             }
         }
@@ -183,22 +157,6 @@ if($target -eq "publish") {
             if($lastExitCode -ne 0) {
                 $publishFailed = 1
             }
-
-            if($PushVersions) {
-                $buildTag = "$JenkinsVersion-$tag"
-                if($tag -eq 'latest') {
-                    $buildTag = "$JenkinsVersion"
-                }
-                Write-Host "Publishing $Build => tag=$buildTag"
-                $cmd = "docker push {0}/{1}:{2}" -f $Organization, $Repository, $buildTag
-                switch ($DryRun) {
-                    $true { Write-Host "(dry-run) $cmd" }
-                    $false { Invoke-Expression $cmd}
-                }    
-                if($lastExitCode -ne 0) {
-                    $publishFailed = 1
-                }
-            }
         }
     } else {
         foreach($b in $builds.Keys) {
@@ -211,22 +169,6 @@ if($target -eq "publish") {
                 }    
                 if($lastExitCode -ne 0) {
                     $publishFailed = 1
-                }
-
-                if($PushVersions) {
-                    $buildTag = "$JenkinsVersion-$tag"
-                    if($tag -eq 'latest') {
-                        $buildTag = "$JenkinsVersion"
-                    }
-                    Write-Host "Publishing $Build => tag=$buildTag"
-                    $cmd = "docker push {0}/{1}:{2}" -f $Organization, $Repository, $buildTag
-                    switch ($DryRun) {
-                        $true { Write-Host "(dry-run) $cmd" }
-                        $false { Invoke-Expression $cmd}
-                    }        
-                    if($lastExitCode -ne 0) {
-                        $publishFailed = 1
-                    }
                 }
             }
         }
