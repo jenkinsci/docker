@@ -44,6 +44,9 @@ Get-ChildItem -Recurse -Include windows -Directory | ForEach-Object {
     }
 }
 
+Write-Host "= PREPARE: List of $Organization/$Repository images and tags to be processed:"
+ConvertTo-Json $builds
+
 if(![System.String]::IsNullOrWhiteSpace($Build) -and $builds.ContainsKey($Build)) {
     foreach($tag in $builds[$Build]['Tags']) {
         Write-Host "Building $Build => tag=$tag"
