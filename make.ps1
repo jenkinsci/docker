@@ -26,8 +26,8 @@ $builds = @{}
 
 Get-ChildItem -Recurse -Include windows -Directory | ForEach-Object {
     Get-ChildItem -Recurse -Directory -Path $_ | Where-Object { Test-Path (Join-Path $_.FullName "Dockerfile") } | ForEach-Object {
-        $dir = $_.FullName.Replace((Get-Location), "").TrimStart("\")
-        $items = $dir.Split("\")
+        $dir = $_.FullName.Replace((Get-Location), "").TrimStart([IO.Path]::DirectorySeparatorChar)
+        $items = $dir.Split([IO.Path]::DirectorySeparatorChar)
         $jdkVersion = $items[0]
         $baseImage = $items[2]
         $jvmType = $items[3]
