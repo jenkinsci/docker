@@ -2,9 +2,6 @@
 Param(
     [Parameter(Position=1)]
     [String] $Target = "build",
-    [String] $TagPrefix = 'latest',
-    [String] $AdditionalArgs = '',
-    [String] $Build = '',
     [String] $JenkinsVersion = '',
     [switch] $DryRun = $false
 )
@@ -48,33 +45,17 @@ Get-ChildItem -Recurse -Include windows -Directory | ForEach-Object {
 Write-Host "= PREPARE: List of $Organization/$Repository images and tags to be processed:"
 ConvertTo-Json $builds
 
-if(![System.String]::IsNullOrWhiteSpace($Build) -and $builds.ContainsKey($Build)) {
-    foreach($tag in $builds[$Build]['Tags']) {
-        Write-Host "Building $Build => tag=$tag"
-        $cmd = "docker build -t {0}/{1}:{2} {3} {4}" -f $Organization, $Repository, $tag, $AdditionalArgs, $builds[$Build]['Folder']
+foreach($b in $builds.Keys) {
+    foreach($tag in $builds[$b]['Tags']) {
+        Write-Host "Building $b => tag=$tag"
+        $cmd = "docker build -t {0}/{1}:{2} {3}" -f $Organization, $Repository, $tag, $builds[$b]['Folder']
         switch ($DryRun) {
             $true { Write-Host "(dry-run) $cmd" }
             $false {
-                Copy-Item -Path 'jenkins.ps1' -Destination (Join-Path $builds[$Build]['Folder'] 'jenkins.ps1') -Force
-                Copy-Item -Path 'jenkins-support.psm1' -Destination (Join-Path $builds[$Build]['Folder'] 'jenkins-support.psm1') -Force
-                Copy-Item -Path 'jenkins-plugin-cli.ps1' -Destination (Join-Path $builds[$Build]['Folder'] 'jenkins-plugin-cli.ps1') -Force
+                Copy-Item -Path 'jenkins.ps1' -Destination (Join-Path $builds[$b]['Folder'] 'jenkins.ps1') -Force
+                Copy-Item -Path 'jenkins-support.psm1' -Destination (Join-Path $builds[$b]['Folder'] 'jenkins-support.psm1') -Force
+                Copy-Item -Path 'jenkins-plugin-cli.ps1' -Destination (Join-Path $builds[$b]['Folder'] 'jenkins-plugin-cli.ps1') -Force
                 Invoke-Expression $cmd
-            }
-        }
-    }
-} else {
-    foreach($b in $builds.Keys) {
-        foreach($tag in $builds[$b]['Tags']) {
-            Write-Host "Building $b => tag=$tag"
-            $cmd = "docker build -t {0}/{1}:{2} {3} {4}" -f $Organization, $Repository, $tag, $AdditionalArgs, $builds[$b]['Folder']
-            switch ($DryRun) {
-                $true { Write-Host "(dry-run) $cmd" }
-                $false {
-                    Copy-Item -Path 'jenkins.ps1' -Destination (Join-Path $builds[$b]['Folder'] 'jenkins.ps1') -Force
-                    Copy-Item -Path 'jenkins-support.psm1' -Destination (Join-Path $builds[$b]['Folder'] 'jenkins-support.psm1') -Force
-                    Copy-Item -Path 'jenkins-plugin-cli.ps1' -Destination (Join-Path $builds[$b]['Folder'] 'jenkins-plugin-cli.ps1') -Force
-                    Invoke-Expression $cmd
-                }
             }
         }
     }
@@ -102,8 +83,8 @@ if($target -eq "test") {
             Install-Module -Force -Name Pester -MaximumVersion 4.99.99
         }
 
-        if(![System.String]::IsNullOrWhiteSpace($Build) -and $builds.ContainsKey($Build)) {
-            $folder = $builds[$Build]['Folder']
+        foreach($b in $builds.Keys) {
+            $folder = $builds[$b]['Folder']
             $env:FOLDER = $folder
             if(Test-Path ".\target\$folder") {
                 Remove-Item -Force -Recurse ".\target\$folder"
@@ -111,29 +92,12 @@ if($target -eq "test") {
             New-Item -Path ".\target\$folder" -Type Directory | Out-Null
             $TestResults = Invoke-Pester -Path tests -PassThru -OutputFile ".\target\$folder\junit-results.xml" -OutputFormat JUnitXml
             if ($TestResults.FailedCount -gt 0) {
-                Write-Host "There were $($TestResults.FailedCount) failed tests in $Build"
+                Write-Host "There were $($TestResults.FailedCount) failed tests in $b"
                 $testFailed = $true
             } else {
-                Write-Host "There were $($TestResults.PassedCount) passed tests out of $($TestResults.TotalCount) in $Build"
+                Write-Host "There were $($TestResults.PassedCount) passed tests out of $($TestResults.TotalCount) in $b"
             }
             Remove-Item -Force env:\FOLDER
-        } else {
-            foreach($b in $builds.Keys) {
-                $folder = $builds[$b]['Folder']
-                $env:FOLDER = $folder
-                if(Test-Path ".\target\$folder") {
-                    Remove-Item -Force -Recurse ".\target\$folder"
-                }
-                New-Item -Path ".\target\$folder" -Type Directory | Out-Null
-                $TestResults = Invoke-Pester -Path tests -PassThru -OutputFile ".\target\$folder\junit-results.xml" -OutputFormat JUnitXml
-                if ($TestResults.FailedCount -gt 0) {
-                    Write-Host "There were $($TestResults.FailedCount) failed tests in $b"
-                    $testFailed = $true
-                } else {
-                    Write-Host "There were $($TestResults.PassedCount) passed tests out of $($TestResults.TotalCount) in $b"
-                }
-                Remove-Item -Force env:\FOLDER
-            }
         }
 
         # Fail if any test failures
@@ -149,30 +113,16 @@ if($target -eq "test") {
 if($target -eq "publish") {
     # Only fail the run afterwards in case of any issues when publishing the docker images
     $publishFailed = 0
-    if(![System.String]::IsNullOrWhiteSpace($Build) -and $builds.ContainsKey($Build)) {
-        foreach($tag in $Builds[$Build]['Tags']) {
-            Write-Host "Publishing $Build => tag=$tag"
+    foreach($b in $builds.Keys) {
+        foreach($tag in $Builds[$b]['Tags']) {
+            Write-Host "Publishing $b => tag=$tag"
             $cmd = "docker push {0}/{1}:{2}" -f $Organization, $Repository, $tag
             switch ($DryRun) {
                 $true { Write-Host "(dry-run) $cmd" }
                 $false { Invoke-Expression $cmd}
-            }
+            }    
             if($lastExitCode -ne 0) {
                 $publishFailed = 1
-            }
-        }
-    } else {
-        foreach($b in $builds.Keys) {
-            foreach($tag in $Builds[$b]['Tags']) {
-                Write-Host "Publishing $b => tag=$tag"
-                $cmd = "docker push {0}/{1}:{2}" -f $Organization, $Repository, $tag
-                switch ($DryRun) {
-                    $true { Write-Host "(dry-run) $cmd" }
-                    $false { Invoke-Expression $cmd}
-                }    
-                if($lastExitCode -ne 0) {
-                    $publishFailed = 1
-                }
             }
         }
     }
