@@ -126,6 +126,15 @@ targets:
         keyword: ARG
         matcher: JAVA_VERSION
     scmid: default
+  setJDK17VersionWindows:
+    name: "Bump JDK17 version for Linux images in the Windows Dockerfile"
+    kind: dockerfile
+    spec:
+      file: 17/windows/windowsservercore-2019/hotspot/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
 
 actions:
   default:
