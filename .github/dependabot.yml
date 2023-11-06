@@ -167,7 +167,7 @@ updates:
 # Windows
 
 - package-ecosystem: docker
-  directory: "11/windows/windowsservercore-2019/hotspot"
+  directory: "17/windows/windowsservercore-2019/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
