@@ -78,7 +78,6 @@ stage('Build') {
                 'alpine_jdk11',
                 'alpine_jdk17',
                 'alpine_jdk21',
-                'centos7_jdk11',
                 'debian_jdk11',
                 'debian_jdk17',
                 'debian_jdk21',
