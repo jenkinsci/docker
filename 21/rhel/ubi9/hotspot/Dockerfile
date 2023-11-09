@@ -1,5 +1,5 @@
-FROM registry.access.redhat.com/ubi9/ubi:9.2-722 as jre-build
-ARG JAVA_VERSION=21+35
+FROM registry.access.redhat.com/ubi9/ubi:9.3-1361 as jre-build
+ARG JAVA_VERSION=21.0.1_12
 ARG TARGETPLATFORM
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -28,7 +28,7 @@ RUN jlink \
   --compress=zip-6 \
   --output /javaruntime
 
-FROM registry.access.redhat.com/ubi9/ubi:9.2-722
+FROM registry.access.redhat.com/ubi9/ubi:9.3-1361
 
 ENV LANG C.UTF-8
 
