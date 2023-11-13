@@ -1,7 +1,7 @@
 [CmdletBinding()]
 Param(
     [Parameter(Position=1)]
-    [String] $Target = "build",
+    [String] $Target = 'build',
     [String] $JenkinsVersion = '2.431',
     [switch] $DryRun = $false
 )
@@ -33,7 +33,7 @@ $env:DOCKERHUB_ORGANISATION = "$Organisation"
 $env:DOCKERHUB_REPO = "$Repository"
 $env:JENKINS_VERSION = "$JenkinsVersion"
 
-$items = $ImageType.Split("-")
+$items = $ImageType.Split('-')
 $env:WINDOWS_FLAVOR = $items[0]
 $env:WINDOWS_VERSION = $items[1]
 $env:TOOLS_WINDOWS_VERSION = $items[1]
@@ -65,12 +65,12 @@ foreach ($service in $compose.services.PSObject.Properties) {
 Write-Host "= PREPARE: List of $Organisation/$Repository images and tags to be processed:"
 Invoke-Expression "$baseDockerCmd config"
 
-Write-Host "= BUILD: Building all images..."
+Write-Host '= BUILD: Building all images...'
 switch ($DryRun) {
     $true { Write-Host "(dry-run) $baseDockerBuildCmd" }
     $false { Invoke-Expression $baseDockerBuildCmd }
 }
-Write-Host "= BUILD: Finished building all images."
+Write-Host '= BUILD: Finished building all images.'
 
 if($lastExitCode -ne 0 -and !$DryRun) {
     exit $lastExitCode
@@ -99,19 +99,20 @@ function Test-Image {
     } else {
         Write-Host "There were $($TestResults.PassedCount) passed tests out of $($TestResults.TotalCount) in $ImageName"
     }
+
     Remove-Item env:\CONTROLLER_IMAGE
     Remove-Item env:\DOCKERFILE
 }
 
-if($target -eq "test") {
+if($target -eq 'test') {
     if ($DryRun) {
-        Write-Host "(dry-run) test"
+        Write-Host '(dry-run) test'
     } else {
         # Only fail the run afterwards in case of any test failures
         $testFailed = $false
         $mod = Get-InstalledModule -Name Pester -MinimumVersion 5.3.0 -MaximumVersion 5.3.3 -ErrorAction SilentlyContinue
         if($null -eq $mod) {
-            $module = "c:\Program Files\WindowsPowerShell\Modules\Pester"
+            $module = 'c:\Program Files\WindowsPowerShell\Modules\Pester'
             if(Test-Path $module) {
                 takeown /F $module /A /R
                 icacls $module /reset
@@ -122,7 +123,7 @@ if($target -eq "test") {
         }
 
         Import-Module -Verbose Pester
-        Write-Host "= TEST: Setting up Pester environment..."
+        Write-Host '= TEST: Setting up Pester environment...'
         $configuration = [PesterConfiguration]::Default
         $configuration.Run.PassThru = $true
         $configuration.Run.Path = '.\tests'
@@ -132,28 +133,28 @@ if($target -eq "test") {
         $configuration.Output.Verbosity = 'Diagnostic'
         $configuration.CodeCoverage.Enabled = $false
 
-        Write-Host "= TEST: Testing all images..."
+        Write-Host '= TEST: Testing all images...'
         foreach($image in $builds.Keys) {
-            Test-Image ($image -split ':')[1]
+            Test-Image $image.split(':')[1]
         }
 
         # Fail if any test failures
         if($testFailed -ne $false) {
-            Write-Error "Test stage failed!"
+            Write-Error 'Test stage failed!'
             exit 1
         } else {
-            Write-Host "Test stage passed!"
+            Write-Host 'Test stage passed!'
         }
     }
 }
 
-if($target -eq "publish") {
+if($target -eq 'publish') {
     # Only fail the run afterwards in case of any issues when publishing the docker images
     $publishFailed = 0
     foreach($b in $builds.Keys) {
-        foreach($tagedImage in $Builds[$b]['Tags']) {
-            Write-Host "Publishing $b => tag=$tagedImage"
-            $cmd = "docker push {0}" -f $tagedImage
+        foreach($taggedImage in $Builds[$b]['Tags']) {
+            Write-Host "Publishing $b => tag=$taggedImage"
+            $cmd = 'docker push {0}' -f $taggedImage
             switch ($DryRun) {
                 $true { Write-Host "(dry-run) $cmd" }
                 $false { Invoke-Expression $cmd}
@@ -166,14 +167,14 @@ if($target -eq "publish") {
 
     # Fail if any issues when publising the docker images
     if($publishFailed -ne 0 -and !$DryRun) {
-        Write-Error "Publish failed!"
+        Write-Error 'Publish failed!'
         exit 1
     }
 }
 
 if($lastExitCode -ne 0 -and !$DryRun) {
-    Write-Error "Build failed!"
+    Write-Error 'Build failed!'
 } else {
-    Write-Host "Build finished successfully"
+    Write-Host 'Build finished successfully'
 }
 exit $lastExitCode

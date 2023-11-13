@@ -8,7 +8,7 @@ FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-windowsservercore-"${TOOLS_WINDOWS_VE
 
 FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}"
 
-ARG JAVA_HOME="C:\openjdk-17"
+ARG JAVA_HOME="C:/openjdk-17"
 ENV JAVA_HOME=${JAVA_HOME}
 
 COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
