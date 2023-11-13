@@ -52,14 +52,6 @@ conditions:
        - linux/arm/v7
       image: eclipse-temurin
       tag: '{{source "lastVersion" }}-jdk-jammy'
-  checkTemurinNanoserver2019DockerImage:
-    kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-nanoserver-1809" is available
-    disablesourceinput: true
-    spec:
-      # architecture: amd64
-      image: eclipse-temurin
-      tag: '{{source "lastVersion" }}-jdk-nanoserver-1809'
   checkTemurinWindowsCore2019DockerImage:
     kind: dockerimage
     name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-windowsservercore-1809" is available
@@ -68,22 +60,6 @@ conditions:
       # architecture: amd64
       image: eclipse-temurin
       tag: '{{source "lastVersion" }}-jdk-windowsservercore-1809'
-  checkTemurinNanoserver2022DockerImage:
-    kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-nanoserver-ltsc2022" is available
-    disablesourceinput: true
-    spec:
-      # architecture: amd64
-      image: eclipse-temurin
-      tag: '{{source "lastVersion" }}-jdk-nanoserver-ltsc2022'
-  checkTemurinWindowsCore2022DockerImage:
-    kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-windowsservercore-18ltsc202209" is available
-    disablesourceinput: true
-    spec:
-      # architecture: amd64
-      image: eclipse-temurin
-      tag: '{{source "lastVersion" }}-jdk-windowsservercore-ltsc2022'
 
 targets:
   setJDK11VersionDockerBake:
@@ -137,6 +113,13 @@ targets:
       instruction:
         keyword: ARG
         matcher: JAVA_VERSION
+    scmid: default
+  setJDK11VersionWindowsDockerCompose:
+    name: "Bump JDK11 version in build-windows.yaml"
+    kind: yaml
+    spec:
+      file: build-windows.yaml
+      key: $.services.jdk11.build.args.JAVA_VERSION
     scmid: default
 
 actions:
