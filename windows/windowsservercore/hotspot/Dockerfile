@@ -1,7 +1,24 @@
 # escape=`
-ARG JAVA_VERSION=17.0.9_9
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-windowsservercore-1809
 # hadolint shell=powershell
+
+ARG JAVA_VERSION=17.0.9_9
+ARG WINDOWS_VERSION=ltsc2019
+ARG TOOLS_WINDOWS_VERSION=1809
+FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-windowsservercore-"${TOOLS_WINDOWS_VERSION}" AS jdk-core
+
+FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}"
+
+ARG JAVA_HOME="C:/openjdk-17"
+ENV JAVA_HOME=${JAVA_HOME}
+
+COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
+
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+
+# Add java in PATH
+RUN $CurrentPath = (Get-Itemproperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path).Path ; `
+    $NewPath = $CurrentPath + $(';{0}/bin' -f $env:JAVA_HOME) ; `
+    Set-ItemProperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path -Value $NewPath
 
 ARG user=jenkins
 ARG http_port=8080
