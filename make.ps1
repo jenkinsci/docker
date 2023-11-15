@@ -35,9 +35,10 @@ $env:JENKINS_VERSION = "$JenkinsVersion"
 
 # Add 'lts-' prefix to LTS tags not including Jenkins version
 # Compared to weekly releases, LTS releases include an additional build number in their version
-$env:JENKINS_LTS_PREFIX = ''
+# Note: the ':' separator is included as trying to set an environment variable to empty on Windows unset it.
+$env:SEPARATOR_LTS_PREFIX = ':'
 if ($JenkinsVersion.Split('.').Count -eq 3) {
-    $env:JENKINS_LTS_PREFIX = 'lts-'
+    $env:SEPARATOR_LTS_PREFIX = ':lts-'
 }
 
 $items = $ImageType.Split('-')
