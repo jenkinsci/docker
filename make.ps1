@@ -33,6 +33,13 @@ $env:DOCKERHUB_ORGANISATION = "$Organisation"
 $env:DOCKERHUB_REPO = "$Repository"
 $env:JENKINS_VERSION = "$JenkinsVersion"
 
+# Add 'lts-' prefix to LTS tags not including Jenkins version
+# Compared to weekly releases, LTS releases include an additional build number in their version
+$env:JENKINS_LTS_PREFIX = ''
+if ($JenkinsVersion.Split('.').Count -eq 3) {
+    $env:JENKINS_LTS_PREFIX = 'lts-'
+}
+
 $items = $ImageType.Split('-')
 $env:WINDOWS_FLAVOR = $items[0]
 $env:WINDOWS_VERSION = $items[1]
