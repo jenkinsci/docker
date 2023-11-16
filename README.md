@@ -180,13 +180,13 @@ COPY --chown=jenkins:jenkins custom.groovy /usr/share/jenkins/ref/init.groovy.d/
 
 ## Preinstalling plugins
 
-### Install plugins script
+### Install plugins
 
-You can rely on the plugin manager CLI to pass a set of plugins to download with their dependencies. This tool will perform downloads from update centers, and internet access is required for the default update centers.
+You can rely on [the plugin manager CLI](https://github.com/jenkinsci/plugin-installation-manager-tool/) to pass a set of plugins to download with their dependencies. This tool will perform downloads from update centers, and internet access is required for the default update centers.
 
 ### Setting update centers
 
-During the download, the script will use update centers defined by the following environment variables:
+During the download, the CLI will use update centers defined by the following environment variables:
 
 - `JENKINS_UC` - Main update center.
   This update center may offer plugin versions depending on the Jenkins LTS Core versions.
@@ -205,7 +205,7 @@ During the download, the script will use update centers defined by the following
 
 It is possible to override the environment variables in images.
 
-:exclamation: Note that changing update center variables **will not** change the Update Center being used by Jenkins runtime.
+:exclamation: Note that changing update center variables **will not** change the Update Center being used by Jenkins runtime, it concerns only the plugin manager CLI.
 
 ### Installing Custom Plugins
 
