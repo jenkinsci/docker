@@ -200,6 +200,8 @@ During the download, the script will use update centers defined by the following
   Default value: https://repo.jenkins-ci.org/incrementals
 - `JENKINS_UC_DOWNLOAD` - Download url of the Update Center.
   Default value: `$JENKINS_UC/download`
+- `JENKINS_PLUGIN_INFO` - Location of plugin information.
+  Default value: https://updates.jenkins.io/current/plugin-versions.json
 
 It is possible to override the environment variables in images.
 
