@@ -1,4 +1,4 @@
-FROM almalinux:8.8 as jre-build
+FROM almalinux:8.9 as jre-build
 ARG JAVA_VERSION=11.0.21_9
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -18,7 +18,7 @@ RUN set -x \
   && jlink --add-modules ALL-MODULE-PATH --no-man-pages --compress=2 --output /javaruntime \
   && dnf clean all
 
-FROM almalinux:8.8
+FROM almalinux:8.9
 
 ENV LANG C.UTF-8
 
