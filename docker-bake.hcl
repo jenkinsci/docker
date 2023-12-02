@@ -82,7 +82,7 @@ variable "COMMIT_SHA" {
 }
 
 variable "ALPINE_FULL_TAG" {
-  default = "3.18.4"
+  default = "3.18.5"
 }
 
 variable "ALPINE_SHORT_TAG" {
