@@ -1,4 +1,4 @@
-ARG ALPINE_TAG=3.18.4
+ARG ALPINE_TAG=3.18.5
 ARG JAVA_VERSION=21.0.1_12
 FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-alpine AS jre-build
 
