@@ -1,5 +1,5 @@
 ARG BOOKWORM_TAG=20240110
-ARG JAVA_VERSION=17.0.9_9
+ARG JAVA_VERSION=17.0.10_7
 FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-jammy as jre-build
 
 RUN jlink \
