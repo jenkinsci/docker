@@ -7,7 +7,7 @@ services:
       args:
         COMMIT_SHA: ${COMMIT_SHA}
         JAVA_HOME: "C:/openjdk-11"
-        JAVA_VERSION: "11.0.21_9"
+        JAVA_VERSION: "11.0.22_7"
         JENKINS_SHA: ${JENKINS_SHA}
         JENKINS_VERSION: ${JENKINS_VERSION}
         TOOLS_WINDOWS_VERSION: ${TOOLS_WINDOWS_VERSION}
