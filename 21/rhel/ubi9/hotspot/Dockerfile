@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/ubi:9.3-1361 as jre-build
+FROM registry.access.redhat.com/ubi9/ubi:9.3-1552 as jre-build
 ARG JAVA_VERSION=21.0.2_13
 ARG TARGETPLATFORM
 
@@ -22,13 +22,19 @@ RUN set -x; yum install -y jq wget \
 
 ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
 
+# Generate smaller java runtime without unneeded files
+# for now we include the full module path to maintain compatibility
+# while still saving space (approx 200mb from the full distribution)
+# Arguments to jlink are specific to Java 21 jlink
 RUN jlink \
-  --add-modules ALL-MODULE-PATH \
-  --no-man-pages \
-  --compress=zip-6 \
-  --output /javaruntime
+      --add-modules ALL-MODULE-PATH \
+      --strip-java-debug-attributes \
+      --no-man-pages \
+      --no-header-files \
+      --compress zip-6 \
+      --output /javaruntime
 
-FROM registry.access.redhat.com/ubi9/ubi:9.3-1361
+FROM registry.access.redhat.com/ubi9/ubi:9.3-1552
 
 ENV LANG C.UTF-8
 

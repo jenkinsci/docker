@@ -2,11 +2,17 @@ ARG BOOKWORM_TAG=20240110
 ARG JAVA_VERSION=17.0.10_7
 FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-jammy as jre-build
 
+# Generate smaller java runtime without unneeded files
+# for now we include the full module path to maintain compatibility
+# while still saving space (approx 200mb from the full distribution)
+# Arguments to jlink are specific to Java 17 jlink
 RUN jlink \
-  --add-modules ALL-MODULE-PATH \
-  --no-man-pages \
-  --compress=2 \
-  --output /javaruntime
+      --add-modules ALL-MODULE-PATH \
+      --strip-java-debug-attributes \
+      --no-man-pages \
+      --no-header-files \
+      --compress=2 \
+      --output /javaruntime
 
 FROM debian:bookworm-"${BOOKWORM_TAG}"
 
@@ -117,11 +123,11 @@ ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
 # metadata labels
 LABEL \
-  org.opencontainers.image.vendor="Jenkins project" \
-  org.opencontainers.image.title="Official Jenkins Docker image" \
-  org.opencontainers.image.description="The Jenkins Continuous Integration and Delivery server" \
-  org.opencontainers.image.version="${JENKINS_VERSION}" \
-  org.opencontainers.image.url="https://www.jenkins.io/" \
-  org.opencontainers.image.source="https://github.com/jenkinsci/docker" \
-  org.opencontainers.image.revision="${COMMIT_SHA}" \
-  org.opencontainers.image.licenses="MIT"
+    org.opencontainers.image.vendor="Jenkins project" \
+    org.opencontainers.image.title="Official Jenkins Docker image" \
+    org.opencontainers.image.description="The Jenkins Continuous Integration and Delivery server" \
+    org.opencontainers.image.version="${JENKINS_VERSION}" \
+    org.opencontainers.image.url="https://www.jenkins.io/" \
+    org.opencontainers.image.source="https://github.com/jenkinsci/docker" \
+    org.opencontainers.image.revision="${COMMIT_SHA}" \
+    org.opencontainers.image.licenses="MIT"
