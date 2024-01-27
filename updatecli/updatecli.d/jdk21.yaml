@@ -1,0 +1,91 @@
+---
+name: Bump JDK21 version for all Linux images
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "{{ .github.branch }}"
+  temurin21-binaries:
+    kind: "github"
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "adoptium"
+      repository: "temurin21-binaries"
+      token: '{{ requiredEnv .github.token }}'
+      branch: "main"
+
+sources:
+  getLatestJDK21Version:
+    name: Get the latest Adoptium JDK21 version
+    kind: gittag
+    scmid: temurin21-binaries
+    spec:
+      versionfilter:
+        kind: regex
+        pattern: "\\d$"
+    transformers:
+      - trimprefix: "jdk-"
+      - replacer:
+          from: "+"
+          to: "_"
+
+conditions:
+  checkIfReleaseIsAvailable:
+    kind: shell
+    spec:
+      command: bash ./updatecli/scripts/check-jdk.sh # source input value passed as argument
+    transformers:
+      - replacer:
+          from: "_"
+          to: "+"
+
+targets:
+  setJDK21VersionDockerBake:
+    name: "Bump JDK21 version for Linux images in the docker-bake.hcl file"
+    kind: hcl
+    spec:
+      file: docker-bake.hcl
+      path: variable.JAVA21_VERSION.default
+    scmid: default
+  setJDK21VersionAlpine:
+    name: "Bump JDK21 version for Linux images in the Alpine Linux Dockerfile"
+    kind: dockerfile
+    spec:
+      file: 21/alpine/hotspot/Dockerfile
+      instruction:
+        keyword: "ARG"
+        matcher: "JAVA_VERSION"
+  setJDK21VersionDebian:
+    name: "Bump JDK21 version for Linux images in the Debian Dockerfile"
+    kind: dockerfile
+    spec:
+      file: 21/debian/bookworm/hotspot/Dockerfile
+      instruction:
+        keyword: "ARG"
+        matcher: "JAVA_VERSION"
+  setJDK21VersionDebianSlim:
+    name: "Bump JDK21 version for Linux images in the Debian Slim Dockerfile"
+    kind: dockerfile
+    spec:
+      file: 21/debian/bookworm-slim/hotspot/Dockerfile
+      instruction:
+        keyword: "ARG"
+        matcher: "JAVA_VERSION"
+
+actions:
+  default:
+    kind: github/pullrequest
+    scmid: default
+    title: Bump JDK21 version to {{ source "getLatestJDK21Version" }}
+    spec:
+      labels:
+        - dependencies
+        - jdk21

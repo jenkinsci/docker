@@ -1,38 +1,55 @@
-FROM almalinux:8.9 as jre-build
-ARG JAVA_VERSION=11.0.22_7
+FROM registry.access.redhat.com/ubi9/ubi:9.3-1552 as jre-build
+ARG JAVA_VERSION=21.0.2_13
+ARG TARGETPLATFORM
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN set -x \
-  && dnf -y upgrade-minimal --security \
-  && dnf install -y ca-certificates jq wget \
-  && JAVA_MAJOR_VERSION=$(echo "$JAVA_VERSION" | awk -F'.' '{print $1}') \
-  && ENCODED_JAVA_VERSION=$(echo "$JAVA_VERSION" | tr '_' '+' | jq "@uri" -jRr) \
-  && JAVA_VERSION_FILENAME=$(echo "$JAVA_VERSION" | tr '_' '+') \
-  && CONVERTED_ARCH=$(arch | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/') \
-  && wget --quiet https://github.com/adoptium/temurin"${JAVA_MAJOR_VERSION}"-binaries/releases/download/jdk-"${ENCODED_JAVA_VERSION}"/OpenJDK"${JAVA_MAJOR_VERSION}"U-jdk_"${CONVERTED_ARCH}"_linux_hotspot_"${JAVA_VERSION}".tar.gz -O /tmp/jdk.tar.gz \
-  && mkdir -p /opt/jdk-"${JAVA_VERSION_FILENAME}" \
-  && tar -xzf /tmp/jdk.tar.gz -C /opt/jdk-"${JAVA_VERSION_FILENAME}" --strip-components=1 \
-  && rm -f /tmp/jdk.tar.gz \
-  && export PATH=/opt/jdk-"${JAVA_VERSION_FILENAME}"/bin:$PATH \
-  && jlink --add-modules ALL-MODULE-PATH --no-man-pages --compress=2 --output /javaruntime \
-  && dnf clean all
+## Example of preview (EA) jdk21 JAVA_VERSION values:
+# 21+35 (note: only one number before the "+")
+# 21.0.1+12
+## Example of preview (EA) release download link:
+# https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21%2B35-ea-beta/OpenJDK21U-jdk_x64_linux_hotspot_ea_21-0-35.tar.gz
+# https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.1%2B12-ea-beta/OpenJDK21U-jdk_x64_alpine-linux_hotspot_ea_21-0-1-12.tar.gz
+RUN set -x; yum install -y jq wget \
+  && DASHED_JAVA_VERSION=$(echo "$JAVA_VERSION" | sed -e 's/\./-/g' -e 's/+/-/' -e 's/21-35/21-0-35/') \
+  && JAVA_MAJOR_VERSION=$(echo "$JAVA_VERSION" | cut -d'+' -f1 | cut -d'.' -f1) \
+  && ENCODED_JAVA_VERSION=$(echo "$JAVA_VERSION" | jq "@uri" -jRr) \
+  && CONVERTED_ARCH=$(arch | sed 's/x86_64/x64/') \
+  && wget --quiet https://github.com/adoptium/temurin"${JAVA_MAJOR_VERSION}"-binaries/releases/download/jdk-"${ENCODED_JAVA_VERSION}"-ea-beta/OpenJDK"${JAVA_MAJOR_VERSION}"U-jdk_"${CONVERTED_ARCH}"_linux_hotspot_ea_"${DASHED_JAVA_VERSION}".tar.gz -O /tmp/jdk.tar.gz \
+  && yum clean all \
+  && tar -xzf /tmp/jdk.tar.gz -C /opt/ \
+  && rm -f /tmp/jdk.tar.gz
 
-FROM almalinux:8.9
+ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
+
+# Generate smaller java runtime without unneeded files
+# for now we include the full module path to maintain compatibility
+# while still saving space (approx 200mb from the full distribution)
+# Arguments to jlink are specific to Java 21 jlink
+RUN jlink \
+      --add-modules ALL-MODULE-PATH \
+      --strip-java-debug-attributes \
+      --no-man-pages \
+      --no-header-files \
+      --compress zip-6 \
+      --output /javaruntime
+
+FROM registry.access.redhat.com/ubi9/ubi:9.3-1552
 
 ENV LANG C.UTF-8
 
 ARG TARGETARCH
 ARG COMMIT_SHA
 
-RUN dnf --setopt=install_weak_deps=0 --setopt=tsflags=nodocs install -y \
-	fontconfig \
-	freetype \
-	git-lfs \
-	unzip \
-	tzdata \
-	&& \
-    dnf clean all
+RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs -y \
+        fontconfig \
+        freetype \
+        git \
+        git-lfs \
+        unzip \
+        which \
+        tzdata \
+    && dnf clean --disableplugin=subscription-manager all
 
 ARG user=jenkins
 ARG group=jenkins
@@ -119,9 +136,6 @@ COPY jenkins.sh /usr/local/bin/jenkins.sh
 COPY jenkins-plugin-cli.sh /bin/jenkins-plugin-cli
 
 ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
-
-# from a derived Dockerfile, can use `RUN install-plugins.sh active.txt` to setup $REF/plugins from a support bundle
-COPY install-plugins.sh /usr/local/bin/install-plugins.sh
 
 # metadata labels
 LABEL \

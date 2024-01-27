@@ -1,19 +1,15 @@
-ARG JAVA_VERSION="17.0.8_7"
-ARG ALPINE_TAG=3.18.0
+ARG ALPINE_TAG=3.19.1
+ARG JAVA_VERSION=17.0.10_7
 FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-alpine AS jre-build
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
 # while still saving space (approx 200mb from the full distribution)
+# Arguments to jlink are specific to Java 17 jlink
 RUN if [ "$TARGETPLATFORM" != 'linux/arm/v7' ]; then \
-    case "$(jlink --version 2>&1)" in \
-      # jlink version 11 has less features than JDK17+
-      "11."*) strip_java_debug_flags="--strip-debug" ;; \
-      *) strip_java_debug_flags="--strip-java-debug-attributes" ;; \
-    esac; \
     jlink \
       --add-modules ALL-MODULE-PATH \
-      "$strip_java_debug_flags" \
+      --strip-java-debug-attributes \
       --no-man-pages \
       --no-header-files \
       --compress=2 \
@@ -77,10 +73,10 @@ RUN mkdir -p ${REF}/init.groovy.d
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION ${JENKINS_VERSION:-2.410}
+ENV JENKINS_VERSION ${JENKINS_VERSION:-2.428}
 
 # jenkins.war checksum, download will be validated using it
-ARG JENKINS_SHA=20e3436e1c05f1fa8c441d7fb41f2a797604194fd9f8e774acb74d47b6187e45
+ARG JENKINS_SHA=b4f596923eb37b93c3f5a21a6a32fc3bedd57d04a1b63186811c0ce8b3d9f07c
 
 # Can be used to customize where jenkins.war get downloaded from
 ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war
@@ -97,7 +93,7 @@ ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
 ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 RUN chown -R ${user} "$JENKINS_HOME" "$REF"
 
-ARG PLUGIN_CLI_VERSION=2.12.13
+ARG PLUGIN_CLI_VERSION=2.12.14
 ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
 RUN curl -fsSL ${PLUGIN_CLI_URL} -o /opt/jenkins-plugin-manager.jar
 

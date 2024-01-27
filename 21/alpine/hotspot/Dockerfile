@@ -1,38 +1,45 @@
-FROM almalinux:8.9 as jre-build
-ARG JAVA_VERSION=11.0.22_7
+ARG ALPINE_TAG=3.19.1
+ARG JAVA_VERSION=21.0.2_13
+FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-alpine AS jre-build
 
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+# Generate smaller java runtime without unneeded files
+# for now we include the full module path to maintain compatibility
+# while still saving space (approx 200mb from the full distribution)
+# Arguments to jlink are specific to Java 21 jlink
+RUN if [ "$TARGETPLATFORM" != 'linux/arm/v7' ]; then \
+    jlink \
+      --add-modules ALL-MODULE-PATH \
+      --strip-java-debug-attributes \
+      --no-man-pages \
+      --no-header-files \
+      --compress zip-6 \
+      --output /javaruntime; \
+  else \
+    cp -r /opt/java/openjdk /javaruntime; \
+  fi
 
-RUN set -x \
-  && dnf -y upgrade-minimal --security \
-  && dnf install -y ca-certificates jq wget \
-  && JAVA_MAJOR_VERSION=$(echo "$JAVA_VERSION" | awk -F'.' '{print $1}') \
-  && ENCODED_JAVA_VERSION=$(echo "$JAVA_VERSION" | tr '_' '+' | jq "@uri" -jRr) \
-  && JAVA_VERSION_FILENAME=$(echo "$JAVA_VERSION" | tr '_' '+') \
-  && CONVERTED_ARCH=$(arch | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/') \
-  && wget --quiet https://github.com/adoptium/temurin"${JAVA_MAJOR_VERSION}"-binaries/releases/download/jdk-"${ENCODED_JAVA_VERSION}"/OpenJDK"${JAVA_MAJOR_VERSION}"U-jdk_"${CONVERTED_ARCH}"_linux_hotspot_"${JAVA_VERSION}".tar.gz -O /tmp/jdk.tar.gz \
-  && mkdir -p /opt/jdk-"${JAVA_VERSION_FILENAME}" \
-  && tar -xzf /tmp/jdk.tar.gz -C /opt/jdk-"${JAVA_VERSION_FILENAME}" --strip-components=1 \
-  && rm -f /tmp/jdk.tar.gz \
-  && export PATH=/opt/jdk-"${JAVA_VERSION_FILENAME}"/bin:$PATH \
-  && jlink --add-modules ALL-MODULE-PATH --no-man-pages --compress=2 --output /javaruntime \
-  && dnf clean all
+FROM alpine:"${ALPINE_TAG}" AS build
 
-FROM almalinux:8.9
+RUN apk add --no-cache \
+    bash \
+    coreutils \
+    curl \
+    git \
+    git-lfs \
+    gnupg \
+    musl-locales \
+    musl-locales-lang \
+    openssh-client \
+    tini \
+    ttf-dejavu \
+    tzdata \
+    unzip \
+  && git lfs install
 
 ENV LANG C.UTF-8
 
 ARG TARGETARCH
 ARG COMMIT_SHA
-
-RUN dnf --setopt=install_weak_deps=0 --setopt=tsflags=nodocs install -y \
-	fontconfig \
-	freetype \
-	git-lfs \
-	unzip \
-	tzdata \
-	&& \
-    dnf clean all
 
 ARG user=jenkins
 ARG group=jenkins
@@ -52,8 +59,8 @@ ENV REF $REF
 # ensure you use the same uid
 RUN mkdir -p $JENKINS_HOME \
   && chown ${uid}:${gid} $JENKINS_HOME \
-  && groupadd -g ${gid} ${group} \
-  && useradd -N -d "$JENKINS_HOME" -u ${uid} -g ${gid} -l -m -s /bin/bash ${user}
+  && addgroup -g ${gid} ${group} \
+  && adduser -h "$JENKINS_HOME" -u ${uid} -G ${group} -s /bin/bash -D ${user}
 
 # Jenkins home directory is a volume, so configuration and build history
 # can be persisted and survive image upgrades
@@ -63,16 +70,6 @@ VOLUME $JENKINS_HOME
 # to set on a fresh new installation. Use it to bundle additional plugins
 # or config file with your custom jenkins Docker image.
 RUN mkdir -p ${REF}/init.groovy.d
-
-# Use tini as subreaper in Docker container to adopt zombie processes
-ARG TINI_VERSION=v0.19.0
-COPY tini_pub.gpg "${JENKINS_HOME}/tini_pub.gpg"
-RUN curl -fsSL "https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-${TARGETARCH}" -o /sbin/tini \
-  && curl -fsSL "https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-${TARGETARCH}.asc" -o /sbin/tini.asc \
-  && gpg --no-tty --import "${JENKINS_HOME}/tini_pub.gpg" \
-  && gpg --verify /sbin/tini.asc \
-  && rm -rf /sbin/tini.asc /root/.gnupg \
-  && chmod +x /sbin/tini
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
@@ -119,9 +116,6 @@ COPY jenkins.sh /usr/local/bin/jenkins.sh
 COPY jenkins-plugin-cli.sh /bin/jenkins-plugin-cli
 
 ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
-
-# from a derived Dockerfile, can use `RUN install-plugins.sh active.txt` to setup $REF/plugins from a support bundle
-COPY install-plugins.sh /usr/local/bin/install-plugins.sh
 
 # metadata labels
 LABEL \

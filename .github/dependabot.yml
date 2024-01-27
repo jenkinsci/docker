@@ -16,9 +16,8 @@ updates:
   labels:
   - dependencies
   ignore:
-  # Ignore proposals to update to new major versions of Java
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
   - dependency-name: "eclipse-temurin"
-    update-types: ["version-update:semver-major"]
 
 - package-ecosystem: docker
   directory: "11/alpine/hotspot"
@@ -32,9 +31,8 @@ updates:
   labels:
   - dependencies
   ignore:
-  # Ignore proposals to update to new major versions of Java
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
   - dependency-name: "eclipse-temurin"
-    update-types: ["version-update:semver-major"]
 
 # AlmaLinux
 
@@ -50,31 +48,16 @@ updates:
   labels:
   - dependencies
   ignore:
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
+  - dependency-name: "eclipse-temurin"
   # Ignore proposals to update to Alma Linux 9 or later
   - dependency-name: "almalinux"
-    update-types: ["version-update:semver-major"]
-
-# CentOS Linux
-
-- package-ecosystem: docker
-  directory: "11/centos/centos7/hotspot"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 2
-  target-branch: master
-  reviewers:
-  - slide
-  labels:
-  - dependencies
-  ignore:
-  # Ignore proposals to update to new major versions of Java
-  - dependency-name: "eclipse-temurin"
     update-types: ["version-update:semver-major"]
 
 # Debian Linux
 
 - package-ecosystem: docker
-  directory: "17/debian/bullseye/hotspot"
+  directory: "17/debian/bookworm/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
@@ -85,12 +68,11 @@ updates:
   labels:
   - dependencies
   ignore:
-  # Ignore proposals to update to new major versions of Java
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
   - dependency-name: "eclipse-temurin"
-    update-types: ["version-update:semver-major"]
 
 - package-ecosystem: docker
-  directory: "17/debian/bullseye-slim/hotspot"
+  directory: "17/debian/bookworm-slim/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
@@ -101,12 +83,11 @@ updates:
   labels:
   - dependencies
   ignore:
-  # Ignore proposals to update to new major versions of Java
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
   - dependency-name: "eclipse-temurin"
-    update-types: ["version-update:semver-major"]
 
 - package-ecosystem: docker
-  directory: "11/debian/bullseye/hotspot"
+  directory: "11/debian/bookworm/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
@@ -117,12 +98,11 @@ updates:
   labels:
   - dependencies
   ignore:
-  # Ignore proposals to update to new major versions of Java
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
   - dependency-name: "eclipse-temurin"
-    update-types: ["version-update:semver-major"]
 
 - package-ecosystem: docker
-  directory: "11/debian/bullseye-slim/hotspot"
+  directory: "11/debian/bookworm-slim/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
@@ -133,9 +113,8 @@ updates:
   labels:
   - dependencies
   ignore:
-  # Ignore proposals to update to new major versions of Java
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
   - dependency-name: "eclipse-temurin"
-    update-types: ["version-update:semver-major"]
 
 # RHEL UBI
 
@@ -151,9 +130,8 @@ updates:
   labels:
     - dependencies
   ignore:
-  # Ignore proposals to update to new major versions of Java
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
   - dependency-name: "eclipse-temurin"
-    update-types: ["version-update:semver-major"]
 
 - package-ecosystem: docker
   directory: "17/rhel/ubi9/hotspot"
@@ -167,19 +145,14 @@ updates:
   labels:
     - dependencies
   ignore:
-  # Ignore proposals to update to new major versions of Java
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
   - dependency-name: "eclipse-temurin"
-    update-types: ["version-update:semver-major"]
 
-# Windows
+# GitHub actions
 
-- package-ecosystem: docker
-  directory: "11/windows/windowsservercore-2019/hotspot"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 2
+- package-ecosystem: "github-actions"
   target-branch: master
-  reviewers:
-  - slide
-  labels:
-  - dependencies
+  directory: "/"
+  schedule:
+    # Check for updates to GitHub Actions every week
+    interval: "weekly"

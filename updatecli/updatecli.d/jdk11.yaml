@@ -1,0 +1,150 @@
+---
+name: Bump JDK11 version
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "{{ .github.branch }}"
+
+sources:
+  lastVersion:
+    kind: githubrelease
+    name: Get the latest Adoptium JDK11 version
+    spec:
+      owner: "adoptium"
+      repository: "temurin11-binaries"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      versionfilter:
+        kind: regex
+        pattern: "^jdk-11.(\\d*).(\\d*).(\\d*)(.(\\d*))+(\\d*)$"
+    transformers:
+      - trimprefix: "jdk-"
+      - replacer:
+          from: +
+          to: _
+
+conditions:
+  checkTemurinAlpineDockerImage:
+    kind: dockerimage
+    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-alpine" is available
+    disablesourceinput: true
+    spec:
+      architecture: amd64
+      image: eclipse-temurin
+      tag: '{{source "lastVersion" }}-jdk-alpine'
+  checkTemurinDebianDockerImages:
+    kind: dockerimage
+    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-jammy" is available
+    disablesourceinput: true
+    spec:
+      architectures:
+       - amd64
+       - arm64
+       - s390x
+       - linux/arm/v7
+      image: eclipse-temurin
+      tag: '{{source "lastVersion" }}-jdk-jammy'
+  checkTemurinNanoserver2019DockerImage:
+    kind: dockerimage
+    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-nanoserver-1809" is available
+    disablesourceinput: true
+    spec:
+      # architecture: amd64
+      image: eclipse-temurin
+      tag: '{{source "lastVersion" }}-jdk-nanoserver-1809'
+  checkTemurinWindowsCore2019DockerImage:
+    kind: dockerimage
+    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-windowsservercore-1809" is available
+    disablesourceinput: true
+    spec:
+      # architecture: amd64
+      image: eclipse-temurin
+      tag: '{{source "lastVersion" }}-jdk-windowsservercore-1809'
+  checkTemurinNanoserver2022DockerImage:
+    kind: dockerimage
+    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-nanoserver-ltsc2022" is available
+    disablesourceinput: true
+    spec:
+      # architecture: amd64
+      image: eclipse-temurin
+      tag: '{{source "lastVersion" }}-jdk-nanoserver-ltsc2022'
+  checkTemurinWindowsCore2022DockerImage:
+    kind: dockerimage
+    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-windowsservercore-18ltsc202209" is available
+    disablesourceinput: true
+    spec:
+      # architecture: amd64
+      image: eclipse-temurin
+      tag: '{{source "lastVersion" }}-jdk-windowsservercore-ltsc2022'
+
+targets:
+  setJDK11VersionDockerBake:
+    name: "Bump JDK11 version for Linux images in the docker-bake.hcl file"
+    kind: hcl
+    spec:
+      file: docker-bake.hcl
+      path: variable.JAVA11_VERSION.default
+    scmid: default
+  setJDK11VersionAlmaLinux8:
+    name: "Bump JDK11 version for Linux images in the Alma Linux 8 Dockerfile"
+    kind: dockerfile
+    spec:
+      file: 11/almalinux/almalinux8/hotspot/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
+  setJDK11VersionAlpine:
+    name: "Bump JDK11 version for Linux images in the Alpine Linux Dockerfile"
+    kind: dockerfile
+    spec:
+      file: 11/alpine/hotspot/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
+  setJDK11VersionDebian:
+    name: "Bump JDK11 version for Linux images in the Debian Dockerfile"
+    kind: dockerfile
+    spec:
+      file: 11/debian/bookworm/hotspot/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
+  setJDK11VersionDebianSlim:
+    name: "Bump JDK11 version for Linux images in the Debian Slim Dockerfile"
+    kind: dockerfile
+    spec:
+      file: 11/debian/bookworm-slim/hotspot/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
+  setJDK11VersionRhel:
+    name: "Bump JDK11 version for Linux images in the Rhel Dockerfile"
+    kind: dockerfile
+    spec:
+      file: 11/rhel/ubi8/hotspot/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
+
+actions:
+  default:
+    kind: github/pullrequest
+    scmid: default
+    title: Bump JDK11 version to {{ source "lastVersion" }}
+    spec:
+      labels:
+        - dependencies
+        - jdk11

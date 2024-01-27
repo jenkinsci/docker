@@ -1,14 +1,44 @@
-ARG JAVA_VERSION="17.0.8_7"
-ARG BULLSEYE_TAG=20230725
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-focal as jre-build
+ARG BOOKWORM_TAG=20240110
+FROM debian:bookworm-"${BOOKWORM_TAG}"-slim as jre-build
+ARG JAVA_VERSION=21.0.2_13
+ARG TARGETPLATFORM
 
-RUN jlink \
-  --add-modules ALL-MODULE-PATH \
-  --no-man-pages \
-  --compress=2 \
-  --output /javaruntime
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-FROM debian:bullseye-"${BULLSEYE_TAG}"
+## Example of preview (EA) jdk21 JAVA_VERSION values:
+# 21+35 (note: only one number before the "+")
+# 21.0.1+12
+## Example of preview (EA) release download link:
+# https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21%2B35-ea-beta/OpenJDK21U-jdk_x64_linux_hotspot_ea_21-0-35.tar.gz
+# https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.1%2B12-ea-beta/OpenJDK21U-jdk_x64_alpine-linux_hotspot_ea_21-0-1-12.tar.gz
+RUN set -x; apt-get update \
+  && apt-get install --no-install-recommends -y \
+    ca-certificates \
+    jq \
+    wget \
+  && DASHED_JAVA_VERSION=$(echo "$JAVA_VERSION" | sed -e 's/\./-/g' -e 's/+/-/' -e 's/21-35/21-0-35/') \
+  && JAVA_MAJOR_VERSION=$(echo "$JAVA_VERSION" | cut -d'+' -f1 | cut -d'.' -f1) \
+  && ENCODED_JAVA_VERSION=$(echo "$JAVA_VERSION" | jq "@uri" -jRr) \
+  && CONVERTED_ARCH=$(arch | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/') \
+  && wget --quiet https://github.com/adoptium/temurin"${JAVA_MAJOR_VERSION}"-binaries/releases/download/jdk-"${ENCODED_JAVA_VERSION}"-ea-beta/OpenJDK"${JAVA_MAJOR_VERSION}"U-jdk_"${CONVERTED_ARCH}"_linux_hotspot_ea_"${DASHED_JAVA_VERSION}".tar.gz -O /tmp/jdk.tar.gz \
+  && tar -xzf /tmp/jdk.tar.gz -C /opt/ \
+  && rm -f /tmp/jdk.tar.gz
+
+ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
+
+RUN if test "${TARGETPLATFORM}" != 'linux/arm/v7'; then \
+      jlink \
+        --add-modules ALL-MODULE-PATH \
+        --no-man-pages \
+        --compress=zip-6 \
+        --output /javaruntime; \
+    # It is acceptable to have a larger image in arm/v7 (arm 32 bits) environment.
+    # Because jlink fails with the error "jmods: Value too large for defined data type" error.
+    else  \
+      cp -r "/opt/jdk-${JAVA_VERSION}" /javaruntime; \
+    fi
+
+FROM debian:bookworm-"${BOOKWORM_TAG}"-slim
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
@@ -71,10 +101,10 @@ RUN mkdir -p ${REF}/init.groovy.d
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION ${JENKINS_VERSION:-2.410}
+ENV JENKINS_VERSION ${JENKINS_VERSION:-2.428}
 
 # jenkins.war checksum, download will be validated using it
-ARG JENKINS_SHA=20e3436e1c05f1fa8c441d7fb41f2a797604194fd9f8e774acb74d47b6187e45
+ARG JENKINS_SHA=b4f596923eb37b93c3f5a21a6a32fc3bedd57d04a1b63186811c0ce8b3d9f07c
 
 # Can be used to customize where jenkins.war get downloaded from
 ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war
@@ -91,7 +121,7 @@ ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
 ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 RUN chown -R ${user} "$JENKINS_HOME" "$REF"
 
-ARG PLUGIN_CLI_VERSION=2.12.13
+ARG PLUGIN_CLI_VERSION=2.12.14
 ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
 RUN curl -fsSL ${PLUGIN_CLI_URL} -o /opt/jenkins-plugin-manager.jar
 
@@ -117,11 +147,11 @@ ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
 # metadata labels
 LABEL \
-  org.opencontainers.image.vendor="Jenkins project" \
-  org.opencontainers.image.title="Official Jenkins Docker image" \
-  org.opencontainers.image.description="The Jenkins Continuous Integration and Delivery server" \
-  org.opencontainers.image.version="${JENKINS_VERSION}" \
-  org.opencontainers.image.url="https://www.jenkins.io/" \
-  org.opencontainers.image.source="https://github.com/jenkinsci/docker" \
-  org.opencontainers.image.revision="${COMMIT_SHA}" \
-  org.opencontainers.image.licenses="MIT"
+    org.opencontainers.image.vendor="Jenkins project" \
+    org.opencontainers.image.title="Official Jenkins Docker image" \
+    org.opencontainers.image.description="The Jenkins Continuous Integration and Delivery server" \
+    org.opencontainers.image.version="${JENKINS_VERSION}" \
+    org.opencontainers.image.url="https://www.jenkins.io/" \
+    org.opencontainers.image.source="https://github.com/jenkinsci/docker" \
+    org.opencontainers.image.revision="${COMMIT_SHA}" \
+    org.opencontainers.image.licenses="MIT"
