@@ -1,4 +1,4 @@
-ARG JAVA_VERSION=17.0.9_9
+ARG JAVA_VERSION=17.0.10_7
 FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-ubi9-minimal as jre-build
 
 # Generate smaller java runtime without unneeded files
@@ -10,7 +10,7 @@ RUN jlink \
          --compress=2 \
          --output /javaruntime
 
-FROM registry.access.redhat.com/ubi9/ubi:9.3-1476
+FROM registry.access.redhat.com/ubi9/ubi:9.3-1552
 
 ENV LANG C.UTF-8
 
