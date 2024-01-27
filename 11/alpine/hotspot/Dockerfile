@@ -5,6 +5,7 @@ FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-alpine AS jre-build
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
 # while still saving space (approx 200mb from the full distribution)
+# Arguments to jlink are specific to Java 11 jlink
 RUN jlink \
          --add-modules ALL-MODULE-PATH \
          --strip-debug \
