@@ -53,13 +53,6 @@ conditions:
         - linux/arm/v7
       image: eclipse-temurin
       tag: '{{source "lastVersion" }}-jdk-focal'
-  checkTemurinNanoserver2019DockerImage:
-    kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-nanoserver-1809" is available
-    disablesourceinput: true
-    spec:
-      image: eclipse-temurin
-      tag: '{{source "lastVersion" }}-jdk-nanoserver-1809'
   checkTemurinWindowsCore2019DockerImage:
     kind: dockerimage
     name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-windowsservercore-1809" is available
@@ -67,20 +60,6 @@ conditions:
     spec:
       image: eclipse-temurin
       tag: '{{source "lastVersion" }}-jdk-windowsservercore-1809'
-  checkTemurinNanoserver2022DockerImage:
-    kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-nanoserver-ltsc2022" is available
-    disablesourceinput: true
-    spec:
-      image: eclipse-temurin
-      tag: '{{source "lastVersion" }}-jdk-nanoserver-ltsc2022'
-  checkTemurinWindowsCore2022DockerImage:
-    kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-windowsservercore-18ltsc202209" is available
-    disablesourceinput: true
-    spec:
-      image: eclipse-temurin
-      tag: '{{source "lastVersion" }}-jdk-windowsservercore-ltsc2022'
 
 targets:
   setJDK17VersionDockerBake:
@@ -126,14 +105,21 @@ targets:
         keyword: ARG
         matcher: JAVA_VERSION
     scmid: default
-  setJDK17VersionWindows:
-    name: "Bump JDK17 version for Linux images in the Windows Dockerfile"
+  setJDK17VersionWindowsDockerImage:
+    name: "Bump default JDK17 version for Linux images in the Windows Dockerfile"
     kind: dockerfile
     spec:
-      file: 17/windows/windowsservercore-2019/hotspot/Dockerfile
+      file: windows/windowsservercore/hotspot/Dockerfile
       instruction:
         keyword: ARG
         matcher: JAVA_VERSION
+    scmid: default
+  setJDK17VersionWindowsDockerCompose:
+    name: "Bump JDK17 version in build-windows.yaml"
+    kind: yaml
+    spec:
+      file: build-windows.yaml
+      key: $.services.jdk17.build.args.JAVA_VERSION
     scmid: default
 
 actions:
