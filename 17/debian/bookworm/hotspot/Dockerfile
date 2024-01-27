@@ -117,11 +117,11 @@ ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
 # metadata labels
 LABEL \
-  org.opencontainers.image.vendor="Jenkins project" \
-  org.opencontainers.image.title="Official Jenkins Docker image" \
-  org.opencontainers.image.description="The Jenkins Continuous Integration and Delivery server" \
-  org.opencontainers.image.version="${JENKINS_VERSION}" \
-  org.opencontainers.image.url="https://www.jenkins.io/" \
-  org.opencontainers.image.source="https://github.com/jenkinsci/docker" \
-  org.opencontainers.image.revision="${COMMIT_SHA}" \
-  org.opencontainers.image.licenses="MIT"
+    org.opencontainers.image.vendor="Jenkins project" \
+    org.opencontainers.image.title="Official Jenkins Docker image" \
+    org.opencontainers.image.description="The Jenkins Continuous Integration and Delivery server" \
+    org.opencontainers.image.version="${JENKINS_VERSION}" \
+    org.opencontainers.image.url="https://www.jenkins.io/" \
+    org.opencontainers.image.source="https://github.com/jenkinsci/docker" \
+    org.opencontainers.image.revision="${COMMIT_SHA}" \
+    org.opencontainers.image.licenses="MIT"
