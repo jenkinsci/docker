@@ -1,7 +1,7 @@
 # escape=`
 # hadolint shell=powershell
 
-ARG JAVA_VERSION=17.0.9_9
+ARG JAVA_VERSION=17.0.10_7
 ARG WINDOWS_VERSION=ltsc2019
 ARG TOOLS_WINDOWS_VERSION=1809
 FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-windowsservercore-"${TOOLS_WINDOWS_VERSION}" AS jdk-core

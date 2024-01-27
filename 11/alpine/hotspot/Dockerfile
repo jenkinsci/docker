@@ -1,5 +1,5 @@
 ARG ALPINE_TAG=3.19.0
-ARG JAVA_VERSION=11.0.21_9
+ARG JAVA_VERSION=11.0.22_7
 FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-alpine AS jre-build
 
 # Generate smaller java runtime without unneeded files

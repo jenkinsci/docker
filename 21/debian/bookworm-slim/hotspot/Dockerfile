@@ -1,5 +1,5 @@
 ARG BOOKWORM_TAG=20240110
-ARG JAVA_VERSION=21.0.1_12
+ARG JAVA_VERSION=21.0.2_13
 FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-jammy as jre-build
 
 RUN if test "${TARGETPLATFORM}" != 'linux/arm/v7'; then \
