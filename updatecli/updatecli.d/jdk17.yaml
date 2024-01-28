@@ -58,6 +58,7 @@ conditions:
     name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-nanoserver-1809" is available
     disablesourceinput: true
     spec:
+      # architecture: amd64
       image: eclipse-temurin
       tag: '{{source "lastVersion" }}-jdk-nanoserver-1809'
   checkTemurinWindowsCore2019DockerImage:
@@ -65,6 +66,7 @@ conditions:
     name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-windowsservercore-1809" is available
     disablesourceinput: true
     spec:
+      # architecture: amd64
       image: eclipse-temurin
       tag: '{{source "lastVersion" }}-jdk-windowsservercore-1809'
   checkTemurinNanoserver2022DockerImage:
@@ -72,6 +74,7 @@ conditions:
     name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-nanoserver-ltsc2022" is available
     disablesourceinput: true
     spec:
+      # architecture: amd64
       image: eclipse-temurin
       tag: '{{source "lastVersion" }}-jdk-nanoserver-ltsc2022'
   checkTemurinWindowsCore2022DockerImage:
@@ -79,6 +82,7 @@ conditions:
     name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-windowsservercore-18ltsc202209" is available
     disablesourceinput: true
     spec:
+      # architecture: amd64
       image: eclipse-temurin
       tag: '{{source "lastVersion" }}-jdk-windowsservercore-ltsc2022'
 
