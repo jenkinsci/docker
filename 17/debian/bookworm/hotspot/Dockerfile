@@ -7,12 +7,12 @@ FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-jammy as jre-build
 # while still saving space (approx 200mb from the full distribution)
 # Arguments to jlink are specific to Java 17 jlink
 RUN jlink \
-      --add-modules ALL-MODULE-PATH \
-      --strip-java-debug-attributes \
-      --no-man-pages \
-      --no-header-files \
-      --compress=2 \
-      --output /javaruntime
+        --add-modules ALL-MODULE-PATH \
+        --strip-java-debug-attributes \
+        --no-man-pages \
+        --no-header-files \
+        --compress=2 \
+        --output /javaruntime
 
 FROM debian:bookworm-"${BOOKWORM_TAG}"
 
