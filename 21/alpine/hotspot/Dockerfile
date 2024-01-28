@@ -8,12 +8,12 @@ FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-alpine AS jre-build
 # Arguments to jlink are specific to Java 21 jlink
 RUN if [ "$TARGETPLATFORM" != 'linux/arm/v7' ]; then \
     jlink \
-      --add-modules ALL-MODULE-PATH \
-      --strip-java-debug-attributes \
-      --no-man-pages \
-      --no-header-files \
-      --compress zip-6 \
-      --output /javaruntime; \
+        --add-modules ALL-MODULE-PATH \
+        --strip-java-debug-attributes \
+        --no-man-pages \
+        --no-header-files \
+        --compress zip-6 \
+        --output /javaruntime; \
   else \
     cp -r /opt/java/openjdk /javaruntime; \
   fi
