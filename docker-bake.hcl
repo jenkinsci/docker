@@ -50,11 +50,11 @@ group "linux-ppc64le" {
 # ---- variables ----
 
 variable "JENKINS_VERSION" {
-  default = "2.419"
+  default = "2.442"
 }
 
 variable "JENKINS_SHA" {
-  default = "895a90dd5929a38c8cc8c0342478d27a6e01470cd7e8da8c4ae51f26aa1bdf85"
+  default = "b0bc35b59ca923629cc440d79bebfa78d67cd0448c7a485168fc2719ac445e7b"
 }
 
 variable "REGISTRY" {
