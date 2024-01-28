@@ -8,12 +8,12 @@ FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-jammy as jre-build
 # Arguments to jlink are specific to Java 21 jlink
 RUN if test "${TARGETPLATFORM}" != 'linux/arm/v7'; then \
       jlink \
-      --add-modules ALL-MODULE-PATH \
-      --strip-java-debug-attributes \
-      --no-man-pages \
-      --no-header-files \
-      --compress zip-6 \
-      --output /javaruntime; \
+        --add-modules ALL-MODULE-PATH \
+        --strip-java-debug-attributes \
+        --no-man-pages \
+        --no-header-files \
+        --compress zip-6 \
+        --output /javaruntime; \
     # It is acceptable to have a larger image in arm/v7 (arm 32 bits) environment.
     # Because jlink fails with the error "jmods: Value too large for defined data type" error.
     else  \
