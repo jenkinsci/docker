@@ -9,11 +9,9 @@ group "linux" {
     "debian_jdk11",
     "debian_jdk17",
     "debian_jdk21",
-    "debian_jdk21_preview",
     "debian_slim_jdk11",
     "debian_slim_jdk17",
     "debian_slim_jdk21",
-    "debian_slim_jdk21_preview",
     "rhel_ubi8_jdk11",
     "rhel_ubi9_jdk17",
     "rhel_ubi9_jdk21",
@@ -23,9 +21,11 @@ group "linux" {
 group "linux-arm64" {
   targets = [
     "almalinux_jdk11",
+    "alpine_jdk21",
     "debian_jdk11",
     "debian_jdk17",
     "debian_jdk21",
+    "debian_slim_jdk21",
     "rhel_ubi8_jdk11",
     "rhel_ubi9_jdk17",
     "rhel_ubi9_jdk21",
@@ -35,6 +35,8 @@ group "linux-arm64" {
 group "linux-s390x" {
   targets = [
     "debian_jdk11",
+    "debian_jdk17",
+    "debian_jdk21",
   ]
 }
 
@@ -42,8 +44,9 @@ group "linux-ppc64le" {
   targets = [
     "debian_jdk11",
     "debian_jdk17",
-    "debian_jdk21_preview",
+    "debian_jdk21",
     "rhel_ubi9_jdk17",
+    "rhel_ubi9_jdk21",
   ]
 }
 
@@ -95,12 +98,6 @@ variable "JAVA11_VERSION" {
 
 variable "JAVA17_VERSION" {
   default = "17.0.10_7"
-}
-
-# not passed through currently as inconsistent versions are published (2023-08-14)
-# alpine not published on 34, but x64 on 35 isn't published for linux
-variable "JAVA21_PREVIEW_VERSION" {
-  default = "21.0.1+12"
 }
 
 variable "JAVA21_VERSION" {
@@ -264,7 +261,7 @@ target "debian_jdk17" {
     tag_lts(true, "lts"),
     tag_lts(true, "lts-jdk17")
   ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le"]
+  platforms = ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"]
 }
 
 target "debian_jdk21" {
@@ -285,30 +282,7 @@ target "debian_jdk21" {
     tag_lts(false, "lts-jdk21"),
     tag_lts(true, "lts-jdk21")
   ]
-  ## TODO: restore architectures when available for https://hub.docker.com/_/eclipse-temurin/tags?page=1&name=21-jdk-jammy
-  # platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/arm/v7"]
-  platforms = ["linux/amd64", "linux/arm64"]
-}
-
-target "debian_jdk21_preview" {
-  dockerfile = "21/debian/bookworm/hotspot/preview/Dockerfile"
-  context    = "."
-  args = {
-    JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
-    COMMIT_SHA         = COMMIT_SHA
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    BOOKWORM_TAG       = BOOKWORM_TAG
-    JAVA_VERSION       = JAVA21_PREVIEW_VERSION
-  }
-  tags = [
-    tag(true, "jdk21-preview"),
-    tag_weekly(false, "latest-jdk21-preview"),
-    tag_weekly(false, "jdk21-preview"),
-    tag_lts(false, "lts-jdk21-preview"),
-    tag_lts(true, "lts-jdk21-preview")
-  ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x", "linux/arm/v7"]
+  platforms = ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"]
 }
 
 target "debian_slim_jdk11" {
@@ -372,25 +346,6 @@ target "debian_slim_jdk21" {
   platforms = ["linux/amd64", "linux/arm64"]
 }
 
-target "debian_slim_jdk21_preview" {
-  dockerfile = "21/debian/bookworm-slim/hotspot/preview/Dockerfile"
-  context    = "."
-  args = {
-    JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
-    COMMIT_SHA         = COMMIT_SHA
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    BOOKWORM_TAG       = BOOKWORM_TAG
-    JAVA_VERSION       = JAVA21_PREVIEW_VERSION
-  }
-  tags = [
-    tag(true, "slim-jdk21-preview"),
-    tag_weekly(false, "slim-jdk21-preview"),
-    tag_lts(false, "lts-slim-jdk21-preview"),
-  ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x", "linux/arm/v7"]
-}
-
 target "rhel_ubi8_jdk11" {
   dockerfile = "11/rhel/ubi8/hotspot/Dockerfile"
   context    = "."
@@ -437,13 +392,13 @@ target "rhel_ubi9_jdk21" {
     JENKINS_SHA        = JENKINS_SHA
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    JAVA_VERSION       = JAVA21_PREVIEW_VERSION
+    JAVA_VERSION       = JAVA21_VERSION
   }
   tags = [
-    tag(true, "rhel-ubi9-jdk21-preview"),
-    tag_weekly(false, "rhel-ubi9-jdk21-preview"),
-    tag_lts(false, "lts-rhel-ubi9-jdk21-preview"),
-    tag_lts(true, "lts-rhel-ubi9-jdk21-preview")
+    tag(true, "rhel-ubi9-jdk21"),
+    tag_weekly(false, "rhel-ubi9-jdk21"),
+    tag_lts(false, "lts-rhel-ubi9-jdk21"),
+    tag_lts(true, "lts-rhel-ubi9-jdk21")
   ]
   platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le"]
 }

@@ -1,5 +1,5 @@
 ---
-name: Bump JDK21 version for all Linux images
+name: Bump JDK21 version
 
 scms:
   default:
@@ -12,40 +12,76 @@ scms:
       token: "{{ requiredEnv .github.token }}"
       username: "{{ .github.username }}"
       branch: "{{ .github.branch }}"
-  temurin21-binaries:
-    kind: "github"
-    spec:
-      user: "{{ .github.user }}"
-      email: "{{ .github.email }}"
-      owner: "adoptium"
-      repository: "temurin21-binaries"
-      token: '{{ requiredEnv .github.token }}'
-      branch: "main"
 
 sources:
-  getLatestJDK21Version:
+  lastVersion:
+    kind: githubrelease
     name: Get the latest Adoptium JDK21 version
-    kind: gittag
-    scmid: temurin21-binaries
     spec:
+      owner: "adoptium"
+      repository: "temurin21-binaries"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
       versionfilter:
         kind: regex
-        pattern: "\\d$"
+        pattern: "^jdk-21.(\\d*).(\\d*).(\\d*)(.(\\d*))+(\\d*)$"
     transformers:
       - trimprefix: "jdk-"
       - replacer:
-          from: "+"
-          to: "_"
+          from: +
+          to: _
 
 conditions:
-  checkIfReleaseIsAvailable:
-    kind: shell
+  checkTemurinAlpineDockerImage:
+    kind: dockerimage
+    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-alpine" is available
+    disablesourceinput: true
     spec:
-      command: bash ./updatecli/scripts/check-jdk.sh # source input value passed as argument
-    transformers:
-      - replacer:
-          from: "_"
-          to: "+"
+      image: eclipse-temurin
+      tag: '{{source "lastVersion" }}-jdk-alpine'
+  checkTemurinDebianDockerImages:
+    kind: dockerimage
+    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-focal" is available
+    disablesourceinput: true
+    spec:
+      architectures:
+        - amd64
+        - arm64
+        - s390x
+      image: eclipse-temurin
+      tag: '{{source "lastVersion" }}-jdk-focal'
+  checkTemurinNanoserver2019DockerImage:
+    kind: dockerimage
+    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-nanoserver-1809" is available
+    disablesourceinput: true
+    spec:
+      # architecture: amd64
+      image: eclipse-temurin
+      tag: '{{source "lastVersion" }}-jdk-nanoserver-1809'
+  checkTemurinWindowsCore2019DockerImage:
+    kind: dockerimage
+    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-windowsservercore-1809" is available
+    disablesourceinput: true
+    spec:
+      # architecture: amd64
+      image: eclipse-temurin
+      tag: '{{source "lastVersion" }}-jdk-windowsservercore-1809'
+  checkTemurinNanoserver2022DockerImage:
+    kind: dockerimage
+    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-nanoserver-ltsc2022" is available
+    disablesourceinput: true
+    spec:
+      # architecture: amd64
+      image: eclipse-temurin
+      tag: '{{source "lastVersion" }}-jdk-nanoserver-ltsc2022'
+  checkTemurinWindowsCore2022DockerImage:
+    kind: dockerimage
+    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-windowsservercore-18ltsc202209" is available
+    disablesourceinput: true
+    spec:
+      # architecture: amd64
+      image: eclipse-temurin
+      tag: '{{source "lastVersion" }}-jdk-windowsservercore-ltsc2022'
 
 targets:
   setJDK21VersionDockerBake:
@@ -61,30 +97,42 @@ targets:
     spec:
       file: 21/alpine/hotspot/Dockerfile
       instruction:
-        keyword: "ARG"
-        matcher: "JAVA_VERSION"
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
   setJDK21VersionDebian:
     name: "Bump JDK21 version for Linux images in the Debian Dockerfile"
     kind: dockerfile
     spec:
       file: 21/debian/bookworm/hotspot/Dockerfile
       instruction:
-        keyword: "ARG"
-        matcher: "JAVA_VERSION"
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
   setJDK21VersionDebianSlim:
     name: "Bump JDK21 version for Linux images in the Debian Slim Dockerfile"
     kind: dockerfile
     spec:
       file: 21/debian/bookworm-slim/hotspot/Dockerfile
       instruction:
-        keyword: "ARG"
-        matcher: "JAVA_VERSION"
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
+  setJDK21VersionRhel:
+    name: "Bump JDK21 version for Linux images in the Rhel Dockerfile"
+    kind: dockerfile
+    spec:
+      file: 21/rhel/ubi9/hotspot/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
 
 actions:
   default:
     kind: github/pullrequest
     scmid: default
-    title: Bump JDK21 version to {{ source "getLatestJDK21Version" }}
+    title: Bump JDK21 version to {{ source "lastVersion" }}
     spec:
       labels:
         - dependencies

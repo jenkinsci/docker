@@ -6,17 +6,13 @@ FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-alpine AS jre-build
 # for now we include the full module path to maintain compatibility
 # while still saving space (approx 200mb from the full distribution)
 # Arguments to jlink are specific to Java 21 jlink
-RUN if [ "$TARGETPLATFORM" != 'linux/arm/v7' ]; then \
-    jlink \
+RUN jlink \
         --add-modules ALL-MODULE-PATH \
         --strip-java-debug-attributes \
         --no-man-pages \
         --no-header-files \
         --compress zip-6 \
-        --output /javaruntime; \
-  else \
-    cp -r /opt/java/openjdk /javaruntime; \
-  fi
+        --output /javaruntime
 
 FROM alpine:"${ALPINE_TAG}" AS build
 
