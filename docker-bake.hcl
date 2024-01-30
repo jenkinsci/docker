@@ -43,10 +43,7 @@ group "linux-ppc64le" {
     "debian_jdk11",
     "debian_jdk17",
     "debian_jdk21",
-    "debian_slim_jdk17",
-    "debian_slim_jdk21",
     "rhel_ubi9_jdk17",
-    "rhel_ubi9_jdk21"
   ]
 }
 
@@ -353,7 +350,7 @@ target "debian_slim_jdk17" {
     tag_lts(false, "lts-slim-jdk17"),
     tag_lts(true, "lts-slim"),
   ]
-  platforms = ["linux/amd64", "linux/ppc64le"]
+  platforms = ["linux/amd64"]
 }
 
 target "debian_slim_jdk21" {
@@ -372,7 +369,7 @@ target "debian_slim_jdk21" {
     tag_weekly(false, "slim-jdk21"),
     tag_lts(false, "lts-slim-jdk21"),
   ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le"]
+  platforms = ["linux/amd64", "linux/arm64"]
 }
 
 target "debian_slim_jdk21_preview" {
