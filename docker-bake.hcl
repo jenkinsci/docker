@@ -77,7 +77,7 @@ variable "LATEST_LTS" {
 }
 
 variable "PLUGIN_CLI_VERSION" {
-  default = "2.12.14"
+  default = "2.12.15"
 }
 
 variable "COMMIT_SHA" {
@@ -105,7 +105,7 @@ variable "JAVA21_VERSION" {
 }
 
 variable "BOOKWORM_TAG" {
-  default = "20240110"
+  default = "20240130"
 }
 
 # ----  user-defined functions ----
