@@ -94,24 +94,6 @@ conditions:
       instruction:
         keyword: "ARG"
         matcher: "BOOKWORM_TAG"
-  testDockerfileArgJDK21Preview:
-    name: "Does the Dockerfile have an ARG instruction for the Debian Bookworm Linux version?"
-    kind: dockerfile
-    disablesourceinput: true
-    spec:
-      file: 21/debian/bookworm/hotspot/preview/Dockerfile
-      instruction:
-        keyword: "ARG"
-        matcher: "BOOKWORM_TAG"
-  testDockerfileArgJDK21SlimPreview:
-    name: "Does the Dockerfile have an ARG instruction for the Debian Bookworm Linux version?"
-    kind: dockerfile
-    disablesourceinput: true
-    spec:
-      file: 21/debian/bookworm-slim/hotspot/preview/Dockerfile
-      instruction:
-        keyword: "ARG"
-        matcher: "BOOKWORM_TAG"
   testVersionInBakeFile:
     name: "Does the bake file have variable BOOKWORM_TAG"
     kind: file
@@ -177,26 +159,6 @@ targets:
     sourceid: bookwormLatestVersion
     spec:
       file: 21/debian/bookworm-slim/hotspot/Dockerfile
-      instruction:
-        keyword: "ARG"
-        matcher: "BOOKWORM_TAG"
-    scmid: default
-  updateDockerfileJDK21Preview:
-    name: "Update the value of the base image (ARG BOOKWORM_TAG) in the Dockerfile"
-    kind: dockerfile
-    sourceid: bookwormLatestVersion
-    spec:
-      file: 21/debian/bookworm/hotspot/preview/Dockerfile
-      instruction:
-        keyword: "ARG"
-        matcher: "BOOKWORM_TAG"
-    scmid: default
-  updateDockerfileJDK21SlimPreview:
-    name: "Update the value of the base image (ARG BOOKWORM_TAG) in the Dockerfile"
-    kind: dockerfile
-    sourceid: bookwormLatestVersion
-    spec:
-      file: 21/debian/bookworm-slim/hotspot/preview/Dockerfile
       instruction:
         keyword: "ARG"
         matcher: "BOOKWORM_TAG"

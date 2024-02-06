@@ -49,7 +49,6 @@ conditions:
         - amd64
         - arm64
         - s390x
-        - linux/arm/v7
       image: eclipse-temurin
       tag: '{{source "lastVersion" }}-jdk-jammy'
   checkTemurinNanoserver2019DockerImage:

@@ -50,7 +50,6 @@ conditions:
         - amd64
         - arm64
         - s390x
-        - linux/arm/v7
       image: eclipse-temurin
       tag: '{{source "lastVersion" }}-jdk-focal'
   checkTemurinNanoserver2019DockerImage:
