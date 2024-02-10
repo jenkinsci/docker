@@ -179,5 +179,5 @@ function retry_command() {
     echo "$(date -u '+%T') Failed in the last attempt ($*)" 1>&2
   fi
 
-  return $exitCode
+  
 }
