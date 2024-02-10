@@ -176,7 +176,7 @@ function retry_command() {
 
   if [[ $exitCode != 0 ]]
   then
-    echo "$(date -u '+%T') Failed in the last attempt ($*)" 1>&2
+    echo "$(date -u '+
   fi
 
   
