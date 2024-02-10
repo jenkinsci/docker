@@ -5,7 +5,7 @@ listOfProperties << buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToK
 
 // Only master branch will run on a timer basis
 if (env.BRANCH_NAME.trim() == 'master') {
-    listOfProperties << pipelineTriggers([cron('''H H/6 * * 0-2,4-6
+    listOfProperties << pipelineTriggers([cron('''H H/6 * * 0-2,5-6
 H 6,21 * * 3''')])
 }
 
