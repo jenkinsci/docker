@@ -178,6 +178,8 @@ FROM jenkins/jenkins:lts-jdk17
 COPY --chown=jenkins:jenkins custom.groovy /usr/share/jenkins/ref/init.groovy.d/custom.groovy
 ```
 
+If you need to maintain the entire init.groov.d directory and have a persistent JENKINS_HOME you may run the docker image with `-e PRE_CLEAR_INIT_GROOVY_D=true`
+
 ## Preinstalling plugins
 
 ### Install plugins
