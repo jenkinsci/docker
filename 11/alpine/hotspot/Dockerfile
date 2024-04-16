@@ -1,7 +1,9 @@
 ARG ALPINE_TAG=3.19.1
+ARG JAVA_VERSION=11.0.22_7
+
 FROM alpine:"${ALPINE_TAG}" AS jre-build
 
-ARG JAVA_VERSION=11.0.22_7
+ARG JAVA_VERSION
 
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
