@@ -10,7 +10,8 @@ RUN apt-get update \
   && apt-get install --no-install-recommends -y \
     ca-certificates \
     jq \
-    wget
+    wget \
+  && rm -rf /var/lib/apt/lists/*
 RUN DASHED_JAVA_VERSION=$(echo "$JAVA_VERSION" | sed -e 's/\./-/g' -e 's/+/-/') \
   && JAVA_MAJOR_VERSION=$(echo "$JAVA_VERSION" | cut -d'+' -f1 | cut -d'.' -f1) \
   && ENCODED_JAVA_VERSION=$(echo "$JAVA_VERSION" | jq "@uri" -jRr) \
