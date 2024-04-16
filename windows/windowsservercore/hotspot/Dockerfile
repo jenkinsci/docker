@@ -4,14 +4,56 @@
 ARG JAVA_VERSION=17.0.10_7
 ARG WINDOWS_VERSION=ltsc2019
 ARG TOOLS_WINDOWS_VERSION=1809
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-windowsservercore-"${TOOLS_WINDOWS_VERSION}" AS jdk-core
 
-FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}"
+FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS jre-build
+ARG JAVA_VERSION
+
+# $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+
+## Example of GA jdk21 JAVA_VERSION values:
+# 21+35 (note: only one number before the "+")
+# 21.0.2+13
+## Example of GA release download links:
+# https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.2%2B13/OpenJDK21U-jdk_x64_windows_hotspot_21.0.2_13.msi
+
+RUN New-Item -ItemType Directory -Path C:\temp | Out-Null ; `
+    $dashedJavaVersion = $env:JAVA_VERSION.Replace('+', '_') ; `
+    $javaMajorVersion = $env:JAVA_VERSION.Split('+')[0].Split('.')[0] ; `
+    $encodedJavaVersion = [uri]::EscapeDataString($env:JAVA_VERSION) ; `
+    $msiUrl = 'https://github.com/adoptium/temurin{0}-binaries/releases/download/jdk-{1}/OpenJDK{0}U-jdk_x64_windows_hotspot_{3}.msi' -f $javaMajorVersion, $encodedJavaVersion, $convertedArch, $dashedJavaVersion ; `
+    Invoke-WebRequest $msiUrl -OutFile 'C:\temp\jdk.msi' ; `
+    $proc = Start-Process -FilePath 'msiexec.exe' -ArgumentList '/i', 'C:\temp\jdk.msi', '/L*V', 'C:\temp\OpenJDK.log', '/quiet', 'ADDLOCAL=FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome',  "INSTALLDIR=C:\openjdk-$javaMajorVersion" -Wait -Passthru ; `
+    $proc.WaitForExit() ; `
+    if ($proc.ExitCode -ne 0) { `
+        Write-Host 'FAILED installing MSI!' ; `
+        exit 1 ; `
+    }; `
+    Remove-Item -Path C:\temp -Recurse | Out-Null
+
+RUN Write-Host 'javac --version' ; javac --version ; `
+    Write-Host 'java --version' ; java --version
+
+RUN $version = (jlink --version) ; `
+    $stripJavaDebugFlags = '--strip-java-debug-attributes' ; `
+    # jlink version 11 has less features than JDK17+
+    if ($version.StartsWith('11')) { `
+        $stripJavaDebugFlags = '--strip-debug' ; `
+    } `
+    & jlink `
+    --add-modules ALL-MODULE-PATH `
+    $stripJavaDebugFlags `
+    --no-man-pages `
+    --no-header-files `
+    --compress=2 `
+    --output /javaruntime
+
+FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS controller
 
 ARG JAVA_HOME="C:/openjdk-17"
 ENV JAVA_HOME=${JAVA_HOME}
 
-COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
+COPY --from=jre-build $JAVA_HOME $JAVA_HOME
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
