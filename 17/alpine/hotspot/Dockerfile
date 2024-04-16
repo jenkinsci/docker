@@ -5,14 +5,12 @@ ARG JAVA_VERSION=17.0.10_7
 
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
-RUN apk update \
-  && apk add \
+RUN apk add --no-cache \
     ca-certificates \
     jq \
     wget
 RUN DASHED_JAVA_VERSION=$(echo "$JAVA_VERSION" | sed -e 's/\./-/g' -e 's/+/-/') \
   && JAVA_MAJOR_VERSION=$(echo "$JAVA_VERSION" | cut -d'+' -f1 | cut -d'.' -f1) \
-  && ENCODED_JAVA_VERSION=$(echo "$JAVA_VERSION" | jq "@uri" -jRr) \
   && ARCHIVE_DIRECTORY=$(echo "$JAVA_VERSION" | sed -e 's/_/+/') \
   && ENCODED_ARCHIVE_DIRECTORY=$(echo "$ARCHIVE_DIRECTORY" | jq "@uri" -jRr) \
   && CONVERTED_ARCH=$(arch | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/') \
