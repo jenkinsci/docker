@@ -8,12 +8,11 @@ RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=
     ca-certificates \
     jq \
     wget \
-    && dnf clean --disableplugin=subscription-manager all \
+    && dnf clean --disableplugin=subscription-manager all
 RUN DASHED_JAVA_VERSION=${JAVA_VERSION//./-} \
   && DASHED_JAVA_VERSION=${DASHED_JAVA_VERSION//+/-} \
   && JAVA_MAJOR_VERSION=${JAVA_VERSION%%+*} \
   && JAVA_MAJOR_VERSION=${JAVA_MAJOR_VERSION%%.*} \
-  && ENCODED_JAVA_VERSION=$(echo "$JAVA_VERSION" | jq "@uri" -jRr) \
   && ARCHIVE_DIRECTORY=${JAVA_VERSION//_/+} \
   && ENCODED_ARCHIVE_DIRECTORY=$(echo "$ARCHIVE_DIRECTORY" | jq "@uri" -jRr) \
   && CONVERTED_ARCH=$(arch | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/') \
