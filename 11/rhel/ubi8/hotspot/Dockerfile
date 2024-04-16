@@ -8,11 +8,13 @@ RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=
     ca-certificates \
     jq \
     wget \
-    && dnf clean --disableplugin=subscription-manager all
-RUN DASHED_JAVA_VERSION=$(echo "$JAVA_VERSION" | sed -e 's/\./-/g' -e 's/+/-/') \
-  && JAVA_MAJOR_VERSION=$(echo "$JAVA_VERSION" | cut -d'+' -f1 | cut -d'.' -f1) \
+    && dnf clean --disableplugin=subscription-manager all \
+RUN DASHED_JAVA_VERSION=${JAVA_VERSION//./-} \
+  && DASHED_JAVA_VERSION=${DASHED_JAVA_VERSION//+/-} \
+  && JAVA_MAJOR_VERSION=${JAVA_VERSION%%+*} \
+  && JAVA_MAJOR_VERSION=${JAVA_MAJOR_VERSION%%.*} \
   && ENCODED_JAVA_VERSION=$(echo "$JAVA_VERSION" | jq "@uri" -jRr) \
-  && ARCHIVE_DIRECTORY=$(echo "$JAVA_VERSION" | sed -e 's/_/+/') \
+  && ARCHIVE_DIRECTORY=${JAVA_VERSION//_/+} \
   && ENCODED_ARCHIVE_DIRECTORY=$(echo "$ARCHIVE_DIRECTORY" | jq "@uri" -jRr) \
   && CONVERTED_ARCH=$(arch | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/') \
   && wget --quiet https://github.com/adoptium/temurin"${JAVA_MAJOR_VERSION}"-binaries/releases/download/jdk-"${ENCODED_ARCHIVE_DIRECTORY}"/OpenJDK"${JAVA_MAJOR_VERSION}"U-jdk_"${CONVERTED_ARCH}"_linux_hotspot_"${JAVA_VERSION}".tar.gz -O /tmp/jdk.tar.gz \

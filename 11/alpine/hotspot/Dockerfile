@@ -10,8 +10,7 @@ RUN apk add --no-cache \
     jq \
     wget \
     && rm -fr /var/cache/apk/*
-RUN DASHED_JAVA_VERSION=$(echo "$JAVA_VERSION" | sed -e 's/\./-/g' -e 's/+/-/') \
-  && JAVA_MAJOR_VERSION=$(echo "$JAVA_VERSION" | cut -d'+' -f1 | cut -d'.' -f1) \
+RUN JAVA_MAJOR_VERSION=$(echo "$JAVA_VERSION" | cut -d'+' -f1 | cut -d'.' -f1) \
   && ARCHIVE_DIRECTORY=$(echo "$JAVA_VERSION" | sed -e 's/_/+/') \
   && ENCODED_ARCHIVE_DIRECTORY=$(echo "$ARCHIVE_DIRECTORY" | jq "@uri" -jRr) \
   && CONVERTED_ARCH=$(arch | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/') \
