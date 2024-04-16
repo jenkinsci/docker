@@ -108,6 +108,10 @@ variable "BOOKWORM_TAG" {
   default = "20240408"
 }
 
+variable "UBI9_TAG" {
+  default = "9.3-1552"
+}
+
 # ----  user-defined functions ----
 
 # return a tag prefixed by the Jenkins version
