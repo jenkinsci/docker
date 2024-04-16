@@ -35,7 +35,7 @@ RUN jlink \
         --compress=2 \
         --output /javaruntime
 
-FROM alpine:"${ALPINE_TAG}" AS build
+FROM alpine:"${ALPINE_TAG}" AS controller
 
 RUN apk add --no-cache \
     bash \

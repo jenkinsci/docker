@@ -35,7 +35,7 @@ RUN jlink \
         --compress=2 \
         --output /javaruntime
 
-FROM debian:bookworm-"${BOOKWORM_TAG}"
+FROM debian:bookworm-"${BOOKWORM_TAG}" AS controller
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
