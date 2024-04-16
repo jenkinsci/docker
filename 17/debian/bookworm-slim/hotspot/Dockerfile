@@ -1,6 +1,27 @@
 ARG BOOKWORM_TAG=20240408
+FROM debian:bookworm-"${BOOKWORM_TAG}"-slim as jre-build
+
 ARG JAVA_VERSION=17.0.10_7
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-jammy as jre-build
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+RUN apt-get update \
+  && apt-get install --no-install-recommends -y \
+    ca-certificates \
+    jq \
+    wget
+RUN DASHED_JAVA_VERSION=$(echo "$JAVA_VERSION" | sed -e 's/\./-/g' -e 's/+/-/') \
+  && JAVA_MAJOR_VERSION=$(echo "$JAVA_VERSION" | cut -d'+' -f1 | cut -d'.' -f1) \
+  && ENCODED_JAVA_VERSION=$(echo "$JAVA_VERSION" | jq "@uri" -jRr) \
+  && ARCHIVE_DIRECTORY=$(echo "$JAVA_VERSION" | sed -e 's/_/+/') \
+  && ENCODED_ARCHIVE_DIRECTORY=$(echo "$ARCHIVE_DIRECTORY" | jq "@uri" -jRr) \
+  && CONVERTED_ARCH=$(arch | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/') \
+  && wget --quiet https://github.com/adoptium/temurin"${JAVA_MAJOR_VERSION}"-binaries/releases/download/jdk-"${ENCODED_ARCHIVE_DIRECTORY}"/OpenJDK"${JAVA_MAJOR_VERSION}"U-jdk_"${CONVERTED_ARCH}"_linux_hotspot_"${JAVA_VERSION}".tar.gz -O /tmp/jdk.tar.gz \
+  && tar -xzf /tmp/jdk.tar.gz -C /opt/ \
+  && mv /opt/jdk-"${ARCHIVE_DIRECTORY}" /opt/jdk-${JAVA_VERSION} \
+  && rm -f /tmp/jdk.tar.gz
+
+ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
