@@ -6,7 +6,7 @@ ARG JAVA_VERSION=11.0.22_7
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN set -x; apt-get update \
+RUN apt-get update \
   && apt-get install --no-install-recommends -y \
     ca-certificates \
     jq \
