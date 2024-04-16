@@ -7,9 +7,12 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN dnf --setopt=install_weak_deps=0 --setopt=tsflags=nodocs install -y \
     ca-certificates \
     jq \
-    wget
-RUN DASHED_JAVA_VERSION=$(echo "$JAVA_VERSION" | sed -e 's/\./-/g' -e 's/+/-/') \
-  && JAVA_MAJOR_VERSION=$(echo "$JAVA_VERSION" | cut -d'+' -f1 | cut -d'.' -f1) \
+    wget \
+	&& dnf clean all
+RUN DASHED_JAVA_VERSION=${JAVA_VERSION//./-} \
+  && DASHED_JAVA_VERSION=${DASHED_JAVA_VERSION//+/-} \
+  && JAVA_MAJOR_VERSION=${JAVA_VERSION%%+*} \
+  && JAVA_MAJOR_VERSION=${JAVA_MAJOR_VERSION%%.*} \
   && ENCODED_JAVA_VERSION=$(echo "$JAVA_VERSION" | jq "@uri" -jRr) \
   && ARCHIVE_DIRECTORY=$(echo "$JAVA_VERSION" | sed -e 's/_/+/') \
   && ENCODED_ARCHIVE_DIRECTORY=$(echo "$ARCHIVE_DIRECTORY" | jq "@uri" -jRr) \
