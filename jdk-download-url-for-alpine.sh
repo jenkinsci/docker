@@ -27,7 +27,9 @@ ENCODED_ARCHIVE_DIRECTORY=$(echo "$ARCHIVE_DIRECTORY" | xargs -I {} printf %s {}
 CONVERTED_ARCH=$(uname -m | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/')
 
 # Fetch the download URL from the Adoptium API
-if ! RESPONSE=$(curl -fsI "https://api.adoptium.net/v3/binary/version/jdk-${ENCODED_ARCHIVE_DIRECTORY}/linux/${CONVERTED_ARCH}/jdk/hotspot/normal/eclipse?project=jdk"); then
+# https://api.adoptium.net/q/swagger-ui/#/Binary/getBinaryByVersion
+# We're supposed to add 
+if ! RESPONSE=$(curl -fsI "https://api.adoptium.net/v3/binary/version/jdk-${ENCODED_ARCHIVE_DIRECTORY}/alpine-linux/${CONVERTED_ARCH}/jdk/hotspot/normal/eclipse?project=jdk"); then
     echo "Error: Failed to fetch the URL. Exiting with status 1." >&2
     echo "Response: $RESPONSE" >&2
     exit 1
