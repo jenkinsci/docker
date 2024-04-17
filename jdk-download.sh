@@ -7,7 +7,8 @@ if ! command -v curl >/dev/null 2>&1 || ! command -v tar >/dev/null 2>&1 || ! co
 fi
 
 # Call jdk-download-url.sh with JAVA_VERSION as an argument
-if ! DOWNLOAD_URL=$(./jdk-download-url.sh "${JAVA_VERSION}"); then
+SCRIPT_DIR=$(dirname "$0")
+if ! DOWNLOAD_URL=$("${SCRIPT_DIR}"/jdk-download-url.sh "${JAVA_VERSION}"); then
     echo "Error: Failed to fetch the URL. Exiting with status 1." >&2
     exit 1
 fi
