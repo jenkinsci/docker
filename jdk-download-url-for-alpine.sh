@@ -28,7 +28,11 @@ CONVERTED_ARCH=$(uname -m | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/')
 
 # Fetch the download URL from the Adoptium API
 # https://api.adoptium.net/q/swagger-ui/#/Binary/getBinaryByVersion
-# We're supposed to add 
+# We're supposed to add a c_lib parameter to the URL, but the Adoptium API doesn't seem to like it (returning an error)
+# curl -X 'GET' \
+#  'https://api.adoptium.net/v3/binary/version/jdk-11.0.22%2B7/alpine-linux/x64/jdk/hotspot/normal/eclipse?c_lib=musl&project=jdk' \
+#  -H 'accept: */*'
+#{"errorMessage":"No releases match the request"}
 if ! RESPONSE=$(curl -fsI "https://api.adoptium.net/v3/binary/version/jdk-${ENCODED_ARCHIVE_DIRECTORY}/alpine-linux/${CONVERTED_ARCH}/jdk/hotspot/normal/eclipse?project=jdk"); then
     echo "Error: Failed to fetch the URL. Exiting with status 1." >&2
     echo "Response: $RESPONSE" >&2

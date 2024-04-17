@@ -7,7 +7,7 @@ if ! command -v curl >/dev/null 2>&1 || ! command -v tar >/dev/null 2>&1 ; then
 fi
 
 # Call jdk-download-for-alpine.sh with JAVA_VERSION as an argument
-SCRIPT_DIR=$(cd "$(dirname "$0")"; pwd)
+SCRIPT_DIR=$(cd "$(dirname "$0")" || exit; pwd)
 if ! DOWNLOAD_URL=$("${SCRIPT_DIR}"/jdk-download-url-for-alpine.sh "${JAVA_VERSION}"); then
     echo "Error: Failed to fetch the URL. Exiting with status 1." >&2
     exit 1
