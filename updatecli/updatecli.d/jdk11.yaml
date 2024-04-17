@@ -36,19 +36,14 @@ conditions:
     name: Check if the "<lastVersion>" is available for alpine
     kind: shell
     spec:
-      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' alpine
+      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' alpine "x64"
     disablesourceinput: true
-  checkTemurinDebianDockerImages:
-    kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-jammy" is available
-    disablesourceinput: true
+  checkTemurinLinuxRelease:
+    name: Check if the "<lastVersion>" is available for Linux
+    kind: shell
     spec:
-      architectures:
-        - amd64
-        - arm64
-        - s390x
-      image: eclipse-temurin
-      tag: '{{source "lastVersion" }}-jdk-jammy'
+      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' standard "x64,aarch64,s390x"
+    disablesourceinput: true
   checkTemurinNanoserver2019DockerImage:
     kind: dockerimage
     name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-nanoserver-1809" is available
