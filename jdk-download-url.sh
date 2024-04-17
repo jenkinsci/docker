@@ -35,9 +35,9 @@ else
     # Convert ARCHS to an array
     OLD_IFS=$IFS
     IFS=','
-    set -- $ARCHS
+    set -- "$ARCHS"
     ARCHS=""
-    for arch in $@; do
+    for arch in "$@"; do
         ARCHS="$ARCHS $arch"
     done
     IFS=$OLD_IFS
@@ -89,7 +89,7 @@ for ARCH in $ARCHS; do
     # Use curl to check if the URL is reachable
     # If the URL is not reachable, print an error message and exit the script with status 1
     if ! curl -v -fs "$REDIRECTED_URL" >/dev/null 2>&1; then
-        echo "${REDIRECTED_URL}" is not reachable for architecture ${ARCH}. >&2
+        echo "${REDIRECTED_URL}" is not reachable for architecture "${ARCH}". >&2
         exit 1
     fi
 
