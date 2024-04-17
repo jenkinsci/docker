@@ -7,10 +7,11 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs -y \
     ca-certificates \
+    curl \
     jq \
-    wget \
     && dnf clean --disableplugin=subscription-manager all
 
+COPY jdk-download-url.sh /usr/bin/jdk-download-url.sh
 COPY jdk-download.sh /usr/bin/jdk-download.sh
 RUN /usr/bin/jdk-download.sh
 

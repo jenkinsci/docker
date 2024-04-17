@@ -11,10 +11,11 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apt-get update \
   && apt-get install --no-install-recommends -y \
     ca-certificates \
+    curl \
     jq \
-    wget \
   && rm -rf /var/lib/apt/lists/*
 
+COPY jdk-download-url.sh /usr/bin/jdk-download-url.sh
 COPY jdk-download.sh /usr/bin/jdk-download.sh
 RUN /usr/bin/jdk-download.sh
 
