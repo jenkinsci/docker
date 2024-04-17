@@ -39,13 +39,14 @@ ENCODED_ARCHIVE_DIRECTORY=$(echo "$ARCHIVE_DIRECTORY" | xargs -I {} printf %s {}
 # Convert the architecture name to the format used by the Adoptium API
 CONVERTED_ARCH=$(uname -m | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/')
 
-# Fetch the download URL from the Adoptium API
-# Use a different URL for Alpine
+# Determine the OS type for the URL
+OS_TYPE="linux"
 if [ "$OS" = "alpine" ]; then
-    URL="https://api.adoptium.net/v3/binary/version/jdk-${ENCODED_ARCHIVE_DIRECTORY}/alpine-linux/${CONVERTED_ARCH}/jdk/hotspot/normal/eclipse?project=jdk"
-else
-    URL="https://api.adoptium.net/v3/binary/version/jdk-${ENCODED_ARCHIVE_DIRECTORY}/linux/${CONVERTED_ARCH}/jdk/hotspot/normal/eclipse?project=jdk"
+    OS_TYPE="alpine-linux"
 fi
+
+# Fetch the download URL from the Adoptium API
+URL="https://api.adoptium.net/v3/binary/version/jdk-${ENCODED_ARCHIVE_DIRECTORY}/${OS_TYPE}/${CONVERTED_ARCH}/jdk/hotspot/normal/eclipse?project=jdk"
 
 if ! RESPONSE=$(curl -fsI "$URL"); then
     echo "Error: Failed to fetch the URL. Exiting with status 1." >&2
