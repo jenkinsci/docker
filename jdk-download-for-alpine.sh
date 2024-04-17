@@ -6,7 +6,9 @@ if ! command -v curl >/dev/null 2>&1 || ! command -v tar >/dev/null 2>&1 ; then
     exit 1
 fi
 
-# Call jdk-download-for-alpine.sh with JAVA_VERSION as an argument
+# Call jdk-download-url-for-alpine.sh with JAVA_VERSION as an argument
+# The two scripts should be in the same directory.
+# That's why we're trying to find the directory of the current script and use it to call the other script.
 SCRIPT_DIR=$(cd "$(dirname "$0")" || exit; pwd)
 if ! DOWNLOAD_URL=$("${SCRIPT_DIR}"/jdk-download-url-for-alpine.sh "${JAVA_VERSION}"); then
     echo "Error: Failed to fetch the URL. Exiting with status 1." >&2
