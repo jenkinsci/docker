@@ -31,12 +31,7 @@ if ! command -v jq >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1; then
 fi
 
 # Replace underscores with plus signs in JAVA_VERSION
-# Use a different replacement for Alpine
-if [ "$OS" = "alpine" ]; then
-    ARCHIVE_DIRECTORY=$(echo "$JAVA_VERSION" | tr '_' '+')
-else
-    ARCHIVE_DIRECTORY=$(echo "$JAVA_VERSION" | tr '_' '+')
-fi
+ARCHIVE_DIRECTORY=$(echo "$JAVA_VERSION" | tr '_' '+')
 
 # URL encode ARCHIVE_DIRECTORY
 ENCODED_ARCHIVE_DIRECTORY=$(echo "$ARCHIVE_DIRECTORY" | xargs -I {} printf %s {} | jq "@uri" -jRr)
