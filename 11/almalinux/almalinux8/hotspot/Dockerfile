@@ -1,18 +1,18 @@
-ARG JAVA_VERSION=11.0.22_7
 FROM almalinux:8.9 as jre-build
 
-ARG JAVA_VERSION
+ARG JAVA_VERSION=11.0.22_7
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+COPY jdk-download-url.sh /usr/bin/jdk-download-url.sh
+COPY jdk-download.sh /usr/bin/jdk-download.sh
+
 RUN dnf --setopt=install_weak_deps=0 --setopt=tsflags=nodocs install -y \
     ca-certificates \
+    curl \
     jq \
-    wget \
-	&& dnf clean all
-
-COPY jdk-download.sh /usr/bin/jdk-download.sh
-RUN /usr/bin/jdk-download.sh
+	&& dnf clean all \
+    && /usr/bin/jdk-download.sh
 
 ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
 # Generate smaller java runtime without unneeded files

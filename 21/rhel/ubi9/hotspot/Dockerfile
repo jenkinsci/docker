@@ -4,14 +4,15 @@ ARG JAVA_VERSION=21.0.2_13
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs -y \
-    ca-certificates \
-    jq \
-    wget \
-  && dnf clean --disableplugin=subscription-manager all
-
+COPY jdk-download-url.sh /usr/bin/jdk-download-url.sh
 COPY jdk-download.sh /usr/bin/jdk-download.sh
-RUN /usr/bin/jdk-download.sh
+
+RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs --allowerasing -y \
+    ca-certificates \
+    curl \
+    jq \
+  && dnf clean --disableplugin=subscription-manager all \
+  && /usr/bin/jdk-download.sh
 
 ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
 
