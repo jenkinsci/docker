@@ -6,7 +6,7 @@ ARG JAVA_VERSION
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs -y \
+RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs --allowerasing -y \
     ca-certificates \
     curl \
     jq \
