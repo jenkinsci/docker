@@ -40,7 +40,7 @@ CONVERTED_ARCH=$(arch | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/')
 RESPONSE=$(curl -fsI https://api.adoptium.net/v3/binary/version/jdk-"${ENCODED_ARCHIVE_DIRECTORY}"/linux/"${CONVERTED_ARCH}"/jdk/hotspot/normal/eclipse?project=jdk)
 
 # If the curl command failed, exit the script with an error message
-if [ $? -ne 0 ]; then
+if ! curl -v -fs "$REDIRECTED_URL" >/dev/null 2>&1; then
     echo "Error: Failed to fetch the URL. Exiting with status 1." >&2
     echo "Response: $RESPONSE" >&2
     exit 1
