@@ -59,9 +59,9 @@ fi
 # Use curl to check if the URL is reachable
 # If the URL is reachable, print the URL
 # If the URL is not reachable, print an error message and exit the script with status 1
-if curl -v -fs "$REDIRECTED_URL" >/dev/null 2>&1; then
-    echo "$REDIRECTED_URL"
-else
+if ! curl -v -fs "$REDIRECTED_URL" >/dev/null 2>&1; then
     echo "${REDIRECTED_URL}" is not reachable. >&2
     exit 1
+else
+    echo "$REDIRECTED_URL"
 fi
