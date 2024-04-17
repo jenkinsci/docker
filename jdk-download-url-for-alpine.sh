@@ -27,10 +27,7 @@ ENCODED_ARCHIVE_DIRECTORY=$(echo "$ARCHIVE_DIRECTORY" | xargs -I {} printf %s {}
 CONVERTED_ARCH=$(uname -m | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/')
 
 # Fetch the download URL from the Adoptium API
-RESPONSE=$(curl -fsI "https://api.adoptium.net/v3/binary/version/jdk-${ENCODED_ARCHIVE_DIRECTORY}/linux/${CONVERTED_ARCH}/jdk/hotspot/normal/eclipse?project=jdk")
-
-# If the curl command failed, exit the script with an error message
-if [ $? -ne 0 ]; then
+if ! RESPONSE=$(curl -fsI "https://api.adoptium.net/v3/binary/version/jdk-${ENCODED_ARCHIVE_DIRECTORY}/linux/${CONVERTED_ARCH}/jdk/hotspot/normal/eclipse?project=jdk"); then
     echo "Error: Failed to fetch the URL. Exiting with status 1." >&2
     echo "Response: $RESPONSE" >&2
     exit 1
@@ -49,9 +46,9 @@ fi
 # Use curl to check if the URL is reachable
 # If the URL is reachable, print the URL
 # If the URL is not reachable, print an error message and exit the script with status 1
-if curl -v -fs "$REDIRECTED_URL" >/dev/null 2>&1; then
-    echo "$REDIRECTED_URL"
-else
+if ! curl -v -fs "$REDIRECTED_URL" >/dev/null 2>&1; then
     echo "${REDIRECTED_URL}" is not reachable. >&2
     exit 1
+else
+    echo "$REDIRECTED_URL"
 fi
