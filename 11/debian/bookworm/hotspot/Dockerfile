@@ -8,16 +8,16 @@ ARG JAVA_VERSION
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+COPY jdk-download-url.sh /usr/bin/jdk-download-url.sh
+COPY jdk-download.sh /usr/bin/jdk-download.sh
+
 RUN apt-get update \
   && apt-get install --no-install-recommends -y \
     ca-certificates \
     curl \
     jq \
-  && rm -rf /var/lib/apt/lists/*
-
-COPY jdk-download-url.sh /usr/bin/jdk-download-url.sh
-COPY jdk-download.sh /usr/bin/jdk-download.sh
-RUN /usr/bin/jdk-download.sh
+  && rm -rf /var/lib/apt/lists/* \
+  && /usr/bin/jdk-download.sh
 
 ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
 
