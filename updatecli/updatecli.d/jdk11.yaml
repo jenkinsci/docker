@@ -32,14 +32,12 @@ sources:
           to: _
 
 conditions:
-  checkTemurinAlpineDockerImage:
-    kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-alpine" is available
-    disablesourceinput: true
+  checkTemurinAlpineRelease:
+    name: Check if the "<lastVersion>" is available for alpine
+    kind: shell
     spec:
-      architecture: amd64
-      image: eclipse-temurin
-      tag: '{{source "lastVersion" }}-jdk-alpine'
+      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' alpine
+    disablesourceinput: true
   checkTemurinDebianDockerImages:
     kind: dockerimage
     name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-jammy" is available
