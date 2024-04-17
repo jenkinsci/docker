@@ -16,8 +16,6 @@ RUN apk add --no-cache \
     && rm -fr /var/cache/apk/* \
     && /usr/bin/jdk-download-for-alpine.sh
 
-RUN ls -artl /opt/jdk-17.0.10_*/*/*/*/*
-
 ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
 
 # Generate smaller java runtime without unneeded files
