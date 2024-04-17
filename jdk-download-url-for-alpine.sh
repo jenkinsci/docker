@@ -17,9 +17,6 @@ if ! command -v jq >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1; then
     exit 1
 fi
 
-# Extract the major version from JAVA_VERSION
-JAVA_MAJOR_VERSION=$(echo "$JAVA_VERSION" | cut -d '+' -f 1 | cut -d '.' -f 1)
-
 # Replace underscores with plus signs in JAVA_VERSION
 ARCHIVE_DIRECTORY=$(echo "$JAVA_VERSION" | tr '_' '+')
 
