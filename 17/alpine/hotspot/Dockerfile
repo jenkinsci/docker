@@ -1,9 +1,8 @@
 ARG ALPINE_TAG=3.19.1
-ARG JAVA_VERSION=17.0.10_7
 
 FROM alpine:"${ALPINE_TAG}" AS jre-build
 
-ARG JAVA_VERSION
+ARG JAVA_VERSION=17.0.10_7
 
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
@@ -16,6 +15,8 @@ RUN apk add --no-cache \
     curl \
     && rm -fr /var/cache/apk/* \
     && /usr/bin/jdk-download-for-alpine.sh
+
+RUN ls -artl /opt/jdk-17.0.10_*/*/*/*/*
 
 ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
 
