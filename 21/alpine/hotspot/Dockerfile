@@ -6,14 +6,14 @@ ARG JAVA_VERSION=21.0.2_13
 
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
-COPY jdk-download-url-for-alpine.sh /usr/bin/jdk-download-url-for-alpine.sh
-COPY jdk-download-for-alpine.sh /usr/bin/jdk-download-for-alpine.sh
+COPY jdk-download-url.sh /usr/bin/jdk-download-url.sh
+COPY jdk-download.sh /usr/bin/jdk-download.sh
 RUN apk add --no-cache \
     ca-certificates \
     curl \
     jq \
     && rm -fr /var/cache/apk/* \
-    && /usr/bin/jdk-download-for-alpine.sh
+    && /usr/bin/jdk-download.sh alpine
 
 ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
 

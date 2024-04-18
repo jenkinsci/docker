@@ -1,5 +1,4 @@
 ARG BOOKWORM_TAG=20240408
-ARG TARGETPLATFORM
 
 FROM debian:bookworm-"${BOOKWORM_TAG}" as jre-build
 

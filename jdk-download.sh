@@ -1,14 +1,24 @@
-#!/usr/bin/env bash
-
+#!/bin/sh
+set -x
 # Check if curl, tar, and mv are installed
 if ! command -v curl >/dev/null 2>&1 || ! command -v tar >/dev/null 2>&1 ; then
     echo "curl and tar are required but not installed. Exiting with status 1." >&2
     exit 1
 fi
 
-# Call jdk-download-url.sh with JAVA_VERSION as an argument
-SCRIPT_DIR=$(dirname "$0")
-if ! DOWNLOAD_URL=$("${SCRIPT_DIR}"/jdk-download-url.sh "${JAVA_VERSION}"); then
+# Set the OS to "standard" by default
+OS="standard"
+
+# If a second argument is provided, use it as the OS
+if [ $# -eq 1 ]; then
+    OS=$1
+fi
+
+# Call jdk-download-url.sh with JAVA_VERSION and OS as arguments
+# The two scripts should be in the same directory.
+# That's why we're trying to find the directory of the current script and use it to call the other script.
+SCRIPT_DIR=$(cd "$(dirname "$0")" || exit; pwd)
+if ! DOWNLOAD_URL=$("${SCRIPT_DIR}"/jdk-download-url.sh "${JAVA_VERSION}" "${OS}"); then
     echo "Error: Failed to fetch the URL. Exiting with status 1." >&2
     exit 1
 fi
