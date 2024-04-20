@@ -1,6 +1,6 @@
 #!/bin/sh
 set -x
-# Check if curl, tar, and mv are installed
+# Check if curl and tar are installed
 if ! command -v curl >/dev/null 2>&1 || ! command -v tar >/dev/null 2>&1 ; then
     echo "curl and tar are required but not installed. Exiting with status 1." >&2
     exit 1
