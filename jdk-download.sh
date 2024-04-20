@@ -1,6 +1,6 @@
 #!/bin/sh
 set -x
-# Check if curl, tar, and mv are installed
+# Check if curl and tar are installed
 if ! command -v curl >/dev/null 2>&1 || ! command -v tar >/dev/null 2>&1 ; then
     echo "curl and tar are required but not installed. Exiting with status 1." >&2
     exit 1
@@ -36,7 +36,7 @@ if ! tar -xzf /tmp/jdk.tar.gz -C /opt/; then
 fi
 
 # Get the name of the extracted directory
-EXTRACTED_DIR=$(tar -tf /tmp/jdk.tar.gz | head -1 | cut -f1 -d"/")
+EXTRACTED_DIR=$(tar -tzf /tmp/jdk.tar.gz | head -n 1 | cut -f1 -d"/")
 
 # Rename the extracted directory to /opt/jdk-${JAVA_VERSION}
 if ! mv "/opt/${EXTRACTED_DIR}" "/opt/jdk-${JAVA_VERSION}"; then
