@@ -42,7 +42,7 @@ FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS controller
 ARG JAVA_HOME="C:/openjdk-17"
 ENV JAVA_HOME=${JAVA_HOME}
 
-COPY --from=jre-build $JAVA_HOME $JAVA_HOME
+COPY --from=jre-build /javaruntime $JAVA_HOME
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
