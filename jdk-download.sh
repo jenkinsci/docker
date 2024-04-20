@@ -36,7 +36,7 @@ if ! tar -xzf /tmp/jdk.tar.gz -C /opt/; then
 fi
 
 # Get the name of the extracted directory
-EXTRACTED_DIR=$(tar -tf /tmp/jdk.tar.gz | head -1 | cut -f1 -d"/")
+EXTRACTED_DIR=$(tar -tzf /tmp/jdk.tar.gz | head -n 1 | cut -f1 -d"/")
 
 # Rename the extracted directory to /opt/jdk-${JAVA_VERSION}
 if ! mv "/opt/${EXTRACTED_DIR}" "/opt/jdk-${JAVA_VERSION}"; then
