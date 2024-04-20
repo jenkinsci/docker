@@ -1,5 +1,20 @@
+FROM registry.access.redhat.com/ubi9/ubi:9.3-1610 as jre-build
+
 ARG JAVA_VERSION=21.0.2_13
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-ubi9-minimal as jre-build
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+COPY jdk-download-url.sh /usr/bin/jdk-download-url.sh
+COPY jdk-download.sh /usr/bin/jdk-download.sh
+
+RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs --allowerasing -y \
+    ca-certificates \
+    curl \
+    jq \
+  && dnf clean --disableplugin=subscription-manager all \
+  && /usr/bin/jdk-download.sh
+
+ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
@@ -13,7 +28,7 @@ RUN jlink \
         --compress zip-6 \
         --output /javaruntime
 
-FROM registry.access.redhat.com/ubi9/ubi:9.3-1552
+FROM registry.access.redhat.com/ubi9/ubi:9.3-1610 as controller
 
 ENV LANG C.UTF-8
 

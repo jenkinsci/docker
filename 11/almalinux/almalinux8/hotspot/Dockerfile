@@ -1,6 +1,20 @@
-ARG JAVA_VERSION=11.0.22_7
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-jammy as jre-build
+FROM almalinux:8.9 as jre-build
 
+ARG JAVA_VERSION=11.0.22_7
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+COPY jdk-download-url.sh /usr/bin/jdk-download-url.sh
+COPY jdk-download.sh /usr/bin/jdk-download.sh
+
+RUN dnf --setopt=install_weak_deps=0 --setopt=tsflags=nodocs install -y \
+    ca-certificates \
+    curl \
+    jq \
+	&& dnf clean all \
+    && /usr/bin/jdk-download.sh
+
+ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
 # while still saving space (approx 200mb from the full distribution)
@@ -13,7 +27,7 @@ RUN jlink \
         --compress=2 \
         --output /javaruntime
 
-FROM almalinux:8.9
+FROM almalinux:8.9 AS controller
 
 ENV LANG C.UTF-8
 

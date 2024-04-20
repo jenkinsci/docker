@@ -1,5 +1,20 @@
+FROM registry.access.redhat.com/ubi8/ubi:8.9-1160 as jre-build
+
 ARG JAVA_VERSION=11.0.22_7
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-jammy as jre-build
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+COPY jdk-download-url.sh /usr/bin/jdk-download-url.sh
+COPY jdk-download.sh /usr/bin/jdk-download.sh
+
+RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs -y \
+    ca-certificates \
+    curl \
+    jq \
+    && dnf clean --disableplugin=subscription-manager all \
+    && /usr/bin/jdk-download.sh
+
+ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
@@ -13,7 +28,7 @@ RUN jlink \
         --compress=2 \
         --output /javaruntime
 
-FROM registry.access.redhat.com/ubi8/ubi:8.9-1160
+FROM registry.access.redhat.com/ubi8/ubi:8.9-1160 AS controller
 
 ENV LANG C.UTF-8
 

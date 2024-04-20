@@ -1,6 +1,21 @@
 ARG ALPINE_TAG=3.19.1
+
+FROM alpine:"${ALPINE_TAG}" AS jre-build
+
 ARG JAVA_VERSION=21.0.2_13
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-alpine AS jre-build
+
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+
+COPY jdk-download-url.sh /usr/bin/jdk-download-url.sh
+COPY jdk-download.sh /usr/bin/jdk-download.sh
+RUN apk add --no-cache \
+    ca-certificates \
+    curl \
+    jq \
+    && rm -fr /var/cache/apk/* \
+    && /usr/bin/jdk-download.sh alpine
+
+ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
@@ -14,7 +29,7 @@ RUN jlink \
         --compress zip-6 \
         --output /javaruntime
 
-FROM alpine:"${ALPINE_TAG}" AS build
+FROM alpine:"${ALPINE_TAG}" AS controller
 
 RUN apk add --no-cache \
     bash \

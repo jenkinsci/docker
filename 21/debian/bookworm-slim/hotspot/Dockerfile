@@ -1,6 +1,23 @@
 ARG BOOKWORM_TAG=20240408
+
+FROM debian:bookworm-"${BOOKWORM_TAG}"-slim as jre-build
+
 ARG JAVA_VERSION=21.0.2_13
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-jammy as jre-build
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+COPY jdk-download-url.sh /usr/bin/jdk-download-url.sh
+COPY jdk-download.sh /usr/bin/jdk-download.sh
+
+RUN apt-get update \
+  && apt-get install --no-install-recommends -y \
+    ca-certificates \
+    curl \
+    jq \
+  && rm -rf /var/lib/apt/lists/* \
+  && /usr/bin/jdk-download.sh
+
+ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
@@ -14,7 +31,7 @@ RUN jlink \
         --compress zip-6 \
         --output /javaruntime
 
-FROM debian:bookworm-"${BOOKWORM_TAG}"-slim
+FROM debian:bookworm-"${BOOKWORM_TAG}"-slim AS controller
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
