@@ -44,7 +44,7 @@ conditions:
     name: Check if the "<lastVersion>" is available for Linux
     kind: shell
     spec:
-      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' standard "x64,aarch64,s390x"
+      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' standard "x64 aarch64 s390x"
     disablesourceinput: true
   checkTemurinNanoserver2019DockerImage:
     kind: dockerimage
