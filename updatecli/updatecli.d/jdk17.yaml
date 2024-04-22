@@ -46,7 +46,7 @@ conditions:
     spec:
       command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' standard "x64 aarch64 s390x"
     disablesourceinput: true
-  checkTemurinWWindowsRelease:
+  checkTemurinWindowsRelease:
     name: Check if the "<lastVersion>" is available for Windows
     kind: shell
     spec:
