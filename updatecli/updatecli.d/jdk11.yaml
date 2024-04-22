@@ -44,38 +44,12 @@ conditions:
     spec:
       command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' standard "x64 aarch64 s390x"
     disablesourceinput: true
-  checkTemurinNanoserver2019DockerImage:
-    kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-nanoserver-1809" is available
-    disablesourceinput: true
+  checkTemurinWindowsRelease:
+    name: Check if the "<lastVersion>" is available for Windows
+    kind: shell
     spec:
-      # architecture: amd64
-      image: eclipse-temurin
-      tag: '{{source "lastVersion" }}-jdk-nanoserver-1809'
-  checkTemurinWindowsCore2019DockerImage:
-    kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-windowsservercore-1809" is available
+      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' windows "x64"
     disablesourceinput: true
-    spec:
-      # architecture: amd64
-      image: eclipse-temurin
-      tag: '{{source "lastVersion" }}-jdk-windowsservercore-1809'
-  checkTemurinNanoserver2022DockerImage:
-    kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-nanoserver-ltsc2022" is available
-    disablesourceinput: true
-    spec:
-      # architecture: amd64
-      image: eclipse-temurin
-      tag: '{{source "lastVersion" }}-jdk-nanoserver-ltsc2022'
-  checkTemurinWindowsCore2022DockerImage:
-    kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-windowsservercore-18ltsc202209" is available
-    disablesourceinput: true
-    spec:
-      # architecture: amd64
-      image: eclipse-temurin
-      tag: '{{source "lastVersion" }}-jdk-windowsservercore-ltsc2022'
 
 targets:
   setJDK11VersionDockerBake:
