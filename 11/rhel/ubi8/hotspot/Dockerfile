@@ -1,24 +1,34 @@
-FROM registry.access.redhat.com/ubi8/ubi:8.8-1067.1698056881 as jre-build
-ARG JAVA_VERSION=11.0.21_9
+FROM registry.access.redhat.com/ubi8/ubi:8.9-1160 as jre-build
+
+ARG JAVA_VERSION=11.0.22_7
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN set -x \
-  && dnf -y upgrade-minimal --security \
-  && dnf install -y ca-certificates jq wget \
-  && JAVA_MAJOR_VERSION=$(echo "$JAVA_VERSION" | awk -F'.' '{print $1}') \
-  && ENCODED_JAVA_VERSION=$(echo "$JAVA_VERSION" | tr '_' '+' | jq "@uri" -jRr) \
-  && JAVA_VERSION_FILENAME=$(echo "$JAVA_VERSION" | tr '_' '+') \
-  && CONVERTED_ARCH=$(arch | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/') \
-  && wget --quiet https://github.com/adoptium/temurin"${JAVA_MAJOR_VERSION}"-binaries/releases/download/jdk-"${ENCODED_JAVA_VERSION}"/OpenJDK"${JAVA_MAJOR_VERSION}"U-jdk_"${CONVERTED_ARCH}"_linux_hotspot_"${JAVA_VERSION}".tar.gz -O /tmp/jdk.tar.gz \
-  && mkdir -p /opt/jdk-"${JAVA_VERSION_FILENAME}" \
-  && tar -xzf /tmp/jdk.tar.gz -C /opt/jdk-"${JAVA_VERSION_FILENAME}" --strip-components=1 \
-  && rm -f /tmp/jdk.tar.gz \
-  && export PATH=/opt/jdk-"${JAVA_VERSION_FILENAME}"/bin:$PATH \
-  && jlink --add-modules ALL-MODULE-PATH --no-man-pages --compress=2 --output /javaruntime \
-  && dnf clean all
+COPY jdk-download-url.sh /usr/bin/jdk-download-url.sh
+COPY jdk-download.sh /usr/bin/jdk-download.sh
 
-FROM registry.access.redhat.com/ubi8/ubi:8.8-1067.1698056881
+RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs -y \
+    ca-certificates \
+    curl \
+    jq \
+    && dnf clean --disableplugin=subscription-manager all \
+    && /usr/bin/jdk-download.sh
+
+ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
+
+# Generate smaller java runtime without unneeded files
+# for now we include the full module path to maintain compatibility
+# while still saving space (approx 200mb from the full distribution)
+# Arguments to jlink are specific to Java 11 jlink
+RUN jlink \
+        --add-modules ALL-MODULE-PATH \
+        --strip-debug \
+        --no-man-pages \
+        --no-header-files \
+        --compress=2 \
+        --output /javaruntime
+
+FROM registry.access.redhat.com/ubi8/ubi:8.9-1160 AS controller
 
 ENV LANG C.UTF-8
 
@@ -78,7 +88,7 @@ RUN curl -fsSL "https://github.com/krallin/tini/releases/download/${TINI_VERSION
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION ${JENKINS_VERSION:-2.428}
+ENV JENKINS_VERSION ${JENKINS_VERSION:-2.442}
 
 # jenkins.war checksum, download will be validated using it
 ARG JENKINS_SHA=b4f596923eb37b93c3f5a21a6a32fc3bedd57d04a1b63186811c0ce8b3d9f07c
@@ -98,7 +108,7 @@ ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
 ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 RUN chown -R ${user} "$JENKINS_HOME" "$REF"
 
-ARG PLUGIN_CLI_VERSION=2.12.13
+ARG PLUGIN_CLI_VERSION=2.12.15
 ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
 RUN curl -fsSL ${PLUGIN_CLI_URL} -o /opt/jenkins-plugin-manager.jar
 

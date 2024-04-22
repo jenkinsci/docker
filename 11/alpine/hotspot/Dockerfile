@@ -1,19 +1,35 @@
-ARG ALPINE_TAG=3.18.4
-ARG JAVA_VERSION=11.0.21_9
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-alpine AS jre-build
+ARG ALPINE_TAG=3.19.1
+
+FROM alpine:"${ALPINE_TAG}" AS jre-build
+
+ARG JAVA_VERSION=11.0.22_7
+
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+
+COPY jdk-download-url.sh /usr/bin/jdk-download-url.sh
+COPY jdk-download.sh /usr/bin/jdk-download.sh
+RUN apk add --no-cache \
+    ca-certificates \
+    curl \
+    jq \
+    && rm -fr /var/cache/apk/* \
+    && /usr/bin/jdk-download.sh alpine
+
+ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
 # while still saving space (approx 200mb from the full distribution)
+# Arguments to jlink are specific to Java 11 jlink
 RUN jlink \
-         --add-modules ALL-MODULE-PATH \
-         --strip-debug \
-         --no-man-pages \
-         --no-header-files \
-         --compress=2 \
-         --output /javaruntime
+        --add-modules ALL-MODULE-PATH \
+        --strip-debug \
+        --no-man-pages \
+        --no-header-files \
+        --compress=2 \
+        --output /javaruntime
 
-FROM alpine:"${ALPINE_TAG}" AS build
+FROM alpine:"${ALPINE_TAG}" AS controller
 
 RUN apk add --no-cache \
     bash \
@@ -68,7 +84,7 @@ RUN mkdir -p ${REF}/init.groovy.d
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION ${JENKINS_VERSION:-2.428}
+ENV JENKINS_VERSION ${JENKINS_VERSION:-2.442}
 
 # jenkins.war checksum, download will be validated using it
 ARG JENKINS_SHA=b4f596923eb37b93c3f5a21a6a32fc3bedd57d04a1b63186811c0ce8b3d9f07c
@@ -88,7 +104,7 @@ ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
 ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 RUN chown -R ${user} "$JENKINS_HOME" "$REF"
 
-ARG PLUGIN_CLI_VERSION=2.12.13
+ARG PLUGIN_CLI_VERSION=2.12.15
 ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
 RUN curl -fsSL ${PLUGIN_CLI_URL} -o /opt/jenkins-plugin-manager.jar
 

@@ -32,34 +32,24 @@ sources:
           to: _
 
 conditions:
-  checkTemurinAlpineDockerImage:
-    kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-alpine" is available
-    disablesourceinput: true
+  checkTemurinAlpineRelease:
+    name: Check if the "<lastVersion>" is available for alpine
+    kind: shell
     spec:
-      architecture: amd64
-      image: eclipse-temurin
-      tag: '{{source "lastVersion" }}-jdk-alpine'
-  checkTemurinDebianDockerImages:
-    kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-jammy" is available
+      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' alpine "x64"
     disablesourceinput: true
+  checkTemurinLinuxRelease:
+    name: Check if the "<lastVersion>" is available for Linux
+    kind: shell
     spec:
-      architectures:
-       - amd64
-       - arm64
-       - s390x
-       - linux/arm/v7
-      image: eclipse-temurin
-      tag: '{{source "lastVersion" }}-jdk-jammy'
-  checkTemurinWindowsCore2019DockerImage:
-    kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-windowsservercore-1809" is available
+      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' standard "x64 aarch64 s390x"
     disablesourceinput: true
+  checkTemurinWindowsRelease:
+    name: Check if the "<lastVersion>" is available for Windows
+    kind: shell
     spec:
-      # architecture: amd64
-      image: eclipse-temurin
-      tag: '{{source "lastVersion" }}-jdk-windowsservercore-1809'
+      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' windows "x64"
+    disablesourceinput: true
 
 targets:
   setJDK11VersionDockerBake:

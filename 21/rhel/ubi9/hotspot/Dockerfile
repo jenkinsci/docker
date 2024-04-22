@@ -1,34 +1,34 @@
-FROM registry.access.redhat.com/ubi9/ubi:9.3-1361 as jre-build
-ARG JAVA_VERSION=21.0.1_12
-ARG TARGETPLATFORM
+FROM registry.access.redhat.com/ubi9/ubi:9.3-1610 as jre-build
+
+ARG JAVA_VERSION=21.0.3_9
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-## Example of preview (EA) jdk21 JAVA_VERSION values:
-# 21+35 (note: only one number before the "+")
-# 21.0.1+12
-## Example of preview (EA) release download link:
-# https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21%2B35-ea-beta/OpenJDK21U-jdk_x64_linux_hotspot_ea_21-0-35.tar.gz
-# https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.1%2B12-ea-beta/OpenJDK21U-jdk_x64_alpine-linux_hotspot_ea_21-0-1-12.tar.gz
-RUN set -x; yum install -y jq wget \
-  && DASHED_JAVA_VERSION=$(echo "$JAVA_VERSION" | sed -e 's/\./-/g' -e 's/+/-/' -e 's/21-35/21-0-35/') \
-  && JAVA_MAJOR_VERSION=$(echo "$JAVA_VERSION" | cut -d'+' -f1 | cut -d'.' -f1) \
-  && ENCODED_JAVA_VERSION=$(echo "$JAVA_VERSION" | jq "@uri" -jRr) \
-  && CONVERTED_ARCH=$(arch | sed 's/x86_64/x64/') \
-  && wget --quiet https://github.com/adoptium/temurin"${JAVA_MAJOR_VERSION}"-binaries/releases/download/jdk-"${ENCODED_JAVA_VERSION}"-ea-beta/OpenJDK"${JAVA_MAJOR_VERSION}"U-jdk_"${CONVERTED_ARCH}"_linux_hotspot_ea_"${DASHED_JAVA_VERSION}".tar.gz -O /tmp/jdk.tar.gz \
-  && yum clean all \
-  && tar -xzf /tmp/jdk.tar.gz -C /opt/ \
-  && rm -f /tmp/jdk.tar.gz
+COPY jdk-download-url.sh /usr/bin/jdk-download-url.sh
+COPY jdk-download.sh /usr/bin/jdk-download.sh
+
+RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs --allowerasing -y \
+    ca-certificates \
+    curl \
+    jq \
+  && dnf clean --disableplugin=subscription-manager all \
+  && /usr/bin/jdk-download.sh
 
 ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
 
+# Generate smaller java runtime without unneeded files
+# for now we include the full module path to maintain compatibility
+# while still saving space (approx 200mb from the full distribution)
+# Arguments to jlink are specific to Java 21 jlink
 RUN jlink \
-  --add-modules ALL-MODULE-PATH \
-  --no-man-pages \
-  --compress=zip-6 \
-  --output /javaruntime
+        --add-modules ALL-MODULE-PATH \
+        --strip-java-debug-attributes \
+        --no-man-pages \
+        --no-header-files \
+        --compress zip-6 \
+        --output /javaruntime
 
-FROM registry.access.redhat.com/ubi9/ubi:9.3-1361
+FROM registry.access.redhat.com/ubi9/ubi:9.3-1610 as controller
 
 ENV LANG C.UTF-8
 
@@ -87,7 +87,7 @@ RUN curl -fsSL "https://github.com/krallin/tini/releases/download/${TINI_VERSION
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION ${JENKINS_VERSION:-2.428}
+ENV JENKINS_VERSION ${JENKINS_VERSION:-2.442}
 
 # jenkins.war checksum, download will be validated using it
 ARG JENKINS_SHA=b4f596923eb37b93c3f5a21a6a32fc3bedd57d04a1b63186811c0ce8b3d9f07c
@@ -107,7 +107,7 @@ ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
 ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 RUN chown -R ${user} "$JENKINS_HOME" "$REF"
 
-ARG PLUGIN_CLI_VERSION=2.12.13
+ARG PLUGIN_CLI_VERSION=2.12.15
 ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
 RUN curl -fsSL ${PLUGIN_CLI_URL} -o /opt/jenkins-plugin-manager.jar
 
@@ -130,9 +130,6 @@ COPY jenkins.sh /usr/local/bin/jenkins.sh
 COPY jenkins-plugin-cli.sh /bin/jenkins-plugin-cli
 
 ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
-
-# from a derived Dockerfile, can use `RUN install-plugins.sh active.txt` to setup $REF/plugins from a support bundle
-COPY install-plugins.sh /usr/local/bin/install-plugins.sh
 
 # metadata labels
 LABEL \

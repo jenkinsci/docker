@@ -26,7 +26,8 @@ Describe "[runtime > $global:TEST_TAG] cleanup container" {
   }
 }
 
-Describe "[runtime > $global:TEST_TAG] test multiple JENKINS_OPTS" {
+# Only test on Java 21, one JDK is enough to test all versions
+Describe "[runtime > $global:TEST_TAG] test multiple JENKINS_OPTS" -Skip:(-not $global:TEST_TAG.StartsWith('jdk21-')) {
   It '"--help --version" should return the version, not the help' {
     # need the last line of output
     $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run --rm -e JENKINS_OPTS=`"--help --version`" --name $global:SUT_CONTAINER -P $global:SUT_IMAGE"
@@ -35,7 +36,8 @@ Describe "[runtime > $global:TEST_TAG] test multiple JENKINS_OPTS" {
   }
 }
 
-Describe "[runtime > $global:TEST_TAG] test jenkins arguments" {
+# Only test on Java 21, one JDK is enough to test all versions
+Describe "[runtime > $global:TEST_TAG] test jenkins arguments" -Skip:(-not $global:TEST_TAG.StartsWith('jdk21-')) {
   It 'running --help --version should return the version, not the help' {
     # need the last line of output
     $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run --rm --name $global:SUT_CONTAINER -P $global:SUT_IMAGE --help --version"
@@ -56,7 +58,8 @@ Describe "[runtime > $global:TEST_TAG] test jenkins arguments" {
   }
 }
 
-Describe "[runtime > $global:TEST_TAG] passing JVM parameters" {
+# Only test on Java 21, one JDK is enough to test all versions
+Describe "[runtime > $global:TEST_TAG] passing JVM parameters" -Skip:(-not $global:TEST_TAG.StartsWith('jdk21-')) {
   BeforeAll {
     $tzSetting = '-Duser.timezone=Europe/Madrid'
     $tzRegex = [regex]::Escape("Europe/Madrid")

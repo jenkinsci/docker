@@ -1,17 +1,48 @@
 # escape=`
 # hadolint shell=powershell
 
-ARG JAVA_VERSION=17.0.9_9
+ARG JAVA_VERSION=17.0.10_7
 ARG WINDOWS_VERSION=ltsc2019
 ARG TOOLS_WINDOWS_VERSION=1809
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-windowsservercore-"${TOOLS_WINDOWS_VERSION}" AS jdk-core
 
-FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}"
+FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS jre-build
+
+# $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+
+ARG JAVA_VERSION
+
+RUN New-Item -ItemType Directory -Path C:\temp | Out-Null ; `
+    $javaMajorVersion = $env:JAVA_VERSION.substring(0,2) ; `
+    $msiUrl = 'https://api.adoptium.net/v3/installer/version/jdk-{0}/windows/x64/jdk/hotspot/normal/eclipse?project=jdk' -f $env:JAVA_VERSION.Replace('_', '%2B') ; `
+    Invoke-WebRequest $msiUrl -OutFile 'C:\temp\jdk.msi' ; `
+    $proc = Start-Process -FilePath 'msiexec.exe' -ArgumentList '/i', 'C:\temp\jdk.msi', '/L*V', 'C:\temp\OpenJDK.log', '/quiet', 'ADDLOCAL=FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome',  "INSTALLDIR=C:\openjdk-${javaMajorVersion}" -Wait -Passthru ; `
+    $proc.WaitForExit() ; `
+    Remove-Item -Path C:\temp -Recurse | Out-Null
+
+RUN Write-Host 'javac --version' ; javac --version ; `
+    Write-Host 'java --version' ; java --version
+
+RUN $version = (jlink --version) ; `
+    $stripJavaDebugFlags = '--strip-java-debug-attributes' ; `
+    # jlink version 11 has less features than JDK17+
+    if ($version.StartsWith('11')) { `
+        $stripJavaDebugFlags = '--strip-debug' ; `
+    } `
+    & jlink `
+    --add-modules ALL-MODULE-PATH `
+    $stripJavaDebugFlags `
+    --no-man-pages `
+    --no-header-files `
+    --compress=2 `
+    --output /javaruntime
+
+FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS controller
 
 ARG JAVA_HOME="C:/openjdk-17"
 ENV JAVA_HOME=${JAVA_HOME}
 
-COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
+COPY --from=jre-build /javaruntime $JAVA_HOME
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
@@ -58,7 +89,7 @@ RUN New-Item -ItemType Directory -Force -Path C:/ProgramData/Jenkins/Reference/i
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION ${JENKINS_VERSION:-2.428}
+ENV JENKINS_VERSION ${JENKINS_VERSION:-2.442}
 
 # jenkins.war checksum, download will be validated using it
 ARG JENKINS_SHA=b4f596923eb37b93c3f5a21a6a32fc3bedd57d04a1b63186811c0ce8b3d9f07c
@@ -68,16 +99,16 @@ ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-w
 
 # could use ADD but this one does not check Last-Modified header neither does it allow to control checksum
 # see https://github.com/docker/docker/issues/8331
-RUN curl.exe -fsSL "$env:JENKINS_URL" -o C:/ProgramData/Jenkins/jenkins.war ; `
+RUN Invoke-WebRequest -Uri "$env:JENKINS_URL" -OutFile C:/ProgramData/Jenkins/jenkins.war ; `
     if ((Get-FileHash C:/ProgramData/Jenkins/jenkins.war -Algorithm SHA256).Hash -ne $env:JENKINS_SHA) {exit 1}
 
 ENV JENKINS_UC https://updates.jenkins.io
 ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
 ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 
-ARG PLUGIN_CLI_VERSION=2.12.13
+ARG PLUGIN_CLI_VERSION=2.12.15
 ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
-RUN curl.exe -fsSL "$env:PLUGIN_CLI_URL" -o C:/ProgramData/Jenkins/jenkins-plugin-manager.jar
+RUN Invoke-WebRequest -Uri "$env:PLUGIN_CLI_URL" -OutFile C:/ProgramData/Jenkins/jenkins-plugin-manager.jar
 
 # for main web interface:
 EXPOSE ${http_port}

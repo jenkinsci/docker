@@ -1,5 +1,5 @@
 ---
-name: Bump JDK21 version for all Linux images
+name: Bump JDK21 version
 
 scms:
   default:
@@ -12,40 +12,44 @@ scms:
       token: "{{ requiredEnv .github.token }}"
       username: "{{ .github.username }}"
       branch: "{{ .github.branch }}"
-  temurin21-binaries:
-    kind: "github"
-    spec:
-      user: "{{ .github.user }}"
-      email: "{{ .github.email }}"
-      owner: "adoptium"
-      repository: "temurin21-binaries"
-      token: '{{ requiredEnv .github.token }}'
-      branch: "main"
 
 sources:
-  getLatestJDK21Version:
+  lastVersion:
+    kind: githubrelease
     name: Get the latest Adoptium JDK21 version
-    kind: gittag
-    scmid: temurin21-binaries
     spec:
+      owner: "adoptium"
+      repository: "temurin21-binaries"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
       versionfilter:
         kind: regex
-        pattern: "\\d$"
+        pattern: "^jdk-21.(\\d*).(\\d*).(\\d*)(.(\\d*))+(\\d*)$"
     transformers:
       - trimprefix: "jdk-"
       - replacer:
-          from: "+"
-          to: "_"
+          from: +
+          to: _
 
 conditions:
-  checkIfReleaseIsAvailable:
+  checkTemurinAlpineRelease:
+    name: Check if the "<lastVersion>" is available for alpine
     kind: shell
     spec:
-      command: bash ./updatecli/scripts/check-jdk.sh # source input value passed as argument
-    transformers:
-      - replacer:
-          from: "_"
-          to: "+"
+      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' alpine "x64"
+    disablesourceinput: true
+  checkTemurinLinuxRelease:
+    name: Check if the "<lastVersion>" is available for Linux
+    kind: shell
+    spec:
+      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' standard "x64 aarch64 s390x"
+    disablesourceinput: true
+  checkTemurinWindowsRelease:
+    name: Check if the "<lastVersion>" is available for Windows
+    kind: shell
+    spec:
+      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' windows "x64"
+    disablesourceinput: true
 
 targets:
   setJDK21VersionDockerBake:
@@ -61,30 +65,42 @@ targets:
     spec:
       file: 21/alpine/hotspot/Dockerfile
       instruction:
-        keyword: "ARG"
-        matcher: "JAVA_VERSION"
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
   setJDK21VersionDebian:
     name: "Bump JDK21 version for Linux images in the Debian Dockerfile"
     kind: dockerfile
     spec:
       file: 21/debian/bookworm/hotspot/Dockerfile
       instruction:
-        keyword: "ARG"
-        matcher: "JAVA_VERSION"
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
   setJDK21VersionDebianSlim:
     name: "Bump JDK21 version for Linux images in the Debian Slim Dockerfile"
     kind: dockerfile
     spec:
       file: 21/debian/bookworm-slim/hotspot/Dockerfile
       instruction:
-        keyword: "ARG"
-        matcher: "JAVA_VERSION"
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
+  setJDK21VersionRhel:
+    name: "Bump JDK21 version for Linux images in the Rhel Dockerfile"
+    kind: dockerfile
+    spec:
+      file: 21/rhel/ubi9/hotspot/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
 
 actions:
   default:
     kind: github/pullrequest
     scmid: default
-    title: Bump JDK21 version to {{ source "getLatestJDK21Version" }}
+    title: Bump JDK21 version to {{ source "lastVersion" }}
     spec:
       labels:
         - dependencies

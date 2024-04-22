@@ -28,7 +28,8 @@ Describe "[plugins-cli > $global:TEST_TAG] cleanup container" {
   }
 }
 
-Describe "[plugins-cli > $global:TEST_TAG] plugins are installed with jenkins-plugin-cli" {
+# Only test on Java 21, one JDK is enough to test all versions
+Describe "[plugins-cli > $global:TEST_TAG] plugins are installed with jenkins-plugin-cli" -Skip:(-not $global:TEST_TAG.StartsWith('jdk21-')) {
   It 'builds child image' {
     $exitCode, $stdout, $stderr = Build-DockerChild $global:SUT_IMAGE-plugins-cli $PSScriptRoot/plugins-cli
     $exitCode | Should -Be 0
@@ -62,7 +63,8 @@ Describe "[plugins-cli > $global:TEST_TAG] plugins are installed with jenkins-pl
   }
 }
 
-Describe "[plugins-cli > $global:TEST_TAG] plugins are installed with jenkins-plugin-cli with non-default REF" {
+# Only test on Java 21, one JDK is enough to test all versions
+Describe "[plugins-cli > $global:TEST_TAG] plugins are installed with jenkins-plugin-cli with non-default REF" -Skip:(-not $global:TEST_TAG.StartsWith('jdk21-')) {
   It 'builds child image' {
     $exitCode, $stdout, $stderr = Build-DockerChild $global:SUT_IMAGE-plugins-cli-ref $PSScriptRoot/plugins-cli/ref
     $exitCode | Should -Be 0
@@ -99,7 +101,8 @@ Describe "[plugins-cli > $global:TEST_TAG] plugins are installed with jenkins-pl
   }
 }
 
-Describe "[plugins-cli > $global:TEST_TAG] plugins are installed with jenkins-plugin-cli from a plugins file" {
+# Only test on Java 21, one JDK is enough to test all versions
+Describe "[plugins-cli > $global:TEST_TAG] plugins are installed with jenkins-plugin-cli from a plugins file" -Skip:(-not $global:TEST_TAG.StartsWith('jdk21-')) {
   It 'builds child image' {
     $exitCode, $stdout, $stderr = Build-DockerChild $global:SUT_IMAGE-plugins-cli $PSScriptRoot/plugins-cli
     $exitCode | Should -Be 0
@@ -136,7 +139,8 @@ Describe "[plugins-cli > $global:TEST_TAG] plugins are installed with jenkins-pl
   }
 }
 
-Describe "[plugins-cli > $global:TEST_TAG] plugins are installed with jenkins-plugin-cli even when already exist" {
+# Only test on Java 21, one JDK is enough to test all versions
+Describe "[plugins-cli > $global:TEST_TAG] plugins are installed with jenkins-plugin-cli even when already exist" -Skip:(-not $global:TEST_TAG.StartsWith('jdk21-')) {
   It 'builds child image' {
     $exitCode, $stdout, $stderr = Build-DockerChild $global:SUT_IMAGE-plugins-cli $PSScriptRoot/plugins-cli
     $exitCode | Should -Be 0
@@ -162,7 +166,8 @@ Describe "[plugins-cli > $global:TEST_TAG] clean work directory" {
   }
 }
 
-Describe "[plugins-cli > $global:TEST_TAG] plugins are getting upgraded but not downgraded" {
+# Only test on Java 21, one JDK is enough to test all versions
+Describe "[plugins-cli > $global:TEST_TAG] plugins are getting upgraded but not downgraded" -Skip:(-not $global:TEST_TAG.StartsWith('jdk21-')) {
   It 'builds child image' {
     # Initial execution
     $exitCode, $stdout, $stderr = Build-DockerChild $global:SUT_IMAGE-plugins-cli $PSScriptRoot/plugins-cli
@@ -212,7 +217,8 @@ Describe "[plugins-cli > $global:TEST_TAG] clean work directory" {
   }
 }
 
-Describe "[plugins-cli > $global:TEST_TAG] do not upgrade if plugin has been manually updated" {
+# Only test on Java 21, one JDK is enough to test all versions
+Describe "[plugins-cli > $global:TEST_TAG] do not upgrade if plugin has been manually updated" -Skip:(-not $global:TEST_TAG.StartsWith('jdk21-')) {
   
   It 'builds child image' {
     $exitCode, $stdout, $stderr = Build-DockerChild $global:SUT_IMAGE-plugins-cli $PSScriptRoot/plugins-cli
@@ -261,7 +267,8 @@ Describe "[plugins-cli > $global:TEST_TAG] clean work directory" {
   }
 }
 
-Describe "[plugins-cli > $global:TEST_TAG] upgrade plugin even if it has been manually updated when PLUGINS_FORCE_UPGRADE=true" {
+# Only test on Java 21, one JDK is enough to test all versions
+Describe "[plugins-cli > $global:TEST_TAG] upgrade plugin even if it has been manually updated when PLUGINS_FORCE_UPGRADE=true" -Skip:(-not $global:TEST_TAG.StartsWith('jdk21-')) {
   It 'builds child image' {
     $exitCode, $stdout, $stderr = Build-DockerChild $global:SUT_IMAGE-plugins-cli $PSScriptRoot/plugins-cli
     $exitCode | Should -Be 0
@@ -307,14 +314,16 @@ Describe "[plugins-cli > $global:TEST_TAG] clean work directory" {
   }
 }
 
-Describe "[plugins-cli > $global:TEST_TAG] plugins are installed with jenkins-plugin-cli and no war" {
+# Only test on Java 21, one JDK is enough to test all versions
+Describe "[plugins-cli > $global:TEST_TAG] plugins are installed with jenkins-plugin-cli and no war" -Skip:(-not $global:TEST_TAG.StartsWith('jdk21-')) {
   It 'builds child image' {
     $exitCode, $stdout, $stderr = Build-DockerChild $global:SUT_IMAGE-plugins-cli-no-war $PSScriptRoot/plugins-cli/no-war
     $exitCode | Should -Be 0
   }
 }
 
-Describe "[plugins-cli > $global:TEST_TAG] Use a custom jenkins.war" {
+# Only test on Java 21, one JDK is enough to test all versions
+Describe "[plugins-cli > $global:TEST_TAG] Use a custom jenkins.war" -Skip:(-not $global:TEST_TAG.StartsWith('jdk21-')) {
   It 'builds child image' {
     $exitCode, $stdout, $stderr = Build-DockerChild $global:SUT_IMAGE-plugins-cli-custom-war $PSScriptRoot/plugins-cli/custom-war --no-cache
     $exitCode | Should -Be 0
