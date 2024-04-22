@@ -61,6 +61,9 @@ OS_TYPE="linux"
 if [ "$OS" = "alpine" ]; then
     OS_TYPE="alpine-linux"
 fi
+if [ "$OS" = "windows" ]; then
+    OS_TYPE="windows"
+fi
 
 # Initialize a variable to store the URL for the first architecture
 FIRST_ARCH_URL=""
