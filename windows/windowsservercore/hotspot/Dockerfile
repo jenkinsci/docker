@@ -4,14 +4,45 @@
 ARG JAVA_VERSION=17.0.10_7
 ARG WINDOWS_VERSION=ltsc2019
 ARG TOOLS_WINDOWS_VERSION=1809
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-windowsservercore-"${TOOLS_WINDOWS_VERSION}" AS jdk-core
 
-FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}"
+FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS jre-build
+
+# $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+
+ARG JAVA_VERSION
+
+RUN New-Item -ItemType Directory -Path C:\temp | Out-Null ; `
+    $javaMajorVersion = $env:JAVA_VERSION.substring(0,2) ; `
+    $msiUrl = 'https://api.adoptium.net/v3/installer/version/jdk-{0}/windows/x64/jdk/hotspot/normal/eclipse?project=jdk' -f $env:JAVA_VERSION.Replace('_', '%2B') ; `
+    Invoke-WebRequest $msiUrl -OutFile 'C:\temp\jdk.msi' ; `
+    $proc = Start-Process -FilePath 'msiexec.exe' -ArgumentList '/i', 'C:\temp\jdk.msi', '/L*V', 'C:\temp\OpenJDK.log', '/quiet', 'ADDLOCAL=FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome',  "INSTALLDIR=C:\openjdk-${javaMajorVersion}" -Wait -Passthru ; `
+    $proc.WaitForExit() ; `
+    Remove-Item -Path C:\temp -Recurse | Out-Null
+
+RUN Write-Host 'javac --version' ; javac --version ; `
+    Write-Host 'java --version' ; java --version
+
+RUN $version = (jlink --version) ; `
+    $stripJavaDebugFlags = '--strip-java-debug-attributes' ; `
+    # jlink version 11 has less features than JDK17+
+    if ($version.StartsWith('11')) { `
+        $stripJavaDebugFlags = '--strip-debug' ; `
+    } `
+    & jlink `
+    --add-modules ALL-MODULE-PATH `
+    $stripJavaDebugFlags `
+    --no-man-pages `
+    --no-header-files `
+    --compress=2 `
+    --output /javaruntime
+
+FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS controller
 
 ARG JAVA_HOME="C:/openjdk-17"
 ENV JAVA_HOME=${JAVA_HOME}
 
-COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
+COPY --from=jre-build /javaruntime $JAVA_HOME
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
