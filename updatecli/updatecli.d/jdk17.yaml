@@ -46,7 +46,7 @@ conditions:
     spec:
       command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' standard "x64 aarch64 s390x"
     disablesourceinput: true
-  checkTemurinWWindowsRelease:
+  checkTemurinWindowsRelease:
     name: Check if the "<lastVersion>" is available for Windows
     kind: shell
     spec:
@@ -96,6 +96,22 @@ targets:
       instruction:
         keyword: ARG
         matcher: JAVA_VERSION
+    scmid: default
+  setJDK17VersionWindowsDockerImage:
+    name: "Bump default JDK17 version for Linux images in the Windows Dockerfile"
+    kind: dockerfile
+    spec:
+      file: windows/windowsservercore/hotspot/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
+  setJDK17VersionWindowsDockerCompose:
+    name: "Bump JDK17 version in build-windows.yaml"
+    kind: yaml
+    spec:
+      file: build-windows.yaml
+      key: $.services.jdk17.build.args.JAVA_VERSION
     scmid: default
 
 actions:

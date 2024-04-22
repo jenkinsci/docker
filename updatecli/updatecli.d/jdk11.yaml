@@ -104,6 +104,13 @@ targets:
         keyword: ARG
         matcher: JAVA_VERSION
     scmid: default
+  setJDK11VersionWindowsDockerCompose:
+    name: "Bump JDK11 version in build-windows.yaml"
+    kind: yaml
+    spec:
+      file: build-windows.yaml
+      key: $.services.jdk11.build.args.JAVA_VERSION
+    scmid: default
 
 actions:
   default:

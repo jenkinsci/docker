@@ -95,6 +95,13 @@ targets:
         keyword: ARG
         matcher: JAVA_VERSION
     scmid: default
+  setJDK21VersionWindowsDockerCompose:
+    name: "Bump JDK21 version in build-windows.yaml"
+    kind: yaml
+    spec:
+      file: build-windows.yaml
+      key: $.services.jdk21.build.args.JAVA_VERSION
+    scmid: default
 
 actions:
   default:
