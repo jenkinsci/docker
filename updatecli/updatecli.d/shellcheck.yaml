@@ -1,0 +1,49 @@
+---
+name: Bump shellcheck version
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "{{ .github.branch }}"
+
+sources:
+  lastReleaseVersion:
+    kind: githubrelease
+    name: Get the latest shellcheck release version
+    spec:
+      owner: "koalaman"
+      repository: "shellcheck"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      versionfilter:
+        kind: semver
+    transformers:
+      - trimprefix: v
+
+targets:
+  updateVersion:
+    name: "Update the `shellcheck` version in the tools/shellcheck script"
+    sourceid: lastReleaseVersion
+    kind: file
+    spec:
+      file: "tools/shellcheck"
+      matchpattern: "koalaman/shellcheck:v(.*) "
+      content: 'koalaman/shellcheck:v{{ source `lastReleaseVersion` }} '
+    scmid: default
+
+actions:
+  default:
+    kind: github/pullrequest
+    title: Bump `shellcheck` version to {{ source "lastReleaseVersion" }}
+    scmid: default
+    spec:
+      labels:
+        - dependencies
+        - shellcheck
