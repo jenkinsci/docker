@@ -52,6 +52,7 @@ conditions:
     disablesourceinput: true
 
 targets:
+  ## Global config files
   setJDK11VersionDockerBake:
     name: "Bump JDK11 version for Linux images in the docker-bake.hcl file"
     kind: hcl
@@ -59,38 +60,20 @@ targets:
       file: docker-bake.hcl
       path: variable.JAVA11_VERSION.default
     scmid: default
+  setJDK11VersionWindowsDockerCompose:
+    name: "Bump JDK11 version in build-windows.yaml"
+    kind: yaml
+    spec:
+      file: build-windows.yaml
+      key: $.services.jdk11.build.args.JAVA_VERSION
+    scmid: default
+  ## Dockerfiles
+  # Setting default JAVA_VERSION ARG for remaining ad hoc JDK11 images
   setJDK11VersionAlmaLinux8:
     name: "Bump JDK11 version for Linux images in the Alma Linux 8 Dockerfile"
     kind: dockerfile
     spec:
-      file: 11/almalinux/almalinux8/hotspot/Dockerfile
-      instruction:
-        keyword: ARG
-        matcher: JAVA_VERSION
-    scmid: default
-  setJDK11VersionAlpine:
-    name: "Bump JDK11 version for Linux images in the Alpine Linux Dockerfile"
-    kind: dockerfile
-    spec:
-      file: 11/alpine/hotspot/Dockerfile
-      instruction:
-        keyword: ARG
-        matcher: JAVA_VERSION
-    scmid: default
-  setJDK11VersionDebian:
-    name: "Bump JDK11 version for Linux images in the Debian Dockerfile"
-    kind: dockerfile
-    spec:
-      file: 11/debian/bookworm/hotspot/Dockerfile
-      instruction:
-        keyword: ARG
-        matcher: JAVA_VERSION
-    scmid: default
-  setJDK11VersionDebianSlim:
-    name: "Bump JDK11 version for Linux images in the Debian Slim Dockerfile"
-    kind: dockerfile
-    spec:
-      file: 11/debian/bookworm-slim/hotspot/Dockerfile
+      file: almalinux/almalinux8/hotspot/Dockerfile
       instruction:
         keyword: ARG
         matcher: JAVA_VERSION
@@ -99,17 +82,10 @@ targets:
     name: "Bump JDK11 version for Linux images in the Rhel Dockerfile"
     kind: dockerfile
     spec:
-      file: 11/rhel/ubi8/hotspot/Dockerfile
+      file: rhel/ubi8/hotspot/Dockerfile
       instruction:
         keyword: ARG
         matcher: JAVA_VERSION
-    scmid: default
-  setJDK11VersionWindowsDockerCompose:
-    name: "Bump JDK11 version in build-windows.yaml"
-    kind: yaml
-    spec:
-      file: build-windows.yaml
-      key: $.services.jdk11.build.args.JAVA_VERSION
     scmid: default
 
 actions:

@@ -29,30 +29,12 @@ sources:
       - trimprefix: "v"
 
 conditions:
-  testDockerfileArgJDK11:
-    name: "Does the JDK11 Dockerfile have an ARG instruction for the Alpine Linux version?"
+  testDockerfileArg:
+    name: "Does the Dockerfile have an ARG instruction for the Alpine Linux version?"
     kind: dockerfile
     disablesourceinput: true
     spec:
-      file: 11/alpine/hotspot/Dockerfile
-      instruction:
-        keyword: "ARG"
-        matcher: "ALPINE_TAG"
-  testDockerfileArgJDK17:
-    name: "Does the JDK17 Dockerfile have an ARG instruction for the Alpine Linux version?"
-    kind: dockerfile
-    disablesourceinput: true
-    spec:
-      file: 17/alpine/hotspot/Dockerfile
-      instruction:
-        keyword: "ARG"
-        matcher: "ALPINE_TAG"
-  testDockerfileArgJDK21:
-    name: "Does the JDK21 Dockerfile have an ARG instruction for the Alpine Linux version?"
-    kind: dockerfile
-    disablesourceinput: true
-    spec:
-      file: 21/alpine/hotspot/Dockerfile
+      file: alpine/hotspot/Dockerfile
       instruction:
         keyword: "ARG"
         matcher: "ALPINE_TAG"
@@ -66,39 +48,21 @@ conditions:
       architecture: amd64
 
 targets:
-  updateDockerfileJDK11:
-    name: "Update the value of the JDK11 base image (ARG ALPINE_TAG) in the Dockerfile"
-    kind: dockerfile
-    spec:
-      file: 11/alpine/hotspot/Dockerfile
-      instruction:
-        keyword: "ARG"
-        matcher: "ALPINE_TAG"
-    scmid: default
-    updateDockerfileJDK17:
-      name: "Update the value of the JDK17 base image (ARG ALPINE_TAG) in the Dockerfile"
-      kind: dockerfile
-      spec:
-        file: 17/alpine/hotspot/Dockerfile
-        instruction:
-          keyword: "ARG"
-          matcher: "ALPINE_TAG"
-      scmid: default
-  updateDockerfileJDK21:
-    name: "Update the value of the JDK21 base image (ARG ALPINE_TAG) in the Dockerfile"
-    kind: dockerfile
-    spec:
-      file: 21/alpine/hotspot/Dockerfile
-      instruction:
-        keyword: "ARG"
-        matcher: "ALPINE_TAG"
-    scmid: default
   updateDockerBake:
     name: "Update the value of the base image (ARG ALPINE_TAG) in the docker-bake.hcl"
     kind: hcl
     spec:
       file: docker-bake.hcl
       path: variable.ALPINE_FULL_TAG.default
+    scmid: default
+  updateDockerfile:
+    name: "Update the value of the JDK base image (ARG ALPINE_TAG) in the Dockerfile"
+    kind: dockerfile
+    spec:
+      file: alpine/hotspot/Dockerfile
+      instruction:
+        keyword: "ARG"
+        matcher: "ALPINE_TAG"
     scmid: default
 actions:
   default:
