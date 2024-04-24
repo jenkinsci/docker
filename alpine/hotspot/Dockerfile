@@ -25,16 +25,16 @@ RUN if test "${TARGETPLATFORM}" != 'linux/arm/v7'; then \
     case "$(jlink --version 2>&1)" in \
       # jlink version 11 has less features than JDK17+
       # the compression argument is different for JDK21
-      "11."*) set -- "--strip-debug" "2" ;; \
-      "21."*) set -- "--strip-java-debug-attributes" "zip-6" ;; \
-      *) set -- "--strip-java-debug-attributes" "2" ;; \
+      "11."*) set -- "--strip-debug" "--compress=2" ;; \
+      "21."*) set -- "--strip-java-debug-attributes" "--compress=zip-6" ;; \
+      *) set -- "--strip-java-debug-attributes" "--compress=2" ;; \
     esac; \
     jlink \
       --add-modules ALL-MODULE-PATH \
       "$1" \
+      "$2" \
       --no-man-pages \
       --no-header-files \
-      --compress="$2" \
       --output /javaruntime; \
   # It is acceptable to have a larger image in arm/v7 (arm 32 bits) environment.
   # Because jlink fails with the error "jmods: Value too large for defined data type" error.
