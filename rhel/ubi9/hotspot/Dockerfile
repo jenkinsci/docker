@@ -14,7 +14,7 @@ RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=
     && dnf clean --disableplugin=subscription-manager all \
     && /usr/bin/jdk-download.sh
 
-ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
+ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
