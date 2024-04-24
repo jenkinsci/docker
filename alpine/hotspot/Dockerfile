@@ -21,14 +21,24 @@ ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
 # while still saving space (approx 200mb from the full distribution)
-# Arguments to jlink are specific to Java 17 jlink
-RUN jlink \
-        --add-modules ALL-MODULE-PATH \
-        --strip-java-debug-attributes \
-        --no-man-pages \
-        --no-header-files \
-        --compress=2 \
-        --output /javaruntime
+ARG JLINK_COMPRESS=2
+RUN if test "${TARGETPLATFORM}" != 'linux/arm/v7'; then \
+    case "$(jlink --version 2>&1)" in \
+      # jlink version 11 has less features than JDK17+
+      "11."*) set -- "--strip-debug" ;; \
+      *) set -- "--strip-java-debug-attributes" ;; \
+    esac; \
+    jlink \
+      --add-modules ALL-MODULE-PATH \
+      "$1" \
+      --no-man-pages \
+      --no-header-files \
+      --compress="${JLINK_COMPRESS}" \
+      --output /javaruntime; \
+  # It is acceptable to have a larger image in arm/v7 (arm 32 bits) environment.
+  # Because jlink fails with the error "jmods: Value too large for defined data type" error.
+  else cp -r "/opt/jdk-${JAVA_VERSION}" /javaruntime; \
+  fi
 
 FROM alpine:"${ALPINE_TAG}" AS controller
 
