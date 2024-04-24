@@ -1,8 +1,8 @@
 ARG BOOKWORM_TAG=20240423
 
-FROM debian:bookworm-"${BOOKWORM_TAG}"-slim as jre-build
+FROM debian:bookworm-"${BOOKWORM_TAG}" as jre-build
 
-ARG JAVA_VERSION=17.0.11_9
+ARG JAVA_VERSION=11.0.23_9
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -17,32 +17,21 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/* \
   && /usr/bin/jdk-download.sh
 
-ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
+ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
 # while still saving space (approx 200mb from the full distribution)
-RUN if test "${TARGETPLATFORM}" != 'linux/arm/v7'; then \
-    case "$(jlink --version 2>&1)" in \
-      # jlink version 11 has less features than JDK17+
-      # the compression argument is different for JDK21
-      "11."*) set -- "--strip-debug" "--compress=2" ;; \
-      "21."*) set -- "--strip-java-debug-attributes" "--compress=zip-6" ;; \
-      *) set -- "--strip-java-debug-attributes" "--compress=2" ;; \
-    esac; \
-    jlink \
-      --add-modules ALL-MODULE-PATH \
-      "$1" \
-      "$2" \
-      --no-man-pages \
-      --no-header-files \
-      --output /javaruntime; \
-  # It is acceptable to have a larger image in arm/v7 (arm 32 bits) environment.
-  # Because jlink fails with the error "jmods: Value too large for defined data type" error.
-  else cp -r "/opt/jdk-${JAVA_VERSION}" /javaruntime; \
-  fi
+# Arguments to jlink are specific to Java 11 jlink
+RUN jlink \
+        --add-modules ALL-MODULE-PATH \
+        --strip-debug \
+        --no-man-pages \
+        --no-header-files \
+        --compress=2 \
+        --output /javaruntime
 
-FROM debian:bookworm-"${BOOKWORM_TAG}"-slim AS controller
+FROM debian:bookworm-"${BOOKWORM_TAG}" AS controller
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
@@ -148,6 +137,9 @@ COPY jenkins.sh /usr/local/bin/jenkins.sh
 COPY jenkins-plugin-cli.sh /bin/jenkins-plugin-cli
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
+
+# from a derived Dockerfile, can use `RUN install-plugins.sh active.txt` to setup $REF/plugins from a support bundle
+COPY install-plugins.sh /usr/local/bin/install-plugins.sh
 
 # metadata labels
 LABEL \
