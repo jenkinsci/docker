@@ -104,18 +104,6 @@ variable "JAVA21_VERSION" {
   default = "21.0.3_9"
 }
 
-variable "JAVA11_JLINK_COMPRESS" {
-  default = "2"
-}
-
-variable "JAVA17_JLINK_COMPRESS" {
-  default = "2"
-}
-
-variable "JAVA21_JLINK_COMPRESS" {
-  default = "zip-6"
-}
-
 variable "BOOKWORM_TAG" {
   default = "20240408"
 }
@@ -176,7 +164,6 @@ target "alpine_jdk11" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     ALPINE_TAG         = ALPINE_FULL_TAG
     JAVA_VERSION       = JAVA11_VERSION
-    JLINK_COMPRESS     = JAVA11_JLINK_COMPRESS
   }
   tags = [
     tag(true, "alpine-jdk11"),
@@ -197,7 +184,6 @@ target "alpine_jdk17" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     ALPINE_TAG         = ALPINE_FULL_TAG
     JAVA_VERSION       = JAVA17_VERSION
-    JLINK_COMPRESS     = JAVA17_JLINK_COMPRESS
   }
   tags = [
     tag(true, "alpine"),
@@ -222,7 +208,6 @@ target "alpine_jdk21" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     ALPINE_TAG         = ALPINE_FULL_TAG
     JAVA_VERSION       = JAVA21_VERSION
-    JLINK_COMPRESS     = JAVA21_JLINK_COMPRESS
   }
   tags = [
     tag(true, "alpine-jdk21"),
@@ -243,7 +228,6 @@ target "debian_jdk11" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
     JAVA_VERSION       = JAVA11_VERSION
-    JLINK_COMPRESS     = JAVA11_JLINK_COMPRESS
   }
   tags = [
     tag(true, "jdk11"),
@@ -265,7 +249,6 @@ target "debian_jdk17" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
     JAVA_VERSION       = JAVA17_VERSION
-    JLINK_COMPRESS     = JAVA17_JLINK_COMPRESS
   }
   tags = [
     tag(true, ""),
@@ -291,7 +274,6 @@ target "debian_jdk21" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
     JAVA_VERSION       = JAVA21_VERSION
-    JLINK_COMPRESS     = JAVA21_JLINK_COMPRESS
   }
   tags = [
     tag(true, "jdk21"),
@@ -313,7 +295,6 @@ target "debian_slim_jdk11" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
     JAVA_VERSION       = JAVA11_VERSION
-    JLINK_COMPRESS     = JAVA11_JLINK_COMPRESS
   }
   tags = [
     tag(true, "slim-jdk11"),
@@ -333,7 +314,6 @@ target "debian_slim_jdk17" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
     JAVA_VERSION       = JAVA17_VERSION
-    JLINK_COMPRESS     = JAVA17_JLINK_COMPRESS
   }
   tags = [
     tag(true, "slim"),
@@ -357,7 +337,6 @@ target "debian_slim_jdk21" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
     JAVA_VERSION       = JAVA21_VERSION
-    JLINK_COMPRESS     = JAVA21_JLINK_COMPRESS
   }
   tags = [
     tag(true, "slim-jdk21"),
@@ -395,7 +374,6 @@ target "rhel_ubi9_jdk17" {
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     JAVA_VERSION       = JAVA17_VERSION
-    JLINK_COMPRESS     = JAVA17_JLINK_COMPRESS
   }
   tags = [
     tag(true, "rhel-ubi9-jdk17"),
@@ -415,7 +393,6 @@ target "rhel_ubi9_jdk21" {
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     JAVA_VERSION       = JAVA21_VERSION
-    JLINK_COMPRESS     = JAVA21_JLINK_COMPRESS
   }
   tags = [
     tag(true, "rhel-ubi9-jdk21"),
