@@ -53,6 +53,18 @@ if [ "$dry_run" = true ]; then
     echo "Dry run, will not publish images"
 fi
 
+# Check if the current Jenkins version is not in the artifact ignore list
+jenkins_version_in_ignorelist="$(curl --disable --fail --silent --show-error --location \
+        https://raw.githubusercontent.com/jenkins-infra/update-center2/master/resources/artifact-ignores.properties \
+    | grep 'jenkins-war@.*' \
+    | grep "${JENKINS_VERSION}$")"
+
+if [[ -n "${jenkins_version_in_ignorelist}" ]]
+then
+    echo "ERROR: Jenkins version ${JENKINS_VERSION} is in the artifact ignore list."
+    exit 1
+fi
+
 # Retrieve all the Jenkins versions from Artifactory
 all_jenkins_versions="$(curl --disable --fail --silent --show-error --location \
         https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml \
