@@ -24,10 +24,11 @@ ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
 RUN if test "${TARGETPLATFORM}" != 'linux/arm/v7'; then \
     case "$(jlink --version 2>&1)" in \
       # jlink version 11 has less features than JDK17+
-      # the compression argument is different for JDK21
       "11."*) set -- "--strip-debug" "--compress=2" ;; \
+      "17."*) set -- "--strip-java-debug-attributes" "--compress=2" ;; \
+      # the compression argument is different for JDK21
       "21."*) set -- "--strip-java-debug-attributes" "--compress=zip-6" ;; \
-      *) set -- "--strip-java-debug-attributes" "--compress=2" ;; \
+      *) echo "ERROR: unmanaged jlink version pattern" && exit 1 ;; \
     esac; \
     jlink \
       --add-modules ALL-MODULE-PATH \
