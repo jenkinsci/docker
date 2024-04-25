@@ -152,6 +152,21 @@ if($target -eq 'test') {
 }
 
 if($target -eq "publish") {
+    # Check if the current Jenkins version is not in the artifact ignore list
+    $response = Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/jenkins-infra/update-center2/master/resources/artifact-ignores.properties'
+    if ($response.StatusCode -eq 200) {
+        $ignoreList = $response.Content
+        $search = 'jenkins-war@{0}$' -f $JenkinsVersion
+        $found = [regex]::Matches($ignoreList, $search, 'm')
+        if ($found.Count -gt 0) {
+            Write-Error "ERROR: Jenkins version $JenkinsVersion is in the artifact ignore list."
+            exit 1
+        }
+    } else {
+        Write-Error "ERROR: Failed to download the artifact ignore list from GitHub. Status code: $($response.StatusCode)"
+        exit 1
+    }
+
     Write-Host "= PUBLISH: push all images and tags"
     switch($DryRun) {
         $true { Write-Host "(dry-run) $baseDockerCmd push" }
