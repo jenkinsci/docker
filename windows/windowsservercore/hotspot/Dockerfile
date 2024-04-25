@@ -25,14 +25,17 @@ RUN Write-Host 'javac --version' ; javac --version ; `
 
 RUN $version = (jlink --version) ; `
     $stripJavaDebugArg = '--strip-java-debug-attributes' ; `
-    # jlink version 11 has less features than JDK17+
-    if ($version.StartsWith('11')) { `
-        $stripJavaDebugArg = '--strip-debug' ; `
-    } `
     $compressArg = '--compress=2' ; `
-    # the compression argument is different for JDK21
-    if ($version.StartsWith('21')) { `
-        $compressArg = '--compress=zip-6' ; `
+    switch ($version.Substring(0,3)) { `
+        # jlink version 11 has less features than JDK17+
+        '11.' { $stripJavaDebugArg = '--strip-debug' } `
+        '17.' {} `
+        # the compression argument is different for JDK21
+        '21.' { $compressArg = '--compress=zip-6' } `
+        Default { `
+            Write-Error 'ERROR: unmanaged jlink version pattern' ; `
+            exit 1 ; `
+        } `
     } `
     & jlink `
     --add-modules ALL-MODULE-PATH `
