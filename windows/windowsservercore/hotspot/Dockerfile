@@ -24,17 +24,22 @@ RUN Write-Host 'javac --version' ; javac --version ; `
     Write-Host 'java --version' ; java --version
 
 RUN $version = (jlink --version) ; `
-    $stripJavaDebugFlags = '--strip-java-debug-attributes' ; `
+    $stripJavaDebugArg = '--strip-java-debug-attributes' ; `
     # jlink version 11 has less features than JDK17+
     if ($version.StartsWith('11')) { `
-        $stripJavaDebugFlags = '--strip-debug' ; `
+        $stripJavaDebugArg = '--strip-debug' ; `
+    } `
+    $compressArg = '--compress=2' ; `
+    # the compression argument is different for JDK21
+    if ($version.StartsWith('21')) { `
+        $compressArg = '--compress=zip-6' ; `
     } `
     & jlink `
     --add-modules ALL-MODULE-PATH `
-    $stripJavaDebugFlags `
+    $stripJavaDebugArg `
+    $compressArg `
     --no-man-pages `
     --no-header-files `
-    --compress=2 `
     --output /javaruntime
 
 FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS controller
