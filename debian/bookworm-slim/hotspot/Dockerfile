@@ -36,7 +36,7 @@ RUN case "$(jlink --version 2>&1)" in \
       --add-modules ALL-MODULE-PATH \
       --no-man-pages \
       --no-header-files \
-      --output /javaruntime; \
+      --output /javaruntime
 
 FROM debian:bookworm-"${BOOKWORM_TAG}"-slim AS controller
 

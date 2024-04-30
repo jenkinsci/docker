@@ -30,10 +30,9 @@ RUN case "$(jlink --version 2>&1)" in \
     jlink \
       "$1" \
       "$2" \
-      --add-modules ALL-MODULE-PATH \
       --no-man-pages \
       --no-header-files \
-      --output /javaruntime; \
+      --output /javaruntime
 
 FROM registry.access.redhat.com/ubi9/ubi:9.3-1610 AS controller
 
