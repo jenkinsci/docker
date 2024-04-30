@@ -37,6 +37,10 @@ RUN $version = (jlink --version) ; `
             exit 1 ; `
         } `
     } `
+    # jlink version 11 has less features than JDK17+
+    if ($version.StartsWith('21')) { `
+        $compressArg = '--compress=zip-6' ; `
+    } `
     & jlink `
     $stripJavaDebugArg `
     $compressArg `
