@@ -31,9 +31,9 @@ RUN case "$(jlink --version 2>&1)" in \
       *) echo "ERROR: unmanaged jlink version pattern" && exit 1 ;; \
     esac; \
     jlink \
-      --add-modules ALL-MODULE-PATH \
       "$1" \
       "$2" \
+      --add-modules ALL-MODULE-PATH \
       --no-man-pages \
       --no-header-files \
       --output /javaruntime; \
