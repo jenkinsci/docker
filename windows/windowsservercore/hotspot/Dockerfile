@@ -38,9 +38,9 @@ RUN $version = (jlink --version) ; `
         } `
     } `
     & jlink `
-    --add-modules ALL-MODULE-PATH `
     $stripJavaDebugArg `
     $compressArg `
+    --add-modules ALL-MODULE-PATH `
     --no-man-pages `
     --no-header-files `
     --output /javaruntime
