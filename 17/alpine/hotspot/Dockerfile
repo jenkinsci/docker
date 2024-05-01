@@ -105,9 +105,12 @@ ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
 ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 RUN chown -R ${user} "$JENKINS_HOME" "$REF"
 
-ARG PLUGIN_CLI_VERSION=2.12.15
+ARG PLUGIN_CLI_VERSION=2.12.17
 ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
-RUN curl -fsSL ${PLUGIN_CLI_URL} -o /opt/jenkins-plugin-manager.jar
+RUN curl -fsSL ${PLUGIN_CLI_URL} -o /opt/jenkins-plugin-manager.jar \
+  && echo "$(curl -fsSL "${PLUGIN_CLI_URL}.sha256")  /opt/jenkins-plugin-manager.jar" >/tmp/jenkins_sha \
+  && sha256sum -c --strict /tmp/jenkins_sha \
+  && rm -f /tmp/jenkins_sha
 
 # for main web interface:
 EXPOSE ${http_port}
