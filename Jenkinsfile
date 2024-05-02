@@ -1,5 +1,6 @@
 #!/usr/bin/env groovy
 
+
 def listOfProperties = []
 listOfProperties << buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '5'))
 
