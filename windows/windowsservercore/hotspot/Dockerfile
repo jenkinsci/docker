@@ -24,22 +24,25 @@ RUN Write-Host 'javac --version' ; javac --version ; `
     Write-Host 'java --version' ; java --version
 
 RUN $version = (jlink --version) ; `
-    $stripJavaDebugFlags = '--strip-java-debug-attributes' ; `
+    $stripJavaDebugArg = '--strip-java-debug-attributes' ; `
     $compressArg = '--compress=2' ; `
-    # jlink version 11 has less features than JDK17+
-    if ($version.StartsWith('11')) { `
-        $stripJavaDebugFlags = '--strip-debug' ; `
-    } `
-    # jlink version 11 has less features than JDK17+
-    if ($version.StartsWith('21')) { `
-        $compressArg = '--compress=zip-6' ; `
+    switch ($version.Substring(0,3)) { `
+        # jlink version 11 has less features than JDK17+
+        '11.' { $stripJavaDebugArg = '--strip-debug' } `
+        '17.' {} `
+        # the compression argument is different for JDK21
+        '21.' { $compressArg = '--compress=zip-6' } `
+        Default { `
+            Write-Error 'ERROR: unmanaged jlink version pattern' ; `
+            exit 1 ; `
+        } `
     } `
     & jlink `
+    $stripJavaDebugArg `
+    $compressArg `
     --add-modules ALL-MODULE-PATH `
-    $stripJavaDebugFlags `
     --no-man-pages `
     --no-header-files `
-    --compress=2 `
     --output /javaruntime
 
 FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS controller

@@ -1,4 +1,6 @@
-FROM registry.access.redhat.com/ubi9/ubi:9.4-947 as jre-build
+ARG BOOKWORM_TAG=20240423
+
+FROM debian:bookworm-"${BOOKWORM_TAG}" as jre-build
 
 ARG JAVA_VERSION=17.0.11_9
 
@@ -7,43 +9,65 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 COPY jdk-download-url.sh /usr/bin/jdk-download-url.sh
 COPY jdk-download.sh /usr/bin/jdk-download.sh
 
-RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs --allowerasing -y \
+RUN apt-get update \
+  && apt-get install --no-install-recommends -y \
     ca-certificates \
     curl \
     jq \
-    && dnf clean --disableplugin=subscription-manager all \
-    && /usr/bin/jdk-download.sh
+  && rm -rf /var/lib/apt/lists/* \
+  && /usr/bin/jdk-download.sh
 
-ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
+ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
 # while still saving space (approx 200mb from the full distribution)
-# Arguments to jlink are specific to Java 17 jlink
-RUN jlink \
-        --add-modules ALL-MODULE-PATH \
-        --strip-java-debug-attributes \
-        --no-man-pages \
-        --no-header-files \
-        --compress=2 \
-        --output /javaruntime
+RUN case "$(jlink --version 2>&1)" in \
+      # jlink version 11 has less features than JDK17+
+      "11."*) set -- "--strip-debug" "--compress=2" ;; \
+      "17."*) set -- "--strip-java-debug-attributes" "--compress=2" ;; \
+      # the compression argument is different for JDK21
+      "21."*) set -- "--strip-java-debug-attributes" "--compress=zip-6" ;; \
+      *) echo "ERROR: unmanaged jlink version pattern" && exit 1 ;; \
+    esac; \
+    jlink \
+      "$1" \
+      "$2" \
+      --add-modules ALL-MODULE-PATH \
+      --no-man-pages \
+      --no-header-files \
+      --output /javaruntime
 
-FROM registry.access.redhat.com/ubi9/ubi:9.4-947 AS controller
+FROM debian:bookworm-"${BOOKWORM_TAG}" AS controller
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    git \
+    gnupg \
+    gpg \
+    libfontconfig1 \
+    libfreetype6 \
+    procps \
+    ssh-client \
+    tini \
+    unzip \
+    tzdata \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh -o /tmp/script.deb.sh \
+  && bash /tmp/script.deb.sh \
+  && rm -f /tmp/script.deb.sh \
+  && apt-get install -y --no-install-recommends \
+    git-lfs \
+  && rm -rf /var/lib/apt/lists/* \
+  && git lfs install
 
 ENV LANG C.UTF-8
 
 ARG TARGETARCH
 ARG COMMIT_SHA
-
-RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs -y \
-        fontconfig \
-        freetype \
-        git \
-        git-lfs \
-        unzip \
-        which \
-        tzdata \
-    && dnf clean --disableplugin=subscription-manager all
 
 ARG user=jenkins
 ARG group=jenkins
@@ -64,7 +88,7 @@ ENV REF $REF
 RUN mkdir -p $JENKINS_HOME \
   && chown ${uid}:${gid} $JENKINS_HOME \
   && groupadd -g ${gid} ${group} \
-  && useradd -N -d "$JENKINS_HOME" -u ${uid} -g ${gid} -l -m -s /bin/bash ${user}
+  && useradd -d "$JENKINS_HOME" -u ${uid} -g ${gid} -l -m -s /bin/bash ${user}
 
 # Jenkins home directory is a volume, so configuration and build history
 # can be persisted and survive image upgrades
@@ -74,16 +98,6 @@ VOLUME $JENKINS_HOME
 # to set on a fresh new installation. Use it to bundle additional plugins
 # or config file with your custom jenkins Docker image.
 RUN mkdir -p ${REF}/init.groovy.d
-
-# Use tini as subreaper in Docker container to adopt zombie processes
-ARG TINI_VERSION=v0.19.0
-COPY tini_pub.gpg "${JENKINS_HOME}/tini_pub.gpg"
-RUN curl -fsSL "https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-${TARGETARCH}" -o /sbin/tini \
-  && curl -fsSL "https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-${TARGETARCH}.asc" -o /sbin/tini.asc \
-  && gpg --no-tty --import "${JENKINS_HOME}/tini_pub.gpg" \
-  && gpg --verify /sbin/tini.asc \
-  && rm -rf /sbin/tini.asc /root/.gnupg \
-  && chmod +x /sbin/tini
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
@@ -132,7 +146,7 @@ COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
 COPY jenkins-plugin-cli.sh /bin/jenkins-plugin-cli
 
-ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
 # metadata labels
 LABEL \
