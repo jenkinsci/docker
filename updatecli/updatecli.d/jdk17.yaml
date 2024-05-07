@@ -54,6 +54,7 @@ conditions:
     disablesourceinput: true
 
 targets:
+  ## Global config files
   setJDK17VersionDockerBake:
     name: "Bump JDK17 version for Linux images in the docker-bake.hcl file"
     kind: hcl
@@ -61,29 +62,31 @@ targets:
       file: docker-bake.hcl
       path: variable.JAVA17_VERSION.default
     scmid: default
+  setJDK17VersionWindowsDockerCompose:
+    name: "Bump JDK17 version in build-windows.yaml"
+    kind: yaml
+    spec:
+      file: build-windows.yaml
+      key: $.services.jdk17.build.args.JAVA_VERSION
+    scmid: default
+  ## Dockerfiles
+  # Setting default JAVA_VERSION ARG to current Jenkins default JDK17
   setJDK17VersionAlpine:
     name: "Bump JDK17 version for Linux images in the Alpine Linux Dockerfile"
     kind: dockerfile
     spec:
-      file: 17/alpine/hotspot/Dockerfile
+      file: alpine/hotspot/Dockerfile
       instruction:
         keyword: ARG
         matcher: JAVA_VERSION
     scmid: default
   setJDK17VersionDebian:
-    name: "Bump JDK17 version for Linux images in the Debian Dockerfile"
+    name: "Bump JDK17 version for Linux images in the Debian Dockerfiles"
     kind: dockerfile
     spec:
-      file: 17/debian/bookworm/hotspot/Dockerfile
-      instruction:
-        keyword: ARG
-        matcher: JAVA_VERSION
-    scmid: default
-  setJDK17VersionDebianSlim:
-    name: "Bump JDK17 version for Linux images in the Debian Slim Dockerfile"
-    kind: dockerfile
-    spec:
-      file: 17/debian/bookworm-slim/hotspot/Dockerfile
+      files:
+        - debian/bookworm/hotspot/Dockerfile
+        - debian/bookworm-slim/hotspot/Dockerfile
       instruction:
         keyword: ARG
         matcher: JAVA_VERSION
@@ -92,7 +95,7 @@ targets:
     name: "Bump JDK17 version for Linux images in the Rhel Dockerfile"
     kind: dockerfile
     spec:
-      file: 17/rhel/ubi9/hotspot/Dockerfile
+      file: rhel/ubi9/hotspot/Dockerfile
       instruction:
         keyword: ARG
         matcher: JAVA_VERSION
@@ -105,13 +108,6 @@ targets:
       instruction:
         keyword: ARG
         matcher: JAVA_VERSION
-    scmid: default
-  setJDK17VersionWindowsDockerCompose:
-    name: "Bump JDK17 version in build-windows.yaml"
-    kind: yaml
-    spec:
-      file: build-windows.yaml
-      key: $.services.jdk17.build.args.JAVA_VERSION
     scmid: default
 
 actions:
