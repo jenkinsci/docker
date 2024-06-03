@@ -1,4 +1,4 @@
-FROM almalinux:8.9 as jre-build
+FROM almalinux:8.10 as jre-build
 
 ARG JAVA_VERSION=11.0.23_9
 
@@ -27,7 +27,7 @@ RUN jlink \
         --compress=2 \
         --output /javaruntime
 
-FROM almalinux:8.9 AS controller
+FROM almalinux:8.10 AS controller
 
 ENV LANG C.UTF-8
 
