@@ -2,6 +2,21 @@
 
 group "linux" {
   targets = [
+    "alpine_jdk17",
+    "alpine_jdk21",
+    "debian_jdk17",
+    "debian_jdk21",
+    "debian_slim_jdk17",
+    "debian_slim_jdk21",
+    "rhel_ubi9_jdk17",
+    "rhel_ubi9_jdk21",
+  ]
+}
+
+# TODO: remove when Java 11 is removed from LTS line
+# See https://github.com/jenkinsci/docker/issues/1890
+group "linux-lts-with-jdk11" {
+  targets = [
     "almalinux_jdk11",
     "alpine_jdk11",
     "alpine_jdk17",

@@ -57,7 +57,14 @@ $env:JENKINS_SHA = $webClient.DownloadString($jenkinsShaURL).ToUpper()
 
 $env:COMMIT_SHA=$(git rev-parse HEAD)
 
-$baseDockerCmd = 'docker-compose --file=build-windows.yaml'
+# Build all images including Java 11 if the version match a LTS versioning pattern
+# TODO: remove when Java 11 is removed from LTS line
+# See https://github.com/jenkinsci/docker/issues/1890
+$dockerComposeFile = 'build-windows.yaml'
+if ($JenkinsVersion -match '^\d+\.\d+\.\d+$') {
+    $dockerComposeFile = 'build-windows-lts-with-jdk11.yaml'
+}
+$baseDockerCmd = 'docker-compose --file={0}' -f $dockerComposeFile
 $baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
 
 Write-Host "= PREPARE: List of $Organisation/$Repository images and tags to be processed:"

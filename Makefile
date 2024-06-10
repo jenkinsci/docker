@@ -21,6 +21,11 @@ DISABLE_PARALLEL_TESTS ?= false
 # default is "all test suites in the "tests/" directory
 TEST_SUITES ?= $(CURDIR)/tests
 
+# Set to linux-lts-with-jdk11 to build all images including Java 11 if the version match a LTS versioning pattern
+# TODO: remove when Java 11 is removed from LTS line
+# See https://github.com/jenkinsci/docker/issues/1890
+TARGET ?= linux
+
 ##### Macros
 ## Check the presence of a CLI in the current PATH
 check_cli = type "$(1)" >/dev/null 2>&1 || { echo "Error: command '$(1)' required but not found. Exiting." ; exit 1 ; }
@@ -53,7 +58,7 @@ build-%: check-reqs
 	@set -x; $(bake_base_cli) --set '*.platform=linux/$(ARCH)' '$*'
 
 show:
-	@$(bake_base_cli) linux --print
+	@$(bake_base_cli) $(TARGET) --print
 
 list: check-reqs
 	@set -x; make --silent show | jq -r '.target | path(.. | select(.platforms[] | contains("linux/$(ARCH)"))?) | add'
