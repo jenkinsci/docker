@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/ubi:9.4-947.1716476138 as jre-build
+FROM registry.access.redhat.com/ubi9/ubi:9.4-947.1717074712 as jre-build
 
 ARG JAVA_VERSION=17.0.11_9
 
@@ -35,7 +35,7 @@ RUN case "$(jlink --version 2>&1)" in \
       --no-header-files \
       --output /javaruntime
 
-FROM registry.access.redhat.com/ubi9/ubi:9.4-947.1716476138 AS controller
+FROM registry.access.redhat.com/ubi9/ubi:9.4-947.1717074712 AS controller
 
 ENV LANG C.UTF-8
 
