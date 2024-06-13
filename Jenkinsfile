@@ -139,14 +139,14 @@ stage('Build') {
                     'rhel_ubi9_jdk17',
                     'rhel_ubi9_jdk21',
                 ]
+                // Build all images including Java 11 if the version match a LTS versioning pattern
+                // TODO: remove when Java 11 is removed from LTS line
+                // See https://github.com/jenkinsci/docker/issues/1890
                 if (isLTS) {
                     images = imagesWithJava11
                 } else {
                     images = imagesWithoutJava11
                 }
-                // Build all images including Java 11 if the version match a LTS versioning pattern
-                // TODO: remove when Java 11 is removed from LTS line
-                // See https://github.com/jenkinsci/docker/issues/1890
                 for (i in images) {
                     def imageToBuild = i
 
