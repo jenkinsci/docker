@@ -64,7 +64,9 @@ targets:
     name: "Bump JDK21 version in build-windows.yaml"
     kind: yaml
     spec:
-      file: build-windows.yaml
+      files:
+        - build-windows.yaml
+        - build-windows-lts-with-jdk11.yaml
       key: $.services.jdk21.build.args.JAVA_VERSION
     scmid: default
 
