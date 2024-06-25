@@ -1,7 +1,7 @@
 FROM bats-jenkins
 
 # Define a custom location for the war
-ENV JENKINS_WAR /test-custom-dockerfile/my-custom-jenkins.war
+ENV JENKINS_WAR=/test-custom-dockerfile/my-custom-jenkins.war
 WORKDIR /test-custom-dockerfile
 # Add there a new weird plugin to assert
 COPY --chown=jenkins:jenkins WEB-INF/ WEB-INF/
