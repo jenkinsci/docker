@@ -2,7 +2,7 @@ FROM bats-jenkins
 # hadolint shell=powershell
 
 # Define a custom location for the war
-ENV JENKINS_WAR C:/ProgramData/TestCustomDockerfile/my-custom-jenkins.war
+ENV JENKINS_WAR=C:/ProgramData/TestCustomDockerfile/my-custom-jenkins.war
 WORKDIR C:/ProgramData/TestCustomDockerfile
 # Add there a new weird plugin to assert
 COPY WEB-INF/ WEB-INF/
