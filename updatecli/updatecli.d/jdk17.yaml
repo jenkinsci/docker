@@ -34,55 +34,27 @@ sources:
           to: _
 
 conditions:
-  checkTemurinAlpineDockerImage:
-    kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-alpine" is available
-    disablesourceinput: true
+  checkTemurinAlpineRelease:
+    name: Check if the "<lastVersion>" is available for alpine
+    kind: shell
     spec:
-      image: eclipse-temurin
-      tag: '{{source "lastVersion" }}-jdk-alpine'
-  checkTemurinDebianDockerImages:
-    kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-focal" is available
+      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' alpine "x64"
     disablesourceinput: true
+  checkTemurinLinuxRelease:
+    name: Check if the "<lastVersion>" is available for Linux
+    kind: shell
     spec:
-      architectures:
-        - amd64
-        - arm64
-        - s390x
-        - linux/arm/v7
-      image: eclipse-temurin
-      tag: '{{source "lastVersion" }}-jdk-focal'
-  checkTemurinNanoserver2019DockerImage:
-    kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-nanoserver-1809" is available
+      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' standard "x64 aarch64 s390x"
     disablesourceinput: true
+  checkTemurinWindowsRelease:
+    name: Check if the "<lastVersion>" is available for Windows
+    kind: shell
     spec:
-      image: eclipse-temurin
-      tag: '{{source "lastVersion" }}-jdk-nanoserver-1809'
-  checkTemurinWindowsCore2019DockerImage:
-    kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-windowsservercore-1809" is available
+      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' windows "x64"
     disablesourceinput: true
-    spec:
-      image: eclipse-temurin
-      tag: '{{source "lastVersion" }}-jdk-windowsservercore-1809'
-  checkTemurinNanoserver2022DockerImage:
-    kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-nanoserver-ltsc2022" is available
-    disablesourceinput: true
-    spec:
-      image: eclipse-temurin
-      tag: '{{source "lastVersion" }}-jdk-nanoserver-ltsc2022'
-  checkTemurinWindowsCore2022DockerImage:
-    kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<lastVersion>-jdk-windowsservercore-18ltsc202209" is available
-    disablesourceinput: true
-    spec:
-      image: eclipse-temurin
-      tag: '{{source "lastVersion" }}-jdk-windowsservercore-ltsc2022'
 
 targets:
+  ## Global config files
   setJDK17VersionDockerBake:
     name: "Bump JDK17 version for Linux images in the docker-bake.hcl file"
     kind: hcl
@@ -90,29 +62,33 @@ targets:
       file: docker-bake.hcl
       path: variable.JAVA17_VERSION.default
     scmid: default
+  setJDK17VersionWindowsDockerCompose:
+    name: "Bump JDK17 version in build-windows.yaml"
+    kind: yaml
+    spec:
+      files:
+        - build-windows.yaml
+        - build-windows-lts-with-jdk11.yaml
+      key: $.services.jdk17.build.args.JAVA_VERSION
+    scmid: default
+  ## Dockerfiles
+  # Setting default JAVA_VERSION ARG to current Jenkins default JDK17
   setJDK17VersionAlpine:
     name: "Bump JDK17 version for Linux images in the Alpine Linux Dockerfile"
     kind: dockerfile
     spec:
-      file: 17/alpine/hotspot/Dockerfile
+      file: alpine/hotspot/Dockerfile
       instruction:
         keyword: ARG
         matcher: JAVA_VERSION
     scmid: default
   setJDK17VersionDebian:
-    name: "Bump JDK17 version for Linux images in the Debian Dockerfile"
+    name: "Bump JDK17 version for Linux images in the Debian Dockerfiles"
     kind: dockerfile
     spec:
-      file: 17/debian/bookworm/hotspot/Dockerfile
-      instruction:
-        keyword: ARG
-        matcher: JAVA_VERSION
-    scmid: default
-  setJDK17VersionDebianSlim:
-    name: "Bump JDK17 version for Linux images in the Debian Slim Dockerfile"
-    kind: dockerfile
-    spec:
-      file: 17/debian/bookworm-slim/hotspot/Dockerfile
+      files:
+        - debian/bookworm/hotspot/Dockerfile
+        - debian/bookworm-slim/hotspot/Dockerfile
       instruction:
         keyword: ARG
         matcher: JAVA_VERSION
@@ -121,7 +97,16 @@ targets:
     name: "Bump JDK17 version for Linux images in the Rhel Dockerfile"
     kind: dockerfile
     spec:
-      file: 17/rhel/ubi9/hotspot/Dockerfile
+      file: rhel/ubi9/hotspot/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
+  setJDK17VersionWindowsDockerImage:
+    name: "Bump default JDK17 version for Linux images in the Windows Dockerfile"
+    kind: dockerfile
+    spec:
+      file: windows/windowsservercore/hotspot/Dockerfile
       instruction:
         keyword: ARG
         matcher: JAVA_VERSION

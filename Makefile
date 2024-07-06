@@ -10,7 +10,7 @@ export BUILDKIT_PROGRESS=plain
 export COMMIT_SHA=$(shell git rev-parse HEAD)
 
 current_arch := $(shell uname -m)
-export ARCH ?= $(shell case $(current_arch) in (x86_64) echo "amd64" ;; (i386) echo "386";; (aarch64|arm64) echo "arm64" ;; (armv6*) echo "arm/v6";; (armv7*) echo "arm/v7";; (s390*|riscv*|ppc64le) echo $(current_arch);; (*) echo "UNKNOWN-CPU";; esac)
+export ARCH ?= $(shell case $(current_arch) in (x86_64) echo "amd64" ;; (aarch64|arm64) echo "arm64" ;; (s390*|riscv*|ppc64le) echo $(current_arch);; (*) echo "UNKNOWN-CPU";; esac)
 
 all: hadolint shellcheck build test
 
@@ -20,6 +20,11 @@ DISABLE_PARALLEL_TESTS ?= false
 # Set to the path of a specific test suite to restrict execution only to this
 # default is "all test suites in the "tests/" directory
 TEST_SUITES ?= $(CURDIR)/tests
+
+# Set to linux-lts-with-jdk11 to build all images including Java 11 if the version match a LTS versioning pattern
+# TODO: remove when Java 11 is removed from LTS line
+# See https://github.com/jenkinsci/docker/issues/1890
+TARGET ?= linux
 
 ##### Macros
 ## Check the presence of a CLI in the current PATH
@@ -53,7 +58,7 @@ build-%: check-reqs
 	@set -x; $(bake_base_cli) --set '*.platform=linux/$(ARCH)' '$*'
 
 show:
-	@$(bake_base_cli) linux --print
+	@$(bake_base_cli) $(TARGET) --print
 
 list: check-reqs
 	@set -x; make --silent show | jq -r '.target | path(.. | select(.platforms[] | contains("linux/$(ARCH)"))?) | add'

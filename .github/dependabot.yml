@@ -5,22 +5,7 @@ updates:
 # Alpine Linux
 
 - package-ecosystem: docker
-  directory: "17/alpine/hotspot"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 2
-  target-branch: master
-  reviewers:
-  - MarkEWaite
-  - slide
-  labels:
-  - dependencies
-  ignore:
-  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
-  - dependency-name: "eclipse-temurin"
-
-- package-ecosystem: docker
-  directory: "11/alpine/hotspot"
+  directory: "alpine/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
@@ -37,7 +22,7 @@ updates:
 # AlmaLinux
 
 - package-ecosystem: docker
-  directory: "11/almalinux/almalinux8/hotspot"
+  directory: "almalinux/almalinux8/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
@@ -57,7 +42,7 @@ updates:
 # Debian Linux
 
 - package-ecosystem: docker
-  directory: "17/debian/bookworm/hotspot"
+  directory: "debian/bookworm/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
@@ -72,37 +57,7 @@ updates:
   - dependency-name: "eclipse-temurin"
 
 - package-ecosystem: docker
-  directory: "17/debian/bookworm-slim/hotspot"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 2
-  target-branch: master
-  reviewers:
-  - MarkEWaite
-  - slide
-  labels:
-  - dependencies
-  ignore:
-  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
-  - dependency-name: "eclipse-temurin"
-
-- package-ecosystem: docker
-  directory: "11/debian/bookworm/hotspot"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 2
-  target-branch: master
-  reviewers:
-  - MarkEWaite
-  - slide
-  labels:
-  - dependencies
-  ignore:
-  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
-  - dependency-name: "eclipse-temurin"
-
-- package-ecosystem: docker
-  directory: "11/debian/bookworm-slim/hotspot"
+  directory: "debian/bookworm-slim/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
@@ -119,7 +74,7 @@ updates:
 # RHEL UBI
 
 - package-ecosystem: docker
-  directory: "11/rhel/ubi8/hotspot"
+  directory: "rhel/ubi8/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
@@ -134,7 +89,7 @@ updates:
   - dependency-name: "eclipse-temurin"
 
 - package-ecosystem: docker
-  directory: "17/rhel/ubi9/hotspot"
+  directory: "rhel/ubi9/hotspot"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2

@@ -133,7 +133,7 @@ FROM jenkins/jenkins:lts-jdk17
 
 COPY --chown=jenkins:jenkins certificate.pfx /var/lib/jenkins/certificate.pfx
 COPY --chown=jenkins:jenkins https.key /var/lib/jenkins/pk
-ENV JENKINS_OPTS --httpPort=-1 --httpsPort=8083 --httpsKeyStore=/var/lib/jenkins/certificate.pfx --httpsKeyStorePassword=Password12
+ENV JENKINS_OPTS="--httpPort=-1 --httpsPort=8083 --httpsKeyStore=/var/lib/jenkins/certificate.pfx --httpsKeyStorePassword=Password12"
 EXPOSE 8083
 ```
 
@@ -141,7 +141,7 @@ You can also change the default agent port for Jenkins by defining `JENKINS_SLAV
 
 ```
 FROM jenkins/jenkins:lts-jdk17
-ENV JENKINS_SLAVE_AGENT_PORT 50001
+ENV JENKINS_SLAVE_AGENT_PORT=50001
 ```
 
 or as a parameter to docker,

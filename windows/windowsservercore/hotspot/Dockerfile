@@ -1,17 +1,56 @@
 # escape=`
 # hadolint shell=powershell
 
-ARG JAVA_VERSION=17.0.10_7
+ARG JAVA_VERSION=17.0.11_9
 ARG WINDOWS_VERSION=ltsc2019
 ARG TOOLS_WINDOWS_VERSION=1809
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-windowsservercore-"${TOOLS_WINDOWS_VERSION}" AS jdk-core
 
-FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}"
+FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS jre-build
+
+# $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+
+ARG JAVA_VERSION=17.0.11_9
+
+RUN New-Item -ItemType Directory -Path C:\temp | Out-Null ; `
+    $javaMajorVersion = $env:JAVA_VERSION.substring(0,2) ; `
+    $msiUrl = 'https://api.adoptium.net/v3/installer/version/jdk-{0}/windows/x64/jdk/hotspot/normal/eclipse?project=jdk' -f $env:JAVA_VERSION.Replace('_', '%2B') ; `
+    Invoke-WebRequest $msiUrl -OutFile 'C:\temp\jdk.msi' ; `
+    $proc = Start-Process -FilePath 'msiexec.exe' -ArgumentList '/i', 'C:\temp\jdk.msi', '/L*V', 'C:\temp\OpenJDK.log', '/quiet', 'ADDLOCAL=FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome',  "INSTALLDIR=C:\openjdk-${javaMajorVersion}" -Wait -Passthru ; `
+    $proc.WaitForExit() ; `
+    Remove-Item -Path C:\temp -Recurse | Out-Null
+
+RUN Write-Host 'javac --version' ; javac --version ; `
+    Write-Host 'java --version' ; java --version
+
+RUN $version = (jlink --version) ; `
+    $stripJavaDebugArg = '--strip-java-debug-attributes' ; `
+    $compressArg = '--compress=2' ; `
+    switch ($version.Substring(0,3)) { `
+        # jlink version 11 has less features than JDK17+
+        '11.' { $stripJavaDebugArg = '--strip-debug' } `
+        '17.' {} `
+        # the compression argument is different for JDK21
+        '21.' { $compressArg = '--compress=zip-6' } `
+        Default { `
+            Write-Error 'ERROR: unmanaged jlink version pattern' ; `
+            exit 1 ; `
+        } `
+    } `
+    & jlink `
+    $stripJavaDebugArg `
+    $compressArg `
+    --add-modules ALL-MODULE-PATH `
+    --no-man-pages `
+    --no-header-files `
+    --output /javaruntime
+
+FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS controller
 
 ARG JAVA_HOME="C:/openjdk-17"
 ENV JAVA_HOME=${JAVA_HOME}
 
-COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
+COPY --from=jre-build /javaruntime $JAVA_HOME
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
@@ -27,8 +66,8 @@ ARG JENKINS_HOME=C:/ProgramData/Jenkins/JenkinsHome
 
 ARG COMMIT_SHA
 
-ENV JENKINS_HOME $JENKINS_HOME
-ENV JENKINS_AGENT_PORT ${agent_port}
+ENV JENKINS_HOME=$JENKINS_HOME
+ENV JENKINS_AGENT_PORT=${agent_port}
 
 # Jenkins home directory is a volume, so configuration and build history
 # can be persisted and survive image upgrades
@@ -58,7 +97,7 @@ RUN New-Item -ItemType Directory -Force -Path C:/ProgramData/Jenkins/Reference/i
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION ${JENKINS_VERSION:-2.428}
+ENV JENKINS_VERSION=${JENKINS_VERSION:-2.442}
 
 # jenkins.war checksum, download will be validated using it
 ARG JENKINS_SHA=b4f596923eb37b93c3f5a21a6a32fc3bedd57d04a1b63186811c0ce8b3d9f07c
@@ -71,13 +110,15 @@ ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-w
 RUN Invoke-WebRequest -Uri "$env:JENKINS_URL" -OutFile C:/ProgramData/Jenkins/jenkins.war ; `
     if ((Get-FileHash C:/ProgramData/Jenkins/jenkins.war -Algorithm SHA256).Hash -ne $env:JENKINS_SHA) {exit 1}
 
-ENV JENKINS_UC https://updates.jenkins.io
+ENV JENKINS_UC=https://updates.jenkins.io
 ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
 ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 
-ARG PLUGIN_CLI_VERSION=2.12.14
+ARG PLUGIN_CLI_VERSION=2.13.0
 ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
-RUN Invoke-WebRequest -Uri "$env:PLUGIN_CLI_URL" -OutFile C:/ProgramData/Jenkins/jenkins-plugin-manager.jar
+RUN $sha256sum = [System.Text.Encoding]::UTF8.GetString((Invoke-WebRequest -Uri ($env:PLUGIN_CLI_URL + '.sha256') -UseBasicParsing).Content); `
+    Invoke-WebRequest -Uri "$env:PLUGIN_CLI_URL" -OutFile C:/ProgramData/Jenkins/jenkins-plugin-manager.jar; `
+    if ((Get-FileHash -Path C:/ProgramData/Jenkins/jenkins-plugin-manager.jar -Algorithm SHA256).Hash -ne $sha256sum) {exit 1}
 
 # for main web interface:
 EXPOSE ${http_port}
@@ -85,7 +126,7 @@ EXPOSE ${http_port}
 # will be used by attached agents:
 EXPOSE ${agent_port}
 
-ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
+ENV COPY_REFERENCE_FILE_LOG=$JENKINS_HOME/copy_reference_file.log
 
 COPY jenkins-support.psm1 C:/ProgramData/Jenkins
 COPY jenkins.ps1 C:/ProgramData/Jenkins

@@ -8,6 +8,6 @@ template: |
   <!-- Optional: add a release summary here -->
   ## 📦 Jenkins Core updates
 
-  * Update to Jenkins $NEXT_MINOR_VERSION ([changelog](https://jenkins.io/changelog-stable/#v$NEXT_MINOR_VERSION))
+  * Update to Jenkins $NEXT_MINOR_VERSION ([changelog](https://www.jenkins.io/changelog/$NEXT_MINOR_VERSION))
 
   $CHANGES

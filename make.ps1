@@ -2,7 +2,7 @@
 Param(
     [Parameter(Position=1)]
     [String] $Target = 'build',
-    [String] $JenkinsVersion = '2.431',
+    [String] $JenkinsVersion = '2.442',
     [switch] $DryRun = $false
 )
 
@@ -57,18 +57,15 @@ $env:JENKINS_SHA = $webClient.DownloadString($jenkinsShaURL).ToUpper()
 
 $env:COMMIT_SHA=$(git rev-parse HEAD)
 
-$baseDockerCmd = 'docker-compose --file=build-windows.yaml'
-$baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
-
-$builds = @{}
-$compose = Invoke-Expression "$baseDockerCmd config --format=json" 2>$null | ConvertFrom-Json
-foreach ($service in $compose.services.PSObject.Properties) {
-    $tags = @($service.Value.image)
-    $tags += $service.Value.build.tags
-    $builds[$service.Value.image] = @{
-        'Tags' = $tags;
-    }    
+# Build all images including Java 11 if the version match a LTS versioning pattern
+# TODO: remove when Java 11 is removed from LTS line
+# See https://github.com/jenkinsci/docker/issues/1890
+$dockerComposeFile = 'build-windows.yaml'
+if ($JenkinsVersion -match '^\d+\.\d+\.\d+$') {
+    $dockerComposeFile = 'build-windows-lts-with-jdk11.yaml'
 }
+$baseDockerCmd = 'docker-compose --file={0}' -f $dockerComposeFile
+$baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
 
 Write-Host "= PREPARE: List of $Organisation/$Repository images and tags to be processed:"
 Invoke-Expression "$baseDockerCmd config"
@@ -101,15 +98,18 @@ function Test-Image {
     $configuration.TestResult.OutputPath = ".\target\$ImageName\junit-results.xml"
 
     $TestResults = Invoke-Pester -Configuration $configuration
+    $failed = $false
     if ($TestResults.FailedCount -gt 0) {
         Write-Host "There were $($TestResults.FailedCount) failed tests in $ImageName"
-        $testFailed = $true
+        $failed = $true
     } else {
         Write-Host "There were $($TestResults.PassedCount) passed tests out of $($TestResults.TotalCount) in $ImageName"
     }
 
     Remove-Item env:\CONTROLLER_IMAGE
     Remove-Item env:\DOCKERFILE
+
+    return $failed
 }
 
 if($target -eq 'test') {
@@ -142,8 +142,10 @@ if($target -eq 'test') {
         $configuration.CodeCoverage.Enabled = $false
 
         Write-Host '= TEST: Testing all images...'
-        foreach($image in $builds.Keys) {
-            Test-Image $image.split(':')[1]
+        # Only fail the run afterwards in case of any test failures
+        $testFailed = $false
+        Invoke-Expression "$baseDockerCmd config" | yq '.services[].image' | ForEach-Object {
+            $testFailed = $testFailed -or (Test-Image $_.split(':')[1])
         }
 
         # Fail if any test failures
@@ -156,26 +158,16 @@ if($target -eq 'test') {
     }
 }
 
-if($target -eq 'publish') {
-    # Only fail the run afterwards in case of any issues when publishing the docker images
-    $publishFailed = 0
-    foreach($b in $builds.Keys) {
-        foreach($taggedImage in $Builds[$b]['Tags']) {
-            Write-Host "Publishing $b => tag=$taggedImage"
-            $cmd = 'docker push {0}' -f $taggedImage
-            switch ($DryRun) {
-                $true { Write-Host "(dry-run) $cmd" }
-                $false { Invoke-Expression $cmd}
-            }
-            if($lastExitCode -ne 0) {
-                $publishFailed = 1
-            }
-        }
+if($target -eq "publish") {
+    Write-Host "= PUBLISH: push all images and tags"
+    switch($DryRun) {
+        $true { Write-Host "(dry-run) $baseDockerCmd push" }
+        $false { Invoke-Expression "$baseDockerCmd push" }
     }
 
     # Fail if any issues when publising the docker images
-    if($publishFailed -ne 0 -and !$DryRun) {
-        Write-Error 'Publish failed!'
+    if($lastExitCode -ne 0) {
+        Write-Error "= PUBLISH: failed!"
         exit 1
     }
 }
