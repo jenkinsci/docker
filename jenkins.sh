@@ -11,6 +11,7 @@ fi
 touch "${COPY_REFERENCE_FILE_LOG}" || { echo "Can not write to ${COPY_REFERENCE_FILE_LOG}. Wrong volume permissions?"; exit 1; }
 echo "--- Copying files at $(date)" >> "$COPY_REFERENCE_FILE_LOG"
 find "${REF}" \( -type f -o -type l \) -exec bash -c '. /usr/local/bin/jenkins-support; for arg; do copy_reference_file "$arg"; done' _ {} +
+echo "--- Copied files finished at $(date)" >> "$COPY_REFERENCE_FILE_LOG"
 
 # if `docker run` first argument start with `--` the user is passing jenkins launcher arguments
 if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
