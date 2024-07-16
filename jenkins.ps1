@@ -13,6 +13,7 @@ try {
 
 Add-Content -Path $COPY_REFERENCE_FILE_LOG -Value "--- Copying files at $(Get-Date)"
 Get-ChildItem -Recurse -File -Path 'C:/ProgramData/Jenkins/Reference' | ForEach-Object { Copy-ReferenceFile $_.FullName }
+Add-Content -Path $COPY_REFERENCE_FILE_LOG -Value "--- Copied files finished at $(Get-Date)"
 
 # if `docker run` first argument starts with `--` the user is passing jenkins launcher arguments
 if(($args.Count -eq 0) -or ($args[0] -match "^--.*")) {
