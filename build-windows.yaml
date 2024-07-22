@@ -24,7 +24,7 @@ services:
       args:
         COMMIT_SHA: ${COMMIT_SHA}
         JAVA_HOME: "C:/openjdk-21"
-        JAVA_VERSION: 21.0.3_9
+        JAVA_VERSION: 21.0.4_7
         JENKINS_SHA: ${JENKINS_SHA}
         JENKINS_VERSION: ${JENKINS_VERSION}
         TOOLS_WINDOWS_VERSION: ${TOOLS_WINDOWS_VERSION}
