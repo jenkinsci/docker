@@ -1,6 +1,6 @@
 FROM registry.access.redhat.com/ubi8/ubi:8.10-1020 as jre-build
 
-ARG JAVA_VERSION=11.0.23_9
+ARG JAVA_VERSION=11.0.24_8
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
