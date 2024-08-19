@@ -18,6 +18,7 @@ docker run -p 8080:8080 -p 50000:50000 --restart=on-failure jenkins/jenkins:lts-
 ```
 
 NOTE: read the section [_Connecting agents_](#connecting-agents) below for the role of the `50000` port mapping.
+NOTE: read the section [_DNS Configuration_](#dns-configuration) in case you see the message "This Jenkins instance appears to be offline." 
 
 This will store the workspace in `/var/jenkins_home`.
 All Jenkins data lives in there - including plugins and configuration.
@@ -113,6 +114,15 @@ If you want to install Jenkins behind a reverse proxy with a prefix, example: my
 
 - [Apache](https://www.jenkins.io/doc/book/system-administration/reverse-proxy-configuration-apache/)
 - [Nginx](https://www.jenkins.io/doc/book/system-administration/reverse-proxy-configuration-nginx/)
+
+## DNS configuration
+
+If the message "This Jenkins instance appears to be offline." appears on first startup, and the container logs show lines such as `java.net.UnknownHostException: updates.jenkins.io`, your container may be having issues with resolving DNS names.
+
+To potentially solve the issue, start the container specifying a dns server (for example Cloudflare's 1.1.1.1 or Google's 8.8.8.8, or any other DNS server):
+```
+docker run -p 8080:8080 -p 50000:50000 --restart=on-failure --dns 1.1.1.1 --dns 8.8.8.8 jenkins/jenkins:lts-jdk17
+```
 
 ## Passing Jenkins launcher parameters
 
@@ -311,6 +321,17 @@ To start the Jenkins instance and the other services defined in the `docker-comp
 This will pull the necessary images from Docker Hub if they are not already present on your system, and start the services in the background.
 
 You can then access the Jenkins web interface on `http://localhost:8080` on your host system to configure and manage your Jenkins instance (where `localhost` points to the published port by your Docker Engine).
+
+NOTE: read the section [_DNS Configuration_](#dns-configuration) in case you see the message "This Jenkins instance appears to be offline." In that case add the dns configuration to the yaml:
+```yaml
+services:
+  jenkins:
+# ... other config
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+# ... other config
+```
 
 ### Updating plugins file
 
