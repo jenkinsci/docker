@@ -103,7 +103,7 @@ RUN curl -fsSL ${JENKINS_URL} -o /usr/share/jenkins/jenkins.war \
   && sha256sum -c --strict /tmp/jenkins_sha \
   && rm -f /tmp/jenkins_sha
 
-ENV JENKINS_UC=ttps://updates.jenkins.io
+ENV JENKINS_UC=https://updates.jenkins.io
 ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
 ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 RUN chown -R ${user} "$JENKINS_HOME" "$REF"
