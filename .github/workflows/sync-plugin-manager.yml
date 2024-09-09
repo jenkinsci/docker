@@ -59,7 +59,7 @@ jobs:
 
       - name: Create Pull Request
         id: cpr
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         if: ${{ steps.update.outputs.available == 'true' }}
         with:
           token: ${{ steps.generate-token.outputs.token }}
