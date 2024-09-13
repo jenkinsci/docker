@@ -367,6 +367,12 @@ The default behaviour when upgrading from a docker image that didn't write marke
 If you want to upgrade existing plugins without marker you may run the docker image with `-e TRY_UPGRADE_IF_NO_MARKER=true`.
 Then plugins will be upgraded if the version provided by the docker image is newer.
 
+# Self-Hosting Jenkins
+
+### Elestio
+
+[![Deploy on Elestio](https://elest.io/images/logos/deploy-to-elestio-btn.png)](https://elest.io/open-source/jenkins)
+
 # Hacking
 
 If you wish to contribute fixes to this repository, please refer to the [dedicated documentation](HACKING.adoc).
