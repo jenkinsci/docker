@@ -13,35 +13,12 @@ group "linux" {
   ]
 }
 
-# TODO: remove when Java 11 is removed from LTS line
-# See https://github.com/jenkinsci/docker/issues/1890
-group "linux-lts-with-jdk11" {
-  targets = [
-    "almalinux_jdk11",
-    "alpine_jdk11",
-    "alpine_jdk17",
-    "alpine_jdk21",
-    "debian_jdk11",
-    "debian_jdk17",
-    "debian_jdk21",
-    "debian_slim_jdk11",
-    "debian_slim_jdk17",
-    "debian_slim_jdk21",
-    "rhel_ubi8_jdk11",
-    "rhel_ubi9_jdk17",
-    "rhel_ubi9_jdk21",
-  ]
-}
-
 group "linux-arm64" {
   targets = [
-    "almalinux_jdk11",
     "alpine_jdk21",
-    "debian_jdk11",
     "debian_jdk17",
     "debian_jdk21",
     "debian_slim_jdk21",
-    "rhel_ubi8_jdk11",
     "rhel_ubi9_jdk17",
     "rhel_ubi9_jdk21",
   ]
@@ -49,7 +26,6 @@ group "linux-arm64" {
 
 group "linux-s390x" {
   targets = [
-    "debian_jdk11",
     "debian_jdk17",
     "debian_jdk21",
   ]
@@ -57,7 +33,6 @@ group "linux-s390x" {
 
 group "linux-ppc64le" {
   targets = [
-    "debian_jdk11",
     "debian_jdk17",
     "debian_jdk21",
     "rhel_ubi9_jdk17",
@@ -107,10 +82,6 @@ variable "ALPINE_SHORT_TAG" {
   default = regex_replace(ALPINE_FULL_TAG, "\\.\\d+$", "")
 }
 
-variable "JAVA11_VERSION" {
-  default = "11.0.24_8"
-}
-
 variable "JAVA17_VERSION" {
   default = "17.0.12_7"
 }
@@ -150,44 +121,6 @@ function "tag_lts" {
 }
 
 # ---- targets ----
-
-target "almalinux_jdk11" {
-  dockerfile = "almalinux/almalinux8/hotspot/Dockerfile"
-  context    = "."
-  args = {
-    JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
-    COMMIT_SHA         = COMMIT_SHA
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    JAVA_VERSION       = JAVA11_VERSION
-  }
-  tags = [
-    tag(true, "almalinux"),
-    tag_weekly(false, "almalinux"),
-    tag_lts(false, "lts-almalinux")
-  ]
-  platforms = ["linux/amd64", "linux/arm64"]
-}
-
-target "alpine_jdk11" {
-  dockerfile = "alpine/hotspot/Dockerfile"
-  context    = "."
-  args = {
-    JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
-    COMMIT_SHA         = COMMIT_SHA
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    ALPINE_TAG         = ALPINE_FULL_TAG
-    JAVA_VERSION       = JAVA11_VERSION
-  }
-  tags = [
-    tag(true, "alpine-jdk11"),
-    tag_weekly(false, "alpine-jdk11"),
-    tag_weekly(false, "alpine${ALPINE_SHORT_TAG}-jdk11"),
-    tag_lts(false, "lts-alpine-jdk11")
-  ]
-  platforms = ["linux/amd64"]
-}
 
 target "alpine_jdk17" {
   dockerfile = "alpine/hotspot/Dockerfile"
@@ -231,27 +164,6 @@ target "alpine_jdk21" {
     tag_lts(false, "lts-alpine-jdk21")
   ]
   platforms = ["linux/amd64", "linux/arm64"]
-}
-
-target "debian_jdk11" {
-  dockerfile = "debian/bookworm/hotspot/Dockerfile"
-  context    = "."
-  args = {
-    JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
-    COMMIT_SHA         = COMMIT_SHA
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    BOOKWORM_TAG       = BOOKWORM_TAG
-    JAVA_VERSION       = JAVA11_VERSION
-  }
-  tags = [
-    tag(true, "jdk11"),
-    tag_weekly(false, "latest-jdk11"),
-    tag_weekly(false, "jdk11"),
-    tag_lts(false, "lts-jdk11"),
-    tag_lts(true, "lts-jdk11")
-  ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"]
 }
 
 target "debian_jdk17" {
@@ -300,25 +212,6 @@ target "debian_jdk21" {
   platforms = ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"]
 }
 
-target "debian_slim_jdk11" {
-  dockerfile = "debian/bookworm-slim/hotspot/Dockerfile"
-  context    = "."
-  args = {
-    JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
-    COMMIT_SHA         = COMMIT_SHA
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    BOOKWORM_TAG       = BOOKWORM_TAG
-    JAVA_VERSION       = JAVA11_VERSION
-  }
-  tags = [
-    tag(true, "slim-jdk11"),
-    tag_weekly(false, "slim-jdk11"),
-    tag_lts(false, "lts-slim-jdk11"),
-  ]
-  platforms = ["linux/amd64"]
-}
-
 target "debian_slim_jdk17" {
   dockerfile = "debian/bookworm-slim/hotspot/Dockerfile"
   context    = "."
@@ -357,25 +250,6 @@ target "debian_slim_jdk21" {
     tag(true, "slim-jdk21"),
     tag_weekly(false, "slim-jdk21"),
     tag_lts(false, "lts-slim-jdk21"),
-  ]
-  platforms = ["linux/amd64", "linux/arm64"]
-}
-
-target "rhel_ubi8_jdk11" {
-  dockerfile = "rhel/ubi8/hotspot/Dockerfile"
-  context    = "."
-  args = {
-    JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
-    COMMIT_SHA         = COMMIT_SHA
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    JAVA_VERSION       = JAVA11_VERSION
-  }
-  tags = [
-    tag(true, "rhel-ubi8-jdk11"),
-    tag_weekly(false, "rhel-ubi8-jdk11"),
-    tag_lts(false, "lts-rhel-ubi8-jdk11"),
-    tag_lts(true, "lts-rhel-ubi8-jdk11")
   ]
   platforms = ["linux/amd64", "linux/arm64"]
 }

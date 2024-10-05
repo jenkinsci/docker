@@ -13,14 +13,6 @@ function get_jdk_download_url() {
   jdk_version="${1}"
   platform="${2}"
   case "${jdk_version}" in
-    8*)
-      ## JDK8 does not have the carret ('-') in their archive names
-      echo "https://github.com/adoptium/temurin8-binaries/releases/download/jdk${jdk_version}/OpenJDK8U-jdk_${platform}_hotspot_${jdk_version//-}";
-      return 0;;
-    11*)
-      ## JDK11 URLs have an underscore ('_') instead of a plus ('+') in their archive names
-      echo "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-${jdk_version}/OpenJDK11U-jdk_${platform}_hotspot_${jdk_version//+/_}";
-      return 0;;
     17*)
       ## JDK17 URLs have an underscore ('_') instead of a plus ('+') in their archive names
       echo "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-${jdk_version}/OpenJDK17U-jdk_${platform}_hotspot_${jdk_version//+/_}";
@@ -36,11 +28,6 @@ function get_jdk_download_url() {
 }
 
 case "${1}" in
-  8u*)
-    # No s390x support for JDK8: $platforms is kept as default
-    platforms=("x64_linux" "x64_windows" "aarch64_linux");;
-  11.*)
-    platforms=("x64_linux" "x64_windows" "aarch64_linux" "s390x_linux");;
   17.*+*)
     platforms=("x64_linux" "x64_windows" "aarch64_linux" "s390x_linux");;
   21*+*)

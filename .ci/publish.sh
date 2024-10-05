@@ -68,15 +68,9 @@ else
     LATEST_WEEKLY="false"
 fi
 
-# Build all images including Java 11 if the version match latest LTS version
-# TODO: remove when Java 11 is removed from LTS line
-# See https://github.com/jenkinsci/docker/issues/1890
-TARGET="linux"
-
 if [[ "${JENKINS_VERSION}" == "${latest_lts_version}" ]]
 then
     LATEST_LTS="true"
-    TARGET="linux-lts-with-jdk11"
 else
     LATEST_LTS="false"
 fi
@@ -90,7 +84,7 @@ fi
 
 JENKINS_SHA="$(curl --disable --fail --silent --show-error --location "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war.sha256")"
 COMMIT_SHA=$(git rev-parse HEAD)
-export COMMIT_SHA JENKINS_VERSION JENKINS_SHA LATEST_WEEKLY LATEST_LTS TARGET
+export COMMIT_SHA JENKINS_VERSION JENKINS_SHA LATEST_WEEKLY LATEST_LTS
 
 cat <<EOF
 Using the following settings:
@@ -100,7 +94,6 @@ Using the following settings:
 * COMMIT_SHA: ${COMMIT_SHA}
 * LATEST_WEEKLY: ${LATEST_WEEKLY}
 * LATEST_LTS: ${LATEST_LTS}
-* TARGET: ${TARGET}
 EOF
 
-docker buildx bake --file docker-bake.hcl "${build_opts[@]}" "${TARGET}"
+docker buildx bake --file docker-bake.hcl "${build_opts[@]}" linux

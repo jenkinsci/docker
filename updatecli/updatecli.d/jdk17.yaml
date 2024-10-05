@@ -68,7 +68,6 @@ targets:
     spec:
       files:
         - build-windows.yaml
-        - build-windows-lts-with-jdk11.yaml
       key: $.services.jdk17.build.args.JAVA_VERSION
     scmid: default
   ## Dockerfiles

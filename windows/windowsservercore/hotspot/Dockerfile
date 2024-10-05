@@ -24,11 +24,8 @@ RUN Write-Host 'javac --version' ; javac --version ; `
     Write-Host 'java --version' ; java --version
 
 RUN $version = (jlink --version) ; `
-    $stripJavaDebugArg = '--strip-java-debug-attributes' ; `
     $compressArg = '--compress=2' ; `
     switch ($version.Substring(0,3)) { `
-        # jlink version 11 has less features than JDK17+
-        '11.' { $stripJavaDebugArg = '--strip-debug' } `
         '17.' {} `
         # the compression argument is different for JDK21
         '21.' { $compressArg = '--compress=zip-6' } `
@@ -38,7 +35,7 @@ RUN $version = (jlink --version) ; `
         } `
     } `
     & jlink `
-    $stripJavaDebugArg `
+    -strip-java-debug-attributes `
     $compressArg `
     --add-modules ALL-MODULE-PATH `
     --no-man-pages `
