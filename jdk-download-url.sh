@@ -80,7 +80,7 @@ for ARCH in $ARCHS; do
     fi
 
     # Extract the redirect URL from the HTTP response
-    REDIRECTED_URL=$(echo "$RESPONSE" | grep Location | awk '{print $2}' | tr -d '\r')
+    REDIRECTED_URL=$(echo "$RESPONSE" | grep -i location | awk '{print $2}' | tr -d '\r')
 
     # If no redirect URL was found, exit the script with an error message
     if [ -z "$REDIRECTED_URL" ]; then
