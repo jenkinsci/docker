@@ -24,11 +24,8 @@ RUN Write-Host 'javac --version' ; javac --version ; `
     Write-Host 'java --version' ; java --version
 
 RUN $version = (jlink --version) ; `
-    $stripJavaDebugArg = '--strip-java-debug-attributes' ; `
     $compressArg = '--compress=2' ; `
     switch ($version.Substring(0,3)) { `
-        # jlink version 11 has less features than JDK17+
-        '11.' { $stripJavaDebugArg = '--strip-debug' } `
         '17.' {} `
         # the compression argument is different for JDK21
         '21.' { $compressArg = '--compress=zip-6' } `
@@ -38,7 +35,7 @@ RUN $version = (jlink --version) ; `
         } `
     } `
     & jlink `
-    $stripJavaDebugArg `
+    --strip-java-debug-attributes `
     $compressArg `
     --add-modules ALL-MODULE-PATH `
     --no-man-pages `
@@ -97,10 +94,10 @@ RUN New-Item -ItemType Directory -Force -Path C:/ProgramData/Jenkins/Reference/i
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION=${JENKINS_VERSION:-2.442}
+ENV JENKINS_VERSION=${JENKINS_VERSION:-2.479}
 
 # jenkins.war checksum, download will be validated using it
-ARG JENKINS_SHA=b4f596923eb37b93c3f5a21a6a32fc3bedd57d04a1b63186811c0ce8b3d9f07c
+ARG JENKINS_SHA=910ea36cef37c45087e39d65e335988e036fccea47c79cc5a52e721a10cb1b49
 
 # Can be used to customize where jenkins.war get downloaded from
 ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war
