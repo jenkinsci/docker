@@ -35,7 +35,7 @@ RUN $version = (jlink --version) ; `
         } `
     } `
     & jlink `
-    -strip-java-debug-attributes `
+    --strip-java-debug-attributes `
     $compressArg `
     --add-modules ALL-MODULE-PATH `
     --no-man-pages `
