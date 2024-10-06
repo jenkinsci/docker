@@ -57,7 +57,7 @@ $env:JENKINS_SHA = $webClient.DownloadString($jenkinsShaURL).ToUpper()
 
 $env:COMMIT_SHA=$(git rev-parse HEAD)
 
-$baseDockerCmd = 'docker-compose --file={0}' -f build-windows.yaml
+$baseDockerCmd = 'docker-compose --file=build-windows.yaml'
 $baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
 
 Write-Host "= PREPARE: List of $Organisation/$Repository images and tags to be processed:"
