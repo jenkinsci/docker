@@ -74,7 +74,7 @@ for ARCH in $ARCHS; do
     URL="https://api.adoptium.net/v3/binary/version/jdk-${ENCODED_ARCHIVE_DIRECTORY}/${OS_TYPE}/${ARCH}/jdk/hotspot/normal/eclipse?project=jdk"
 
     if ! RESPONSE=$(curl -fsI "$URL"); then
-        echo "Error: Failed to fetch the URL for architecture ${ARCH}. Exiting with status 1." >&2
+        echo "Error: Failed to fetch the URL for architecture ${ARCH} from ${URL}. Exiting with status 1." >&2
         echo "Response: $RESPONSE" >&2
         exit 1
     fi
@@ -84,7 +84,7 @@ for ARCH in $ARCHS; do
 
     # If no redirect URL was found, exit the script with an error message
     if [ -z "$REDIRECTED_URL" ]; then
-        echo "Error: No redirect URL found for architecture ${ARCH}. Exiting with status 1." >&2
+        echo "Error: No redirect URL found for architecture ${ARCH} from ${URL}. Exiting with status 1." >&2
         echo "Response: $RESPONSE" >&2
         exit 1
     fi
