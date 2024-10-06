@@ -2,7 +2,7 @@
 Param(
     [Parameter(Position=1)]
     [String] $Target = 'build',
-    [String] $JenkinsVersion = '2.442',
+    [String] $JenkinsVersion = '2.479',
     [switch] $DryRun = $false
 )
 

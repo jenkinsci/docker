@@ -94,10 +94,10 @@ RUN curl -fsSL "https://github.com/krallin/tini/releases/download/${TINI_VERSION
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION=${JENKINS_VERSION:-2.442}
+ENV JENKINS_VERSION=${JENKINS_VERSION:-2.479}
 
 # jenkins.war checksum, download will be validated using it
-ARG JENKINS_SHA=b4f596923eb37b93c3f5a21a6a32fc3bedd57d04a1b63186811c0ce8b3d9f07c
+ARG JENKINS_SHA=910ea36cef37c45087e39d65e335988e036fccea47c79cc5a52e721a10cb1b49
 
 # Can be used to customize where jenkins.war get downloaded from
 ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war
