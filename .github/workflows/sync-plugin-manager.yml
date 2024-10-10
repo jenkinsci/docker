@@ -38,7 +38,7 @@ jobs:
       - name: Update LTS version in files
         if: ${{ steps.update.outputs.available == 'true' }}
         run: |
-          grep -ilr ${{ steps.update.outputs.current-version }} ./ | grep -v CHANGELOG.md | xargs sed -i 's/${{ steps.update.outputs.current-version }}/${{ steps.lts.outputs.next-version }}/g'
+          grep -ilrF ${{ steps.update.outputs.current-version }} ./ | grep -v CHANGELOG.md | xargs sed -i 's/${{ steps.update.outputs.current-version }}/${{ steps.lts.outputs.next-version }}/g'
      
       - name: Changelog
         if: ${{ steps.update.outputs.available == 'true' }}
