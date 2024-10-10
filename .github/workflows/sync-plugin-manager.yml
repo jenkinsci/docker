@@ -67,4 +67,5 @@ jobs:
           author: jenkins-dependency-updater <81680575+jenkins-dependency-updater[bot]@users.noreply.github.com>
           committer: jenkins-dependency-updater <81680575+jenkins-dependency-updater[bot]@users.noreply.github.com>
           signoff: true
+          labels: 'dependencies'
           title: 'chore(deps): bump plugin manager to ${{ steps.lts.outputs.next-version }}'
