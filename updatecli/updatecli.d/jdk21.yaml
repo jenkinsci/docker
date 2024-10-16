@@ -14,17 +14,19 @@ scms:
       branch: "{{ .github.branch }}"
 
 sources:
-  lastVersion:
-    kind: githubrelease
-    name: Get the latest Adoptium JDK21 version
+  lastTemurin21Version:
+    kind: temurin
+    name: Get the latest Adoptium JDK21 version via the API
     spec:
-      owner: "adoptium"
-      repository: "temurin21-binaries"
-      token: "{{ requiredEnv .github.token }}"
-      username: "{{ .github.username }}"
-      versionfilter:
-        kind: regex
-        pattern: "^jdk-21.(\\d*).(\\d*).(\\d*)(.(\\d*))+(\\d*)$"
+      featureversion: 21
+      architectures:
+        - linux/x64
+        - linux/ppc64le
+        - linux/s390x
+        - linux/aarch64
+        - alpine-linux/x64
+        - alpine-linux/aarch64
+        - windows/x64
     transformers:
       - trimprefix: "jdk-"
       - replacer:
@@ -33,22 +35,13 @@ sources:
 
 conditions:
   checkTemurinAlpineRelease:
-    name: Check if the "<lastVersion>" is available for alpine
-    kind: shell
+    name: Check if the "<lastTemurin21Version>" is available for alpine
+    kind: temurin
     spec:
-      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' alpine "x64"
-    disablesourceinput: true
-  checkTemurinLinuxRelease:
-    name: Check if the "<lastVersion>" is available for Linux
-    kind: shell
-    spec:
-      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' standard "x64 aarch64 s390x"
-    disablesourceinput: true
-  checkTemurinWindowsRelease:
-    name: Check if the "<lastVersion>" is available for Windows
-    kind: shell
-    spec:
-      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' windows "x64"
+      featureversion: 21
+      architectures:
+        - alpine-linux/x64
+        - alpine-linux/aarch64
     disablesourceinput: true
 
 targets:
@@ -73,7 +66,7 @@ actions:
   default:
     kind: github/pullrequest
     scmid: default
-    title: Bump JDK21 version to {{ source "lastVersion" }}
+    title: Bump JDK21 version to {{ source "lastTemurin21Version" }}
     spec:
       labels:
         - dependencies
