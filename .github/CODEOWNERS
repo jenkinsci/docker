@@ -1,5 +1,4 @@
 * @jenkinsci/team-docker-packaging
 */rhel/ubi*/ @olivergondza
-*/almalinux/almalinux8/ @saper
 */debian/bookworm/hotspot @ksalerno99
 */rhel/ubi9/hotspot @ksalerno99
