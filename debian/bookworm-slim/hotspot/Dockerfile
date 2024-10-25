@@ -2,7 +2,7 @@ ARG BOOKWORM_TAG=20241016
 
 FROM debian:bookworm-"${BOOKWORM_TAG}"-slim as jre-build
 
-ARG JAVA_VERSION=17.0.12_7
+ARG JAVA_VERSION=17.0.13_11
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
