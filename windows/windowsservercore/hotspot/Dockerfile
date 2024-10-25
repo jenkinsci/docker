@@ -1,7 +1,7 @@
 # escape=`
 # hadolint shell=powershell
 
-ARG JAVA_VERSION=17.0.12_7
+ARG JAVA_VERSION=17.0.13_11
 ARG WINDOWS_VERSION=ltsc2019
 ARG TOOLS_WINDOWS_VERSION=1809
 
@@ -10,7 +10,7 @@ FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS jre-build
 # $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-ARG JAVA_VERSION=17.0.12_7
+ARG JAVA_VERSION=17.0.13_11
 
 RUN New-Item -ItemType Directory -Path C:\temp | Out-Null ; `
     $javaMajorVersion = $env:JAVA_VERSION.substring(0,2) ; `
