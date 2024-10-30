@@ -34,23 +34,11 @@ conditions:
       platforms:
         - alpine-linux/x64
         - alpine-linux/aarch64
-  checkTemurinLinuxRelease:
-    name: Check if the "<lastTemurin21Version>" is available for linux
-    kind: temurin
-    spec:
-      featureversion: 21
-      platforms:
         - linux/x64
         - linux/aarch64
         - linux/ppc64le
         - linux/s390x
         - linux/riscv64
-  checkTemurinWindowsRelease:
-    name: Check if the "<lastTemurin21Version>" is available for windows
-    kind: temurin
-    spec:
-      featureversion: 21
-      platforms:
         - windows/x64
         - windows/aarch64
 
