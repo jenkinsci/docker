@@ -19,26 +19,6 @@ updates:
   # Ignore proposals to update to new versions of Java because updatecli takes care of that.
   - dependency-name: "eclipse-temurin"
 
-# AlmaLinux
-
-- package-ecosystem: docker
-  directory: "almalinux/almalinux8/hotspot"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 2
-  target-branch: master
-  reviewers:
-  - saper
-  - slide
-  labels:
-  - dependencies
-  ignore:
-  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
-  - dependency-name: "eclipse-temurin"
-  # Ignore proposals to update to Alma Linux 9 or later
-  - dependency-name: "almalinux"
-    update-types: ["version-update:semver-major"]
-
 # Debian Linux
 
 - package-ecosystem: docker
@@ -72,21 +52,6 @@ updates:
   - dependency-name: "eclipse-temurin"
 
 # RHEL UBI
-
-- package-ecosystem: docker
-  directory: "rhel/ubi8/hotspot"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 2
-  target-branch: master
-  reviewers:
-    - olivergondza
-    - slide
-  labels:
-    - dependencies
-  ignore:
-  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
-  - dependency-name: "eclipse-temurin"
 
 - package-ecosystem: docker
   directory: "rhel/ubi9/hotspot"

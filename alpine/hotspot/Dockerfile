@@ -2,8 +2,7 @@ ARG ALPINE_TAG=3.20.3
 
 FROM alpine:"${ALPINE_TAG}" AS jre-build
 
-ARG JAVA_VERSION=17.0.12_7
-ARG JAVA_DOWNLOAD_URL=http://example.com
+ARG JAVA_VERSION=17.0.13_11
 
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
