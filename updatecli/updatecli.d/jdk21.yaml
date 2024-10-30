@@ -19,14 +19,6 @@ sources:
     name: Get the latest Adoptium JDK21 version via the API
     spec:
       featureversion: 21
-      architectures:
-        - linux/x64
-        - linux/ppc64le
-        - linux/s390x
-        - linux/aarch64
-        - alpine-linux/x64
-        - alpine-linux/aarch64
-        - windows/x64
     transformers:
       - trimprefix: "jdk-"
       - replacer:
@@ -39,10 +31,28 @@ conditions:
     kind: temurin
     spec:
       featureversion: 21
-      architectures:
+      platforms:
         - alpine-linux/x64
         - alpine-linux/aarch64
-    disablesourceinput: true
+  checkTemurinLinuxRelease:
+    name: Check if the "<lastTemurin21Version>" is available for linux
+    kind: temurin
+    spec:
+      featureversion: 21
+      platforms:
+        - linux/x64
+        - linux/aarch64
+        - linux/ppc64le
+        - linux/s390x
+        - linux/riscv64
+  checkTemurinWindowsRelease:
+    name: Check if the "<lastTemurin21Version>" is available for windows
+    kind: temurin
+    spec:
+      featureversion: 21
+      platforms:
+        - windows/x64
+        - windows/aarch64
 
 targets:
   ## Global config files
