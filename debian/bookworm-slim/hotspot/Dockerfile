@@ -60,8 +60,8 @@ FROM debian:bookworm-"${BOOKWORM_TAG}"-slim AS controller
 ARG JENKINS_VERSION
 ENV JENKINS_VERSION=${JENKINS_VERSION:-2.479}
 
-ARG TARGETARCH \
-    COMMIT_SHA
+ARG TARGETARCH
+ARG COMMIT_SHA
 
 #-----------------#
 # metadata labels #
@@ -163,9 +163,9 @@ RUN curl -fsSL ${JENKINS_URL} -o /usr/share/jenkins/jenkins.war \
     && sha256sum -c --strict /tmp/jenkins_sha \
     && rm -f /tmp/jenkins_sha
 
-ENV JENKINS_UC=https://updates.jenkins.io \
-    JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental \
-    JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
+ENV JENKINS_UC=https://updates.jenkins.io
+ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
+ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 RUN chown -R ${user} "$JENKINS_HOME" "$REF"
 
 ARG PLUGIN_CLI_VERSION=2.13.2
@@ -175,9 +175,9 @@ RUN curl -fsSL ${PLUGIN_CLI_URL} -o /opt/jenkins-plugin-manager.jar \
     && sha256sum -c --strict /tmp/jenkins_sha \
     && rm -f /tmp/jenkins_sha
 
-ENV COPY_REFERENCE_FILE_LOG=$JENKINS_HOME/copy_reference_file.log \
-    JAVA_HOME=/opt/java/openjdk
+ENV COPY_REFERENCE_FILE_LOG=$JENKINS_HOME/copy_reference_file.log
 
+ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 COPY --from=jre-build /javaruntime $JAVA_HOME
