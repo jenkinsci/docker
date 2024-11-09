@@ -1,7 +1,7 @@
 ARG BOOKWORM_TAG=20241016
 
 ######################################################
-#               BUILD STAGE                          #
+#                   BUILD STAGE                      #
 ######################################################
 FROM debian:bookworm-"${BOOKWORM_TAG}" AS jre-build
 
@@ -18,20 +18,22 @@ RUN apt-get update \
         jq \
         && \
 
+    echo "Downloading jdk" \
+    && chmod +x /usr/bin/jdk-download.sh \
+    && /usr/bin/jdk-download.sh && \
+
     echo "Cleaning up" \
     && apt-get autoremove \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* && \
-
-    echo "Downloading jdk" \
-    && chmod +x /usr/bin/jdk-download.sh \
-    && /usr/bin/jdk-download.sh
+    && rm -rf /var/lib/apt/lists/*
 
 ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
 
-# Generate smaller java runtime without unneeded files
-# for now we include the full module path to maintain compatibility
-# while still saving space (approx 200mb from the full distribution)
+#--------------------------------------------------------------------#
+# Generate smaller java runtime without unneeded files               #
+# for now we include the full module path to maintain compatibility  #
+# while still saving space (approx 200mb from the full distribution) #
+#--------------------------------------------------------------------#
 RUN case "$(jlink --version 2>&1)" in \
       "17."*) set -- "--compress=2" ;; \
       # the compression argument is different for JDK21
@@ -52,7 +54,18 @@ RUN case "$(jlink --version 2>&1)" in \
 ######################################################
 FROM debian:bookworm-"${BOOKWORM_TAG}" AS controller
 
-# metadata labels
+#----------------------------------------------------#
+# jenkins version being bundled in this docker image #
+#----------------------------------------------------#
+ARG JENKINS_VERSION
+ENV JENKINS_VERSION=${JENKINS_VERSION:-2.479}
+
+ARG TARGETARCH \
+    COMMIT_SHA
+
+#-----------------#
+# metadata labels #
+#-----------------#
 LABEL \
     org.opencontainers.image.vendor="Jenkins project" \
     org.opencontainers.image.title="Official Jenkins Docker image" \
@@ -63,6 +76,9 @@ LABEL \
     org.opencontainers.image.revision="${COMMIT_SHA}" \
     org.opencontainers.image.licenses="MIT"
 
+#------------------------------#
+# Installing required packages #
+#------------------------------#
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
@@ -84,8 +100,10 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Installing git-lfs
-RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh -o /tmp/script.deb.sh \
+#--------------------#
+# Installing git-lfs #
+#--------------------#
+RUN curl -fsSL https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh -o /tmp/script.deb.sh \
     && bash /tmp/script.deb.sh \
     && rm -f /tmp/script.deb.sh \
     && apt-get install -y --no-install-recommends git-lfs \
@@ -96,89 +114,88 @@ RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.d
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+ENV LANG=C.UTF-8
 
-#----------------------------------------------------------------------#
-# JENKINS_VERSION: jenkins version being bundled in this docker image  #
-#----------------------------------------------------------------------#
-ARG JENKINS_VERSION
-ENV JENKINS_VERSION="${JENKINS_VERSION:-2.479}"
-
-#-----------------------------------------------------------------------------#
-# JENKINS_SHA: jenkins.war checksum, download will be validated using it      #
-#-----------------------------------------------------------------------------#
-# JENKINS_URL: Can be used to customize where jenkins.war get downloaded from #
-#-----------------------------------------------------------------------------#
-ARG JENKINS_SHA="910ea36cef37c45087e39d65e335988e036fccea47c79cc5a52e721a10cb1b49" \
-    JENKINS_URL="https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war" \
-    TARGETARCH \
-    COMMIT_SHA \
-    user=jenkins \
+ARG user=jenkins \
     group=jenkins \
     uid=1000 \
     gid=1000 \
     http_port=8080 \
     agent_port=50000 \
-    JENKINS_HOME="/var/jenkins_home" \
-    REF="/usr/share/jenkins/ref" \
-    PLUGIN_CLI_VERSION="2.13.2" \
-    PLUGIN_CLI_URL="https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar"
+    JENKINS_HOME=/var/jenkins_home \
+    REF=/usr/share/jenkins/ref
 
-ENV LANG=C.UTF-8 \
-    JENKINS_HOME="$JENKINS_HOME" \
-    JENKINS_SLAVE_AGENT_PORT="${agent_port}" \
-    JENKINS_UC="https://updates.jenkins.io" \
-    JENKINS_UC_EXPERIMENTAL="https://updates.jenkins.io/experimental" \
-    JENKINS_INCREMENTALS_REPO_MIRROR="https://repo.jenkins-ci.org/incrementals" \
-    COPY_REFERENCE_FILE_LOG="$JENKINS_HOME/copy_reference_file.log" \
-    JAVA_HOME="/opt/java/openjdk" \
+ENV JENKINS_HOME=$JENKINS_HOME \
+    JENKINS_SLAVE_AGENT_PORT=${agent_port} \
     REF=$REF
-
 
 #---------------------------------------------------------------#
 # Jenkins is run with user `jenkins`, uid = 1000                #
 # If you bind mount a volume from the host or a data container, #
-# ensure you use the same uid                                   #
-#-------------------------------------------------------------------------------------------#
-# $REF (defaults to `/usr/share/jenkins/ref/`) contains all reference configuration we want #
-# to set on a fresh new installation. Use it to bundle additional plugins                   #
-# or config file with your custom jenkins Docker image.                                     #
+# ensure you use the same uid(e.g. 1000)                        #
+#---------------------------------------------------------------#
+RUN mkdir -p $JENKINS_HOME \
+    && chown ${uid}:${gid} $JENKINS_HOME \
+    && groupadd -g ${gid} ${group} \
+    && useradd -d "$JENKINS_HOME" -u ${uid} -g ${gid} -l -m -s /bin/bash ${user}
+
+#-----------------------------------------------------------------------------------#
+# $REF (defaults to `/usr/share/jenkins/ref/`) contains all reference configuration #
+# we want to set on a fresh new installation. Use it to bundle additional plugins   #
+# or config file with your custom jenkins Docker image.                             #
+#-----------------------------------------------------------------------------------#
+RUN mkdir -p ${REF}/init.groovy.d
+
+#------------------------------------------------------------------------#
+# JENKINS_SHA: jenkins.war checksum, download will be validated using it #
+#-----------------------------------------------------------------------------#
+# JENKINS_URL: Can be used to customize where jenkins.war get downloaded from #
+#-----------------------------------------------------------------------------#
+ARG JENKINS_SHA=910ea36cef37c45087e39d65e335988e036fccea47c79cc5a52e721a10cb1b49 \
+    JENKINS_URL="https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war"
+
 #----------------------------------------------------------------------------------------------------------#
 # could use ADD but this one does not check Last-Modified header neither does it allow to control checksum #
 # see https://github.com/docker/docker/issues/8331                                                         #
 #----------------------------------------------------------------------------------------------------------#
-RUN mkdir -p $JENKINS_HOME \
-    && chown ${uid}:${gid} $JENKINS_HOME \
-    && groupadd -g ${gid} ${group} \
-    && useradd -d "$JENKINS_HOME" -u ${uid} -g ${gid} -l -m -s /bin/bash ${user} && \
-
-    echo "---------------------------------------" \
-    && mkdir -p ${REF}/init.groovy.d \
-    && chown -R ${user} "$JENKINS_HOME" "$REF" && \
-
-    echo "---------------------------------------" \
-    && curl -fsSL ${JENKINS_URL} -o /usr/share/jenkins/jenkins.war \
+RUN curl -fsSL ${JENKINS_URL} -o /usr/share/jenkins/jenkins.war \
     && echo "${JENKINS_SHA}  /usr/share/jenkins/jenkins.war" >/tmp/jenkins_sha \
-    && sha256sum -c --strict /tmp/jenkins_sha \
-    && rm -f /tmp/jenkins_sha && \
-
-    echo "---------------------------------------" \
-    && curl -fsSL ${PLUGIN_CLI_URL} -o /opt/jenkins-plugin-manager.jar \
-    && echo "$(curl -fsSL "${PLUGIN_CLI_URL}.sha256")  /opt/jenkins-plugin-manager.jar" > /tmp/jenkins_sha \
     && sha256sum -c --strict /tmp/jenkins_sha \
     && rm -f /tmp/jenkins_sha
 
+ENV JENKINS_UC=https://updates.jenkins.io \
+    JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental \
+    JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
+RUN chown -R ${user} "$JENKINS_HOME" "$REF"
+
+ARG PLUGIN_CLI_VERSION=2.13.2 \
+    PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
+RUN curl -fsSL ${PLUGIN_CLI_URL} -o /opt/jenkins-plugin-manager.jar \
+    && echo "$(curl -fsSL "${PLUGIN_CLI_URL}.sha256")  /opt/jenkins-plugin-manager.jar" >/tmp/jenkins_sha \
+    && sha256sum -c --strict /tmp/jenkins_sha \
+    && rm -f /tmp/jenkins_sha
+
+ENV COPY_REFERENCE_FILE_LOG=$JENKINS_HOME/copy_reference_file.log \
+    JAVA_HOME=/opt/java/openjdk
 
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
+
 COPY --from=jre-build /javaruntime $JAVA_HOME
 
 COPY ["./jenkins-support", "./jenkins.sh", "/usr/local/bin/"]
 COPY ["./jenkins-plugin-cli.sh", "/bin/jenkins-plugin-cli"]
 
-# Jenkins home directory is a volume, so configuration and build history
-# can be persisted and survive image upgrades
+#---------------------------------------------------------------#
+# Jenkins home directory is a volume, so configuration          #
+# and build history can be persisted and survive image upgrades #
+#---------------------------------------------------------------#
 VOLUME $JENKINS_HOME
 
-# for main web interface + for attached agents
+#------------------------------------------#
+# ${http_port}:     for main web interface #
+#------------------------------------------#
+# ${agent_port}:    for attached agents    #
+#------------------------------------------#
 EXPOSE ${http_port} ${agent_port}
 
 USER ${user}
