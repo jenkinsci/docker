@@ -116,18 +116,18 @@ RUN curl -fsSL https://packagecloud.io/install/repositories/github/git-lfs/scrip
 
 ENV LANG=C.UTF-8
 
-ARG user=jenkins \
-    group=jenkins \
-    uid=1000 \
-    gid=1000 \
-    http_port=8080 \
-    agent_port=50000 \
-    JENKINS_HOME=/var/jenkins_home \
-    REF=/usr/share/jenkins/ref
+ARG user=jenkins
+ARG group=jenkins
+ARG uid=1000
+ARG gid=1000
+ARG http_port=8080
+ARG agent_port=50000
+ARG JENKINS_HOME=/var/jenkins_home
+ARG REF=/usr/share/jenkins/ref
 
-ENV JENKINS_HOME=$JENKINS_HOME \
-    JENKINS_SLAVE_AGENT_PORT=${agent_port} \
-    REF=$REF
+ENV JENKINS_HOME=$JENKINS_HOME
+ENV JENKINS_SLAVE_AGENT_PORT=${agent_port}
+ENV REF=$REF
 
 #---------------------------------------------------------------#
 # Jenkins is run with user `jenkins`, uid = 1000                #
@@ -151,8 +151,8 @@ RUN mkdir -p ${REF}/init.groovy.d
 #-----------------------------------------------------------------------------#
 # JENKINS_URL: Can be used to customize where jenkins.war get downloaded from #
 #-----------------------------------------------------------------------------#
-ARG JENKINS_SHA=910ea36cef37c45087e39d65e335988e036fccea47c79cc5a52e721a10cb1b49 \
-    JENKINS_URL="https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war"
+ARG JENKINS_SHA=910ea36cef37c45087e39d65e335988e036fccea47c79cc5a52e721a10cb1b49
+ARG JENKINS_URL="https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war"
 
 #----------------------------------------------------------------------------------------------------------#
 # could use ADD but this one does not check Last-Modified header neither does it allow to control checksum #
@@ -168,8 +168,8 @@ ENV JENKINS_UC=https://updates.jenkins.io \
     JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 RUN chown -R ${user} "$JENKINS_HOME" "$REF"
 
-ARG PLUGIN_CLI_VERSION=2.13.2 \
-    PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
+ARG PLUGIN_CLI_VERSION=2.13.2
+ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
 RUN curl -fsSL ${PLUGIN_CLI_URL} -o /opt/jenkins-plugin-manager.jar \
     && echo "$(curl -fsSL "${PLUGIN_CLI_URL}.sha256")  /opt/jenkins-plugin-manager.jar" >/tmp/jenkins_sha \
     && sha256sum -c --strict /tmp/jenkins_sha \
