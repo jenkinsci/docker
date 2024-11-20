@@ -26,8 +26,8 @@ sources:
           to: _
 
 conditions:
-  checkTemurinAlpineRelease:
-    name: Check if the "<lastTemurin21Version>" is available for alpine
+  checkTemurinAllReleases:
+    name: Check if the "<lastTemurin21Version>" is available for all platforms
     kind: temurin
     spec:
       featureversion: 21
