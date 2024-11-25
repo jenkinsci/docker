@@ -1,36 +1,47 @@
 ---
+# This YAML configuration file is used to bump the JDK21 version in various files and create a pull request with the changes.
+
 name: Bump JDK21 version
 
 scms:
   default:
     kind: github
     spec:
-      user: "{{ .github.user }}"
-      email: "{{ .github.email }}"
-      owner: "{{ .github.owner }}"
-      repository: "{{ .github.repository }}"
-      token: "{{ requiredEnv .github.token }}"
-      username: "{{ .github.username }}"
-      branch: "{{ .github.branch }}"
+      user: "{{ .github.user }}"  # GitHub user for authentication
+      email: "{{ .github.email }}"  # Email associated with the GitHub user
+      owner: "{{ .github.owner }}"  # Owner of the GitHub repository
+      repository: "{{ .github.repository }}"  # Name of the GitHub repository
+      token: "{{ requiredEnv .github.token }}"  # GitHub token for authentication
+      username: "{{ .github.username }}"  # GitHub username
+      branch: "{{ .github.branch }}"  # Branch to create the pull request on
 
 sources:
   lastTemurin21Version:
     kind: temurin
     name: Get the latest Adoptium JDK21 version via the API
     spec:
-      featureversion: 21
+      featureversion: 21  # Feature version to fetch
     transformers:
-      - trimprefix: "jdk-"
+      - trimprefix: "jdk-"  # Remove the "jdk-" prefix from the version string
+
+  lastTemurin21VersionTransformed:
+    kind: temurin
+    name: Get the latest Adoptium JDK21 version via the API with '+' replaced by '_'
+    spec:
+      featureversion: 21  # Feature version to fetch
+    transformers:
+      - trimprefix: "jdk-"  # Remove the "jdk-" prefix from the version string
       - replacer:
-          from: +
-          to: _
+          from: "+"  # Character to replace
+          to: "_"  # Replacement character
 
 conditions:
   checkTemurinAllReleases:
     name: Check if the "<lastTemurin21Version>" is available for all platforms
     kind: temurin
+    sourceid: lastTemurin21Version  # Source to check the version from
     spec:
-      featureversion: 21
+      featureversion: 21  # Feature version to check
       platforms:
         - alpine-linux/x64
         - alpine-linux/aarch64
@@ -40,32 +51,34 @@ conditions:
         - linux/s390x
         - linux/riscv64
         - windows/x64
-        - windows/aarch64
+        - windows/aarch64  # List of platforms to check the version for
 
 targets:
-  ## Global config files
   setJDK21VersionDockerBake:
     name: "Bump JDK21 version for Linux images in the docker-bake.hcl file"
     kind: hcl
     spec:
-      file: docker-bake.hcl
-      path: variable.JAVA21_VERSION.default
+      file: docker-bake.hcl  # File to update
+      path: variable.JAVA21_VERSION.default  # Path within the file to update
     scmid: default
+    sourceid: lastTemurin21VersionTransformed  # Source with the transformed version
+
   setJDK21VersionWindowsDockerCompose:
     name: "Bump JDK21 version in build-windows.yaml"
     kind: yaml
     spec:
       files:
-        - build-windows.yaml
-      key: $.services.jdk21.build.args.JAVA_VERSION
+        - build-windows.yaml  # File to update
+      key: $.services.jdk21.build.args.JAVA_VERSION  # Key within the file to update
     scmid: default
+    sourceid: lastTemurin21VersionTransformed  # Source with the transformed version
 
 actions:
   default:
     kind: github/pullrequest
     scmid: default
-    title: Bump JDK21 version to {{ source "lastTemurin21Version" }}
+    title: Bump JDK21 version to {{ source "lastTemurin21Version" }}  # Title of the pull request
     spec:
       labels:
         - dependencies
-        - jdk21
+        - jdk21  # Labels to add to the pull request
