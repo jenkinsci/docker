@@ -1,6 +1,6 @@
 ARG BOOKWORM_TAG=20241111
 
-FROM debian:bookworm-"${BOOKWORM_TAG}" as jre-build
+FROM debian:bookworm-"${BOOKWORM_TAG}" AS jre-build
 
 ARG JAVA_VERSION=17.0.13_11
 
