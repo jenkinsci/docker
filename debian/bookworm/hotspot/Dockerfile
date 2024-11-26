@@ -56,15 +56,13 @@ RUN apt-get update \
 
 # Git LFS is not available from a package manager on all the platforms we support
 # Download and unpack the tar.gz distribution
-RUN tmpdir=$(mktemp -d) \
-  && git_lfs_ver=3.6.0 \
-  && arch=$(uname -m | sed -e 's,x86_64,amd64,g' -e 's,aarch64,arm64,g') \
-  && cd $tmpdir \
-  && curl -L -s https://github.com/git-lfs/git-lfs/releases/download/v${git_lfs_ver}/git-lfs-linux-${arch}-v${git_lfs_ver}.tar.gz | tar xzf - \
-  && cd git-lfs-$git_lfs_ver \
-  && bash ./install.sh \
-  && cd .. \
-  && rm -rf $tmpdir
+# hadolint ignore=SC2086,DL4006
+RUN git_lfs_ver=3.6.0 \
+  && arch=$(uname -m | sed -e 's/x86_64/amd64/g' -e 's/aarch64/arm64/g') \
+  && curl -L -s -o git-lfs.tgz https://github.com/git-lfs/git-lfs/releases/download/v${git_lfs_ver}/git-lfs-linux-${arch}-v${git_lfs_ver}.tar.gz \
+  && tar xzf git-lfs.tgz \
+  && bash git-lfs-*/install.sh \
+  && rm -rf git-lfs*
 
 ENV LANG=C.UTF-8
 
