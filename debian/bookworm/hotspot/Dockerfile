@@ -54,13 +54,15 @@ RUN apt-get update \
     tzdata \
   && rm -rf /var/lib/apt/lists/*
 
-RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh -o /tmp/script.deb.sh \
-  && bash /tmp/script.deb.sh \
-  && rm -f /tmp/script.deb.sh \
-  && apt-get install -y --no-install-recommends \
-    git-lfs \
-  && rm -rf /var/lib/apt/lists/* \
-  && git lfs install
+# Git LFS is not available from a package manager on all the platforms we support
+# Download and unpack the tar.gz distribution
+ARG GIT_LFS_VERSION=3.6.0
+# hadolint ignore=DL4006
+RUN arch=$(uname -m | sed -e 's/x86_64/amd64/g' -e 's/aarch64/arm64/g') \
+  && curl -L -s -o git-lfs.tgz "https://github.com/git-lfs/git-lfs/releases/download/v${GIT_LFS_VERSION}/git-lfs-linux-${arch}-v${GIT_LFS_VERSION}.tar.gz" \
+  && tar xzf git-lfs.tgz \
+  && bash git-lfs-*/install.sh \
+  && rm -rf git-lfs*
 
 ENV LANG=C.UTF-8
 
