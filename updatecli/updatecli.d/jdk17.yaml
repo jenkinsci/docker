@@ -45,7 +45,7 @@ targets:
     transformers:
       - replacer:
           from: "+"
-          to: "_" 
+          to: "_"
     spec:
       file: docker-bake.hcl
       path: variable.JAVA17_VERSION.default
