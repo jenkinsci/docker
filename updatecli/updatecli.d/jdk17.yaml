@@ -1,28 +1,26 @@
 ---
-# This YAML configuration file is used to bump the JDK17 version in various files and create a pull request with the changes.
-
 name: Bump JDK17 version
 
 scms:
   default:
     kind: github
     spec:
-      user: "{{ .github.user }}"  # GitHub user for authentication
-      email: "{{ .github.email }}"  # Email associated with the GitHub user
-      owner: "{{ .github.owner }}"  # Owner of the GitHub repository
-      repository: "{{ .github.repository }}"  # Name of the GitHub repository
-      token: "{{ requiredEnv .github.token }}"  # GitHub token for authentication
-      username: "{{ .github.username }}"  # GitHub username
-      branch: "{{ .github.branch }}"  # Branch to create the pull request on
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "{{ .github.branch }}"
 
 sources:
   lastVersion:
     kind: temurin
-    name: Get the latest Adoptium JDK17 version via the API
+    name: Get the latest Adoptium JDK17 version
     spec:
-      featureversion: 17  # Feature version to fetch
+      featureversion: 17
     transformers:
-      - trimprefix: "jdk-"  # Remove the "jdk-" prefix from the version string
+      - trimprefix: "jdk-"
 
 conditions:
   checkTemurinAllReleases:
@@ -30,8 +28,8 @@ conditions:
     kind: temurin
     sourceid: lastVersion  # Source to check the version from
     spec:
-      featureversion: 17  # Feature version to check
-      platforms:  # List of platforms to check the version for
+      featureversion: 17
+      platforms:
         - alpine-linux/x64
         - linux/x64
         - linux/aarch64
