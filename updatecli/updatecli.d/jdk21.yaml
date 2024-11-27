@@ -1,4 +1,3 @@
----
 name: Bump JDK21 version
 
 scms:
@@ -14,55 +13,50 @@ scms:
       branch: "{{ .github.branch }}"
 
 sources:
-  lastVersion:
-    kind: githubrelease
-    name: Get the latest Adoptium JDK21 version
+  lastTemurin21Version:
+    kind: temurin
+    name: Get the latest Adoptium JDK21 version via the API
     spec:
-      owner: "adoptium"
-      repository: "temurin21-binaries"
-      token: "{{ requiredEnv .github.token }}"
-      username: "{{ .github.username }}"
-      versionfilter:
-        kind: regex
-        pattern: "^jdk-21.(\\d*).(\\d*).(\\d*)(.(\\d*))+(\\d*)$"
+      featureversion: 21
     transformers:
       - trimprefix: "jdk-"
-      - replacer:
-          from: +
-          to: _
 
 conditions:
-  checkTemurinAlpineRelease:
-    name: Check if the "<lastVersion>" is available for alpine
-    kind: shell
+  checkTemurinAllReleases:
+    name: Check if the "<lastTemurin21Version>" is available for all platforms
+    kind: temurin
+    sourceid: lastTemurin21Version
     spec:
-      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' alpine "x64"
-    disablesourceinput: true
-  checkTemurinLinuxRelease:
-    name: Check if the "<lastVersion>" is available for Linux
-    kind: shell
-    spec:
-      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' standard "x64 aarch64 s390x"
-    disablesourceinput: true
-  checkTemurinWindowsRelease:
-    name: Check if the "<lastVersion>" is available for Windows
-    kind: shell
-    spec:
-      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' windows "x64"
-    disablesourceinput: true
+      featureversion: 21
+      platforms:
+        - alpine-linux/x64
+        - alpine-linux/aarch64
+        - linux/x64
+        - linux/aarch64
+        - linux/ppc64le
+        - linux/s390x
+        - windows/x64
 
 targets:
-  ## Global config files
   setJDK21VersionDockerBake:
     name: "Bump JDK21 version for Linux images in the docker-bake.hcl file"
     kind: hcl
+    transformers:
+      - replacer:
+          from: "+"
+          to: "_"
     spec:
       file: docker-bake.hcl
       path: variable.JAVA21_VERSION.default
     scmid: default
+
   setJDK21VersionWindowsDockerCompose:
     name: "Bump JDK21 version in build-windows.yaml"
     kind: yaml
+    transformers:
+      - replacer:
+          from: "+"
+          to: "_"
     spec:
       files:
         - build-windows.yaml
@@ -73,7 +67,7 @@ actions:
   default:
     kind: github/pullrequest
     scmid: default
-    title: Bump JDK21 version to {{ source "lastVersion" }}
+    title: Bump JDK21 version to {{ source "lastTemurin21Version" }}
     spec:
       labels:
         - dependencies
