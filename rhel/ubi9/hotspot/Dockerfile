@@ -1,3 +1,6 @@
+
+
+
 FROM registry.access.redhat.com/ubi9/ubi:9.5 AS jre-build
 
 ARG JAVA_VERSION=17.0.13_11
