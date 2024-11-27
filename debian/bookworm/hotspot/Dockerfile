@@ -1,14 +1,9 @@
 ARG BOOKWORM_TAG=20241111
 
 FROM debian:bookworm-"${BOOKWORM_TAG}" AS jre-build
-
 ARG JAVA_VERSION=17.0.13_11
-
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
 COPY jdk-download-url.sh /usr/bin/jdk-download-url.sh
-COPY jdk-download.sh /usr/bin/jdk-download.sh
-
 RUN apt-get update \
   && apt-get install --no-install-recommends -y \
     ca-certificates \
