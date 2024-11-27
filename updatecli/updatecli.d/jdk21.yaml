@@ -24,17 +24,6 @@ sources:
     transformers:
       - trimprefix: "jdk-"  # Remove the "jdk-" prefix from the version string
 
-  lastTemurin21VersionTransformed:
-    kind: temurin
-    name: Get the latest Adoptium JDK21 version via the API with '+' replaced by '_'
-    spec:
-      featureversion: 21  # Feature version to fetch
-    transformers:
-      - trimprefix: "jdk-"  # Remove the "jdk-" prefix from the version string
-      - replacer:
-          from: "+"  # Character to replace
-          to: "_"  # Replacement character
-
 conditions:
   checkTemurinAllReleases:
     name: Check if the "<lastTemurin21Version>" is available for all platforms
@@ -49,7 +38,6 @@ conditions:
         - linux/aarch64
         - linux/ppc64le
         - linux/s390x
-        - linux/riscv64
         - windows/x64
         - windows/aarch64  # List of platforms to check the version for
 
@@ -57,21 +45,27 @@ targets:
   setJDK21VersionDockerBake:
     name: "Bump JDK21 version for Linux images in the docker-bake.hcl file"
     kind: hcl
+    transformers:
+      - replacer:
+          from: "+"
+          to: "_"
     spec:
       file: docker-bake.hcl  # File to update
       path: variable.JAVA21_VERSION.default  # Path within the file to update
     scmid: default
-    sourceid: lastTemurin21VersionTransformed  # Source with the transformed version
 
   setJDK21VersionWindowsDockerCompose:
     name: "Bump JDK21 version in build-windows.yaml"
     kind: yaml
+    transformers:
+      - replacer:
+          from: "+"
+          to: "_"
     spec:
       files:
         - build-windows.yaml  # File to update
       key: $.services.jdk21.build.args.JAVA_VERSION  # Key within the file to update
     scmid: default
-    sourceid: lastTemurin21VersionTransformed  # Source with the transformed version
 
 actions:
   default:
