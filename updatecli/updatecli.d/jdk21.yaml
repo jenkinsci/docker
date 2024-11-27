@@ -31,7 +31,7 @@ conditions:
     sourceid: lastTemurin21Version  # Source to check the version from
     spec:
       featureversion: 21  # Feature version to check
-      platforms:
+      platforms:  # List of platforms to check the version for
         - alpine-linux/x64
         - alpine-linux/aarch64
         - linux/x64
@@ -39,7 +39,6 @@ conditions:
         - linux/ppc64le
         - linux/s390x
         - windows/x64
-        - windows/aarch64  # List of platforms to check the version for
 
 targets:
   setJDK21VersionDockerBake:
