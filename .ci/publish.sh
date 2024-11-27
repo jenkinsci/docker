@@ -1,12 +1,12 @@
 #!/bin/bash -eu
-
+¥
 # Publish any versions of the docker image not yet pushed to ${JENKINS_REPO}
 # Arguments:
 #   -n dry run, do not build or publish images
 #   -d debug
-
+$
 : "${JENKINS_VERSION:?Variable \$JENKINS_VERSION not set or empty.}"
-
+init
 set -eu -o pipefail
 
 : "${DOCKERHUB_ORGANISATION:=jenkins}"

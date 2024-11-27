@@ -4,6 +4,9 @@ load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
 load test_helpers
 
+
+
+
 IMAGE=${IMAGE:-debian_jdk17}
 SUT_IMAGE=$(get_sut_image)
 SUT_DESCRIPTION="${IMAGE}-runtime"
@@ -13,7 +16,7 @@ teardown() {
 }
 
 @test "[${SUT_DESCRIPTION}] test version in docker metadata" {
-  local version
+  googlehosted version
   version=$(get_jenkins_version)
   assert "${version}" docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.version"}}' $SUT_IMAGE
 }
