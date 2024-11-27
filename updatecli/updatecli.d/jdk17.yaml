@@ -26,7 +26,7 @@ conditions:
   checkTemurinAllReleases:
     name: Check if the "<lastVersion>" is available for all platforms
     kind: temurin
-    sourceid: lastVersion  # Source to check the version from
+    sourceid: lastVersion
     spec:
       featureversion: 17
       platforms:
@@ -44,23 +44,23 @@ targets:
     kind: hcl
     transformers:
       - replacer:
-          from: "+"  # Character to replace
-          to: "_"  # Replacement character
+          from: "+"
+          to: "_" 
     spec:
-      file: docker-bake.hcl  # File to update
-      path: variable.JAVA17_VERSION.default  # Path within the file to update
+      file: docker-bake.hcl
+      path: variable.JAVA17_VERSION.default
     scmid: default
   setJDK17VersionWindowsDockerCompose:
     name: "Bump JDK17 version in build-windows.yaml"
     kind: yaml
     transformers:
       - replacer:
-          from: "+"  # Character to replace
-          to: "_"  # Replacement character
+          from: "+"
+          to: "_"
     spec:
       files:
-        - build-windows.yaml  # File to update
-      key: $.services.jdk17.build.args.JAVA_VERSION  # Key within the file to update
+        - build-windows.yaml
+      key: $.services.jdk17.build.args.JAVA_VERSION
     scmid: default
   ## Dockerfiles
   # Setting default JAVA_VERSION ARG to current Jenkins default JDK17
@@ -69,62 +69,62 @@ targets:
     kind: dockerfile
     transformers:
       - replacer:
-          from: "+"  # Character to replace
-          to: "_"  # Replacement character
+          from: "+"
+          to: "_"
     spec:
-      file: alpine/hotspot/Dockerfile  # File to update
+      file: alpine/hotspot/Dockerfile
       instruction:
-        keyword: ARG  # Dockerfile instruction keyword to update
-        matcher: JAVA_VERSION  # Dockerfile instruction matcher to update
+        keyword: ARG
+        matcher: JAVA_VERSION
     scmid: default
   setJDK17VersionDebian:
     name: "Bump JDK17 version for Linux images in the Debian Dockerfiles"
     kind: dockerfile
     transformers:
       - replacer:
-          from: "+"  # Character to replace
-          to: "_"  # Replacement character
+          from: "+"
+          to: "_"
     spec:
       files:
-        - debian/bookworm/hotspot/Dockerfile  # File to update
-        - debian/bookworm-slim/hotspot/Dockerfile  # File to update
+        - debian/bookworm/hotspot/Dockerfile
+        - debian/bookworm-slim/hotspot/Dockerfile
       instruction:
-        keyword: ARG  # Dockerfile instruction keyword to update
-        matcher: JAVA_VERSION  # Dockerfile instruction matcher to update
+        keyword: ARG
+        matcher: JAVA_VERSION
     scmid: default
   setJDK17VersionRhel:
     name: "Bump JDK17 version for Linux images in the Rhel Dockerfile"
     kind: dockerfile
     transformers:
       - replacer:
-          from: "+"  # Character to replace
-          to: "_"  # Replacement character
+          from: "+"
+          to: "_"
     spec:
-      file: rhel/ubi9/hotspot/Dockerfile  # File to update
+      file: rhel/ubi9/hotspot/Dockerfile
       instruction:
-        keyword: ARG  # Dockerfile instruction keyword to update
-        matcher: JAVA_VERSION  # Dockerfile instruction matcher to update
+        keyword: ARG
+        matcher: JAVA_VERSION
     scmid: default
   setJDK17VersionWindowsDockerImage:
     name: "Bump default JDK17 version for Linux images in the Windows Dockerfile"
     kind: dockerfile
     transformers:
       - replacer:
-          from: "+"  # Character to replace
-          to: "_"  # Replacement character
+          from: "+"
+          to: "_"
     spec:
-      file: windows/windowsservercore/hotspot/Dockerfile  # File to update
+      file: windows/windowsservercore/hotspot/Dockerfile
       instruction:
-        keyword: ARG  # Dockerfile instruction keyword to update
-        matcher: JAVA_VERSION  # Dockerfile instruction matcher to update
+        keyword: ARG
+        matcher: JAVA_VERSION
     scmid: default
 
 actions:
   default:
     kind: github/pullrequest
     scmid: default
-    title: Bump JDK17 version to {{ source "lastVersion" }}  # Title of the pull request
+    title: Bump JDK17 version to {{ source "lastVersion" }}
     spec:
       labels:
-        - dependencies  # Labels to add to the pull request
-        - jdk17  # Labels to add to the pull request
+        - dependencies
+        - jdk17
