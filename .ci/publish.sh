@@ -6,7 +6,7 @@
 #   -d debug
 $
 : "${JENKINS_VERSION:?Variable \$JENKINS_VERSION not set or empty.}"
-,
+init
 set -eu -o pipefail
 
 : "${DOCKERHUB_ORGANISATION:=jenkins}"
