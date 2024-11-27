@@ -1,17 +1,19 @@
 ---
+# This YAML configuration file is used to bump the JDK17 version in various files and create a pull request with the changes.
+
 name: Bump JDK17 version
 
 scms:
   default:
     kind: github
     spec:
-      user: "{{ .github.user }}"
-      email: "{{ .github.email }}"
-      owner: "{{ .github.owner }}"
-      repository: "{{ .github.repository }}"
-      token: "{{ requiredEnv .github.token }}"
-      username: "{{ .github.username }}"
-      branch: "{{ .github.branch }}"
+      user: "{{ .github.user }}"  # GitHub user for authentication
+      email: "{{ .github.email }}"  # Email associated with the GitHub user
+      owner: "{{ .github.owner }}"  # Owner of the GitHub repository
+      repository: "{{ .github.repository }}"  # Name of the GitHub repository
+      token: "{{ requiredEnv .github.token }}"  # GitHub token for authentication
+      username: "{{ .github.username }}"  # GitHub username
+      branch: "{{ .github.branch }}"  # Branch to create the pull request on
 
 sources:
   lastVersion:
@@ -44,23 +46,23 @@ targets:
     kind: hcl
     transformers:
       - replacer:
-          from: "+"
-          to: "_"
+          from: "+"  # Character to replace
+          to: "_"  # Replacement character
     spec:
-      file: docker-bake.hcl
-      path: variable.JAVA17_VERSION.default
+      file: docker-bake.hcl  # File to update
+      path: variable.JAVA17_VERSION.default  # Path within the file to update
     scmid: default
   setJDK17VersionWindowsDockerCompose:
     name: "Bump JDK17 version in build-windows.yaml"
     kind: yaml
     transformers:
       - replacer:
-          from: "+"
-          to: "_"
+          from: "+"  # Character to replace
+          to: "_"  # Replacement character
     spec:
       files:
-        - build-windows.yaml
-      key: $.services.jdk17.build.args.JAVA_VERSION
+        - build-windows.yaml  # File to update
+      key: $.services.jdk17.build.args.JAVA_VERSION  # Key within the file to update
     scmid: default
   ## Dockerfiles
   # Setting default JAVA_VERSION ARG to current Jenkins default JDK17
@@ -69,62 +71,62 @@ targets:
     kind: dockerfile
     transformers:
       - replacer:
-          from: "+"
-          to: "_"
+          from: "+"  # Character to replace
+          to: "_"  # Replacement character
     spec:
-      file: alpine/hotspot/Dockerfile
+      file: alpine/hotspot/Dockerfile  # File to update
       instruction:
-        keyword: ARG
-        matcher: JAVA_VERSION
+        keyword: ARG  # Dockerfile instruction keyword to update
+        matcher: JAVA_VERSION  # Dockerfile instruction matcher to update
     scmid: default
   setJDK17VersionDebian:
     name: "Bump JDK17 version for Linux images in the Debian Dockerfiles"
     kind: dockerfile
     transformers:
       - replacer:
-          from: "+"
-          to: "_"
+          from: "+"  # Character to replace
+          to: "_"  # Replacement character
     spec:
       files:
-        - debian/bookworm/hotspot/Dockerfile
-        - debian/bookworm-slim/hotspot/Dockerfile
+        - debian/bookworm/hotspot/Dockerfile  # File to update
+        - debian/bookworm-slim/hotspot/Dockerfile  # File to update
       instruction:
-        keyword: ARG
-        matcher: JAVA_VERSION
+        keyword: ARG  # Dockerfile instruction keyword to update
+        matcher: JAVA_VERSION  # Dockerfile instruction matcher to update
     scmid: default
   setJDK17VersionRhel:
     name: "Bump JDK17 version for Linux images in the Rhel Dockerfile"
     kind: dockerfile
     transformers:
       - replacer:
-          from: "+"
-          to: "_"
+          from: "+"  # Character to replace
+          to: "_"  # Replacement character
     spec:
-      file: rhel/ubi9/hotspot/Dockerfile
+      file: rhel/ubi9/hotspot/Dockerfile  # File to update
       instruction:
-        keyword: ARG
-        matcher: JAVA_VERSION
+        keyword: ARG  # Dockerfile instruction keyword to update
+        matcher: JAVA_VERSION  # Dockerfile instruction matcher to update
     scmid: default
   setJDK17VersionWindowsDockerImage:
     name: "Bump default JDK17 version for Linux images in the Windows Dockerfile"
     kind: dockerfile
     transformers:
       - replacer:
-          from: "+"
-          to: "_"
+          from: "+"  # Character to replace
+          to: "_"  # Replacement character
     spec:
-      file: windows/windowsservercore/hotspot/Dockerfile
+      file: windows/windowsservercore/hotspot/Dockerfile  # File to update
       instruction:
-        keyword: ARG
-        matcher: JAVA_VERSION
+        keyword: ARG  # Dockerfile instruction keyword to update
+        matcher: JAVA_VERSION  # Dockerfile instruction matcher to update
     scmid: default
 
 actions:
   default:
     kind: github/pullrequest
     scmid: default
-    title: Bump JDK17 version to {{ source "lastVersion" }}
+    title: Bump JDK17 version to {{ source "lastVersion" }}  # Title of the pull request
     spec:
       labels:
-        - dependencies
-        - jdk17
+        - dependencies  # Labels to add to the pull request
+        - jdk17  # Labels to add to the pull request
