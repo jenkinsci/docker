@@ -2,6 +2,11 @@
 
 : "${JENKINS_WAR:="/usr/share/jenkins/jenkins.war"}"
 : "${JENKINS_HOME:="/var/jenkins_home"}"
+
+if [[ -n "${PRE_CLEAR_INIT_GROOVY_D}" ]]; then
+  rm -rf "${JENKINS_HOME}/init.groovy.d"
+fi
+
 : "${COPY_REFERENCE_FILE_LOG:="${JENKINS_HOME}/copy_reference_file.log"}"
 : "${REF:="/usr/share/jenkins/ref"}"
 
