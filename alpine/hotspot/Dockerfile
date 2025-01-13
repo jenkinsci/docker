@@ -1,4 +1,4 @@
-ARG ALPINE_TAG=3.21.0
+ARG ALPINE_TAG=3.21.2
 
 FROM alpine:"${ALPINE_TAG}" AS jre-build
 
