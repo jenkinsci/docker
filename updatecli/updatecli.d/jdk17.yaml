@@ -15,49 +15,37 @@ scms:
 
 sources:
   lastVersion:
-    kind: githubrelease
+    kind: temurin
     name: Get the latest Adoptium JDK17 version
     spec:
-      owner: "adoptium"
-      repository: "temurin17-binaries"
-      token: "{{ requiredEnv .github.token }}"
-      username: "{{ .github.username }}"
-      versionfilter:
-        kind: regex
-        # jdk-17.0.12+7(https://github.com/adoptium/temurin17-binaries/releases/tag/jdk-17.0.12%2B7) is OK
-        # jdk-17.0.16.1+1 (https://github.com/adoptium/temurin17-binaries/releases/tag/jdk-17.0.16.1%2B1) is OK
-        pattern: "^jdk-17.(\\d*).(\\d*).(\\d*)(.(\\d*))+(\\d*)$"
+      featureversion: 17
     transformers:
       - trimprefix: "jdk-"
-      - replacer:
-          from: +
-          to: _
 
 conditions:
-  checkTemurinAlpineRelease:
-    name: Check if the "<lastVersion>" is available for alpine
-    kind: shell
+  checkTemurinAllReleases:
+    name: Check if the "<lastVersion>" is available for all platforms
+    kind: temurin
+    sourceid: lastVersion
     spec:
-      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' alpine "x64"
-    disablesourceinput: true
-  checkTemurinLinuxRelease:
-    name: Check if the "<lastVersion>" is available for Linux
-    kind: shell
-    spec:
-      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' standard "x64 aarch64 s390x"
-    disablesourceinput: true
-  checkTemurinWindowsRelease:
-    name: Check if the "<lastVersion>" is available for Windows
-    kind: shell
-    spec:
-      command: sh ./jdk-download-url.sh '{{source "lastVersion" }}' windows "x64"
-    disablesourceinput: true
+      featureversion: 17
+      platforms:
+        - alpine-linux/x64
+        - linux/x64
+        - linux/aarch64
+        - linux/ppc64le
+        - linux/s390x
+        - windows/x64
 
 targets:
   ## Global config files
   setJDK17VersionDockerBake:
     name: "Bump JDK17 version for Linux images in the docker-bake.hcl file"
     kind: hcl
+    transformers:
+      - replacer:
+          from: "+"
+          to: "_"
     spec:
       file: docker-bake.hcl
       path: variable.JAVA17_VERSION.default
@@ -65,6 +53,10 @@ targets:
   setJDK17VersionWindowsDockerCompose:
     name: "Bump JDK17 version in build-windows.yaml"
     kind: yaml
+    transformers:
+      - replacer:
+          from: "+"
+          to: "_"
     spec:
       files:
         - build-windows.yaml
@@ -75,6 +67,10 @@ targets:
   setJDK17VersionAlpine:
     name: "Bump JDK17 version for Linux images in the Alpine Linux Dockerfile"
     kind: dockerfile
+    transformers:
+      - replacer:
+          from: "+"
+          to: "_"
     spec:
       file: alpine/hotspot/Dockerfile
       instruction:
@@ -84,6 +80,10 @@ targets:
   setJDK17VersionDebian:
     name: "Bump JDK17 version for Linux images in the Debian Dockerfiles"
     kind: dockerfile
+    transformers:
+      - replacer:
+          from: "+"
+          to: "_"
     spec:
       files:
         - debian/bookworm/hotspot/Dockerfile
@@ -95,6 +95,10 @@ targets:
   setJDK17VersionRhel:
     name: "Bump JDK17 version for Linux images in the Rhel Dockerfile"
     kind: dockerfile
+    transformers:
+      - replacer:
+          from: "+"
+          to: "_"
     spec:
       file: rhel/ubi9/hotspot/Dockerfile
       instruction:
@@ -104,6 +108,10 @@ targets:
   setJDK17VersionWindowsDockerImage:
     name: "Bump default JDK17 version for Linux images in the Windows Dockerfile"
     kind: dockerfile
+    transformers:
+      - replacer:
+          from: "+"
+          to: "_"
     spec:
       file: windows/windowsservercore/hotspot/Dockerfile
       instruction:

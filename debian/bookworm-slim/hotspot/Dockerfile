@@ -1,11 +1,11 @@
-ARG BOOKWORM_TAG=20241111
+ARG BOOKWORM_TAG=20250203
 
 ######################################################
 #                   BUILD STAGE                      #
 ######################################################
 FROM debian:bookworm-"${BOOKWORM_TAG}"-slim AS jre-build
 
-ARG JAVA_VERSION=17.0.13_11
+ARG JAVA_VERSION=17.0.14_7
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -41,7 +41,7 @@ RUN case "$(jlink --version 2>&1)" in \
       *) echo "ERROR: unmanaged jlink version pattern" && exit 1 ;; \
     esac; \
     jlink \
-      --strip-java-debug-attributes \
+      --strijava-debug-attributes \
       "$1" \
       --add-modules ALL-MODULE-PATH \
       --no-man-pages \
@@ -53,6 +53,32 @@ RUN case "$(jlink --version 2>&1)" in \
 #               CONTROLLER STAGE                     #
 ######################################################
 FROM debian:bookworm-"${BOOKWORM_TAG}"-slim AS controller
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    git \
+    gnupg \
+    gpg \
+    libfontconfig1 \
+    libfreetype6 \
+    procps \
+    ssh-client \
+    tini \
+    unzip \
+    tzdata \
+  && rm -rf /var/lib/apt/lists/*
+
+# Git LFS is not available from a package manager on all the platforms we support
+# Download and unpack the tar.gz distribution
+ARG GIT_LFS_VERSION=3.6.1
+# hadolint ignore=DL4006
+RUN arch=$(uname -m | sed -e 's/x86_64/amd64/g' -e 's/aarch64/arm64/g') \
+  && curl -L -s -o git-lfs.tgz "https://github.com/git-lfs/git-lfs/releases/download/v${GIT_LFS_VERSION}/git-lfs-linux-${arch}-v${GIT_LFS_VERSION}.tar.gz" \
+  && tar xzf git-lfs.tgz \
+  && bash git-lfs-*/install.sh \
+  && rm -rf git-lfs*
 
 #----------------------------------------------------#
 # jenkins version being bundled in this docker image #

@@ -75,7 +75,7 @@ variable "COMMIT_SHA" {
 }
 
 variable "ALPINE_FULL_TAG" {
-  default = "3.20.3"
+  default = "3.21.3"
 }
 
 variable "ALPINE_SHORT_TAG" {
@@ -83,15 +83,15 @@ variable "ALPINE_SHORT_TAG" {
 }
 
 variable "JAVA17_VERSION" {
-  default = "17.0.13_11"
+  default = "17.0.14_7"
 }
 
 variable "JAVA21_VERSION" {
-  default = "21.0.5_11"
+  default = "21.0.6_7"
 }
 
 variable "BOOKWORM_TAG" {
-  default = "20241111"
+  default = "20250203"
 }
 
 # ----  user-defined functions ----
