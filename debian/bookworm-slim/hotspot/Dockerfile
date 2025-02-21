@@ -41,7 +41,7 @@ RUN case "$(jlink --version 2>&1)" in \
       *) echo "ERROR: unmanaged jlink version pattern" && exit 1 ;; \
     esac; \
     jlink \
-      --strijava-debug-attributes \
+      --strip-java-debug-attributes \
       "$1" \
       --add-modules ALL-MODULE-PATH \
       --no-man-pages \
