@@ -1,4 +1,4 @@
-ARG BOOKWORM_TAG=20250203
+ARG BOOKWORM_TAG=20250224
 
 FROM debian:bookworm-"${BOOKWORM_TAG}"-slim AS jre-build
 
