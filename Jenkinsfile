@@ -160,8 +160,7 @@ stage('Build') {
 		    stage('Multi arch build') {
 			infra.withDockerCredentials {
 			    sh '''
-				docker buildx create --use
-				docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+				make docker-init
 				docker buildx bake --file docker-bake.hcl linux
 			    '''
 			}
@@ -184,11 +183,7 @@ stage('Build') {
 				// Publication is enabled by default, disabled when simulating a LTS
 				if (env.PUBLISH == "true") {
 				    infra.withDockerCredentials {
-					sh '''
-					    docker buildx create --use
-					    docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-					    make publish
-					    '''
+						sh 'make docker-init publish'
 				    }
 				}
 			    }
