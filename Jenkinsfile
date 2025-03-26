@@ -181,7 +181,8 @@ stage('Build') {
                                 // Publication is enabled by default, disabled when simulating a LTS
                                 if (env.PUBLISH == 'true') {
                                     infra.withDockerCredentials {
-                                        sh 'make docker-init publish'
+                                        sh 'make docker-init'
+                                        sh 'make publish'
                                     }
                                 }
                             }
