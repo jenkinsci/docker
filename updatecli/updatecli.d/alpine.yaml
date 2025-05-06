@@ -1,0 +1,75 @@
+---
+name: Bump Alpine version
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "{{ .github.branch }}"
+
+sources:
+  latestVersion:
+    kind: githubrelease
+    name: "Get the latest Alpine Linux version"
+    spec:
+      owner: "alpinelinux"
+      repository: "aports" # Its release process follows Alpine's
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      versionfilter:
+        kind: semver
+        pattern: "~3"
+    transformers:
+      - trimprefix: "v"
+
+conditions:
+  testDockerfileArg:
+    name: "Does the Dockerfile have an ARG instruction for the Alpine Linux version?"
+    kind: dockerfile
+    disablesourceinput: true
+    spec:
+      file: alpine/hotspot/Dockerfile
+      instruction:
+        keyword: "ARG"
+        matcher: "ALPINE_TAG"
+  testDockerImageExists:
+    name: "Does the Docker Image exist on the Docker Hub?"
+    kind: dockerimage
+    sourceid: latestVersion
+    spec:
+      image: "alpine"
+      # tag come from the source
+      architecture: amd64
+
+targets:
+  updateDockerBake:
+    name: "Update the value of the base image (ARG ALPINE_TAG) in the docker-bake.hcl"
+    kind: hcl
+    spec:
+      file: docker-bake.hcl
+      path: variable.ALPINE_FULL_TAG.default
+    scmid: default
+  updateDockerfile:
+    name: "Update the value of the JDK base image (ARG ALPINE_TAG) in the Dockerfile"
+    kind: dockerfile
+    spec:
+      file: alpine/hotspot/Dockerfile
+      instruction:
+        keyword: "ARG"
+        matcher: "ALPINE_TAG"
+    scmid: default
+actions:
+  default:
+    kind: github/pullrequest
+    scmid: default
+    title: Bump Alpine Linux Version to {{ source "latestVersion" }}
+    spec:
+      labels:
+        - dependencies
+        - alpine

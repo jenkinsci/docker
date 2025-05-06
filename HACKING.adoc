@@ -18,9 +18,9 @@ We recommend https://www.gnu.org/software/parallel/[GNU Parallel] for parallel t
 
 // In case the link breaks, and the bug hasn't been fixed yet:
 // On Apple Silicon in native arm64 containers, older versions of libssl in
-// debian:buster, ubuntu:20.04 and centos:8 will segfault when connected to some TLS
+// debian:buster and ubuntu:20.04 will segfault when connected to some TLS
 // servers, for example curl https://dl.yarnpkg.com. The bug is fixed in newer versions
-// of libssl in debian:bullseye, ubuntu:21.04 and fedora:35.
+// of libssl in debian:bookworm, ubuntu:21.04 and fedora:35.
 
 Tests currently do not work on Mac M1 due to a link:https://docs.docker.com/docker-for-mac/release-notes/#known-issues[known issue] in 'Docker Desktop 3.4.0'.
 
@@ -34,7 +34,7 @@ Tests currently do not work on Mac M1 due to a link:https://docs.docker.com/dock
 make build
 
 ## only build a specific linux image
-make build-debian_jdk11 # or build-alpine_jdk11 build-debian_slim_jdk11 build-debian_jdk11 ...
+make build-debian_jdk17 # or build-alpine_jdk17 build-debian_slim_jdk17 build-debian_jdk17 ...
 
 --
 
@@ -70,13 +70,13 @@ to the path of the bats test harness file to execute alone.
 make test
 
 ## Run tests for a specific linux platform
-make test-debian_jdk11 # or test-alpine_jdk11 test-debian_slim_jdk11 test-debian_jdk11 ...
+make test-debian_jdk17 # or test-alpine_jdk17 test-debian_slim_jdk17 test-debian_jdk17 ...
 
-## Run tests for Alpine Linux JDK11 platform in sequential mode
-DISABLE_PARALLEL_TESTS=true make test-alpine_jdk11
+## Run tests for Alpine Linux JDK17 platform in sequential mode
+DISABLE_PARALLEL_TESTS=true make test-alpine_jdk17
 
-## Only run the test suite `functions.bats` for the CentOS 7 JDK11 platform
-TEST_SUITES=./tests/functions.bats make test-centos7_jdk11
+## Only run the test suite `functions.bats` for the Debian JDK21 platform
+TEST_SUITES=./tests/functions.bats make test-debian_jdk21
 --
 
 == Multiarch support
@@ -88,7 +88,6 @@ Planned supported architectures:
 * amd64
 * arm64
 * s390x
-* ppc64le
 
 == Debugging
 

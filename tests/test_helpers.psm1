@@ -1,4 +1,3 @@
-
 Import-Module -DisableNameChecking -Force $PSScriptRoot/../jenkins-support.psm1
 
 function Test-CommandExists($command) {
@@ -30,7 +29,7 @@ function Retry-Command {
         [scriptblock] $ScriptBlock,
         [int] $RetryCount = 3,
         [int] $Delay = 30,
-        [string] $SuccessMessage = "Command executed successfuly!",
+        [string] $SuccessMessage = "Command executed successfully!",
         [string] $FailureMessage = "Failed to execute the command"
         )
         
@@ -67,20 +66,17 @@ function Retry-Command {
 }
 
 function Get-SutImage {
-    $FOLDER = Get-EnvOrDefault 'FOLDER' ''
+    $DOCKERFILE = Get-EnvOrDefault 'DOCKERFILE' ''
+    $IMAGENAME = Get-EnvOrDefault 'CONTROLLER_IMAGE' '' # Ex: jdk17-hotspot-windowsservercore-ltsc2019
 
-    $REAL_FOLDER=Resolve-Path -Path "$PSScriptRoot/../${FOLDER}"
+    $REAL_DOCKERFILE=Resolve-Path -Path "$PSScriptRoot/../${DOCKERFILE}"
 
-    if(($FOLDER -match '^(?<jdk>[0-9]+)[\\/](?<os>.+)[\\/](?<flavor>.+)[\\/](?<jvm>.+)$') -and (Test-Path $REAL_FOLDER)) {
-        $JDK = $Matches['jdk']
-        $FLAVOR = $Matches['flavor']
-        $JVM = $Matches['jvm']
-    } else {
-        Write-Error "Wrong folder format or folder does not exist: $FOLDER"
+    if(!($DOCKERFILE -match '^(?<os>.+)[\\/](?<flavor>.+)[\\/](?<jvm>.+)[\\/]Dockerfile$') -or !(Test-Path $REAL_DOCKERFILE)) {
+        Write-Error "Wrong Dockerfile path format or file does not exist: $DOCKERFILE"
         exit 1
     }
 
-    return "pester-jenkins-$JDK-$JVM-$FLAVOR".ToLower()
+    return "pester-jenkins-$IMAGENAME"
 }
 
 function Run-Program($cmd, $params, $verbose=$false) {
@@ -108,14 +104,12 @@ function Run-Program($cmd, $params, $verbose=$false) {
     return $proc.ExitCode, $stdout, $stderr
 }
 
-function Build-Docker {
-    $FOLDER = Get-EnvOrDefault 'FOLDER' ''
-    $FOLDER = $FOLDER.Trim()
-
-    if(-not [System.String]::IsNullOrWhiteSpace($env:JENKINS_VERSION)) {
-        return (Run-Program 'docker.exe' "build --build-arg JENKINS_VERSION=$env:JENKINS_VERSION --build-arg JENKINS_SHA=$env:JENKINS_SHA $args $FOLDER")
-    } 
-    return (Run-Program 'docker.exe' "build $args $FOLDER")
+function Build-Docker($tag) {
+    $exitCode, $stdout, $stderr = Run-Program 'docker-compose' '--file=build-windows.yaml build --parallel'
+    if($exitCode -ne 0) {
+        return $exitCode, $stdout, $stderr
+    }
+    return(Run-Program 'docker' $('tag {0}/{1}:{2} {3}' -f $env:DOCKERHUB_ORGANISATION, $env:DOCKERHUB_REPO, $env:CONTROLLER_IMAGE, $tag))
 }
 
 function Build-DockerChild($tag, $dir) {

@@ -1,0 +1,8 @@
+github:
+  user: "GitHub Actions"
+  email: "41898282+github-actions[bot]@users.noreply.github.com"
+  username: "github-actions"
+  token: "UPDATECLI_GITHUB_TOKEN"
+  branch: "master"
+  owner: "jenkinsci"
+  repository: "docker"

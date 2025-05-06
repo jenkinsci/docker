@@ -9,31 +9,36 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'jenkinsci'
     steps:
       - name: Check out source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: PLUGIN_CLI_VERSION
         id: lts
         run: | 
           NEXT_VERSION=$(curl -sL  https://api.github.com/repos/jenkinsci/plugin-installation-manager-tool/releases/latest | jq -r ".tag_name")
-          echo "::set-output name=next-version::$NEXT_VERSION"
+          if [ -z "$NEXT_VERSION" ] || [ $NEXT_VERSION = "null" ]; then
+            echo "ERROR: Empty or 'null' latest plugin-installation-manager-tool version returned by GitHub API."
+            exit 1
+          fi
+          echo "next-version=$NEXT_VERSION" >> $GITHUB_OUTPUT
 
       - name: Check if update is available
         id: update
         run: |
-          CURRENT_VERSION=$(docker buildx bake -f docker-bake.hcl --print alpine_jdk11 | jq -r ".target.alpine_jdk11.args.PLUGIN_CLI_VERSION")
+          CURRENT_VERSION=$(docker buildx bake -f docker-bake.hcl --print alpine_jdk17 | jq -r ".target.alpine_jdk17.args.PLUGIN_CLI_VERSION")
           if [ "$CURRENT_VERSION" = "${{ steps.lts.outputs.next-version }}" ]; then
-            echo "::set-output name=available::false"
+            echo "available=false" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=available::true"
-            echo "::set-output name=current-version::$CURRENT_VERSION"
+            echo "available=true" >> $GITHUB_OUTPUT
+            echo "current-version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           fi
 
       - name: Update LTS version in files
         if: ${{ steps.update.outputs.available == 'true' }}
         run: |
-          grep -ilr ${{ steps.update.outputs.current-version }} ./ | grep -v CHANGELOG.md | xargs sed -i 's/${{ steps.update.outputs.current-version }}/${{ steps.lts.outputs.next-version }}/g'
+          grep -ilrF ${{ steps.update.outputs.current-version }} ./ | grep -v CHANGELOG.md | xargs sed -i 's/${{ steps.update.outputs.current-version }}/${{ steps.lts.outputs.next-version }}/g'
      
       - name: Changelog
         if: ${{ steps.update.outputs.available == 'true' }}
@@ -46,7 +51,7 @@ jobs:
           git diff
           # update the changelog
           
-      - uses: tibdex/github-app-token@v1
+      - uses: tibdex/github-app-token@v2
         id: generate-token
         with:
           app_id: ${{ secrets.JENKINS_DEPENDENCY_UPDATER_APP_ID }}
@@ -54,7 +59,7 @@ jobs:
 
       - name: Create Pull Request
         id: cpr
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v7
         if: ${{ steps.update.outputs.available == 'true' }}
         with:
           token: ${{ steps.generate-token.outputs.token }}
@@ -62,4 +67,5 @@ jobs:
           author: jenkins-dependency-updater <81680575+jenkins-dependency-updater[bot]@users.noreply.github.com>
           committer: jenkins-dependency-updater <81680575+jenkins-dependency-updater[bot]@users.noreply.github.com>
           signoff: true
+          labels: 'dependencies'
           title: 'chore(deps): bump plugin manager to ${{ steps.lts.outputs.next-version }}'

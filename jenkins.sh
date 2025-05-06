@@ -2,11 +2,21 @@
 
 : "${JENKINS_WAR:="/usr/share/jenkins/jenkins.war"}"
 : "${JENKINS_HOME:="/var/jenkins_home"}"
+
+if [[ -n "${PRE_CLEAR_INIT_GROOVY_D}" ]]; then
+  rm -rf "${JENKINS_HOME}/init.groovy.d"
+fi
+
 : "${COPY_REFERENCE_FILE_LOG:="${JENKINS_HOME}/copy_reference_file.log"}"
 : "${REF:="/usr/share/jenkins/ref"}"
+
+if ! [ -r "${JENKINS_HOME}" ] || ! [ -w "${JENKINS_HOME}" ]; then
+        echo "INSTALL WARNING: User: ${USER} missing rw permissions on JENKINS_HOME: ${JENKINS_HOME}"
+fi
 touch "${COPY_REFERENCE_FILE_LOG}" || { echo "Can not write to ${COPY_REFERENCE_FILE_LOG}. Wrong volume permissions?"; exit 1; }
 echo "--- Copying files at $(date)" >> "$COPY_REFERENCE_FILE_LOG"
 find "${REF}" \( -type f -o -type l \) -exec bash -c '. /usr/local/bin/jenkins-support; for arg; do copy_reference_file "$arg"; done' _ {} +
+echo "--- Copied files finished at $(date)" >> "$COPY_REFERENCE_FILE_LOG"
 
 # if `docker run` first argument start with `--` the user is passing jenkins launcher arguments
 if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
@@ -42,7 +52,7 @@ if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
     jenkins_opts_array+=( "$item" )
   done < <([[ $JENKINS_OPTS ]] && xargs printf '%s\0' <<<"$JENKINS_OPTS")
 
-  exec java -Duser.home="$JENKINS_HOME" "${java_opts_array[@]}" -jar ${JENKINS_WAR} "${jenkins_opts_array[@]}" "$@"
+  exec java -Duser.home="$JENKINS_HOME" "${java_opts_array[@]}" -jar "${JENKINS_WAR}" "${jenkins_opts_array[@]}" "$@"
 fi
 
 # As argument is not jenkins, assume user wants to run a different process, for example a `bash` shell to explore this image

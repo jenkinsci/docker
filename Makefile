@@ -10,7 +10,7 @@ export BUILDKIT_PROGRESS=plain
 export COMMIT_SHA=$(shell git rev-parse HEAD)
 
 current_arch := $(shell uname -m)
-export ARCH ?= $(shell case $(current_arch) in (x86_64) echo "amd64" ;; (i386) echo "386";; (aarch64|arm64) echo "arm64" ;; (armv6*) echo "arm/v6";; (armv7*) echo "arm/v7";; (ppc64*|s390*|riscv*) echo $(current_arch);; (*) echo "UNKNOWN-CPU";; esac)
+export ARCH ?= $(shell case $(current_arch) in (x86_64) echo "amd64" ;; (aarch64|arm64) echo "arm64" ;; (s390*|riscv*|ppc64le) echo $(current_arch);; (*) echo "UNKNOWN-CPU";; esac)
 
 all: hadolint shellcheck build test
 
@@ -38,6 +38,20 @@ check-reqs:
 ## Test requirements
 	@$(call check_cli,curl)
 	@$(call check_cli,jq)
+
+## This function is specific to Jenkins infrastructure and isn't required in other contexts
+docker-init: check-reqs
+ifeq ($(CI),true)
+ifeq ($(wildcard /etc/buildkitd.toml),)
+	echo 'WARNING: /etc/buildkitd.toml not found, using default configuration.'
+	docker buildx create --use --bootstrap --driver docker-container
+else
+	docker buildx create --use --bootstrap --driver docker-container --config /etc/buildkitd.toml
+endif
+else
+	docker buildx create --use --bootstrap --driver docker-container
+endif
+	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
 hadolint:
 	find . -type f -name 'Dockerfile*' -not -path "./bats/*" -print0 | xargs -0 $(ROOT_DIR)/tools/hadolint

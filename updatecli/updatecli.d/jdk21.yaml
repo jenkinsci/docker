@@ -1,0 +1,74 @@
+name: Bump JDK21 version
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "{{ .github.branch }}"
+
+sources:
+  lastTemurin21Version:
+    kind: temurin
+    name: Get the latest Adoptium JDK21 version via the API
+    spec:
+      featureversion: 21
+    transformers:
+      - trimprefix: "jdk-"
+
+conditions:
+  checkTemurinAllReleases:
+    name: Check if the "<lastTemurin21Version>" is available for all platforms
+    kind: temurin
+    sourceid: lastTemurin21Version
+    spec:
+      featureversion: 21
+      platforms:
+        - alpine-linux/x64
+        - alpine-linux/aarch64
+        - linux/x64
+        - linux/aarch64
+        - linux/ppc64le
+        - linux/s390x
+        - windows/x64
+
+targets:
+  setJDK21VersionDockerBake:
+    name: "Bump JDK21 version for Linux images in the docker-bake.hcl file"
+    kind: hcl
+    transformers:
+      - replacer:
+          from: "+"
+          to: "_"
+    spec:
+      file: docker-bake.hcl
+      path: variable.JAVA21_VERSION.default
+    scmid: default
+
+  setJDK21VersionWindowsDockerCompose:
+    name: "Bump JDK21 version in build-windows.yaml"
+    kind: yaml
+    transformers:
+      - replacer:
+          from: "+"
+          to: "_"
+    spec:
+      files:
+        - build-windows.yaml
+      key: $.services.jdk21.build.args.JAVA_VERSION
+    scmid: default
+
+actions:
+  default:
+    kind: github/pullrequest
+    scmid: default
+    title: Bump JDK21 version to {{ source "lastTemurin21Version" }}
+    spec:
+      labels:
+        - dependencies
+        - jdk21

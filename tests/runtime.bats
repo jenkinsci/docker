@@ -130,3 +130,7 @@ runInScriptConsole() {
   assert "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';" get-csp-value
   assert 'Europe/Madrid' get-timezone-value
 }
+
+@test "[${SUT_DESCRIPTION}] ensure that 'ps' command is available" {
+  command -v ps # Check for binary presence in the current PATH
+}
