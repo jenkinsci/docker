@@ -1,0 +1,30 @@
+name: updatecli
+on:
+  # Allow to be run manually
+  workflow_dispatch:
+  schedule:
+    # Run once per week (to avoid alert fatigue)
+    - cron: '0 2 * * 1' # Every Monday at 2am UTC
+  push:
+  pull_request:
+jobs:
+  updatecli:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'jenkinsci'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Updatecli in the runner
+        uses: updatecli/updatecli-action@v2.83.0
+
+      - name: Run Updatecli in Dry Run mode
+        run: updatecli diff --config ./updatecli/updatecli.d --values ./updatecli/values.github-action.yaml
+        env:
+          UPDATECLI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Updatecli in Apply mode
+        if: github.ref == 'refs/heads/master'
+        run: updatecli apply --config ./updatecli/updatecli.d --values ./updatecli/values.github-action.yaml
+        env:
+          UPDATECLI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

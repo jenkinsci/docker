@@ -1,74 +1,204 @@
 #!/usr/bin/env groovy
 
-properties([
-    buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '5')),
-    pipelineTriggers([cron('H H/6 * * *')]),
-])
+def listOfProperties = []
+listOfProperties << buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '5'))
 
-nodeWithTimeout('docker') {
-    deleteDir()
+// Only master branch will run on a timer basis
+if (env.BRANCH_NAME.trim() == 'master') {
+    listOfProperties << pipelineTriggers([cron('''H H/6 * * 0-2,4-6
+H 6,21 * * 3''')])
+}
 
-    stage('Checkout') {
-        checkout scm
-    }
+properties(listOfProperties)
 
-    if (!infra.isTrusted()) {
+// Default environment variable set to allow images publication
+def envVars = ['PUBLISH=true']
 
-        stage('shellcheck') {
-            // run shellcheck ignoring error SC1091
-            // Not following: /usr/local/bin/jenkins-support was not specified as input
-            sh 'make shellcheck'
-        }
+// Set to true in a replay to simulate a LTS build on ci.jenkins.io
+// It will set the environment variables needed for a LTS
+// and disable images publication out of caution
+def SIMULATE_LTS_BUILD = false
 
-        /* Outside of the trusted.ci environment, we're building and testing
-         * the Dockerfile in this repository, but not publishing to docker hub
-         */
-        stage('Build') {
-            sh 'make build'
-        }
+if (SIMULATE_LTS_BUILD) {
+    envVars = [
+        'PUBLISH=false',
+        'TAG_NAME=2.462.3',
+        'JENKINS_VERSION=2.462.3',
+        'JENKINS_SHA=3e53b52a816405e3b10ad07f1c48cd0cb5cb3f893207ef7f9de28415806b93c1'
+    ]
+}
 
-        stage('Prepare Test') {
-            sh "make prepare-test"
-        }
+stage('Build') {
+    def builds = [:]
 
-        def labels = ['debian', 'slim', 'alpine', 'jdk11', 'centos']
-        def builders = [:]
-        for (x in labels) {
-            def label = x
+    withEnv(envVars) {
+        echo '= bake target: linux'
 
-            // Create a map to pass in to the 'parallel' step so we can fire all the builds at once
-            builders[label] = {
-                stage("Test ${label}") {
-                    sh "make test-$label"
+        def windowsImageTypes = ['windowsservercore-ltsc2019']
+        for (anImageType in windowsImageTypes) {
+            def imageType = anImageType
+            builds[imageType] = {
+                nodeWithTimeout('windows-2019') {
+                    stage('Checkout') {
+                        checkout scm
+                    }
+
+                    withEnv(["IMAGE_TYPE=${imageType}"]) {
+                        if (!infra.isTrusted()) {
+                            /* Outside of the trusted.ci environment, we're building and testing
+                            * the Dockerfile in this repository, but not publishing to docker hub
+                            */
+                            stage("Build ${imageType}") {
+                                infra.withDockerCredentials {
+                                    powershell './make.ps1'
+                                }
+                            }
+
+                            stage("Test ${imageType}") {
+                                infra.withDockerCredentials {
+                                    def windowsTestStatus = powershell(script: './make.ps1 test', returnStatus: true)
+                                    junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
+                                    if (windowsTestStatus > 0) {
+                                        // If something bad happened let's clean up the docker images
+                                        error('Windows test stage failed.')
+                                    }
+                                }
+                            }
+
+                        // disable until we get the parallel changes merged in
+                        // def branchName = "${env.BRANCH_NAME}"
+                        // if (branchName ==~ 'master'){
+                        //    stage('Publish Experimental') {
+                        //        infra.withDockerCredentials {
+                        //            withEnv(['DOCKERHUB_ORGANISATION=jenkins4eval','DOCKERHUB_REPO=jenkins']) {
+                        //                powershell './make.ps1 publish'
+                        //            }
+                        //        }
+                        //    }
+                        // }
+                        } else {
+                            // Only publish when a tag triggered the build & the publication is enabled (ie not simulating a LTS)
+                            if (env.TAG_NAME && (env.PUBLISH == 'true')) {
+                                // Split to ensure any suffix is not taken in account (but allow suffix tags to trigger rebuilds)
+                                jenkins_version = env.TAG_NAME.split('-')[0]
+                                withEnv(["JENKINS_VERSION=${jenkins_version}"]) {
+                                    stage('Publish') {
+                                        infra.withDockerCredentials {
+                                            withEnv(['DOCKERHUB_ORGANISATION=jenkins', 'DOCKERHUB_REPO=jenkins']) {
+                                                powershell './make.ps1 publish'
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        parallel builders
-        
-        def branchName = "${env.BRANCH_NAME}"
-        if (branchName ==~ 'master'){
-            stage('Publish Experimental') {
-                infra.withDockerCredentials {
-                    sh 'make publish-experimental'
+        if (!infra.isTrusted()) {
+            def images = [
+                'alpine_jdk17',
+                'alpine_jdk21',
+                'debian_jdk17',
+                'debian_jdk21',
+                'debian_slim_jdk17',
+                'debian_slim_jdk21',
+                'rhel_ubi9_jdk17',
+                'rhel_ubi9_jdk21',
+            ]
+            for (i in images) {
+                def imageToBuild = i
+
+                builds[imageToBuild] = {
+                    nodeWithTimeout('docker') {
+                        deleteDir()
+
+                        stage('Checkout') {
+                            checkout scm
+                        }
+
+                        stage('Static analysis') {
+                            sh 'make hadolint shellcheck'
+                        }
+
+                        /* Outside of the trusted.ci environment, we're building and testing
+                        * the Dockerfile in this repository, but not publishing to docker hub
+                        */
+                        stage("Build linux-${imageToBuild}") {
+                            infra.withDockerCredentials {
+                                sh "make build-${imageToBuild}"
+                            }
+                        }
+
+                        stage("Test linux-${imageToBuild}") {
+                            sh 'make prepare-test'
+                            try {
+                                infra.withDockerCredentials {
+                                    sh "make test-${imageToBuild}"
+                                }
+                            } catch (err) {
+                                error("${err.toString()}")
+                            } finally {
+                                junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/*.xml')
+                            }
+                        }
+                    }
                 }
-            }                 
-        }
-    } else {
-        /* In our trusted.ci environment we only want to be publishing our
-         * containers from artifacts
-         */
-        stage('Publish') {
-            infra.withDockerCredentials {
-                sh 'make publish'
+            }
+            builds['multiarch-build'] = {
+                nodeWithTimeout('docker') {
+                    stage('Checkout') {
+                        deleteDir()
+                        checkout scm
+                    }
+
+                    // sanity check that proves all images build on declared platforms
+                    stage('Multi arch build') {
+                        infra.withDockerCredentials {
+                            sh '''
+                            make docker-init
+                            docker buildx bake --file docker-bake.hcl linux
+                            '''
+                        }
+                    }
+                }
+            }
+        } else {
+            // Only publish when a tag triggered the build
+            if (env.TAG_NAME) {
+                // Split to ensure any suffix is not taken in account (but allow suffix tags to trigger rebuilds)
+                jenkins_version = env.TAG_NAME.split('-')[0]
+                builds['linux'] = {
+                    withEnv(["JENKINS_VERSION=${jenkins_version}"]) {
+                        nodeWithTimeout('docker') {
+                            stage('Checkout') {
+                                checkout scm
+                            }
+
+                            stage('Publish') {
+                                // Publication is enabled by default, disabled when simulating a LTS
+                                if (env.PUBLISH == 'true') {
+                                    infra.withDockerCredentials {
+                                        sh 'make docker-init'
+                                        sh 'make publish'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
+
+        parallel builds
     }
 }
 
 void nodeWithTimeout(String label, def body) {
     node(label) {
-        timeout(time: 40, unit: 'MINUTES') {
+        timeout(time: 60, unit: 'MINUTES') {
             body.call()
         }
     }

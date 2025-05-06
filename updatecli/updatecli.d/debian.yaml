@@ -1,0 +1,82 @@
+---
+name: Bump Debian Bookworm version
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "{{ .github.branch }}"
+
+sources:
+  bookwormLatestVersion:
+    kind: dockerimage
+    name: "Get the latest Debian Bookworm Linux version"
+    transformers:
+      - trimprefix: "bookworm-"
+    spec:
+      image: "debian"
+      tagfilter: "bookworm-*"
+      versionfilter:
+        kind: regex
+        pattern: >-
+          bookworm-\d+$
+
+conditions:
+  testDockerfileArg:
+    name: "Does the Dockerfile have an ARG instruction for the Debian Bookworm & Bookworm Slim Linux version?"
+    kind: dockerfile
+    disablesourceinput: true
+    spec:
+      files:
+        - debian/bookworm/hotspot/Dockerfile
+        - debian/bookworm-slim/hotspot/Dockerfile
+      instruction:
+        keyword: "ARG"
+        matcher: "BOOKWORM_TAG"
+  testVersionInBakeFile:
+    name: "Does the bake file have variable BOOKWORM_TAG"
+    kind: file
+    disablesourceinput: true
+    spec:
+      file: docker-bake.hcl
+      matchpattern: "(.*BOOKWORM_TAG.*)"
+
+targets:
+  updateDockerBake:
+    name: "Update the value of the base image (ARG BOOKWORM_TAG) in the docker-bake.hcl"
+    kind: file
+    sourceid: bookwormLatestVersion
+    spec:
+      file: docker-bake.hcl
+      matchpattern: >-
+        variable(.*)"BOOKWORM_TAG"(.*){(.*)(\r\n|\r|\n)(.*)default(.*)=(.*)
+      replacepattern: >-
+        variable${1}"BOOKWORM_TAG"${2}{${3}${4}${5}default${6}= "{{ source "bookwormLatestVersion" }}"
+    scmid: default
+  updateDockerfile:
+    name: "Update the value of the base image (ARG BOOKWORM_TAG) in the Dockerfiles"
+    kind: dockerfile
+    sourceid: bookwormLatestVersion
+    spec:
+      files:
+        - debian/bookworm/hotspot/Dockerfile
+        - debian/bookworm-slim/hotspot/Dockerfile
+      instruction:
+        keyword: "ARG"
+        matcher: "BOOKWORM_TAG"
+    scmid: default
+actions:
+  default:
+    kind: github/pullrequest
+    scmid: default
+    title: Bump Debian Bookworm Linux Version to {{ source "bookwormLatestVersion" }}
+    spec:
+      labels:
+        - dependencies
+        - debian

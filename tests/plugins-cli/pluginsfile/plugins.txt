@@ -1,0 +1,24 @@
+# comment line should be skipped
+
+# simple case
+ant:1.3
+
+# trailing spaces
+junit:1.6   
+
+# leading spaces
+  mesos:0.13.0
+
+# leading spaces, and trailing spaces
+  git:latest  
+
+# with comments at the end
+filesystem_scm:experimental  # comment at the end
+
+# empty line
+ 
+    #  
+     # empty line
+
+# from url
+subversion:::https://updates.jenkins.io/download/plugins/subversion/2.12.1/subversion.hpi

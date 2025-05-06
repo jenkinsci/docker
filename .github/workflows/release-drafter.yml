@@ -1,0 +1,19 @@
+# Note: additional setup is required, see https://github.com/jenkinsci/.github/blob/master/.github/release-drafter.adoc
+
+name: Release Drafter
+
+on:
+  push:
+    branches:
+      - "master"
+  workflow_dispatch:
+
+jobs:
+  update_release_draft:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'jenkinsci'
+    steps:
+      # Drafts your next Release notes as Pull Requests are merged into the default branch
+      - uses: release-drafter/release-drafter@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

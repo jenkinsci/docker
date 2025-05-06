@@ -1,0 +1,78 @@
+# Per https://docs.github.com/en/github/administering-a-repository/configuration-options-for-dependency-updates
+version: 2
+updates:
+
+# Alpine Linux
+
+- package-ecosystem: docker
+  directory: "alpine/hotspot"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 2
+  target-branch: master
+  reviewers:
+  - MarkEWaite
+  - slide
+  labels:
+  - dependencies
+  ignore:
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
+  - dependency-name: "eclipse-temurin"
+
+# Debian Linux
+
+- package-ecosystem: docker
+  directory: "debian/bookworm/hotspot"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 2
+  target-branch: master
+  reviewers:
+  - MarkEWaite
+  - slide
+  labels:
+  - dependencies
+  ignore:
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
+  - dependency-name: "eclipse-temurin"
+
+- package-ecosystem: docker
+  directory: "debian/bookworm-slim/hotspot"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 2
+  target-branch: master
+  reviewers:
+  - MarkEWaite
+  - slide
+  labels:
+  - dependencies
+  ignore:
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
+  - dependency-name: "eclipse-temurin"
+
+# RHEL UBI
+
+- package-ecosystem: docker
+  directory: "rhel/ubi9/hotspot"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 2
+  target-branch: master
+  reviewers:
+    - olivergondza
+    - slide
+  labels:
+    - dependencies
+  ignore:
+  # Ignore proposals to update to new versions of Java because updatecli takes care of that.
+  - dependency-name: "eclipse-temurin"
+
+# GitHub actions
+
+- package-ecosystem: "github-actions"
+  target-branch: master
+  directory: "/"
+  schedule:
+    # Check for updates to GitHub Actions every week
+    interval: "weekly"
