@@ -10,9 +10,6 @@ updates:
     interval: weekly
   open-pull-requests-limit: 2
   target-branch: master
-  reviewers:
-  - MarkEWaite
-  - slide
   labels:
   - dependencies
   ignore:
@@ -27,9 +24,6 @@ updates:
     interval: weekly
   open-pull-requests-limit: 2
   target-branch: master
-  reviewers:
-  - MarkEWaite
-  - slide
   labels:
   - dependencies
   ignore:
@@ -42,9 +36,6 @@ updates:
     interval: weekly
   open-pull-requests-limit: 2
   target-branch: master
-  reviewers:
-  - MarkEWaite
-  - slide
   labels:
   - dependencies
   ignore:
@@ -59,9 +50,6 @@ updates:
     interval: weekly
   open-pull-requests-limit: 2
   target-branch: master
-  reviewers:
-    - olivergondza
-    - slide
   labels:
     - dependencies
   ignore:
