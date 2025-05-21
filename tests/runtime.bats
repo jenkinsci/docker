@@ -15,6 +15,7 @@ teardown() {
 @test "[${SUT_DESCRIPTION}] test version in docker metadata" {
   local version
   version=$(get_jenkins_version)
+  [ 0 -eq 1 ]
   assert "${version}" docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.version"}}' $SUT_IMAGE
 }
 
