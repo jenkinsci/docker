@@ -4,27 +4,18 @@
 
 # compare if version1 < version2
 versionLT() {
-    local v1; v1=$(echo "$1" | cut -d '-' -f 1 )
-    local q1; q1=$(echo "$1" | cut -s -d '-' -f 2- )
-    local v2; v2=$(echo "$2" | cut -d '-' -f 1 )
-    local q2; q2=$(echo "$2" | cut -s -d '-' -f 2- )
-    if [ "$v1" = "$v2" ]; then
-        if [ "$q1" = "$q2" ]; then
-            return 1
-        else
-            if [ -z "$q1" ]; then
-                return 1
-            else
-                if [ -z "$q2" ]; then
-                    return 0
-                else
-                    [  "$q1" = "$(echo -e "$q1\n$q2" | sort -V | head -n1)" ]
-                fi
-            fi
-        fi
-    else
-        [  "$v1" = "$(echo -e "$v1\n$v2" | sort -V | head -n1)" ]
-    fi
+    VER_SPLIT_SED='s/\./ /g;s/\-/ /g'
+    local A B i result
+    A=($(sed "$VER_SPLIT_SED"  <<< "$1"))
+    B=($(sed "$VER_SPLIT_SED"  <<< "$2"))
+    i=0
+    while (( i < ${#A[@]} )) | (( i < ${#B[@]})); do
+      (( i >= ${#A[@]} )) &&  return 0
+      (( i >= ${#B[@]} )) &&  return 1
+      (( ${A[i]} > ${B[i]} )) && return 1
+      (( ${A[i]} < ${B[i]} )) && return 0
+      let i++
+    done
 }
 
 # returns a plugin version from a plugin archive
