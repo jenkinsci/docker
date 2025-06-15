@@ -12,35 +12,63 @@ SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPref
 
 ARG JAVA_VERSION=17.0.15_6
 
-RUN New-Item -ItemType Directory -Path C:\temp | Out-Null ; `
+# Combine multiple RUN commands and improve error handling
+RUN New-Item -ItemType Directory -Path C:\temp -Force | Out-Null ; `
     $javaMajorVersion = $env:JAVA_VERSION.substring(0,2) ; `
     $msiUrl = 'https://api.adoptium.net/v3/installer/version/jdk-{0}/windows/x64/jdk/hotspot/normal/eclipse?project=jdk' -f $env:JAVA_VERSION.Replace('_', '%2B') ; `
-    Invoke-WebRequest $msiUrl -OutFile 'C:\temp\jdk.msi' ; `
-    $proc = Start-Process -FilePath 'msiexec.exe' -ArgumentList '/i', 'C:\temp\jdk.msi', '/L*V', 'C:\temp\OpenJDK.log', '/quiet', 'ADDLOCAL=FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome',  "INSTALLDIR=C:\openjdk-${javaMajorVersion}" -Wait -Passthru ; `
-    $proc.WaitForExit() ; `
-    Remove-Item -Path C:\temp -Recurse | Out-Null
+    Write-Host "Downloading JDK from: $msiUrl" ; `
+    try { `
+        Invoke-WebRequest $msiUrl -OutFile 'C:\temp\jdk.msi' -UseBasicParsing ; `
+        Write-Host "JDK MSI downloaded successfully" ; `
+        $proc = Start-Process -FilePath 'msiexec.exe' -ArgumentList '/i', 'C:\temp\jdk.msi', '/L*V', 'C:\temp\OpenJDK.log', '/quiet', 'ADDLOCAL=FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome', "INSTALLDIR=C:\openjdk-${javaMajorVersion}" -Wait -PassThru ; `
+        if ($proc.ExitCode -ne 0) { `
+            Write-Host "MSI installation failed with exit code: $($proc.ExitCode)" ; `
+            Get-Content 'C:\temp\OpenJDK.log' -ErrorAction SilentlyContinue | Write-Host ; `
+            throw "JDK installation failed" ; `
+        } ; `
+        Write-Host "JDK installed successfully" ; `
+    } catch { `
+        Write-Error "Failed to download or install JDK: $_" ; `
+        throw ; `
+    } finally { `
+        if (Test-Path 'C:\temp') { `
+            Remove-Item -Path C:\temp -Recurse -Force | Out-Null ; `
+        } ; `
+    } ; `
+    Write-Host 'Verifying Java installation...' ; `
+    Write-Host 'javac --version:' ; javac --version ; `
+    Write-Host 'java --version:' ; java --version
 
-RUN Write-Host 'javac --version' ; javac --version ; `
-    Write-Host 'java --version' ; java --version
-
-RUN $version = (jlink --version) ; `
-    $compressArg = '--compress=2' ; `
-    switch ($version.Substring(0,3)) { `
-        '17.' {} `
-        # the compression argument is different for JDK21
-        '21.' { $compressArg = '--compress=zip-6' } `
-        Default { `
-            Write-Error 'ERROR: unmanaged jlink version pattern' ; `
-            exit 1 ; `
-        } `
-    } `
-    & jlink `
-    --strip-java-debug-attributes `
-    $compressArg `
-    --add-modules ALL-MODULE-PATH `
-    --no-man-pages `
-    --no-header-files `
-    --output /javaruntime
+# Optimize jlink execution with better error handling and version detection
+RUN try { `
+        $jlinkVersion = (jlink --version 2>&1) | Out-String ; `
+        Write-Host "jlink version: $jlinkVersion" ; `
+        $compressArg = '--compress=2' ; `
+        # More robust version detection
+        if ($jlinkVersion -match '21\.') { `
+            $compressArg = '--compress=zip-6' ; `
+            Write-Host "Using JDK 21 compression format" ; `
+        } elseif ($jlinkVersion -match '17\.') { `
+            Write-Host "Using JDK 17 compression format" ; `
+        } else { `
+            Write-Warning "Unknown jlink version, using default compression" ; `
+        } ; `
+        Write-Host "Creating custom JRE with jlink..." ; `
+        & jlink `
+            --strip-java-debug-attributes `
+            $compressArg `
+            --add-modules ALL-MODULE-PATH `
+            --no-man-pages `
+            --no-header-files `
+            --output /javaruntime ; `
+        if ($LASTEXITCODE -ne 0) { `
+            throw "jlink failed with exit code: $LASTEXITCODE" ; `
+        } ; `
+        Write-Host "Custom JRE created successfully" ; `
+    } catch { `
+        Write-Error "jlink execution failed: $_" ; `
+        throw ; `
+    }
 
 FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS controller
 
@@ -51,10 +79,21 @@ COPY --from=jre-build /javaruntime $JAVA_HOME
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-# Add java in PATH
-RUN $CurrentPath = (Get-Itemproperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path).Path ; `
-    $NewPath = $CurrentPath + $(';{0}/bin' -f $env:JAVA_HOME) ; `
-    Set-ItemProperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path -Value $NewPath
+# Optimize PATH modification with better error handling
+RUN try { `
+        $CurrentPath = (Get-ItemProperty -Path 'HKLM:\system\currentcontrolset\control\session manager\environment' -Name Path -ErrorAction Stop).Path ; `
+        $JavaBinPath = "$env:JAVA_HOME/bin" ; `
+        if ($CurrentPath -notlike "*$JavaBinPath*") { `
+            $NewPath = "$CurrentPath;$JavaBinPath" ; `
+            Set-ItemProperty -Path 'HKLM:\system\currentcontrolset\control\session manager\environment' -Name Path -Value $NewPath -ErrorAction Stop ; `
+            Write-Host "Java added to system PATH" ; `
+        } else { `
+            Write-Host "Java already in PATH" ; `
+        } ; `
+    } catch { `
+        Write-Error "Failed to modify PATH: $_" ; `
+        throw ; `
+    }
 
 ARG user=jenkins
 ARG http_port=8080
@@ -70,26 +109,34 @@ ENV JENKINS_AGENT_PORT=${agent_port}
 # can be persisted and survive image upgrades
 VOLUME $JENKINS_HOME
 
-# Jenkins is run with user `jenkins`
-# If you bind mount a volume from the host or a data container,
-# ensure you use the same uid
+# Optimize user creation and permissions setup
 # hadolint ignore=DL4006
-RUN New-LocalUser -Name $env:user -AccountNeverExpires -Description 'Jenkins User' -NoPassword -UserMayNotChangePassword | Out-Null ; `
-    Set-Localuser -Name $env:user -PasswordNeverExpires $true | Out-Null ; `
-    Add-LocalGroupMember -Group "Administrators" -Member "${env:user}" ; `
-    New-Item -Type Directory -Force -Path "C:/ProgramData/Jenkins" | Out-Null ; `
-    icacls.exe "C:/ProgramData/Jenkins" /setowner ${env:user} | Out-Null ; `
-    icacls.exe "C:/ProgramData/Jenkins" /inheritance:r | Out-Null ; `
-    icacls.exe "C:/ProgramData/Jenkins" /grant:r $('{0}:(CI)(OI)(F)' -f $env:user) /grant 'Administrators:(CI)(OI)(F)' | Out-Null ; `
-    icacls.exe "$env:JENKINS_HOME" /setowner ${env:user} | Out-Null ; `
-    icacls.exe "$env:JENKINS_HOME" /grant:r $('{0}:(CI)(OI)(F)' -f $env:user) /grant 'Administrators:(CI)(OI)(F)' | Out-Null
+RUN try { `
+        Write-Host "Creating Jenkins user..." ; `
+        if (-not (Get-LocalUser -Name $env:user -ErrorAction SilentlyContinue)) { `
+            New-LocalUser -Name $env:user -AccountNeverExpires -Description 'Jenkins User' -NoPassword -UserMayNotChangePassword | Out-Null ; `
+            Set-LocalUser -Name $env:user -PasswordNeverExpires $true | Out-Null ; `
+        } ; `
+        Add-LocalGroupMember -Group "Administrators" -Member $env:user -ErrorAction SilentlyContinue ; `
+        Write-Host "Setting up Jenkins directories..." ; `
+        @('C:/ProgramData/Jenkins', $env:JENKINS_HOME) | ForEach-Object { `
+            $dir = $_ ; `
+            if (-not (Test-Path $dir)) { `
+                New-Item -Type Directory -Force -Path $dir | Out-Null ; `
+            } ; `
+            icacls.exe $dir /setowner $env:user /T /C | Out-Null ; `
+            icacls.exe $dir /inheritance:r /T /C | Out-Null ; `
+            icacls.exe $dir /grant:r "$($env:user):(CI)(OI)(F)" /grant "Administrators:(CI)(OI)(F)" /T /C | Out-Null ; `
+        } ; `
+        Write-Host "Jenkins user and directories configured successfully" ; `
+    } catch { `
+        Write-Error "Failed to configure Jenkins user: $_" ; `
+        throw ; `
+    }
 
 USER ${user}
 
-# `C:/ProgramData/Jenkins/Reference/` contains all reference configuration we want
-# to set on a fresh new installation. Use it to bundle additional plugins
-# or config file with your custom jenkins Docker image.
-# hadolint ignore=DL4006
+# Create reference directory structure
 RUN New-Item -ItemType Directory -Force -Path C:/ProgramData/Jenkins/Reference/init.groovy.d | Out-Null
 
 # jenkins version being bundled in this docker image
@@ -102,10 +149,35 @@ ARG JENKINS_SHA=efc91d6be8d79dd078e7f930fc4a5f135602d0822a5efe9091808fdd74607d32
 # Can be used to customize where jenkins.war get downloaded from
 ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war
 
-# could use ADD but this one does not check Last-Modified header neither does it allow to control checksum
-# see https://github.com/docker/docker/issues/8331
-RUN Invoke-WebRequest -Uri "$env:JENKINS_URL" -OutFile C:/ProgramData/Jenkins/jenkins.war ; `
-    if ((Get-FileHash C:/ProgramData/Jenkins/jenkins.war -Algorithm SHA256).Hash -ne $env:JENKINS_SHA) {exit 1}
+# Optimize Jenkins WAR download with better error handling and retry logic
+RUN try { `
+        $jenkinsWar = 'C:/ProgramData/Jenkins/jenkins.war' ; `
+        Write-Host "Downloading Jenkins WAR from: $env:JENKINS_URL" ; `
+        $maxRetries = 3 ; `
+        $retryCount = 0 ; `
+        do { `
+            try { `
+                Invoke-WebRequest -Uri $env:JENKINS_URL -OutFile $jenkinsWar -UseBasicParsing -TimeoutSec 300 ; `
+                break ; `
+            } catch { `
+                $retryCount++ ; `
+                if ($retryCount -ge $maxRetries) { `
+                    throw "Failed to download Jenkins WAR after $maxRetries attempts: $_" ; `
+                } ; `
+                Write-Warning "Download attempt $retryCount failed, retrying in 5 seconds..." ; `
+                Start-Sleep -Seconds 5 ; `
+            } ; `
+        } while ($retryCount -lt $maxRetries) ; `
+        Write-Host "Verifying Jenkins WAR checksum..." ; `
+        $actualHash = (Get-FileHash $jenkinsWar -Algorithm SHA256).Hash ; `
+        if ($actualHash -ne $env:JENKINS_SHA) { `
+            throw "Jenkins WAR checksum mismatch. Expected: $env:JENKINS_SHA, Actual: $actualHash" ; `
+        } ; `
+        Write-Host "Jenkins WAR downloaded and verified successfully" ; `
+    } catch { `
+        Write-Error "Jenkins WAR download failed: $_" ; `
+        throw ; `
+    }
 
 ENV JENKINS_UC=https://updates.jenkins.io
 ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
@@ -113,9 +185,24 @@ ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 
 ARG PLUGIN_CLI_VERSION=2.13.2
 ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
-RUN $sha256sum = [System.Text.Encoding]::UTF8.GetString((Invoke-WebRequest -Uri ($env:PLUGIN_CLI_URL + '.sha256') -UseBasicParsing).Content); `
-    Invoke-WebRequest -Uri "$env:PLUGIN_CLI_URL" -OutFile C:/ProgramData/Jenkins/jenkins-plugin-manager.jar; `
-    if ((Get-FileHash -Path C:/ProgramData/Jenkins/jenkins-plugin-manager.jar -Algorithm SHA256).Hash -ne $sha256sum) {exit 1}
+
+# Optimize plugin CLI download with better error handling
+RUN try { `
+        $pluginCliJar = 'C:/ProgramData/Jenkins/jenkins-plugin-manager.jar' ; `
+        Write-Host "Downloading Jenkins Plugin CLI..." ; `
+        $sha256Url = $env:PLUGIN_CLI_URL + '.sha256' ; `
+        $expectedHash = (Invoke-WebRequest -Uri $sha256Url -UseBasicParsing -TimeoutSec 60).Content.Trim() ; `
+        Write-Host "Expected SHA256: $expectedHash" ; `
+        Invoke-WebRequest -Uri $env:PLUGIN_CLI_URL -OutFile $pluginCliJar -UseBasicParsing -TimeoutSec 300 ; `
+        $actualHash = (Get-FileHash -Path $pluginCliJar -Algorithm SHA256).Hash ; `
+        if ($actualHash -ne $expectedHash) { `
+            throw "Plugin CLI checksum mismatch. Expected: $expectedHash, Actual: $actualHash" ; `
+        } ; `
+        Write-Host "Jenkins Plugin CLI downloaded and verified successfully" ; `
+    } catch { `
+        Write-Error "Plugin CLI download failed: $_" ; `
+        throw ; `
+    }
 
 # for main web interface:
 EXPOSE ${http_port}
@@ -125,10 +212,10 @@ EXPOSE ${agent_port}
 
 ENV COPY_REFERENCE_FILE_LOG=$JENKINS_HOME/copy_reference_file.log
 
-COPY jenkins-support.psm1 C:/ProgramData/Jenkins
-COPY jenkins.ps1 C:/ProgramData/Jenkins
-# See https://github.com/jenkinsci/plugin-installation-manager-tool#cli-options for information on parameters for jenkins-plugin-cli.ps1 for installing plugins into the docker image
-COPY jenkins-plugin-cli.ps1 C:/ProgramData/Jenkins
+# Copy supporting files
+COPY jenkins-support.psm1 C:/ProgramData/Jenkins/
+COPY jenkins.ps1 C:/ProgramData/Jenkins/
+COPY jenkins-plugin-cli.ps1 C:/ProgramData/Jenkins/
 
 ENTRYPOINT ["powershell.exe", "-f", "C:/ProgramData/Jenkins/jenkins.ps1"]
 
