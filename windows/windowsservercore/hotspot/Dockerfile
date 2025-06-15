@@ -38,11 +38,13 @@ RUN New-Item -ItemType Directory -Path C:\temp -Force | Out-Null ; `
 
 # Verify Java installation (separate RUN to ensure environment variables are loaded)
 RUN Write-Host 'Verifying Java installation...' ; `
-    $javaPath = "C:\openjdk-$($env:JAVA_VERSION.substring(0,2))\bin" ; `
+    $javaMajorVersion = $env:JAVA_VERSION.substring(0,2) ; `
+    $javaPath = "C:\openjdk-${javaMajorVersion}\bin" ; `
+    Write-Host "Looking for Java at: $javaPath" ; `
     if (Test-Path $javaPath) { `
-        $env:PATH = "$javaPath;$env:PATH" ; `
-        Write-Host 'javac --version:' ; & "$javaPath\javac.exe" --version ; `
-        Write-Host 'java --version:' ; & "$javaPath\java.exe" --version ; `
+        $env:PATH = "${javaPath};$env:PATH" ; `
+        Write-Host 'javac --version:' ; & "${javaPath}\javac.exe" --version ; `
+        Write-Host 'java --version:' ; & "${javaPath}\java.exe" --version ; `
     } else { `
         Write-Error "Java installation path not found: $javaPath" ; `
         throw "Java installation verification failed" ; `
