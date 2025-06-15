@@ -12,7 +12,7 @@ SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPref
 
 ARG JAVA_VERSION=17.0.15_6
 
-# Combine multiple RUN commands and improve error handling
+# Download and install JDK
 RUN New-Item -ItemType Directory -Path C:\temp -Force | Out-Null ; `
     $javaMajorVersion = $env:JAVA_VERSION.substring(0,2) ; `
     $msiUrl = 'https://api.adoptium.net/v3/installer/version/jdk-{0}/windows/x64/jdk/hotspot/normal/eclipse?project=jdk' -f $env:JAVA_VERSION.Replace('_', '%2B') ; `
@@ -34,14 +34,25 @@ RUN New-Item -ItemType Directory -Path C:\temp -Force | Out-Null ; `
         if (Test-Path 'C:\temp') { `
             Remove-Item -Path C:\temp -Recurse -Force | Out-Null ; `
         } ; `
-    } ; `
-    Write-Host 'Verifying Java installation...' ; `
-    Write-Host 'javac --version:' ; javac --version ; `
-    Write-Host 'java --version:' ; java --version
+    }
 
-# Optimize jlink execution with better error handling and version detection
+# Verify Java installation (separate RUN to ensure environment variables are loaded)
+RUN Write-Host 'Verifying Java installation...' ; `
+    $javaPath = "C:\openjdk-$($env:JAVA_VERSION.substring(0,2))\bin" ; `
+    if (Test-Path $javaPath) { `
+        $env:PATH = "$javaPath;$env:PATH" ; `
+        Write-Host 'javac --version:' ; & "$javaPath\javac.exe" --version ; `
+        Write-Host 'java --version:' ; & "$javaPath\java.exe" --version ; `
+    } else { `
+        Write-Error "Java installation path not found: $javaPath" ; `
+        throw "Java installation verification failed" ; `
+    }
+
+# Create custom JRE with jlink (separate RUN to ensure Java is available)
 RUN try { `
-        $jlinkVersion = (jlink --version 2>&1) | Out-String ; `
+        $javaPath = "C:\openjdk-$($env:JAVA_VERSION.substring(0,2))\bin" ; `
+        $env:PATH = "$javaPath;$env:PATH" ; `
+        $jlinkVersion = (& "$javaPath\jlink.exe" --version 2>&1) | Out-String ; `
         Write-Host "jlink version: $jlinkVersion" ; `
         $compressArg = '--compress=2' ; `
         # More robust version detection
@@ -54,7 +65,7 @@ RUN try { `
             Write-Warning "Unknown jlink version, using default compression" ; `
         } ; `
         Write-Host "Creating custom JRE with jlink..." ; `
-        & jlink `
+        & "$javaPath\jlink.exe" `
             --strip-java-debug-attributes `
             $compressArg `
             --add-modules ALL-MODULE-PATH `
