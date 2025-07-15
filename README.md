@@ -40,7 +40,7 @@ docker run -d -v jenkins_home:/var/jenkins_home -p 8080:8080 -p 50000:50000 --re
 
 This will run Jenkins in detached mode with port forwarding and volume added. You can access logs with command 'docker logs CONTAINER_ID' in order to check first login token. ID of container will be returned from output of command above.
 
-# Or, directly print the initial admin password using:
+Or, directly print the initial admin password using:
 
 ```
 docker exec <jenkins_container_id_or_name> cat /var/jenkins_home/secrets/initialAdminPassword
