@@ -83,7 +83,7 @@ variable "ALPINE_SHORT_TAG" {
 }
 
 variable "JAVA17_VERSION" {
-  default = "17.0.15_6"
+  default = "17.0.16_8"
 }
 
 variable "JAVA21_VERSION" {
