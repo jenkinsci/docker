@@ -11,8 +11,8 @@ H 6,21 * * 3''')])
 
 properties(listOfProperties)
 
-// Default environment variable set to allow images publication
-def envVars = ['PUBLISH=true']
+// Only publish images from trusted.ci.jenkins.io
+def envVars = ['PUBLISH=' + env.JENKINS_URL.startsWith('https://trusted.ci.jenkins.io')]
 
 // Set to true in a replay to simulate a LTS build on ci.jenkins.io
 // It will set the environment variables needed for a LTS
@@ -21,7 +21,6 @@ def SIMULATE_LTS_BUILD = false
 
 if (SIMULATE_LTS_BUILD) {
     envVars = [
-        'PUBLISH=false',
         'TAG_NAME=2.516.1',
         'JENKINS_VERSION=2.516.1',
         'JENKINS_SHA=c308a27e81f4ce3aa6787e96caf771534f7f206fefbb83969d77b15fc7f2700a'
