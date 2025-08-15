@@ -43,11 +43,11 @@ group "linux-ppc64le" {
 # ---- variables ----
 
 variable "JENKINS_VERSION" {
-  default = "2.504"
+  default = "2.516.1"
 }
 
 variable "JENKINS_SHA" {
-  default = "efc91d6be8d79dd078e7f930fc4a5f135602d0822a5efe9091808fdd74607d32"
+  default = "c308a27e81f4ce3aa6787e96caf771534f7f206fefbb83969d77b15fc7f2700a"
 }
 
 variable "REGISTRY" {
@@ -94,6 +94,12 @@ variable "BOOKWORM_TAG" {
   default = "20250721"
 }
 
+variable "JENKINS_URL" { }
+
+variable "PUBLISH" {
+  default = "false"
+}
+
 # ----  user-defined functions ----
 
 # return a tag prefixed by the Jenkins version
@@ -120,6 +126,22 @@ function "tag_lts" {
   result = equal(LATEST_LTS, "true") ? tag(prepend_jenkins_version, tag) : ""
 }
 
+# return release line based on Jenkins version
+function "release_line" {
+  # If there is more than one sequence of digits with a trailing literal '.', this is LTS
+  # 2.523 has only one sequence of digits with a trailing literal '.'
+  # 2.516.1 has two sequences of digits with a trailing literal '.'
+  # https://developer.hashicorp.com/terraform/language/functions/regexall describes the technique
+  params = []
+  result = length(regexall("[0-9]+[.]", JENKINS_VERSION)) < 2 ? "war" : "war-stable"
+}
+
+# return Jenkins URL based on Jenkins version and release line
+function "jenkins_url" {
+  params = []
+  result = equal("true",PUBLISH) ? "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war" : "https://get.jenkins.io/${release_line()}/${JENKINS_VERSION}/jenkins.war"
+}
+
 # ---- targets ----
 
 target "alpine_jdk17" {
@@ -132,6 +154,7 @@ target "alpine_jdk17" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     ALPINE_TAG         = ALPINE_FULL_TAG
     JAVA_VERSION       = JAVA17_VERSION
+    JENKINS_URL        = jenkins_url()
   }
   tags = [
     tag(true, "alpine-jdk17"),
@@ -152,6 +175,7 @@ target "alpine_jdk21" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     ALPINE_TAG         = ALPINE_FULL_TAG
     JAVA_VERSION       = JAVA21_VERSION
+    JENKINS_URL        = jenkins_url()
   }
   tags = [
     tag(true, "alpine"),
@@ -176,6 +200,7 @@ target "debian_jdk17" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
     JAVA_VERSION       = JAVA17_VERSION
+    JENKINS_URL        = jenkins_url()
   }
   tags = [
     tag(true, "jdk17"),
@@ -197,6 +222,7 @@ target "debian_jdk21" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
     JAVA_VERSION       = JAVA21_VERSION
+    JENKINS_URL        = jenkins_url()
   }
   tags = [
     tag(true, ""),
@@ -222,6 +248,7 @@ target "debian_slim_jdk17" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
     JAVA_VERSION       = JAVA17_VERSION
+    JENKINS_URL        = jenkins_url()
   }
   tags = [
     tag(true, "slim-jdk17"),
@@ -241,6 +268,7 @@ target "debian_slim_jdk21" {
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
     JAVA_VERSION       = JAVA21_VERSION
+    JENKINS_URL        = jenkins_url()
   }
   tags = [
     tag(true, "slim"),
@@ -263,6 +291,7 @@ target "rhel_ubi9_jdk17" {
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     JAVA_VERSION       = JAVA17_VERSION
+    JENKINS_URL        = jenkins_url()
   }
   tags = [
     tag(true, "rhel-ubi9-jdk17"),
@@ -282,6 +311,7 @@ target "rhel_ubi9_jdk21" {
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     JAVA_VERSION       = JAVA21_VERSION
+    JENKINS_URL        = jenkins_url()
   }
   tags = [
     tag(true, "rhel-ubi9-jdk21"),
