@@ -33,7 +33,7 @@ $env:DOCKERHUB_ORGANISATION = "$Organisation"
 $env:DOCKERHUB_REPO = "$Repository"
 $env:JENKINS_VERSION = "$JenkinsVersion"
 
-# Set JenkinsURL
+# Set JENKINS_URL build argument and JENKINS_URL environment variable
 $JenkinsURL = ''
 if($env:PUBLISH -eq $true -or $DryRun -eq $true) {
     $JenkinsURL = 'https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/' + $JenkinsVersion + '/jenkins-war-' + $JenkinsVersion + '.war'
@@ -47,6 +47,7 @@ if($env:PUBLISH -eq $true -or $DryRun -eq $true) {
     $JenkinsURL = 'https://get.jenkins.io/' + $ReleaseLine + '/' + $JenkinsVersion + '/jenkins.war'
 }
 $AdditionalArgs = $AdditionalArgs + ' --build-arg JENKINS_URL=' + $JenkinsURL
+$env:JENKINS_URL = "$JenkinsURL"
 
 # Add 'lts-' prefix to LTS tags not including Jenkins version
 # Compared to weekly releases, LTS releases include an additional build number in their version
