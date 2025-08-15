@@ -101,11 +101,11 @@ Create a new dedicated target repository in your Docker Hub account, and use it 
 
 [source,bash]
 --
-export DOCKERHUB_ORGANISATION=batmat
-export DOCKERHUB_REPO=test-jenkins
+export DOCKERHUB_ORGANISATION=markewaite
+export DOCKERHUB_REPO=experiments
 # The log below will help confirm this override was taken in account:
-./publish.sh
+.ci/publish.sh
 Docker repository in Use:
-* JENKINS_REPO: batmat/test-jenkins
+* JENKINS_REPO: markewaite/experiments
 ...
 --
