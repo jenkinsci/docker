@@ -33,22 +33,6 @@ $env:DOCKERHUB_ORGANISATION = "$Organisation"
 $env:DOCKERHUB_REPO = "$Repository"
 $env:JENKINS_VERSION = "$JenkinsVersion"
 
-# Set JENKINS_URL build argument and JENKINS_URL environment variable
-$JenkinsURL = ''
-if($env:PUBLISH -eq $true -or $DryRun -eq $true) {
-    $JenkinsURL = 'https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/' + $JenkinsVersion + '/jenkins-war-' + $JenkinsVersion + '.war'
-} else {
-    # Not publishing - use mirrors
-    $ReleaseLine = 'war'
-    if([regex]::Matches($JenkinsVersion, "[0-9]+[.]").count -gt 1) {
-        # Building the LTS version
-        $ReleaseLine = 'war-stable'
-    }
-    $JenkinsURL = 'https://get.jenkins.io/' + $ReleaseLine + '/' + $JenkinsVersion + '/jenkins.war'
-}
-$AdditionalArgs = $AdditionalArgs + ' --build-arg JENKINS_URL=' + $JenkinsURL
-$env:JENKINS_URL = "$JenkinsURL"
-
 # Add 'lts-' prefix to LTS tags not including Jenkins version
 # Compared to weekly releases, LTS releases include an additional build number in their version
 # Note: the ':' separator is included as trying to set an environment variable to empty on Windows unset it.
@@ -73,8 +57,24 @@ $env:JENKINS_SHA = $webClient.DownloadString($jenkinsShaURL).ToUpper()
 
 $env:COMMIT_SHA=$(git rev-parse HEAD)
 
+# Set JENKINS_URL build argument and JENKINS_URL environment variable
+$JenkinsURL = ''
+if($env:PUBLISH -eq $true -or $DryRun -eq $true) {
+    $JenkinsURL = 'https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/' + $JenkinsVersion + '/jenkins-war-' + $JenkinsVersion + '.war'
+} else {
+    # Not publishing - use mirrors
+    $ReleaseLine = 'war'
+    if([regex]::Matches($JenkinsVersion, "[0-9]+[.]").count -gt 1) {
+        # Building the LTS version
+        $ReleaseLine = 'war-stable'
+    }
+    $JenkinsURL = 'https://get.jenkins.io/' + $ReleaseLine + '/' + $JenkinsVersion + '/jenkins.war'
+}
+$JenkinsURLArg = '--build-arg JENKINS_URL=' + $JenkinsURL
+$env:JENKINS_URL = "$JenkinsURL"
+
 $baseDockerCmd = 'docker-compose --file=build-windows.yaml'
-$baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
+$baseDockerBuildCmd = '{0} build --parallel --pull {1}' -f $baseDockerCmd, $JenkinsURLArg
 
 Write-Host "= PREPARE: List of $Organisation/$Repository images and tags to be processed:"
 Invoke-Expression "$baseDockerCmd config"
