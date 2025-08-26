@@ -90,13 +90,13 @@ RUN mkdir -p ${REF}/init.groovy.d
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION=${JENKINS_VERSION:-2.504}
+ENV JENKINS_VERSION=${JENKINS_VERSION:-2.516.1}
 
 # jenkins.war checksum, download will be validated using it
-ARG JENKINS_SHA=efc91d6be8d79dd078e7f930fc4a5f135602d0822a5efe9091808fdd74607d32
+ARG JENKINS_SHA=c308a27e81f4ce3aa6787e96caf771534f7f206fefbb83969d77b15fc7f2700a
 
 # Can be used to customize where jenkins.war get downloaded from
-ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war
+ARG JENKINS_URL
 
 # could use ADD but this one does not check Last-Modified header neither does it allow to control checksum
 # see https://github.com/docker/docker/issues/8331
