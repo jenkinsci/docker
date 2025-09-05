@@ -105,7 +105,7 @@ function Run-Program($cmd, $params, $verbose=$false) {
 }
 
 function Build-Docker($tag) {
-    $exitCode, $stdout, $stderr = Run-Program 'docker-compose' '--file=build-windows.yaml build --parallel'
+    $exitCode, $stdout, $stderr = Run-Program 'docker-compose' '--file=build-windows.yaml build --parallel --build-arg JENKINS_URL=' + $env:JENKINS_URL
     if($exitCode -ne 0) {
         return $exitCode, $stdout, $stderr
     }
