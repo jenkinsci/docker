@@ -25,8 +25,7 @@ RUN case "$(jlink --version 2>&1)" in \
       # the compression argument is different for JDK21
       "21."*) set -- "--compress=zip-6" "--add-modules" "ALL-MODULE-PATH" ;; \
       # the compression argument is different for JDK25 (early access)
-      "25"*) : "${JLINK_MODULES_DEFAULT:=java.base,java.logging,java.xml,java.management,java.net.http,jdk.crypto.ec,jdk.zipfs,jdk.unsupported,jdk.charsets}"; \
-             mod_list="${JLINK_MODULES:-$JLINK_MODULES_DEFAULT}"; \
+      "25"*) mod_list="${JLINK_MODULES:-$JLINK_MODULES_DEFAULT}"; \
              set -- "--compress=zip-6" --add-modules "$mod_list" ;; \
       *) echo "ERROR: unmanaged jlink version pattern" && exit 1 ;; \
     esac; \
