@@ -16,6 +16,7 @@ versionLT() {
             (( A[i] < B[i] )) && return 0
             (( i++ ))
         done
+        return 1
 }
 
 # returns a plugin version from a plugin archive
