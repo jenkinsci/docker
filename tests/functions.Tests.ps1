@@ -71,6 +71,11 @@ Describe "[functions > $global:TEST_TAG] Check-VersionLessThan" -Skip:(-not $glo
     docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan 'latest' 'latest')) { exit -1 } else { exit 0 }"
     $LastExitCode | Should -Be 0
   }
+
+  It "has left 1.0 and right 'latest'" {
+    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '1.0' 'latest')) { exit 0 } else { exit -1 }"
+    $LastExitCode | Should -Be 0
+  }
 }
 
 # Only test on Java 21, one JDK is enough to test all versions
