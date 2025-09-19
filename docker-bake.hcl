@@ -43,11 +43,11 @@ group "linux-ppc64le" {
 # ---- variables ----
 
 variable "JENKINS_VERSION" {
-  default = "2.479"
+  default = "2.504"
 }
 
 variable "JENKINS_SHA" {
-  default = "910ea36cef37c45087e39d65e335988e036fccea47c79cc5a52e721a10cb1b49"
+  default = "efc91d6be8d79dd078e7f930fc4a5f135602d0822a5efe9091808fdd74607d32"
 }
 
 variable "REGISTRY" {
@@ -75,7 +75,7 @@ variable "COMMIT_SHA" {
 }
 
 variable "ALPINE_FULL_TAG" {
-  default = "3.21.3"
+  default = "3.22.1"
 }
 
 variable "ALPINE_SHORT_TAG" {
@@ -83,15 +83,15 @@ variable "ALPINE_SHORT_TAG" {
 }
 
 variable "JAVA17_VERSION" {
-  default = "17.0.15_6"
+  default = "17.0.16_8"
 }
 
 variable "JAVA21_VERSION" {
-  default = "21.0.7_6"
+  default = "21.0.8_9"
 }
 
 variable "BOOKWORM_TAG" {
-  default = "20250428"
+  default = "20250908"
 }
 
 # ----  user-defined functions ----

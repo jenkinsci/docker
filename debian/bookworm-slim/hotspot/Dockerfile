@@ -1,8 +1,8 @@
-ARG BOOKWORM_TAG=20250428
+ARG BOOKWORM_TAG=20250908
 
 FROM debian:bookworm-"${BOOKWORM_TAG}"-slim AS jre-build
 
-ARG JAVA_VERSION=17.0.15_6
+ARG JAVA_VERSION=17.0.16_8
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -56,7 +56,7 @@ RUN apt-get update \
 
 # Git LFS is not available from a package manager on all the platforms we support
 # Download and unpack the tar.gz distribution
-ARG GIT_LFS_VERSION=3.6.1
+ARG GIT_LFS_VERSION=3.7.0
 # hadolint ignore=DL4006
 RUN arch=$(uname -m | sed -e 's/x86_64/amd64/g' -e 's/aarch64/arm64/g') \
   && curl -L -s -o git-lfs.tgz "https://github.com/git-lfs/git-lfs/releases/download/v${GIT_LFS_VERSION}/git-lfs-linux-${arch}-v${GIT_LFS_VERSION}.tar.gz" \
@@ -101,10 +101,10 @@ RUN mkdir -p ${REF}/init.groovy.d
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION=${JENKINS_VERSION:-2.479}
+ENV JENKINS_VERSION=${JENKINS_VERSION:-2.504}
 
 # jenkins.war checksum, download will be validated using it
-ARG JENKINS_SHA=910ea36cef37c45087e39d65e335988e036fccea47c79cc5a52e721a10cb1b49
+ARG JENKINS_SHA=efc91d6be8d79dd078e7f930fc4a5f135602d0822a5efe9091808fdd74607d32
 
 # Can be used to customize where jenkins.war get downloaded from
 ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war

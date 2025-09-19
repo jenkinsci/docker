@@ -1,6 +1,6 @@
-FROM registry.access.redhat.com/ubi9/ubi:9.5-1745854298 AS jre-build
+FROM registry.access.redhat.com/ubi9/ubi:9.6-1758184894 AS jre-build
 
-ARG JAVA_VERSION=17.0.15_6
+ARG JAVA_VERSION=17.0.16_8
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -33,7 +33,7 @@ RUN case "$(jlink --version 2>&1)" in \
       --no-header-files \
       --output /javaruntime
 
-FROM registry.access.redhat.com/ubi9/ubi:9.5-1745854298 AS controller
+FROM registry.access.redhat.com/ubi9/ubi:9.6-1758184894 AS controller
 
 ENV LANG=C.UTF-8
 
@@ -92,10 +92,10 @@ RUN curl -fsSL "https://github.com/krallin/tini/releases/download/${TINI_VERSION
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION=${JENKINS_VERSION:-2.479}
+ENV JENKINS_VERSION=${JENKINS_VERSION:-2.504}
 
 # jenkins.war checksum, download will be validated using it
-ARG JENKINS_SHA=910ea36cef37c45087e39d65e335988e036fccea47c79cc5a52e721a10cb1b49
+ARG JENKINS_SHA=efc91d6be8d79dd078e7f930fc4a5f135602d0822a5efe9091808fdd74607d32
 
 # Can be used to customize where jenkins.war get downloaded from
 ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war
