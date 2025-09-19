@@ -4,18 +4,18 @@
 
 # compare if version1 < version2
 versionLT() {
-    VER_SPLIT_SED='s/\./ /g;s/\-/ /g'
-    local A B i result
-    A=($(sed "$VER_SPLIT_SED"  <<< "$1"))
-    B=($(sed "$VER_SPLIT_SED"  <<< "$2"))
-    i=0
-    while (( i < ${#A[@]} )) | (( i < ${#B[@]})); do
-      (( i >= ${#A[@]} )) &&  return 0
-      (( i >= ${#B[@]} )) &&  return 1
-      (( ${A[i]} > ${B[i]} )) && return 1
-      (( ${A[i]} < ${B[i]} )) && return 0
-      let i++
-    done
+        VER_SPLIT_SED='s/\./ /g;s/\-/ /g'
+        local A B i
+        read -a A <<< "$(sed "$VER_SPLIT_SED" <<< "$1")"
+        read -a B <<< "$(sed "$VER_SPLIT_SED" <<< "$2")"
+        i=0
+        while (( i < ${#A[@]} )) || (( i < ${#B[@]} )); do
+            (( i >= ${#A[@]} )) && return 0
+            (( i >= ${#B[@]} )) && return 1
+            (( A[i] > B[i] )) && return 1
+            (( A[i] < B[i] )) && return 0
+            (( i++ ))
+        done
 }
 
 # returns a plugin version from a plugin archive
