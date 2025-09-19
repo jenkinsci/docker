@@ -6,8 +6,8 @@
 versionLT() {
         VER_SPLIT_SED='s/\./ /g;s/\-/ /g'
         local A B i
-        read -a A <<< "$(sed "$VER_SPLIT_SED" <<< "$1")"
-        read -a B <<< "$(sed "$VER_SPLIT_SED" <<< "$2")"
+        read -ra A <<< "$(sed "$VER_SPLIT_SED" <<< "$1")"
+        read -ra B <<< "$(sed "$VER_SPLIT_SED" <<< "$2")"
         i=0
         while (( i < ${#A[@]} )) || (( i < ${#B[@]} )); do
             (( i >= ${#A[@]} )) && return 0
