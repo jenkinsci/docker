@@ -81,10 +81,10 @@ stage('Build') {
                             if (env.TAG_NAME && (env.PUBLISH == 'true')) {
                                 // Split to ensure any suffix is not taken in account (but allow suffix tags to trigger rebuilds)
                                 jenkins_version = env.TAG_NAME.split('-')[0]
-                                // Setting JENKINS_URL to download war from Artifactory instead of mirrors on publication from trusted.ci.jenkins.io
+                                // Setting WAR_URL to download war from Artifactory instead of mirrors on publication from trusted.ci.jenkins.io
                                 withEnv([
                                     "JENKINS_VERSION=${jenkins_version}",
-                                    "JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${jenkins_version}/jenkins-war-${jenkins_version}.war"
+                                    "WAR_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${jenkins_version}/jenkins-war-${jenkins_version}.war"
                                 ]) {
                                     stage('Publish') {
                                         infra.withDockerCredentials {
@@ -175,10 +175,10 @@ stage('Build') {
                 // Split to ensure any suffix is not taken in account (but allow suffix tags to trigger rebuilds)
                 jenkins_version = env.TAG_NAME.split('-')[0]
                 builds['linux'] = {
-                    // Setting JENKINS_URL to download war from Artifactory instead of mirrors on publication from trusted.ci.jenkins.io
+                    // Setting WAR_URL to download war from Artifactory instead of mirrors on publication from trusted.ci.jenkins.io
                     withEnv([
                         "JENKINS_VERSION=${jenkins_version}",
-                        "JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${jenkins_version}/jenkins-war-${jenkins_version}.war"
+                        "WAR_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${jenkins_version}/jenkins-war-${jenkins_version}.war"
                     ]) {
                         nodeWithTimeout('docker') {
                             stage('Checkout') {

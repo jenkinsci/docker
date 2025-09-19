@@ -43,9 +43,9 @@ if ($JenkinsVersion.Split('.').Count -eq 3) {
     $releaseLine = 'war-stable'
 }
 
-# If there is no JENKINS_URL set, using get.jenkins.io URL depending on the release line
-if(![String]::IsNullOrWhiteSpace($env:JENKINS_URL)) {
-    $env:JENKINS_URL = 'https://get.jenkins.io/{0}/{1}/jenkins.war' -f $releaseLine, $env:JENKINS_VERSION
+# If there is no WAR_URL set, using get.jenkins.io URL depending on the release line
+if(![String]::IsNullOrWhiteSpace($env:WAR_URL)) {
+    $env:WAR_URL = 'https://get.jenkins.io/{0}/{1}/jenkins.war' -f $releaseLine, $env:JENKINS_VERSION
 }
 
 $items = $ImageType.Split('-')
@@ -58,7 +58,7 @@ if ($items[1] -eq 'ltsc2019') {
 }
 
 # Retrieve the sha256 corresponding to the war file
-$jenkinsShaURL = '{0}.sha256' -f $env:JENKINS_URL
+$jenkinsShaURL = '{0}.sha256' -f $env:WAR_URL
 $webClient = New-Object System.Net.WebClient
 $env:JENKINS_SHA = $webClient.DownloadString($jenkinsShaURL).ToUpper()
 
