@@ -104,8 +104,9 @@ ARG WAR_URL=https://get.jenkins.io/war/2.504/jenkins.war
 
 # could use ADD but this one does not check Last-Modified header neither does it allow to control checksum
 # see https://github.com/docker/docker/issues/8331
-RUN Invoke-WebRequest -Uri "$env:WAR_URL" -OutFile C:/ProgramData/Jenkins/jenkins.war ; `
-    if ((Get-FileHash C:/ProgramData/Jenkins/jenkins.war -Algorithm SHA256).Hash -ne $env:JENKINS_SHA) {exit 1}
+RUN Invoke-WebRequest -Uri "$env:WAR_URL" -OutFile C:/ProgramData/Jenkins/jenkins.war
+RUN Get-FileHash C:/ProgramData/Jenkins/jenkins.war -Algorithm SHA256
+RUN if ((Get-FileHash C:/ProgramData/Jenkins/jenkins.war -Algorithm SHA256).Hash -ne $env:JENKINS_SHA) {exit 1}
 
 ENV JENKINS_UC=https://updates.jenkins.io
 ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
