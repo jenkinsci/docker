@@ -8,12 +8,20 @@ function Compare-VersionLessThan {
 
     # Input validation
     if ([string]::IsNullOrWhiteSpace($v1) -or [string]::IsNullOrWhiteSpace($v2)) {
-        return $false   # Invalid input, assume not less than
+        return $false
     }
 
     # Quick equality check
     if ($v1 -eq $v2) {
         return $false
+    }
+
+    # Handle "latest" version special case
+    if ($v1 -eq "latest") {
+        return $false  # "latest" is never less than anything
+    }
+    if ($v2 -eq "latest") {
+        return $true   # anything is less than "latest"
     }
 
     # Normalize Jenkins version format
@@ -84,13 +92,13 @@ function Compare-VersionLessThan {
 
     # Enhanced qualifier comparison
     if (-not $qual1 -and $qual2) {
-        if (Is-SemVerPrerelease $qual2) { return $false }   # release > pre-release
-        elseif (Is-JenkinsBuildQualifier $qual2) { return $true } # base < build
-        else { return $true }   # conservative default
+        if (Is-SemVerPrerelease $qual2) { return $false }
+        elseif (Is-JenkinsBuildQualifier $qual2) { return $true }
+        else { return $true }
     }
     elseif ($qual1 -and -not $qual2) {
-        if (Is-SemVerPrerelease $qual1) { return $true }   # pre-release < release
-        elseif (Is-JenkinsBuildQualifier $qual1) { return $false } # build > base
+        if (Is-SemVerPrerelease $qual1) { return $true }
+        elseif (Is-JenkinsBuildQualifier $qual1) { return $false }
         else { return $false }
     }
     elseif ($qual1 -and $qual2) {
