@@ -37,9 +37,18 @@ $env:JENKINS_VERSION = "$JenkinsVersion"
 # Compared to weekly releases, LTS releases include an additional build number in their version
 # Note: the ':' separator is included as trying to set an environment variable to empty on Windows unset it.
 $env:SEPARATOR_LTS_PREFIX = ':'
+$releaseLine = 'war'
 if ($JenkinsVersion.Split('.').Count -eq 3) {
     $env:SEPARATOR_LTS_PREFIX = ':lts-'
+    $releaseLine = 'war-stable'
 }
+
+# If there is no WAR_URL set, using get.jenkins.io URL depending on the release line
+if([String]::IsNullOrWhiteSpace($env:WAR_URL)) {
+    $env:WAR_URL = 'https://get.jenkins.io/{0}/{1}/jenkins.war' -f $releaseLine, $env:JENKINS_VERSION
+}
+
+Write-Host "= [DEBUG] env:WAR_URL=$env:WAR_URL, releaseLine=$releaseLine"
 
 $items = $ImageType.Split('-')
 $env:WINDOWS_FLAVOR = $items[0]
@@ -50,10 +59,12 @@ if ($items[1] -eq 'ltsc2019') {
     $env:TOOLS_WINDOWS_VERSION = '1809'
 }
 
-# Retrieve the sha256 corresponding to the JENKINS_VERSION
-$jenkinsShaURL = 'https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/{0}/jenkins-war-{0}.war.sha256' -f $env:JENKINS_VERSION
+# Retrieve the sha256 corresponding to the war file
+$jenkinsShaURL = '{0}.sha256' -f $env:WAR_URL
 $webClient = New-Object System.Net.WebClient
-$env:JENKINS_SHA = $webClient.DownloadString($jenkinsShaURL).ToUpper()
+$env:JENKINS_SHA = $webClient.DownloadString($jenkinsShaURL).Split(' ')[0]
+
+Write-Host "= [DEBUG] env:JENKINS_SHA=$env:JENKINS_SHA, jenkinsShaURL=$jenkinsShaURL"
 
 $env:COMMIT_SHA=$(git rev-parse HEAD)
 
@@ -171,3 +182,5 @@ if($lastExitCode -ne 0 -and !$DryRun) {
     Write-Host 'Build finished successfully'
 }
 exit $lastExitCode
+
+
