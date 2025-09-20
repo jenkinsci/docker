@@ -1,124 +1,103 @@
 
 # compare if version1 < version2
-function Compare-VersionLessThan($version1, $version2) {
+function Compare-VersionLessThan {
+    param(
+        [string]$v1,
+        [string]$v2
+    )
+
+    # Input validation
+    if ([string]::IsNullOrWhiteSpace($v1) -or [string]::IsNullOrWhiteSpace($v2)) {
+        return $false   # Invalid input, assume not less than
+    }
+
     # Quick equality check
-    if ($version1 -eq $version2) {
+    if ($v1 -eq $v2) {
         return $false
     }
-    
+
     # Normalize Jenkins version format
     function Normalize-JenkinsVersion($version) {
-        $mainVersion = $version
-        $qualifier = ''
-        
-        # Split on first dash only
-        if ($version.Contains('-')) {
-            $dashIndex = $version.IndexOf('-')
-            $mainVersion = $version.Substring(0, $dashIndex).Trim()
-            $qualifier = $version.Substring($dashIndex + 1).Trim()
+        $main = $version
+        $qual = ""
+
+        if ($version -like "*-*") {
+            $parts = $version.Split("-", 2)
+            $main = $parts[0]
+            $qual = $parts[1]
         }
-        
-        # Remove trailing .0 segments from main version
-        # 3.12.0.0 -> 3.12.0, but preserve versions like 1.0
-        while ($mainVersion.EndsWith('.0') -and ($mainVersion.Split('.').Length -gt 2)) {
-            $mainVersion = $mainVersion.Substring(0, $mainVersion.Length - 2)
+
+        # Remove trailing ".0" only for obvious multi-dot versions
+        while ($main -match "\.0$" -and $main -match "^\d+\.\d+\.\d+") {
+            $main = $main.TrimEnd(".0")
         }
-        
-        # Reconstruct normalized version
-        if (-not [string]::IsNullOrWhiteSpace($qualifier)) {
-            return "$mainVersion-$qualifier"
-        } else {
-            return $mainVersion
-        }
+
+        if ($qual) { return "$main-$qual" }
+        else { return $main }
     }
-    
-    # Detect if qualifier is a Jenkins build qualifier
-    function Is-JenkinsBuildQualifier($qualifier) {
-        # Jenkins build qualifiers typically: 36.vd97de6465d5b_, 1.v123, etc.
-        return $qualifier -match '^[0-9]+\.v[a-zA-Z0-9_]+$'
+
+    # Jenkins build qualifier detection
+    function Is-JenkinsBuildQualifier($qual) {
+        return ($qual -match "^\d+\.v[\w_]+$" -or
+                $qual -match "^\d+\.v[\w-]+$" -or
+                $qual -match "^\d+\.v")
     }
-    
-    # Detect if qualifier is a semantic pre-release identifier
-    function Is-SemverPrerelease($qualifier) {
-        # Common pre-release identifiers
-        return $qualifier -match '^(alpha|beta|rc|snapshot|dev|test|milestone|m)([.-]?[0-9]*)?$'
+
+    # Semver prerelease detection
+    function Is-SemVerPrerelease($qual) {
+        return ($qual -match "^(alpha|beta|rc|snapshot|dev|test|milestone|m)([.-]?\d*)?$" -or
+                $qual -match "^(pre|preview|canary|nightly)([.-]?\d*)?$")
     }
-    
-    # Normalize both versions
-    $normV1 = Normalize-JenkinsVersion $version1
-    $normV2 = Normalize-JenkinsVersion $version2
-    
-    # If versions are identical after normalization, they're equal
-    if ($normV1 -eq $normV2) {
-        return $false
+
+    $norm1 = Normalize-JenkinsVersion $v1
+    $norm2 = Normalize-JenkinsVersion $v2
+
+    if ($norm1 -eq $norm2) { return $false }
+
+    $main1 = $norm1
+    $qual1 = ""
+    if ($norm1 -like "*-*") {
+        $parts = $norm1.Split("-", 2)
+        $main1 = $parts[0]
+        $qual1 = $parts[1]
     }
-    
-    # Split normalized versions for comparison
-    $temp1 = $normV1.Split('-')
-    $v1 = $temp1[0].Trim()
-    $q1 = ''
-    if ($temp1.Length -gt 1) {
-        $q1 = $temp1[1].Trim()
+
+    $main2 = $norm2
+    $qual2 = ""
+    if ($norm2 -like "*-*") {
+        $parts = $norm2.Split("-", 2)
+        $main2 = $parts[0]
+        $qual2 = $parts[1]
     }
-    
-    $temp2 = $normV2.Split('-')
-    $v2 = $temp2[0].Trim()
-    $q2 = ''
-    if ($temp2.Length -gt 1) {
-        $q2 = $temp2[1].Trim()
-    }
-    
-    # Compare main versions first
-    if ($v1 -ne $v2) {
-        # Handle "latest" special case
-        if ($v1 -eq "latest") {
-            return $false
-        } elseif ($v2 -eq "latest") {
-            return $true
-        }
-        
-        # Use version sorting for numeric versions
+
+    # Compare main versions with fallback
+    if ($main1 -ne $main2) {
         try {
-            return ($v1 -eq ($v1, $v2 | Sort-Object {[version] $_} | Select-Object -first 1))
-        } catch {
-            # Fallback to string comparison if version parsing fails
-            return ($v1 -eq ($v1, $v2 | Sort-Object | Select-Object -first 1))
+            $sorted = @($main1, $main2) | Sort-Object {[version]$_}
         }
+        catch {
+            # Fallback to lexicographic sort
+            $sorted = @($main1, $main2) | Sort-Object
+        }
+        return ($sorted[0] -eq $main1)
     }
-    
-    # Main versions are equal, compare qualifiers intelligently
-    # FIXED LOGIC: Context-aware qualifier comparison
-    
-    if ([string]::IsNullOrWhiteSpace($q1) -and (-not [string]::IsNullOrWhiteSpace($q2))) {
-        # v1 has no qualifier, v2 has qualifier
-        if (Is-SemverPrerelease $q2) {
-            # Semantic versioning: 1.0 > 1.0-beta (release > pre-release)
-            return $false
-        } elseif (Is-JenkinsBuildQualifier $q2) {
-            # Jenkins versioning: 3.12.0 < 3.12.0-36.vXXX (base < build)
-            return $true
-        } else {
-            # Default: assume Jenkins-style for unknown qualifiers (fixes issue #1456)
-            return $true
-        }
-    } elseif ((-not [string]::IsNullOrWhiteSpace($q1)) -and [string]::IsNullOrWhiteSpace($q2)) {
-        # v1 has qualifier, v2 has no qualifier  
-        if (Is-SemverPrerelease $q1) {
-            # Semantic versioning: 1.0-beta < 1.0 (pre-release < release)
-            return $true
-        } elseif (Is-JenkinsBuildQualifier $q1) {
-            # Jenkins versioning: 3.12.0-36.vXXX > 3.12.0 (build > base)
-            return $false
-        } else {
-            # Default: assume Jenkins-style
-            return $false
-        }
-    } elseif ((-not [string]::IsNullOrWhiteSpace($q1)) -and (-not [string]::IsNullOrWhiteSpace($q2))) {
-        # Both have qualifiers, compare them using sort
-        return ($q1 -eq ($q1, $q2 | Sort-Object | Select-Object -First 1))
+
+    # Enhanced qualifier comparison
+    if (-not $qual1 -and $qual2) {
+        if (Is-SemVerPrerelease $qual2) { return $false }   # release > pre-release
+        elseif (Is-JenkinsBuildQualifier $qual2) { return $true } # base < build
+        else { return $true }   # conservative default
     }
-    
-    # Both are release versions and main versions are equal
+    elseif ($qual1 -and -not $qual2) {
+        if (Is-SemVerPrerelease $qual1) { return $true }   # pre-release < release
+        elseif (Is-JenkinsBuildQualifier $qual1) { return $false } # build > base
+        else { return $false }
+    }
+    elseif ($qual1 -and $qual2) {
+        $sorted = @($qual1, $qual2) | Sort-Object
+        return ($sorted[0] -eq $qual1)
+    }
+
     return $false
 }
 
