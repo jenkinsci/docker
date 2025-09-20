@@ -1,45 +1,106 @@
 
 # compare if version1 < version2
-function Compare-VersionLessThan($version1, $version2) {
-    $temp = $version1.Split('-')
-    $v1 = $temp[0].Trim()
-    $q1 = ''
-    if($temp.Length -gt 1) {
-        $q1 = $temp[1].Trim()
+function Compare-VersionLessThan {
+    param(
+        [string]$v1,
+        [string]$v2
+    )
+
+    # Input validation
+    if ([string]::IsNullOrWhiteSpace($v1) -or [string]::IsNullOrWhiteSpace($v2)) {
+        return $false   # Invalid input, assume not less than
     }
 
-    $temp = $version2.Split('-')
-    $v2 = $temp[0].Trim()
-    $q2 = ''
-    if($temp.Length -gt 1) {
-        $q2 = $temp[1].Trim()
-    }
-
-    if($v1 -eq $v2) {
-        # this works even if both sides are "latest"
-        if($q1 -eq $q2) {
-            return $false
-        } else {
-            if([System.String]::IsNullOrWhiteSpace($q1)) {
-                return $false
-            } else {
-                if([System.String]::IsNullOrWhiteSpace($q2)) {
-                    return $true
-                } else {
-                    return ($q1 -eq $("$q1","$q2" | Sort-Object | Select-Object -First 1))
-                }
-            }
-        }
-    }
-
-    if($v1 -eq "latest") {
+    # Quick equality check
+    if ($v1 -eq $v2) {
         return $false
-    } elseif($v2 -eq "latest") {
-        return $true
     }
 
-    return ($v1 -eq $("$v1","$v2" | Sort-Object {[version] $_} | Select-Object -first 1))
+    # Normalize Jenkins version format
+    function Normalize-JenkinsVersion($version) {
+        $main = $version
+        $qual = ""
+
+        if ($version -like "*-*") {
+            $parts = $version.Split("-", 2)
+            $main = $parts[0]
+            $qual = $parts[1]
+        }
+
+        # Remove trailing ".0" only for obvious multi-dot versions
+        while ($main -match "\.0$" -and $main -match "^\d+\.\d+\.\d+") {
+            $main = $main.TrimEnd(".0")
+        }
+
+        if ($qual) { return "$main-$qual" }
+        else { return $main }
+    }
+
+    # Jenkins build qualifier detection
+    function Is-JenkinsBuildQualifier($qual) {
+        return ($qual -match "^\d+\.v[\w_]+$" -or
+                $qual -match "^\d+\.v[\w-]+$" -or
+                $qual -match "^\d+\.v")
+    }
+
+    # Semver prerelease detection
+    function Is-SemVerPrerelease($qual) {
+        return ($qual -match "^(alpha|beta|rc|snapshot|dev|test|milestone|m)([.-]?\d*)?$" -or
+                $qual -match "^(pre|preview|canary|nightly)([.-]?\d*)?$")
+    }
+
+    $norm1 = Normalize-JenkinsVersion $v1
+    $norm2 = Normalize-JenkinsVersion $v2
+
+    if ($norm1 -eq $norm2) { return $false }
+
+    $main1 = $norm1
+    $qual1 = ""
+    if ($norm1 -like "*-*") {
+        $parts = $norm1.Split("-", 2)
+        $main1 = $parts[0]
+        $qual1 = $parts[1]
+    }
+
+    $main2 = $norm2
+    $qual2 = ""
+    if ($norm2 -like "*-*") {
+        $parts = $norm2.Split("-", 2)
+        $main2 = $parts[0]
+        $qual2 = $parts[1]
+    }
+
+    # Compare main versions with fallback
+    if ($main1 -ne $main2) {
+        try {
+            $sorted = @($main1, $main2) | Sort-Object {[version]$_}
+        }
+        catch {
+            # Fallback to lexicographic sort
+            $sorted = @($main1, $main2) | Sort-Object
+        }
+        return ($sorted[0] -eq $main1)
+    }
+
+    # Enhanced qualifier comparison
+    if (-not $qual1 -and $qual2) {
+        if (Is-SemVerPrerelease $qual2) { return $false }   # release > pre-release
+        elseif (Is-JenkinsBuildQualifier $qual2) { return $true } # base < build
+        else { return $true }   # conservative default
+    }
+    elseif ($qual1 -and -not $qual2) {
+        if (Is-SemVerPrerelease $qual1) { return $true }   # pre-release < release
+        elseif (Is-JenkinsBuildQualifier $qual1) { return $false } # build > base
+        else { return $false }
+    }
+    elseif ($qual1 -and $qual2) {
+        $sorted = @($qual1, $qual2) | Sort-Object
+        return ($sorted[0] -eq $qual1)
+    }
+
+    return $false
 }
+
 
 function Get-EnvOrDefault($name, $def) {
     $entry = Get-ChildItem env: | Where-Object { $_.Name -eq $name } | Select-Object -First 1
