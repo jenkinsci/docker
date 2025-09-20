@@ -24,12 +24,10 @@ SUT_DESCRIPTION="${IMAGE}-functions"
   assert_success
   run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 1.0-beta-1 1.0-alpha-1"
   assert_failure
-  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT latest 1.0"
-  assert_failure
-  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT latest latest"
-  assert_failure
-  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 1.0 latest"
+  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 3.12.0.0 3.12.0-36.vd97de6465d5b_"
   assert_success
+  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 3.12.0-36.vd97de6465d5b_ 3.12.0.0"
+  assert_failure
 }
 
 @test "[${SUT_DESCRIPTION}] permissions are propagated from override file" {

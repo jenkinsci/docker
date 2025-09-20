@@ -4,19 +4,137 @@
 
 # compare if version1 < version2
 versionLT() {
-        VER_SPLIT_SED='s/\./ /g;s/\-/ /g'
-        local A B i
-        read -ra A <<< "$(sed "$VER_SPLIT_SED" <<< "$1")"
-        read -ra B <<< "$(sed "$VER_SPLIT_SED" <<< "$2")"
-        i=0
-        while (( i < ${#A[@]} )) || (( i < ${#B[@]} )); do
-            (( i >= ${#A[@]} )) && return 0
-            (( i >= ${#B[@]} )) && return 1
-            (( A[i] > B[i] )) && return 1
-            (( A[i] < B[i] )) && return 0
-            (( i++ ))
-        done
+    local v1="$1"
+    local v2="$2"
+    
+    # Input validation
+    if [ -z "$v1" ] || [ -z "$v2" ]; then
+        return 1  # Invalid input, assume not less than
+    fi
+    
+    # Quick equality check
+    if [ "$v1" = "$v2" ]; then
         return 1
+    fi
+    
+    # Normalize Jenkins version format with error handling
+    normalize_jenkins_version() {
+        local version="$1"
+        local main_version qualifier
+        
+        if [[ "$version" == *"-"* ]]; then
+            main_version="${version%%-*}"
+            qualifier="${version#*-}"
+        else
+            main_version="$version"
+            qualifier=""
+        fi
+        
+        # More conservative normalization - only remove trailing .0 from obvious cases
+        if [[ "$main_version" =~ ^[0-9]+(\.[0-9]+)*\.0+$ ]]; then
+            while [[ "$main_version" == *.0 ]] && [[ "$main_version" == *.*.* ]]; do
+                main_version="${main_version%.0}"
+            done
+        fi
+        
+        if [ -n "$qualifier" ]; then
+            echo "${main_version}-${qualifier}"
+        else
+            echo "$main_version"
+        fi
+    }
+    
+    # More robust qualifier detection with fallbacks
+    is_jenkins_build_qualifier() {
+        local qualifier="$1"
+        # Primary pattern: X.vYYY format
+        [[ "$qualifier" =~ ^[0-9]+\.v[a-zA-Z0-9_]+$ ]] || \
+        # Secondary patterns for Jenkins
+        [[ "$qualifier" =~ ^[0-9]+\.v[a-zA-Z0-9_-]+$ ]] || \
+        # Backup: anything starting with number.v
+        [[ "$qualifier" =~ ^[0-9]+\.v ]]
+    }
+    
+    is_semver_prerelease() {
+        local qualifier="$1"
+        # Known pre-release identifiers
+        [[ "$qualifier" =~ ^(alpha|beta|rc|snapshot|dev|test|milestone|m)([.-]?[0-9]*)?$ ]] || \
+        [[ "$qualifier" =~ ^(pre|preview|canary|nightly)([.-]?[0-9]*)?$ ]]
+    }
+    
+    local norm_v1 norm_v2
+    norm_v1=$(normalize_jenkins_version "$v1") 
+    norm_v2=$(normalize_jenkins_version "$v2")
+    
+    if [ "$norm_v1" = "$norm_v2" ]; then
+        return 1
+    fi
+    
+    local main_v1 qual_v1 main_v2 qual_v2
+    
+    if [[ "$norm_v1" == *"-"* ]]; then
+        main_v1="${norm_v1%%-*}"
+        qual_v1="${norm_v1#*-}"
+    else
+        main_v1="$norm_v1"
+        qual_v1=""
+    fi
+    
+    if [[ "$norm_v2" == *"-"* ]]; then
+        main_v2="${norm_v2%%-*}"
+        qual_v2="${norm_v2#*-}"
+    else
+        main_v2="$norm_v2"
+        qual_v2=""
+    fi
+    
+    # Compare main versions with fallback
+    if [ "$main_v1" != "$main_v2" ]; then
+        local sorted_first
+        # Try sort -V first, fallback to basic sort if needed
+        if command -v sort >/dev/null 2>&1 && sort -V /dev/null >/dev/null 2>&1; then
+            sorted_first=$(printf "%s\n%s\n" "$main_v1" "$main_v2" | sort -V | head -n1)
+        else
+            # Fallback to basic lexicographic sort (less accurate but works)
+            sorted_first=$(printf "%s\n%s\n" "$main_v1" "$main_v2" | sort | head -n1)
+        fi
+        [ "$sorted_first" = "$main_v1" ]
+        return $?
+    fi
+    
+    # Enhanced qualifier comparison with conservative defaults
+    if [ -z "$qual_v1" ] && [ -n "$qual_v2" ]; then
+        if is_semver_prerelease "$qual_v2"; then
+            return 1  # release > pre-release
+        elif is_jenkins_build_qualifier "$qual_v2"; then
+            return 0  # base < build
+        else
+            # Conservative default: treat unknown qualifiers as Jenkins build qualifiers
+            # This covers the issue #1456 case and is safer than guessing
+            return 0  
+        fi
+    elif [ -n "$qual_v1" ] && [ -z "$qual_v2" ]; then
+        if is_semver_prerelease "$qual_v1"; then
+            return 0  # pre-release < release  
+        elif is_jenkins_build_qualifier "$qual_v1"; then
+            return 1  # build > base
+        else
+            # Conservative default
+            return 1
+        fi
+    elif [ -n "$qual_v1" ] && [ -n "$qual_v2" ]; then
+        # Both have qualifiers - use sort with fallback
+        local sorted_first
+        if command -v sort >/dev/null 2>&1 && sort -V /dev/null >/dev/null 2>&1; then
+            sorted_first=$(printf "%s\n%s\n" "$qual_v1" "$qual_v2" | sort -V | head -n1)
+        else
+            sorted_first=$(printf "%s\n%s\n" "$qual_v1" "$qual_v2" | sort | head -n1)
+        fi
+        [ "$sorted_first" = "$qual_v1" ]
+        return $?
+    fi
+    
+    return 1
 }
 
 # returns a plugin version from a plugin archive
