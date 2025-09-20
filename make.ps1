@@ -48,6 +48,8 @@ if([String]::IsNullOrWhiteSpace($env:WAR_URL)) {
     $env:WAR_URL = 'https://get.jenkins.io/{0}/{1}/jenkins.war' -f $releaseLine, $env:JENKINS_VERSION
 }
 
+Write-Host "= [DEBUG] env:WAR_URL=$env:WAR_URL, releaseLine=$releaseLine"
+
 $items = $ImageType.Split('-')
 $env:WINDOWS_FLAVOR = $items[0]
 $env:WINDOWS_VERSION = $items[1]
@@ -61,6 +63,8 @@ if ($items[1] -eq 'ltsc2019') {
 $jenkinsShaURL = '{0}.sha256' -f $env:WAR_URL
 $webClient = New-Object System.Net.WebClient
 $env:JENKINS_SHA = $webClient.DownloadString($jenkinsShaURL).ToUpper()
+
+Write-Host "= [DEBUG] env:JENKINS_SHA=$env:JENKINS_SHA, jenkinsShaURL=$jenkinsShaURL"
 
 $env:COMMIT_SHA=$(git rev-parse HEAD)
 
@@ -178,3 +182,4 @@ if($lastExitCode -ne 0 -and !$DryRun) {
     Write-Host 'Build finished successfully'
 }
 exit $lastExitCode
+
