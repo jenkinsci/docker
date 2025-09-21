@@ -60,7 +60,7 @@ if ($items[1] -eq 'ltsc2019') {
 # Retrieve the sha256 corresponding to the war file
 $jenkinsShaURL = '{0}.sha256' -f $env:WAR_URL
 $webClient = New-Object System.Net.WebClient
-$env:JENKINS_SHA = $webClient.DownloadString($jenkinsShaURL).Split(' ')[0]
+$env:WAR_SHA = $webClient.DownloadString($jenkinsShaURL).ToUpper()
 
 $env:COMMIT_SHA=$(git rev-parse HEAD)
 
