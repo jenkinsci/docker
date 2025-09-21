@@ -92,14 +92,14 @@ function Compare-VersionLessThan {
 
     # Enhanced qualifier comparison
     if (-not $qual1 -and $qual2) {
-        if (Is-SemVerPrerelease $qual2) { return $false }
-        elseif (Is-JenkinsBuildQualifier $qual2) { return $true }
-        else { return $true }
+        if (Is-SemVerPrerelease $qual2) { return $false }     # release > prerelease
+        elseif (Is-JenkinsBuildQualifier $qual2) { return $true }  # base < build
+        else { return $true }                                # base < other qualifier
     }
     elseif ($qual1 -and -not $qual2) {
-        if (Is-SemVerPrerelease $qual1) { return $true }
-        elseif (Is-JenkinsBuildQualifier $qual1) { return $false }
-        else { return $false }
+        if (Is-SemVerPrerelease $qual1) { return $true }     # prerelease < release
+        elseif (Is-JenkinsBuildQualifier $qual1) { return $true }  # build < base
+        else { return $true }                                # other qualifier < base
     }
     elseif ($qual1 -and $qual2) {
         $sorted = @($qual1, $qual2) | Sort-Object
