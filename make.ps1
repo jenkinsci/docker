@@ -53,7 +53,7 @@ if ($items[1] -eq 'ltsc2019') {
 # Retrieve the sha256 corresponding to the JENKINS_VERSION
 $jenkinsShaURL = 'https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/{0}/jenkins-war-{0}.war.sha256' -f $env:JENKINS_VERSION
 $webClient = New-Object System.Net.WebClient
-$env:JENKINS_SHA = $webClient.DownloadString($jenkinsShaURL).ToUpper()
+$env:WAR_SHA = $webClient.DownloadString($jenkinsShaURL).ToUpper()
 
 $env:COMMIT_SHA=$(git rev-parse HEAD)
 
