@@ -98,8 +98,8 @@ function Compare-VersionLessThan {
     }
     elseif ($qual1 -and -not $qual2) {
         if (Is-SemVerPrerelease $qual1) { return $true }     # prerelease < release
-        elseif (Is-JenkinsBuildQualifier $qual1) { return $true }  # build < base
-        else { return $true }                                # other qualifier < base
+        elseif (Is-JenkinsBuildQualifier $qual1) { return $false } # build > base (FIXED!)
+        else { return $false }                               # other qualifier > base (FIXED!)
     }
     elseif ($qual1 -and $qual2) {
         $sorted = @($qual1, $qual2) | Sort-Object
