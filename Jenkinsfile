@@ -17,7 +17,7 @@ def envVars = ['PUBLISH=true']
 // Set to true in a replay to simulate a LTS build on ci.jenkins.io
 // It will set the environment variables needed for a LTS
 // and disable images publication out of caution
-def SIMULATE_LTS_BUILD = true
+def SIMULATE_LTS_BUILD = false
 
 if (SIMULATE_LTS_BUILD) {
     envVars = [
