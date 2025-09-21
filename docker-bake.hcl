@@ -46,7 +46,7 @@ variable "JENKINS_VERSION" {
   default = "2.504"
 }
 
-variable "JENKINS_SHA" {
+variable "WAR_SHA" {
   default = "efc91d6be8d79dd078e7f930fc4a5f135602d0822a5efe9091808fdd74607d32"
 }
 
@@ -144,12 +144,12 @@ target "alpine_jdk17" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
+    WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     ALPINE_TAG         = ALPINE_FULL_TAG
     JAVA_VERSION       = JAVA17_VERSION
-    WAR_URL            = war_url()
   }
   tags = [
     tag(true, "alpine-jdk17"),
@@ -165,12 +165,12 @@ target "alpine_jdk21" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
+    WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     ALPINE_TAG         = ALPINE_FULL_TAG
     JAVA_VERSION       = JAVA21_VERSION
-    WAR_URL            = war_url()
   }
   tags = [
     tag(true, "alpine"),
@@ -190,12 +190,12 @@ target "debian_jdk17" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
+    WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
     JAVA_VERSION       = JAVA17_VERSION
-    WAR_URL            = war_url()
   }
   tags = [
     tag(true, "jdk17"),
@@ -212,12 +212,12 @@ target "debian_jdk21" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
+    WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
     JAVA_VERSION       = JAVA21_VERSION
-    WAR_URL            = war_url()
   }
   tags = [
     tag(true, ""),
@@ -238,12 +238,12 @@ target "debian_slim_jdk17" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
+    WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
     JAVA_VERSION       = JAVA17_VERSION
-    WAR_URL            = war_url()
   }
   tags = [
     tag(true, "slim-jdk17"),
@@ -258,12 +258,12 @@ target "debian_slim_jdk21" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
+    WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
     JAVA_VERSION       = JAVA21_VERSION
-    WAR_URL            = war_url()
   }
   tags = [
     tag(true, "slim"),
@@ -282,11 +282,11 @@ target "rhel_ubi9_jdk17" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
+    WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     JAVA_VERSION       = JAVA17_VERSION
-    WAR_URL            = war_url()
   }
   tags = [
     tag(true, "rhel-ubi9-jdk17"),
@@ -302,11 +302,11 @@ target "rhel_ubi9_jdk21" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
+    WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     JAVA_VERSION       = JAVA21_VERSION
-    WAR_URL            = war_url()
   }
   tags = [
     tag(true, "rhel-ubi9-jdk21"),
