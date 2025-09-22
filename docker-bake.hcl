@@ -50,6 +50,10 @@ variable "WAR_SHA" {
   default = "efc91d6be8d79dd078e7f930fc4a5f135602d0822a5efe9091808fdd74607d32"
 }
 
+variable "WAR_URL" {
+  default = ""
+}
+
 variable "REGISTRY" {
   default = "docker.io"
 }
@@ -120,6 +124,19 @@ function "tag_lts" {
   result = equal(LATEST_LTS, "true") ? tag(prepend_jenkins_version, tag) : ""
 }
 
+# return WAR_URL if not empty, get.jenkins.io URL depending on JENKINS_VERSION release line otherwise
+function "war_url" {
+  # If JENKINS_VERSION has more than one sequence of digits with a trailing literal '.', this is LTS
+  # 2.523 has only one sequence of digits with a trailing literal '.'
+  # 2.516.1 has two sequences of digits with a trailing literal '.'
+  params = []
+  result = (notequal(WAR_URL, "")
+    ? WAR_URL
+    : (length(regexall("[0-9]+[.]", JENKINS_VERSION)) < 2
+      ? "https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war"
+      : "https://get.jenkins.io/war-stable/${JENKINS_VERSION}/jenkins.war"))
+}
+
 # ---- targets ----
 
 target "alpine_jdk17" {
@@ -128,6 +145,7 @@ target "alpine_jdk17" {
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
     WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     ALPINE_TAG         = ALPINE_FULL_TAG
@@ -148,6 +166,7 @@ target "alpine_jdk21" {
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
     WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     ALPINE_TAG         = ALPINE_FULL_TAG
@@ -172,6 +191,7 @@ target "debian_jdk17" {
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
     WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
@@ -193,6 +213,7 @@ target "debian_jdk21" {
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
     WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
@@ -218,6 +239,7 @@ target "debian_slim_jdk17" {
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
     WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
@@ -237,6 +259,7 @@ target "debian_slim_jdk21" {
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
     WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
@@ -260,6 +283,7 @@ target "rhel_ubi9_jdk17" {
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
     WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     JAVA_VERSION       = JAVA17_VERSION
@@ -279,6 +303,7 @@ target "rhel_ubi9_jdk21" {
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
     WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     JAVA_VERSION       = JAVA21_VERSION
