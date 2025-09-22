@@ -57,7 +57,7 @@ variable "JENKINS_VERSION" {
   default = "2.504"
 }
 
-variable "JENKINS_SHA" {
+variable "WAR_SHA" {
   default = "efc91d6be8d79dd078e7f930fc4a5f135602d0822a5efe9091808fdd74607d32"
 }
 
@@ -142,7 +142,7 @@ target "alpine_jdk17" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
+    WAR_SHA            = WAR_SHA
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     ALPINE_TAG         = ALPINE_FULL_TAG
@@ -162,7 +162,7 @@ target "alpine_jdk21" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
+    WAR_SHA            = WAR_SHA
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     ALPINE_TAG         = ALPINE_FULL_TAG
@@ -186,7 +186,7 @@ target "debian_jdk17" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
+    WAR_SHA            = WAR_SHA
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
@@ -207,7 +207,7 @@ target "debian_jdk21" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
+    WAR_SHA            = WAR_SHA
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
@@ -232,7 +232,7 @@ target "debian_slim_jdk17" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
+    WAR_SHA            = WAR_SHA
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
@@ -251,7 +251,7 @@ target "debian_slim_jdk21" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
+    WAR_SHA            = WAR_SHA
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
@@ -274,7 +274,7 @@ target "rhel_ubi9_jdk17" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
+    WAR_SHA            = WAR_SHA
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     JAVA_VERSION       = JAVA17_VERSION
@@ -293,7 +293,7 @@ target "rhel_ubi9_jdk21" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
+    WAR_SHA            = WAR_SHA
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     JAVA_VERSION       = JAVA21_VERSION
