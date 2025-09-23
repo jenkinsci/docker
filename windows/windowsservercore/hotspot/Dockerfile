@@ -100,11 +100,11 @@ ENV JENKINS_VERSION=${JENKINS_VERSION:-2.504}
 ARG WAR_SHA=efc91d6be8d79dd078e7f930fc4a5f135602d0822a5efe9091808fdd74607d32
 
 # Can be used to customize where jenkins.war get downloaded from
-ARG WAR_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war
+ARG WAR_URL=https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war
 
 # could use ADD but this one does not check Last-Modified header neither does it allow to control checksum
 # see https://github.com/docker/docker/issues/8331
-RUN Invoke-WebRequest -Uri "$env:WAR_URL" -OutFile C:/ProgramData/Jenkins/jenkins.war ; `
+RUN Invoke-WebRequest -Uri "$env:WAR_URL" -OutFile C:/ProgramData/Jenkins/jenkins.war; `
     if ((Get-FileHash C:/ProgramData/Jenkins/jenkins.war -Algorithm SHA256).Hash -ne $env:WAR_SHA) {exit 1}
 
 ENV JENKINS_UC=https://updates.jenkins.io
