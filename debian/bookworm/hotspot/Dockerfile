@@ -19,19 +19,23 @@ RUN apt-get update \
 
 ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
 
+ARG JLINK_MODULES_DEFAULT=java.base,java.logging,java.xml,java.management,java.net.http,jdk.crypto.ec,jdk.zipfs,jdk.unsupported,jdk.charsets
+
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
 # while still saving space (approx 200mb from the full distribution)
 RUN case "$(jlink --version 2>&1)" in \
-      "17."*) set -- "--compress=2" ;; \
+      "17."*) set -- "--compress=2" "--add-modules" "ALL-MODULE-PATH" ;; \
       # the compression argument is different for JDK21
-      "21."*) set -- "--compress=zip-6" ;; \
+      "21."*) set -- "--compress=zip-6" "--add-modules" "ALL-MODULE-PATH" ;; \
+      # the compression argument is different for JDK25 (early access)
+      "25"*) mod_list="${JLINK_MODULES:-$JLINK_MODULES_DEFAULT}"; \
+             set -- "--compress=zip-6" --add-modules "$mod_list" ;; \
       *) echo "ERROR: unmanaged jlink version pattern" && exit 1 ;; \
     esac; \
     jlink \
       --strip-java-debug-attributes \
-      "$1" \
-      --add-modules ALL-MODULE-PATH \
+      "$@" \
       --no-man-pages \
       --no-header-files \
       --output /javaruntime
