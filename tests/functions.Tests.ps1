@@ -21,7 +21,7 @@ Describe "[functions > $global:TEST_TAG] build image" {
 }
 
 # Only test on Java 21, one JDK is enough to test all versions
-Describe "[functions > $global:TEST_TAG] Check-VersionLessThan" -Skip:(-not $global:TEST_TAG.StartsWith('jdk21-')) {
+Describe "[functions > $global:TEST_TAG] Check-VersionLessThan" -Skip:(-not $global:TEST_TAG.Contains('jdk21-')) {
   It 'exit codes work' {
     docker run --rm $global:SUT_IMAGE "exit -1"
     $LastExitCode | Should -Be -1
@@ -74,7 +74,7 @@ Describe "[functions > $global:TEST_TAG] Check-VersionLessThan" -Skip:(-not $glo
 }
 
 # Only test on Java 21, one JDK is enough to test all versions
-Describe "[functions > $global:TEST_TAG] Copy-ReferenceFile" -Skip:(-not $global:TEST_TAG.StartsWith('jdk21-')) {
+Describe "[functions > $global:TEST_TAG] Copy-ReferenceFile" -Skip:(-not $global:TEST_TAG.Contains('jdk21-')) {
   It 'build test image' {
     $exitCode, $stdout, $stderr = Build-DockerChild $global:SUT_IMAGE $PSScriptRoot/functions
     $exitCode | Should -Be 0

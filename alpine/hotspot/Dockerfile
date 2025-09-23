@@ -96,17 +96,17 @@ ARG JENKINS_VERSION
 ENV JENKINS_VERSION=${JENKINS_VERSION:-2.504}
 
 # jenkins.war checksum, download will be validated using it
-ARG JENKINS_SHA=efc91d6be8d79dd078e7f930fc4a5f135602d0822a5efe9091808fdd74607d32
+ARG WAR_SHA=efc91d6be8d79dd078e7f930fc4a5f135602d0822a5efe9091808fdd74607d32
 
 # Can be used to customize where jenkins.war get downloaded from
-ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war
+ARG WAR_URL=https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war
 
 # could use ADD but this one does not check Last-Modified header neither does it allow to control checksum
 # see https://github.com/docker/docker/issues/8331
-RUN curl -fsSL ${JENKINS_URL} -o /usr/share/jenkins/jenkins.war \
-  && echo "${JENKINS_SHA}  /usr/share/jenkins/jenkins.war" >/tmp/jenkins_sha \
-  && sha256sum -c --strict /tmp/jenkins_sha \
-  && rm -f /tmp/jenkins_sha
+RUN curl -fsSL ${WAR_URL} -o /usr/share/jenkins/jenkins.war \
+  && echo "${WAR_SHA}  /usr/share/jenkins/jenkins.war" >/tmp/war_sha \
+  && sha256sum -c --strict /tmp/war_sha \
+  && rm -f /tmp/war_sha
 
 ENV JENKINS_UC=https://updates.jenkins.io
 ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
@@ -116,9 +116,9 @@ RUN chown -R ${user} "$JENKINS_HOME" "$REF"
 ARG PLUGIN_CLI_VERSION=2.13.2
 ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
 RUN curl -fsSL ${PLUGIN_CLI_URL} -o /opt/jenkins-plugin-manager.jar \
-  && echo "$(curl -fsSL "${PLUGIN_CLI_URL}.sha256")  /opt/jenkins-plugin-manager.jar" >/tmp/jenkins_sha \
-  && sha256sum -c --strict /tmp/jenkins_sha \
-  && rm -f /tmp/jenkins_sha
+  && echo "$(curl -fsSL "${PLUGIN_CLI_URL}.sha256")  /opt/jenkins-plugin-manager.jar" >/tmp/war_sha \
+  && sha256sum -c --strict /tmp/war_sha \
+  && rm -f /tmp/war_sha
 
 # for main web interface:
 EXPOSE ${http_port}
