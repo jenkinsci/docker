@@ -3,7 +3,6 @@ ARG BOOKWORM_TAG=20250908
 FROM debian:bookworm-"${BOOKWORM_TAG}" AS jre-build
 
 ARG JAVA_VERSION=17.0.16_8
-ARG JLINK_MODULES_DEFAULT=java.base,java.logging,java.xml,java.management,java.net.http,jdk.crypto.ec,jdk.zipfs,jdk.unsupported,jdk.charsets
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -19,6 +18,8 @@ RUN apt-get update \
   && /usr/bin/jdk-download.sh
 
 ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
+
+ARG JLINK_MODULES_DEFAULT=java.base,java.logging,java.xml,java.management,java.net.http,jdk.crypto.ec,jdk.zipfs,jdk.unsupported,jdk.charsets
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
