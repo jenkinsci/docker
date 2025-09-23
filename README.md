@@ -47,6 +47,8 @@ docker exec <jenkins_container_id_or_name> cat /var/jenkins_home/secrets/initial
 ```
 Replace <jenkins_container_id_or_name> with your actual Jenkins container id or name.
 
+To access Jenkins interface and complete the initial setup, follow the steps described here: https://www.jenkins.io/doc/book/installing/docker/#setup-wizard
+
 ## Backing up data
 
 If you bind mount in a volume - you can simply back up that directory
