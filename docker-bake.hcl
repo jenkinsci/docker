@@ -37,6 +37,7 @@ group "linux-s390x" {
     "debian_jdk17",
     "debian_jdk21",
     "debian_jdk25",
+    "debian_slim_jdk25",
   ]
 }
 
@@ -45,6 +46,7 @@ group "linux-ppc64le" {
     "debian_jdk17",
     "debian_jdk21",
     "debian_jdk25",
+    "debian_slim_jdk25",
     "rhel_ubi9_jdk17",
     "rhel_ubi9_jdk21",
     "rhel_ubi9_jdk25",
@@ -364,7 +366,7 @@ target "debian_slim_jdk25" {
     tag_weekly(false, "slim-jdk25"),
     tag_lts(false, "lts-slim-jdk25"),
   ]
-  platforms = ["linux/amd64", "linux/arm64"]
+  platforms = ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"]
 }
 
 target "rhel_ubi9_jdk25" {
