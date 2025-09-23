@@ -339,7 +339,8 @@ target "alpine_jdk25" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
+    WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     ALPINE_TAG         = ALPINE_FULL_TAG
@@ -359,7 +360,8 @@ target "debian_jdk25" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
+    WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
@@ -380,7 +382,8 @@ target "debian_slim_jdk25" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
+    WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     BOOKWORM_TAG       = BOOKWORM_TAG
@@ -399,7 +402,8 @@ target "rhel_ubi9_jdk25" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    JENKINS_SHA        = JENKINS_SHA
+    WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
     JAVA_VERSION       = JAVA25_VERSION
