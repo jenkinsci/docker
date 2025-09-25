@@ -1,6 +1,6 @@
-ARG BOOKWORM_TAG=20250908
+ARG TRIXIE_TAG=20250811
 
-FROM debian:bookworm-"${BOOKWORM_TAG}" AS jre-build
+FROM debian:trixie-"${TRIXIE_TAG}"-slim AS jre-build
 
 ARG JAVA_VERSION=17.0.16_8
 
@@ -36,7 +36,7 @@ RUN case "$(jlink --version 2>&1)" in \
       --no-header-files \
       --output /javaruntime
 
-FROM debian:bookworm-"${BOOKWORM_TAG}" AS controller
+FROM debian:trixie-"${TRIXIE_TAG}"-slim AS controller
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \

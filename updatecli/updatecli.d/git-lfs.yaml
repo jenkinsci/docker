@@ -34,8 +34,8 @@ targets:
     kind: dockerfile
     spec:
       files:
-        - debian/bookworm/hotspot/Dockerfile
-        - debian/bookworm-slim/hotspot/Dockerfile
+        - debian/trixie/hotspot/Dockerfile
+        - debian/trixie-slim/hotspot/Dockerfile
       instruction:
         keyword: "ARG"
         matcher: "GIT_LFS_VERSION"
