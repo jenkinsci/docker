@@ -1,5 +1,5 @@
 ---
-name: Bump Debian Bookworm version
+name: Bump Debian Trixie version
 
 scms:
   default:
@@ -16,7 +16,7 @@ scms:
 sources:
   trixieLatestVersion:
     kind: dockerimage
-    name: "Get the latest Debian Bookworm Linux version"
+    name: "Get the latest Debian Trixie Linux version"
     transformers:
       - trimprefix: "trixie-"
     spec:
@@ -29,7 +29,7 @@ sources:
 
 conditions:
   testDockerfileArg:
-    name: "Does the Dockerfile have an ARG instruction for the Debian Bookworm & Bookworm Slim Linux version?"
+    name: "Does the Dockerfile have an ARG instruction for the Debian Trixie & Trixie Slim Linux version?"
     kind: dockerfile
     disablesourceinput: true
     spec:
