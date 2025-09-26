@@ -1,45 +1,102 @@
 
 # compare if version1 < version2
-function Compare-VersionLessThan($version1, $version2) {
-    $temp = $version1.Split('-')
-    $v1 = $temp[0].Trim()
-    $q1 = ''
-    if($temp.Length -gt 1) {
-        $q1 = $temp[1].Trim()
+function Compare-VersionLessThan {
+    param (
+        [Parameter(Mandatory = $true)][string]$v1,
+        [Parameter(Mandatory = $true)][string]$v2
+    )
+
+    # Quick equality check
+    if ($v1 -eq $v2) {
+        return $false
     }
 
-    $temp = $version2.Split('-')
-    $v2 = $temp[0].Trim()
-    $q2 = ''
-    if($temp.Length -gt 1) {
-        $q2 = $temp[1].Trim()
-    }
+    function ConvertTo-JenkinsVersion {
+        param([string]$version)
 
-    if($v1 -eq $v2) {
-        # this works even if both sides are "latest"
-        if($q1 -eq $q2) {
-            return $false
+        if ($version -match "-") {
+            $parts = $version -split "-", 2
+            $mainVersion = $parts[0]
+            $qualifier = $parts[1]
         } else {
-            if([System.String]::IsNullOrWhiteSpace($q1)) {
-                return $false
-            } else {
-                if([System.String]::IsNullOrWhiteSpace($q2)) {
-                    return $true
-                } else {
-                    return ($q1 -eq $("$q1","$q2" | Sort-Object | Select-Object -First 1))
-                }
-            }
+            $mainVersion = $version
+            $qualifier = ""
+        }
+
+        # Remove trailing .0 conservatively
+        while ($mainVersion -match "\.0$" -and $mainVersion -match "\.") {
+            $mainVersion = $mainVersion -replace "\.0$", ""
+        }
+
+        if ($qualifier) {
+            return "$mainVersion-$qualifier"
+        } else {
+            return $mainVersion
         }
     }
 
-    if($v1 -eq "latest") {
-        return $false
-    } elseif($v2 -eq "latest") {
-        return $true
+    function Test-JenkinsBuildQualifier {
+        param([string]$qualifier)
+        return ($qualifier -match '^[0-9]+\.v[\w-]+$')
     }
 
-    return ($v1 -eq $("$v1","$v2" | Sort-Object {[version] $_} | Select-Object -first 1))
+    function Test-SemverPrerelease {
+        param([string]$qualifier)
+        return ($qualifier -match '^(alpha|beta|rc|snapshot|dev|test|milestone|m)([.-]?\d*)?$' -or
+                $qualifier -match '^(pre|preview|canary|nightly)([.-]?\d*)?$')
+    }
+
+    $normV1 = ConvertTo-JenkinsVersion $v1
+    $normV2 = ConvertTo-JenkinsVersion $v2
+
+    if ($normV1 -eq $normV2) {
+        return $false
+    }
+
+    if ($normV1 -match "-") {
+        $mainV1, $qualV1 = $normV1 -split "-", 2
+    } else {
+        $mainV1 = $normV1; $qualV1 = ""
+    }
+
+    if ($normV2 -match "-") {
+        $mainV2, $qualV2 = $normV2 -split "-", 2
+    } else {
+        $mainV2 = $normV2; $qualV2 = ""
+    }
+
+    # Compare main versions first
+    try {
+        $mainCmp = [System.Version]::Parse(($mainV1 -replace '[^0-9\.]', '0')).
+                   CompareTo([System.Version]::Parse(($mainV2 -replace '[^0-9\.]', '0')))
+    } catch {
+        # Fallback to string comparison if version parse fails
+        $mainCmp = [string]::Compare($mainV1, $mainV2)
+    }
+
+    if ($mainCmp -ne 0) {
+        return ($mainCmp -lt 0)
+    }
+
+    # Compare qualifiers
+    if (-not $qualV1 -and $qualV2) {
+        if (Test-SemverPrerelease $qualV2) { return $false }
+        elseif (Test-JenkinsBuildQualifier $qualV2) { return $true }
+        else { return $true }
+    }
+    elseif ($qualV1 -and -not $qualV2) {
+        if (Test-SemverPrerelease $qualV1) { return $true }
+        elseif (Test-JenkinsBuildQualifier $qualV1) { return $false }
+        else { return $false }
+    }
+    elseif ($qualV1 -and $qualV2) {
+        $sorted = @($qualV1, $qualV2) | Sort-Object
+        return ($sorted[0] -eq $qualV1)
+    }
+
+    return $false
 }
+
 
 function Get-EnvOrDefault($name, $def) {
     $entry = Get-ChildItem env: | Where-Object { $_.Name -eq $name } | Select-Object -First 1
