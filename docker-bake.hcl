@@ -111,7 +111,7 @@ variable "JAVA25_VERSION" {
   default = "25+9-ea-beta"
 }
 
-variable "BOOKWORM_TAG" {
+variable "TRIXIE_TAG" {
   default = "20250908"
 }
 
@@ -203,7 +203,7 @@ target "alpine_jdk21" {
 }
 
 target "debian_jdk17" {
-  dockerfile = "debian/bookworm/hotspot/Dockerfile"
+  dockerfile = "debian/trixie/hotspot/Dockerfile"
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
@@ -211,7 +211,7 @@ target "debian_jdk17" {
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    BOOKWORM_TAG       = BOOKWORM_TAG
+    TRIXIE_TAG         = TRIXIE_TAG
     JAVA_VERSION       = JAVA17_VERSION
   }
   tags = [
@@ -225,7 +225,7 @@ target "debian_jdk17" {
 }
 
 target "debian_jdk21" {
-  dockerfile = "debian/bookworm/hotspot/Dockerfile"
+  dockerfile = "debian/trixie/hotspot/Dockerfile"
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
@@ -233,7 +233,7 @@ target "debian_jdk21" {
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    BOOKWORM_TAG       = BOOKWORM_TAG
+    TRIXIE_TAG         = TRIXIE_TAG
     JAVA_VERSION       = JAVA21_VERSION
   }
   tags = [
@@ -251,7 +251,7 @@ target "debian_jdk21" {
 }
 
 target "debian_slim_jdk17" {
-  dockerfile = "debian/bookworm-slim/hotspot/Dockerfile"
+  dockerfile = "debian/trixie-slim/hotspot/Dockerfile"
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
@@ -259,7 +259,7 @@ target "debian_slim_jdk17" {
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    BOOKWORM_TAG       = BOOKWORM_TAG
+    TRIXIE_TAG         = TRIXIE_TAG
     JAVA_VERSION       = JAVA17_VERSION
   }
   tags = [
@@ -271,7 +271,7 @@ target "debian_slim_jdk17" {
 }
 
 target "debian_slim_jdk21" {
-  dockerfile = "debian/bookworm-slim/hotspot/Dockerfile"
+  dockerfile = "debian/trixie-slim/hotspot/Dockerfile"
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
@@ -279,7 +279,7 @@ target "debian_slim_jdk21" {
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    BOOKWORM_TAG       = BOOKWORM_TAG
+    TRIXIE_TAG         = TRIXIE_TAG
     JAVA_VERSION       = JAVA21_VERSION
   }
   tags = [

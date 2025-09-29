@@ -1,5 +1,5 @@
 ---
-name: Bump Debian Bookworm version
+name: Bump Debian Trixie version
 
 scms:
   default:
@@ -14,68 +14,68 @@ scms:
       branch: "{{ .github.branch }}"
 
 sources:
-  bookwormLatestVersion:
+  trixieLatestVersion:
     kind: dockerimage
-    name: "Get the latest Debian Bookworm Linux version"
+    name: "Get the latest Debian Trixie Linux version"
     transformers:
-      - trimprefix: "bookworm-"
+      - trimprefix: "trixie-"
     spec:
       image: "debian"
-      tagfilter: "bookworm-*"
+      tagfilter: "trixie-*"
       versionfilter:
         kind: regex
         pattern: >-
-          bookworm-\d+$
+          trixie-\d+$
 
 conditions:
   testDockerfileArg:
-    name: "Does the Dockerfile have an ARG instruction for the Debian Bookworm & Bookworm Slim Linux version?"
+    name: "Does the Dockerfile have an ARG instruction for the Debian Trixie & Trixie Slim Linux version?"
     kind: dockerfile
     disablesourceinput: true
     spec:
       files:
-        - debian/bookworm/hotspot/Dockerfile
-        - debian/bookworm-slim/hotspot/Dockerfile
+        - debian/trixie/hotspot/Dockerfile
+        - debian/trixie-slim/hotspot/Dockerfile
       instruction:
         keyword: "ARG"
-        matcher: "BOOKWORM_TAG"
+        matcher: "TRIXIE_TAG"
   testVersionInBakeFile:
-    name: "Does the bake file have variable BOOKWORM_TAG"
+    name: "Does the bake file have variable TRIXIE_TAG"
     kind: file
     disablesourceinput: true
     spec:
       file: docker-bake.hcl
-      matchpattern: "(.*BOOKWORM_TAG.*)"
+      matchpattern: "(.*TRIXIE_TAG.*)"
 
 targets:
   updateDockerBake:
-    name: "Update the value of the base image (ARG BOOKWORM_TAG) in the docker-bake.hcl"
+    name: "Update the value of the base image (ARG TRIXIE_TAG) in the docker-bake.hcl"
     kind: file
-    sourceid: bookwormLatestVersion
+    sourceid: trixieLatestVersion
     spec:
       file: docker-bake.hcl
       matchpattern: >-
-        variable(.*)"BOOKWORM_TAG"(.*){(.*)(\r\n|\r|\n)(.*)default(.*)=(.*)
+        variable(.*)"TRIXIE_TAG"(.*){(.*)(\r\n|\r|\n)(.*)default(.*)=(.*)
       replacepattern: >-
-        variable${1}"BOOKWORM_TAG"${2}{${3}${4}${5}default${6}= "{{ source "bookwormLatestVersion" }}"
+        variable${1}"TRIXIE_TAG"${2}{${3}${4}${5}default${6}= "{{ source "trixieLatestVersion" }}"
     scmid: default
   updateDockerfile:
-    name: "Update the value of the base image (ARG BOOKWORM_TAG) in the Dockerfiles"
+    name: "Update the value of the base image (ARG TRIXIE_TAG) in the Dockerfiles"
     kind: dockerfile
-    sourceid: bookwormLatestVersion
+    sourceid: trixieLatestVersion
     spec:
       files:
-        - debian/bookworm/hotspot/Dockerfile
-        - debian/bookworm-slim/hotspot/Dockerfile
+        - debian/trixie/hotspot/Dockerfile
+        - debian/trixie-slim/hotspot/Dockerfile
       instruction:
         keyword: "ARG"
-        matcher: "BOOKWORM_TAG"
+        matcher: "TRIXIE_TAG"
     scmid: default
 actions:
   default:
     kind: github/pullrequest
     scmid: default
-    title: Bump Debian Bookworm Linux Version to {{ source "bookwormLatestVersion" }}
+    title: Bump Debian Bookworm Linux Version to {{ source "trixieLatestVersion" }}
     spec:
       labels:
         - dependencies
