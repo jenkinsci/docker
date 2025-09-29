@@ -364,7 +364,7 @@ target "debian_jdk25" {
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    trixie_TAG       = trixie_TAG
+    TRIXIE_TAG       = TRIXIE_TAG
     JAVA_VERSION       = JAVA25_VERSION
   }
   tags = [
@@ -386,7 +386,7 @@ target "debian_slim_jdk25" {
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    trixie_TAG       = trixie_TAG
+    TRIXIE_TAG       = TRIXIE_TAG
     JAVA_VERSION       = JAVA25_VERSION
   }
   tags = [
