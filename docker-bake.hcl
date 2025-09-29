@@ -356,7 +356,7 @@ target "alpine_jdk25" {
 }
 
 target "debian_jdk25" {
-  dockerfile = "debian/bookworm/hotspot/Dockerfile"
+  dockerfile = "debian/trixie/hotspot/Dockerfile"
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
@@ -364,7 +364,7 @@ target "debian_jdk25" {
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    BOOKWORM_TAG       = BOOKWORM_TAG
+    trixie_TAG       = trixie_TAG
     JAVA_VERSION       = JAVA25_VERSION
   }
   tags = [
@@ -378,7 +378,7 @@ target "debian_jdk25" {
 }
 
 target "debian_slim_jdk25" {
-  dockerfile = "debian/bookworm-slim/hotspot/Dockerfile"
+  dockerfile = "debian/trixie-slim/hotspot/Dockerfile"
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
@@ -386,7 +386,7 @@ target "debian_slim_jdk25" {
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    BOOKWORM_TAG       = BOOKWORM_TAG
+    trixie_TAG       = trixie_TAG
     JAVA_VERSION       = JAVA25_VERSION
   }
   tags = [
