@@ -75,7 +75,7 @@ actions:
   default:
     kind: github/pullrequest
     scmid: default
-    title: Bump Debian Bookworm Linux Version to {{ source "trixieLatestVersion" }}
+    title: Bump Debian Trixie version to {{ source "trixieLatestVersion" }}
     spec:
       labels:
         - dependencies
