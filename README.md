@@ -175,6 +175,81 @@ docker run --name myjenkins -p 8080:8080 -p 50001:50001 --restart=on-failure --e
 > If this property is already set in **JAVA_OPTS** or **JENKINS_JAVA_OPTS**, then the value of
 > `JENKINS_SLAVE_AGENT_PORT` will be ignored.
 
+
+
+
+
+## Jenkins Login Guide for Docker Users 🔑
+
+When running Jenkins via Docker, the initial login requires an administrator password generated during the container's first setup. This guide shows you how to retrieve it and avoid common pitfalls.
+
+### 🧭 Starting Jenkins
+
+This command starts Jenkins in detached mode and mounts a persistent **named volume** (`jenkins_home`) to preserve your data across container restarts and upgrades.
+
+```bash
+docker run -d \
+  -v jenkins_home:/var/jenkins_home \
+  -p 8080:8080 -p 50000:50000 \
+  --restart=on-failure \
+  --name myjenkins \
+  jenkins/jenkins:lts-jdk17
+````
+
+### 🔑 Retrieving the Initial Admin Password
+
+Once the container is running, execute the following command to retrieve the automatically generated initial admin password from inside the container:
+
+```bash
+docker exec myjenkins cat /var/jenkins_home/secrets/initialAdminPassword
+```
+
+Use this password to log in at **http://localhost:8080** and complete the setup wizard as described in the [installation guide](https://www.jenkins.io/doc/book/installing/docker/#setup-wizard).
+
+### ⚠️ Common Pitfalls
+
+  * **Missing Password File:** If the file is not found, it may indicate Jenkins was already configured or a reused volume has the setup complete.
+  * **Permission Issues:** **Avoid bind-mounting** host folders (e.g., `-v /host/path:/var/jenkins_home`) unless you ensure the host directory is accessible by the `jenkins` user inside the container (**UID 1000**). Named volumes are the recommended approach.
+  * **Plugin Delays:** The first boot can be slow due to initial plugin installations. Check the container logs to monitor the startup process:
+    ```bash
+    docker logs myjenkins
+    ```
+
+### 📦 Backing Up Data
+
+Using **Docker named volumes** for `jenkins_home` simplifies data management and backups. To extract the data from a running container to a local directory:
+
+```bash
+docker cp myjenkins:/var/jenkins_home ./jenkins_backup
+```
+
+### 🧪 Skipping Setup Wizard (Advanced)
+
+To skip the initial setup wizard (useful for pre-configured custom images), create a `Dockerfile` that includes a marker file:
+
+```dockerfile
+FROM jenkins/jenkins:lts-jdk17
+# This file signals that the setup wizard is complete
+RUN echo 2.0 > /usr/share/jenkins/ref/jenkins.install.UpgradeWizard.state
+```
+
+### 🧩 Preinstalling Plugins
+
+For custom images, you can pre-install a list of plugins by creating a `plugins.txt` file and using the built-in plugin CLI:
+
+```dockerfile
+FROM jenkins/jenkins:lts-jdk17
+COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
+RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
+```
+
+```
+```
+
+
+
+
+
 # Installing more tools
 
 You can run your container as root - and install via apt-get, install as part of build steps via jenkins tool installers, or you can create your own Dockerfile to customise, for example:
