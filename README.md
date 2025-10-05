@@ -34,7 +34,6 @@ This is a fully functional Jenkins server.
     - [Setting update centers](#setting-update-centers)
     - [Installing Custom Plugins](#installing-custom-plugins)
     - [Access logs](#access-logs)
-    - [Usage](#usage)
     - [Updating plugins file](#updating-plugins-file)
 - [Docker Compose with Jenkins](#docker-compose-with-jenkins)
 - [Upgrading](#upgrading)
@@ -42,8 +41,6 @@ This is a fully functional Jenkins server.
 - [Hacking](#hacking)
 - [Security](#security)
 - [Questions?](#questions)
-
-
 
 ---
 
