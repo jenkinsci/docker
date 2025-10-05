@@ -22,9 +22,9 @@ def SIMULATE_LTS_BUILD = false
 if (SIMULATE_LTS_BUILD) {
     envVars = [
         'PUBLISH=false',
-        'TAG_NAME=2.462.3',
-        'JENKINS_VERSION=2.462.3',
-        'WAR_SHA=3e53b52a816405e3b10ad07f1c48cd0cb5cb3f893207ef7f9de28415806b93c1'
+        'TAG_NAME=2.504.3',
+        'JENKINS_VERSION=2.504.3',
+        'WAR_SHA=ea8883431b8b5ef6b68fe0e5817c93dc0a11def380054e7de3136486796efeb0'
     ]
 }
 
