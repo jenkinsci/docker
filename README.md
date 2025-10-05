@@ -1,3 +1,7 @@
+<a href="https://jenkins.io">
+    <img width="400" src="https://www.jenkins.io/images/jenkins-logo-title-dark.svg" alt="Jenkins logo"> 
+</a>
+
 # Official Jenkins Docker image
 
 [![Docker Stars](https://img.shields.io/docker/stars/jenkins/jenkins.svg)](https://hub.docker.com/r/jenkins/jenkins/)
@@ -9,7 +13,56 @@ The Jenkins Continuous Integration and Delivery server [available on Docker Hub]
 This is a fully functional Jenkins server.
 [https://jenkins.io/](https://jenkins.io/).
 
-<img src="https://jenkins.io/sites/default/files/jenkins_logo.png"/>
+---
+
+# Table of Contents
+
+- [About](#about)
+- [Usage](#usage)
+  - [Backing up data](#backing-up-data)
+  - [Setting the number of executors](#setting-the-number-of-executors)
+  - [Connecting agents](#connecting-agents)
+  - [Passing JVM parameters](#passing-jvm-parameters)
+  - [Configuring logging](#configuring-logging)
+  - [Configuring reverse proxy](#configuring-reverse-proxy)
+  - [DNS configuration](#dns-configuration)
+  - [Passing Jenkins launcher parameters](#passing-jenkins-launcher-parameters)
+- [Installing more Tools](#installing-more-tools)
+  - [Installing more tools](#installing-more-tools)
+  - [Preinstalling plugins](#preinstalling-plugins)
+    - [Install plugins](#install-plugins)
+    - [Setting update centers](#setting-update-centers)
+    - [Installing Custom Plugins](#installing-custom-plugins)
+    - [Access logs](#access-logs)
+    - [Usage](#usage)
+    - [Updating plugins file](#updating-plugins-file)
+- [Docker Compose with Jenkins](#docker-compose-with-jenkins)
+- [Upgrading](#upgrading)
+  - [Upgrading plugins](#upgrading-plugins)
+- [Hacking](#hacking)
+- [Security](#security)
+- [Questions?](#questions)
+
+
+
+---
+
+# About
+
+This is the official Jenkins Docker image, maintained by the Jenkins community.
+
+It provides a fully functional Jenkins server packaged as a Docker container, making it easy to deploy Jenkins in any environment that supports Docker. The image is based on Debian and includes the Jenkins LTS (Long-Term Support) release with support for Java 17.
+
+By using this image, you can:
+
+- Run Jenkins in isolated, reproducible environments
+- Quickly spin up new CI/CD instances for testing or production
+- Easily persist Jenkins data using Docker volumes
+- Extend the base image to include tools, plugins, and custom configuration
+
+The source code and configuration for this image can be found in the [jenkinsci/docker](https://github.com/jenkinsci/docker) GitHub repository.
+
+
 
 # Usage
 
@@ -380,12 +433,13 @@ Then plugins will be upgraded if the version provided by the docker image is new
 
 # Hacking
 
-If you wish to contribute fixes to this repository, please refer to the [dedicated documentation](HACKING.adoc).
+If you want to contribute to this repository (e.g., fix bugs, improve the Dockerfile, or update documentation), please read the [HACKING.adoc](HACKING.adoc) file for guidance on setting up your development environment and following contribution standards.
 
-# Security
+## Security
 
-For information related to the security of this Docker image, please refer to the [dedicated documentation](SECURITY.md).
+For details about security practices, known vulnerabilities, and how to report security issues in this Docker image, see the [SECURITY.md](SECURITY.md) documentation.
 
-# Questions?
+## Questions?
 
-We're on Gitter, https://gitter.im/jenkinsci/docker
+If you have questions, need help, or want to join the conversation with other Jenkins users and contributors, join us on [Gitter](https://gitter.im/jenkinsci/docker).
+
