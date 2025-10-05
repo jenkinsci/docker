@@ -99,8 +99,13 @@ test-%: prepare-test
 	@$(call check_image,$*)
 # Ensure that the image is built
 	@make --silent build-$*
+ifeq ($(CI), true)
 # Execute the test harness and write result to a TAP file
 	IMAGE=$* bats/bin/bats $(bats_flags) --formatter junit | tee target/junit-results-$*.xml
+else
+# Execute the test harness
+	IMAGE=$* bats/bin/bats $(bats_flags)
+endif
 
 test: prepare-test
 	@make --silent list | while read image; do make --silent "test-$${image}"; done
