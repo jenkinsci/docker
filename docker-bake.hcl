@@ -79,7 +79,7 @@ variable "COMMIT_SHA" {
 }
 
 variable "ALPINE_FULL_TAG" {
-  default = "3.22.1"
+  default = "3.22.2"
 }
 
 variable "ALPINE_SHORT_TAG" {
@@ -134,7 +134,7 @@ function "war_url" {
     ? WAR_URL
     : (length(regexall("[0-9]+[.]", JENKINS_VERSION)) < 2
       ? "https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war"
-      : "https://get.jenkins.io/war-stable/${JENKINS_VERSION}/jenkins.war"))
+  : "https://get.jenkins.io/war-stable/${JENKINS_VERSION}/jenkins.war"))
 }
 
 # ---- targets ----
