@@ -1,0 +1,20 @@
+name: Update Docker Hub description
+on:
+  release:
+    types: [ published ]
+  workflow_dispatch:
+
+jobs:
+  dockerHubDescription:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Update Docker Hub description
+        uses: peter-evans/dockerhub-description@v5
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          enable-url-completion: true
+          short-description: The leading open source automation server
+          repository: jenkins/jenkins
+          readme-filepath: ./README.md
