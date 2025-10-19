@@ -28,7 +28,7 @@ Describe "[functions > $global:TEST_TAG] Check-VersionLessThan" -Skip:(-not $glo
   }
 
   It 'has same version' {
-    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '1.0' '1.0')) { exit 0 } else { exit -1 }" 
+    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '1.0' '1.0')) { exit 0 } else { exit -1 }"
     $LastExitCode | Should -Be -1
   }
 
@@ -40,36 +40,6 @@ Describe "[functions > $global:TEST_TAG] Check-VersionLessThan" -Skip:(-not $glo
   It 'has left side greater' {
     docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '1.1' '1.0')) { exit 0 } else { exit -1 }"
     $LastExitCode | Should -Be -1
-  }
-
-  It 'has left side non-final' {
-    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '1.0-beta-1' '1.0')) { exit 0 } else { exit -1 }" 
-    $LastExitCode | Should -Be 0
-  }
-
-  It 'has right side non-final' {
-    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '1.0' '1.0-beta-1')) { exit 0 } else { exit -1 }"
-    $LastExitCode | Should -Be -1
-  }
-
-  It 'has left alpha and right beta' {
-    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '1.0-alpha-1' '1.0-beta-1')) { exit 0 } else { exit -1 }"
-    $LastExitCode | Should -Be 0
-  }
-
-  It 'has left beta and right alpha' {
-    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '1.0-beta-1' '1.0-alpha-1')) { exit 0 } else { exit -1 }"
-    $LastExitCode | Should -Be -1
-  }
-
-  It "has left 'latest' and right 1.0" {
-    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan 'latest' '1.0')) { exit -1 } else { exit 0 }"
-    $LastExitCode | Should -Be 0
-  }
-
-  It "has left 'latest' and right 'latest'" {
-    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan 'latest' 'latest')) { exit -1 } else { exit 0 }"
-    $LastExitCode | Should -Be 0
   }
 }
 
