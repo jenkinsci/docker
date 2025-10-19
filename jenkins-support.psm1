@@ -1,44 +1,47 @@
 
 # compare if version1 < version2
-function Compare-VersionLessThan($version1, $version2) {
-    $temp = $version1.Split('-')
-    $v1 = $temp[0].Trim()
-    $q1 = ''
-    if($temp.Length -gt 1) {
-        $q1 = $temp[1].Trim()
-    }
-
-    $temp = $version2.Split('-')
-    $v2 = $temp[0].Trim()
-    $q2 = ''
-    if($temp.Length -gt 1) {
-        $q2 = $temp[1].Trim()
-    }
-
-    if($v1 -eq $v2) {
-        # this works even if both sides are "latest"
-        if($q1 -eq $q2) {
-            return $false
-        } else {
-            if([System.String]::IsNullOrWhiteSpace($q1)) {
-                return $false
-            } else {
-                if([System.String]::IsNullOrWhiteSpace($q2)) {
-                    return $true
-                } else {
-                    return ($q1 -eq $("$q1","$q2" | Sort-Object | Select-Object -First 1))
-                }
-            }
-        }
-    }
-
-    if($v1 -eq "latest") {
+function Compare-VersionLessThan([string] $version1 = '', [string] $version2 = '') {
+    # Quick check for equality
+    if($version1 -eq $version2) {
         return $false
-    } elseif($v2 -eq "latest") {
+    }
+
+    # Convert '-' to '.' to ease comparison
+    $normalizedVersion1 = $version1 -replace '-', '.'
+    $normalizedVersion2 = $version2 -replace '-', '.'
+
+    $version1Parts = $normalizedVersion1.Split('.')
+    $version2Parts = $normalizedVersion2.Split('.')
+
+    # Compare major versions
+    if ($version1Parts[0] -lt $version2parts[0]) {
         return $true
     }
 
-    return ($v1 -eq $("$v1","$v2" | Sort-Object {[version] $_} | Select-Object -first 1))
+    $maxLength = [Math]::Max($version1Parts.Length, $version2parts.Length)
+    for ($i = 0; $i -lt $maxLength; $i++) {
+        $part1 = if ($i -lt $version1Parts.Length) { $version1Parts[$i] } else { '0' }
+        $part2 = if ($i -lt $version2Parts.Length) { $version2Parts[$i] } else { '0' }
+
+        # Security fix backport special case
+        # Ex: 3894.vd0f0248b_a_fc4 < 3894.3896.vca_2c931e7935
+        # -> normal incrementals version includes a "v" as first char of second part
+        # -> security fix backport adds the backport source first part as second part
+        # https://github.com/jenkinsci/workflow-cps-plugin/releases/tag/3894.vd0f0248b_a_fc4
+        # https://github.com/jenkinsci/workflow-cps-plugin/releases/tag/3894.3896.vca_2c931e7935
+        if ($part1 -eq $part2) {
+            # If only the second part of $1 starts with a "v", then $1 is older
+            if ($part1.Substring(0,1) -eq 'v' && $part2.Substring(0,1) -ne 'v') {
+                return $true
+            }
+        }
+
+        if ($part1 -lt $part2) {
+            return $true
+        } else {
+            return $false
+        }
+    }
 }
 
 function Get-EnvOrDefault($name, $def) {
