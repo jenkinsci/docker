@@ -31,7 +31,7 @@ function Compare-VersionLessThan([string] $version1 = '', [string] $version2 = '
         # https://github.com/jenkinsci/workflow-cps-plugin/releases/tag/3894.3896.vca_2c931e7935
         if ($part1 -eq $part2) {
             # If only the second part of $1 starts with a "v", then $1 is older
-            if ($part1.Substring(0,1) -eq 'v' && $part2.Substring(0,1) -ne 'v') {
+            if ($part1.Substring(0,1) -eq 'v' -and $part2.Substring(0,1) -ne 'v') {
                 return $true
             }
         }
