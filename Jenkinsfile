@@ -80,7 +80,7 @@ stage('Build') {
                             // Only publish when a tag triggered the build & the publication is enabled (ie not simulating a LTS)
                             if (env.TAG_NAME && (env.PUBLISH == 'true')) {
                                 // Split to ensure any suffix is not taken in account (but allow suffix tags to trigger rebuilds)
-                                jenkins_version = env.TAG_NAME.split('-')[0]
+                                String jenkins_version = env.TAG_NAME.split('-')[0]
                                 // Setting WAR_URL to download war from Artifactory instead of mirrors on publication from trusted.ci.jenkins.io
                                 withEnv([
                                     "JENKINS_VERSION=${jenkins_version}",
@@ -173,7 +173,7 @@ stage('Build') {
             // Only publish when a tag triggered the build
             if (env.TAG_NAME) {
                 // Split to ensure any suffix is not taken in account (but allow suffix tags to trigger rebuilds)
-                jenkins_version = env.TAG_NAME.split('-')[0]
+                String jenkins_version = env.TAG_NAME.split('-')[0]
                 builds['linux'] = {
                     // Setting WAR_URL to download war from Artifactory instead of mirrors on publication from trusted.ci.jenkins.io
                     withEnv([
