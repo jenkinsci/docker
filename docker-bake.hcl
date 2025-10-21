@@ -95,7 +95,7 @@ variable "JAVA21_VERSION" {
 }
 
 variable "TRIXIE_TAG" {
-  default = "20250929"
+  default = "20251020"
 }
 
 # ----  user-defined functions ----
