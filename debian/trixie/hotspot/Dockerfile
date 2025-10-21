@@ -1,4 +1,4 @@
-ARG TRIXIE_TAG=20250929
+ARG TRIXIE_TAG=20251020
 
 FROM debian:trixie-"${TRIXIE_TAG}" AS jre-build
 
