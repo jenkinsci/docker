@@ -79,7 +79,7 @@ function Get-SutImage {
     return "pester-jenkins-$IMAGENAME"
 }
 
-function Run-Program($cmd, $params, $verbose=$false) {
+function Run-Program($cmd, $params, $verbose=$true) {
     if($verbose) {
         Write-Host "$cmd $params"
     }
