@@ -16,14 +16,22 @@ SUT_DESCRIPTION="${IMAGE}-functions"
   assert_success
   run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 1.1 1.0"
   assert_failure
-  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 1.0-beta-1 1.0"
+  ## Real world examples from https://github.com/jenkinsci/docker/issues/1456
+  # commons-lang3-api-plugin/releases
+  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 3.12.0.0 3.12.0-36.vd97de6465d5b_"
   assert_success
-  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 1.0 1.0-beta-1"
-  assert_failure
-  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 1.0-alpha-1 1.0-beta-1"
+  # map-db-plugin
+  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 1.0.9.0 1.0.9-28.vf251ce40855d"
   assert_success
-  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 1.0-beta-1 1.0-alpha-1"
-  assert_failure
+  # role-strategy-plugin, security fix backport
+  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 587.v2872c41fa_e51 587.588.v850a_20a_30162"
+  assert_success
+  # workflow-cps-plugin, security fix backport
+  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 3894.vd0f0248b_a_fc4 3894.3896.vca_2c931e7935"
+  assert_success
+  # workflow-cps-plugin, security fix backport of an older release, published later than a newer normal release
+  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 4106.4108.v841a_e1819d4d 4151.v5406e29e3c90"
+  assert_success
 }
 
 @test "[${SUT_DESCRIPTION}] permissions are propagated from override file" {

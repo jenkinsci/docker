@@ -1,44 +1,61 @@
 
 # compare if version1 < version2
-function Compare-VersionLessThan($version1, $version2) {
-    $temp = $version1.Split('-')
-    $v1 = $temp[0].Trim()
-    $q1 = ''
-    if($temp.Length -gt 1) {
-        $q1 = $temp[1].Trim()
-    }
-
-    $temp = $version2.Split('-')
-    $v2 = $temp[0].Trim()
-    $q2 = ''
-    if($temp.Length -gt 1) {
-        $q2 = $temp[1].Trim()
-    }
-
-    if($v1 -eq $v2) {
-        # this works even if both sides are "latest"
-        if($q1 -eq $q2) {
-            return $false
-        } else {
-            if([System.String]::IsNullOrWhiteSpace($q1)) {
-                return $false
-            } else {
-                if([System.String]::IsNullOrWhiteSpace($q2)) {
-                    return $true
-                } else {
-                    return ($q1 -eq $("$q1","$q2" | Sort-Object | Select-Object -First 1))
-                }
-            }
-        }
-    }
-
-    if($v1 -eq "latest") {
+function Compare-VersionLessThan([string] $version1 = '', [string] $version2 = '') {
+    # Quick check for equality
+    if($version1 -eq $version2) {
         return $false
-    } elseif($v2 -eq "latest") {
+    }
+
+    # Convert '-' to '.' to ease comparison
+    $normalizedVersion1 = $version1 -replace '-', '.'
+    $normalizedVersion2 = $version2 -replace '-', '.'
+
+    $version1Parts = $normalizedVersion1.Split('.')
+    $version2Parts = $normalizedVersion2.Split('.')
+
+    # Compare major versions
+    if ($version1Parts[0] -lt $version2parts[0]) {
         return $true
     }
+    if ($version1Parts[0] -gt $version2parts[0]) {
+        return $false
+    }
 
-    return ($v1 -eq $("$v1","$v2" | Sort-Object {[version] $_} | Select-Object -first 1))
+    $maxLength = [Math]::Max($version1Parts.Length, $version2parts.Length)
+    # First parts are equal, compare subsequent parts
+    for ($i = 1; $i -lt $maxLength; $i++) {
+        $version1part = if ($i -lt $version1Parts.Length) { $version1Parts[$i] } else { '0' }
+        $version2part = if ($i -lt $version2Parts.Length) { $version2Parts[$i] } else { '0' }
+
+        if ($version1part -eq $version2part) {
+            continue
+        }
+
+        # Security fix backport special case
+        # Ex: 3894.vd0f0248b_a_fc4 < 3894.3896.vca_2c931e7935
+        # -> normal incrementals version includes a "v" as first char of second part
+        # -> security fix backport adds the backport source first part as second part
+        # https://github.com/jenkinsci/workflow-cps-plugin/releases/tag/3894.vd0f0248b_a_fc4
+        # https://github.com/jenkinsci/workflow-cps-plugin/releases/tag/3894.3896.vca_2c931e7935
+        # If only the nth part of $version1 starts with a "v", then $version1 is older
+        if ($version1part.Substring(0,1) -eq 'v' -and $version2part.Substring(0,1) -ne 'v') {
+            return $true
+        }
+
+        # Try numeric comparison first, fall back to string comparison
+        $num1 = 0
+        $num2 = 0
+        $isNum1 = [int]::TryParse($version1part, [ref]$num1)
+        $isNum2 = [int]::TryParse($version2part, [ref]$num2)
+
+        if ($isNum1 -and $isNum2) {
+            # Both are numeric, compare as integers
+            return ($num1 -lt $num2)
+        } else {
+            # At least one is not numeric, use string comparison
+            return ($version1part -lt $version2part)
+        }
+    }
 }
 
 function Get-EnvOrDefault($name, $def) {
