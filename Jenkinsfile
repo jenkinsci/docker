@@ -50,7 +50,7 @@ stage('Build') {
                             */
                             stage("Build ${imageType}") {
                                 infra.withDockerCredentials {
-                                    powershell './make.ps1'
+                                    powershell './make.ps1 build'
                                 }
                             }
 
