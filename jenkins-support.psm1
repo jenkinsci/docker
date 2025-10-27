@@ -41,10 +41,18 @@ function Compare-VersionLessThan([string] $version1 = '', [string] $version2 = '
             return $true
         }
 
-        if ($version1part -lt $version2part) {
-            return $true
+        # Try numeric comparison first, fall back to string comparison
+        $num1 = 0
+        $num2 = 0
+        $isNum1 = [int]::TryParse($version1part, [ref]$num1)
+        $isNum2 = [int]::TryParse($version2part, [ref]$num2)
+
+        if ($isNum1 -and $isNum2) {
+            # Both are numeric, compare as integers
+            return ($num1 -lt $num2)
         } else {
-            return $false
+            # At least one is not numeric, use string comparison
+            return ($version1part -lt $version2part)
         }
     }
 }
