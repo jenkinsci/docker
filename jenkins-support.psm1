@@ -22,6 +22,7 @@ function Compare-VersionLessThan([string] $version1 = '', [string] $version2 = '
     }
 
     $maxLength = [Math]::Max($version1Parts.Length, $version2parts.Length)
+    # First parts are equal, compare subsequent parts
     for ($i = 1; $i -lt $maxLength; $i++) {
         $version1part = if ($i -lt $version1Parts.Length) { $version1Parts[$i] } else { '0' }
         $version2part = if ($i -lt $version2Parts.Length) { $version2Parts[$i] } else { '0' }
@@ -36,7 +37,7 @@ function Compare-VersionLessThan([string] $version1 = '', [string] $version2 = '
         # -> security fix backport adds the backport source first part as second part
         # https://github.com/jenkinsci/workflow-cps-plugin/releases/tag/3894.vd0f0248b_a_fc4
         # https://github.com/jenkinsci/workflow-cps-plugin/releases/tag/3894.3896.vca_2c931e7935
-        # If only the second part of $1 starts with a "v", then $1 is older
+        # If only the nth part of $version1 starts with a "v", then $version1 is older
         if ($version1part.Substring(0,1) -eq 'v' -and $version2part.Substring(0,1) -ne 'v') {
             return $true
         }
