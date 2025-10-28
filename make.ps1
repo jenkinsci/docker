@@ -70,15 +70,18 @@ $baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
 Write-Host "= PREPARE: List of $Organisation/$Repository images and tags to be processed:"
 Invoke-Expression "$baseDockerCmd config"
 
-Write-Host '= BUILD: Building all images...'
-switch ($DryRun) {
-    $true { Write-Host "(dry-run) $baseDockerBuildCmd" }
-    $false { Invoke-Expression $baseDockerBuildCmd }
-}
-Write-Host '= BUILD: Finished building all images.'
+if($target -eq 'build') {
+    Write-Host '= BUILD: Building all images...'
+    switch ($DryRun) {
+        $true { Write-Host "(dry-run) $baseDockerBuildCmd" }
+        $false { Invoke-Expression $baseDockerBuildCmd }
+    }
+    Write-Host '= BUILD: Finished building all images.'
 
-if($lastExitCode -ne 0 -and !$DryRun) {
-    exit $lastExitCode
+    if($lastExitCode -ne 0 -and !$DryRun) {
+        Write-Error "= BUILD: failed!"
+        exit $lastExitCode
+    }
 }
 
 function Test-Image {

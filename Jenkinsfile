@@ -50,7 +50,7 @@ stage('Build') {
                             */
                             stage("Build ${imageType}") {
                                 infra.withDockerCredentials {
-                                    powershell './make.ps1'
+                                    powershell './make.ps1 build'
                                 }
                             }
 
@@ -89,6 +89,7 @@ stage('Build') {
                                     stage('Publish') {
                                         infra.withDockerCredentials {
                                             withEnv(['DOCKERHUB_ORGANISATION=jenkins', 'DOCKERHUB_REPO=jenkins']) {
+                                                powershell './make.ps1 build'
                                                 powershell './make.ps1 publish'
                                             }
                                         }
