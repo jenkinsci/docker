@@ -98,6 +98,10 @@ variable "TRIXIE_TAG" {
   default = "20251020"
 }
 
+variable "UBI9_TAG" {
+  default = "9.6-1760340943"
+}
+
 # ----  user-defined functions ----
 
 # return a tag prefixed by the Jenkins version
