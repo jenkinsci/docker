@@ -23,7 +23,7 @@ services:
       args:
         COMMIT_SHA: ${COMMIT_SHA}
         JAVA_HOME: "C:/openjdk-21"
-        JAVA_VERSION: 21.0.8_9
+        JAVA_VERSION: 21.0.9_10
         WAR_SHA: ${WAR_SHA}
         JENKINS_VERSION: ${JENKINS_VERSION}
         WAR_URL: ${WAR_URL}
