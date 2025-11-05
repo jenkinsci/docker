@@ -1,0 +1,63 @@
+---
+name: Bump UBI9 version
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "{{ .github.branch }}"
+
+sources:
+  latestVersion:
+    name: "Get latest UBI9 Linux version"
+    kind: shell
+    spec:
+      command: bash -x updatecli/scripts/ubi9-latest-tag.sh
+
+conditions:
+  checkUbi9DockerImage:
+    kind: dockerimage
+    name: Check if container image "ubi9" is available
+    sourceid: latestVersion
+    spec:
+      architectures:
+        - linux/amd64
+        - linux/arm64
+        - linux/ppc64le
+      image: registry.access.redhat.com/ubi9
+
+targets:
+  updateDockerfile:
+    name: "Update value of base image (ARG UBI9_TAG) in Dockerfile"
+    kind: dockerfile
+    sourceid: latestVersion
+    spec:
+      file: rhel/ubi9/hotspot/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: UBI9_TAG
+    scmid: default
+  updateDockerBake:
+    name: "Update default value of variable UBI9_TAG in docker-bake.hcl"
+    kind: hcl
+    sourceid: latestVersion
+    spec:
+      file: docker-bake.hcl
+      path: variable.UBI9_TAG.default
+    scmid: default
+
+actions:
+  default:
+    kind: github/pullrequest
+    scmid: default
+    title: Bump UBI9 version to {{ source "latestVersion" }}
+    spec:
+      labels:
+        - dependencies
+        - rhel-ubi9
