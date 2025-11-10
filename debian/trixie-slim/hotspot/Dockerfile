@@ -2,7 +2,7 @@ ARG TRIXIE_TAG=20251103
 
 FROM debian:trixie-"${TRIXIE_TAG}"-slim AS jre-build
 
-ARG JAVA_VERSION=17.0.16_8
+ARG JAVA_VERSION=17.0.17_10
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
