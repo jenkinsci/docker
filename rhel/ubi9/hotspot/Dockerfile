@@ -1,4 +1,4 @@
-ARG UBI9_TAG=9.6-1760340943
+ARG UBI9_TAG=9.7-1762948793
 FROM registry.access.redhat.com/ubi9/ubi:${UBI9_TAG} AS jre-build
 
 ARG JAVA_VERSION=17.0.17_10
