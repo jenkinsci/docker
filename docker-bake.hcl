@@ -99,7 +99,7 @@ variable "TRIXIE_TAG" {
 }
 
 variable "UBI9_TAG" {
-  default = "9.7-1762948793"
+  default = "9.7-1763340522"
 }
 
 # ----  user-defined functions ----
