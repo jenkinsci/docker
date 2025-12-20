@@ -1,47 +1,4 @@
-# ---- groups ----
-
-group "linux" {
-  targets = [
-    "alpine_jdk17",
-    "alpine_jdk21",
-    "debian_jdk17",
-    "debian_jdk21",
-    "debian_slim_jdk17",
-    "debian_slim_jdk21",
-    "rhel_ubi9_jdk17",
-    "rhel_ubi9_jdk21",
-  ]
-}
-
-group "linux-arm64" {
-  targets = [
-    "alpine_jdk21",
-    "debian_jdk17",
-    "debian_jdk21",
-    "debian_slim_jdk21",
-    "rhel_ubi9_jdk17",
-    "rhel_ubi9_jdk21",
-  ]
-}
-
-group "linux-s390x" {
-  targets = [
-    "debian_jdk17",
-    "debian_jdk21",
-  ]
-}
-
-group "linux-ppc64le" {
-  targets = [
-    "debian_jdk17",
-    "debian_jdk21",
-    "rhel_ubi9_jdk17",
-    "rhel_ubi9_jdk21",
-  ]
-}
-
-# ---- variables ----
-
+## Variables
 variable "JENKINS_VERSION" {
   default = "2.504"
 }
@@ -102,47 +59,7 @@ variable "UBI9_TAG" {
   default = "9.7-1764794285"
 }
 
-# ----  user-defined functions ----
-
-# return a tag prefixed by the Jenkins version
-function "_tag_jenkins_version" {
-  params = [tag]
-  result = notequal(tag, "") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-${tag}" : "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}"
-}
-
-# return a tag optionaly prefixed by the Jenkins version
-function "tag" {
-  params = [prepend_jenkins_version, tag]
-  result = equal(prepend_jenkins_version, true) ? _tag_jenkins_version(tag) : "${REGISTRY}/${JENKINS_REPO}:${tag}"
-}
-
-# return a weekly optionaly prefixed by the Jenkins version
-function "tag_weekly" {
-  params = [prepend_jenkins_version, tag]
-  result = equal(LATEST_WEEKLY, "true") ? tag(prepend_jenkins_version, tag) : ""
-}
-
-# return a LTS optionaly prefixed by the Jenkins version
-function "tag_lts" {
-  params = [prepend_jenkins_version, tag]
-  result = equal(LATEST_LTS, "true") ? tag(prepend_jenkins_version, tag) : ""
-}
-
-# return WAR_URL if not empty, get.jenkins.io URL depending on JENKINS_VERSION release line otherwise
-function "war_url" {
-  # If JENKINS_VERSION has more than one sequence of digits with a trailing literal '.', this is LTS
-  # 2.523 has only one sequence of digits with a trailing literal '.'
-  # 2.516.1 has two sequences of digits with a trailing literal '.'
-  params = []
-  result = (notequal(WAR_URL, "")
-    ? WAR_URL
-    : (length(regexall("[0-9]+[.]", JENKINS_VERSION)) < 2
-      ? "https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war"
-  : "https://get.jenkins.io/war-stable/${JENKINS_VERSION}/jenkins.war"))
-}
-
-# ---- targets ----
-
+## Targets
 target "alpine_jdk17" {
   dockerfile = "alpine/hotspot/Dockerfile"
   context    = "."
@@ -319,4 +236,83 @@ target "rhel_ubi9_jdk21" {
     tag_lts(true, "lts-rhel-ubi9-jdk21")
   ]
   platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le"]
+}
+
+## Groups
+group "linux" {
+  targets = [
+    "alpine_jdk17",
+    "alpine_jdk21",
+    "debian_jdk17",
+    "debian_jdk21",
+    "debian_slim_jdk17",
+    "debian_slim_jdk21",
+    "rhel_ubi9_jdk17",
+    "rhel_ubi9_jdk21",
+  ]
+}
+
+group "linux-arm64" {
+  targets = [
+    "alpine_jdk21",
+    "debian_jdk17",
+    "debian_jdk21",
+    "debian_slim_jdk21",
+    "rhel_ubi9_jdk17",
+    "rhel_ubi9_jdk21",
+  ]
+}
+
+group "linux-s390x" {
+  targets = [
+    "debian_jdk17",
+    "debian_jdk21",
+  ]
+}
+
+group "linux-ppc64le" {
+  targets = [
+    "debian_jdk17",
+    "debian_jdk21",
+    "rhel_ubi9_jdk17",
+    "rhel_ubi9_jdk21",
+  ]
+}
+
+## Common functions
+# return a tag prefixed by the Jenkins version
+function "_tag_jenkins_version" {
+  params = [tag]
+  result = notequal(tag, "") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-${tag}" : "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}"
+}
+
+# return a tag optionaly prefixed by the Jenkins version
+function "tag" {
+  params = [prepend_jenkins_version, tag]
+  result = equal(prepend_jenkins_version, true) ? _tag_jenkins_version(tag) : "${REGISTRY}/${JENKINS_REPO}:${tag}"
+}
+
+# return a weekly optionaly prefixed by the Jenkins version
+function "tag_weekly" {
+  params = [prepend_jenkins_version, tag]
+  result = equal(LATEST_WEEKLY, "true") ? tag(prepend_jenkins_version, tag) : ""
+}
+
+# return a LTS optionaly prefixed by the Jenkins version
+function "tag_lts" {
+  params = [prepend_jenkins_version, tag]
+  result = equal(LATEST_LTS, "true") ? tag(prepend_jenkins_version, tag) : ""
+}
+
+# return WAR_URL if not empty, get.jenkins.io URL depending on JENKINS_VERSION release line otherwise
+function "war_url" {
+  # If JENKINS_VERSION has more than one sequence of digits with a trailing literal '.', this is LTS
+  # 2.523 has only one sequence of digits with a trailing literal '.'
+  # 2.516.1 has two sequences of digits with a trailing literal '.'
+  params = []
+  result = (notequal(WAR_URL, "")
+    ? WAR_URL
+    : (length(regexall("[0-9]+[.]", JENKINS_VERSION)) < 2
+      ? "https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war"
+  : "https://get.jenkins.io/war-stable/${JENKINS_VERSION}/jenkins.war"))
 }
