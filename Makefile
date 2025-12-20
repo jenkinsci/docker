@@ -69,7 +69,7 @@ build-%: check-reqs
 show:
 	@$(bake_base_cli) --progress=quiet linux --print | jq
 
-showtags:
+tags:
 	@make show | jq -r '.target[].tags[]' | sort
 
 list: check-reqs
