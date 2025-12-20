@@ -1,0 +1,11 @@
+docker.io/jenkins/jenkins:2.504
+docker.io/jenkins/jenkins:2.504-alpine
+docker.io/jenkins/jenkins:2.504-alpine-jdk17
+docker.io/jenkins/jenkins:2.504-alpine-jdk21
+docker.io/jenkins/jenkins:2.504-jdk17
+docker.io/jenkins/jenkins:2.504-jdk21
+docker.io/jenkins/jenkins:2.504-rhel-ubi9-jdk17
+docker.io/jenkins/jenkins:2.504-rhel-ubi9-jdk21
+docker.io/jenkins/jenkins:2.504-slim
+docker.io/jenkins/jenkins:2.504-slim-jdk17
+docker.io/jenkins/jenkins:2.504-slim-jdk21

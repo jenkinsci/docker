@@ -14,6 +14,26 @@ function assert {
     fi
 }
 
+# Assert that golden file $1 matches the outputof a command $2
+assert_matches_golden() {
+    local golden="$1"
+    shift
+    local golden_path="tests/golden/${golden}.txt"
+
+    if [[ ! -f "${golden_path}" ]]; then
+        echo "Golden file '${golden_path}' does not exist"
+        return 1
+    fi
+
+    # Run the command passed as arguments and capture its output
+    local output="output_${golden}.log"
+    "$@" > "${output}"
+
+    # Compare with golden file
+    diff -u "${golden_path}" <(cat "${output}") || rm "${output}"
+    rm "${output}"
+}
+
 # Retry a command $1 times until it succeeds. Wait $2 seconds between retries.
 function retry {
     local attempts=$1
