@@ -31,7 +31,7 @@ assert_matches_golden() {
 
     # Compare with golden file
     diff -u "${golden_path}" <(cat "${output}") || rm "${output}"
-    rm "${output}"
+    rm "${output}" || true
 }
 
 # Retry a command $1 times until it succeeds. Wait $2 seconds between retries.
