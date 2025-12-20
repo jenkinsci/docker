@@ -26,12 +26,12 @@ assert_matches_golden() {
     fi
 
     # Run the command passed as arguments and capture its output
-    local output="output_${golden}.log"
+    local output
+    output="$(mktemp)"
     "$@" > "${output}"
 
     # Compare with golden file
-    diff -u "${golden_path}" <(cat "${output}") || rm "${output}"
-    rm "${output}" || true
+    diff -u "${golden_path}" <(cat "${output}")
 }
 
 # Retry a command $1 times until it succeeds. Wait $2 seconds between retries.

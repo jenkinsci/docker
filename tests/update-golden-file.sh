@@ -66,8 +66,8 @@ echo
 echo "Golden file to ${action}: '${golden_file}'"
 read -rp "Proceed? [y/N] " answer
 
-if [[ "$answer" =~ ^[Yy]$ ]]; then
-    mkdir -p "$(dirname "$golden_path")"
+if [[ "${answer}" =~ ^[Yy]$ ]]; then
+    mkdir -p "$(dirname "${golden_path}")"
     mv "${tmp}" "${golden_path}"
     echo "Golden file '${golden_file}' ${action}d."
 else
