@@ -86,6 +86,7 @@ Tests compare the current output of the code against this "golden" reference to 
 They are treated as contract artifacts, not test fixtures.
 
 Golden files may be updated only when:
+
 * Output behavior is intentionally changed
 * A bug fix corrects previously incorrect output
 * A new test case is added
