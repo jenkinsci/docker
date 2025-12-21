@@ -108,8 +108,8 @@ stage('Build') {
                 'alpine_jdk21',
                 'debian_jdk17',
                 'debian_jdk21',
-                'debian_slim_jdk17',
-                'debian_slim_jdk21',
+                'debian-slim_jdk17',
+                'debian-slim_jdk21',
                 'rhel_ubi9_jdk17',
                 'rhel_ubi9_jdk21',
             ]
