@@ -14,7 +14,7 @@ function assert {
     fi
 }
 
-# Assert that golden file $1 matches the outputof a command $2
+# Assert that golden file $1 matches the output of a command $2
 assert_matches_golden() {
     local golden="$1"
     shift
