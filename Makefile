@@ -70,7 +70,7 @@ show:
 	@$(bake_base_cli) --progress=quiet linux --print | jq
 
 tags:
-	@make show | jq -r '.target[].tags[]' | LC_ALL=C sort
+	@make show | jq -r '.target[].tags[]' | LC_ALL=C sort -u
 
 list: check-reqs
 	@set -x; make --silent show | jq -r '.target | path(.. | select(.platforms[] | contains("linux/$(ARCH)"))?) | add'
