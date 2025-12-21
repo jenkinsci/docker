@@ -79,6 +79,47 @@ DISABLE_PARALLEL_TESTS=true make test-alpine_jdk17
 TEST_SUITES=./tests/functions.bats make test-debian_jdk21
 --
 
+=== Golden files
+
+A golden file (sometimes called a snapshot) is a file that contains the expected output of a program or function.
+Tests compare the current output of the code against this "golden" reference to detect regressions or unintended changes.
+They are treated as contract artifacts, not test fixtures.
+
+Golden files may be updated only when:
+
+* Output behavior is intentionally changed
+* A bug fix corrects previously incorrect output
+* A new test case is added
+
+Golden updates must be reviewed like code.
+
+If your work implies golden file changes, those changes must be committed:
+* In the same commit as the behavior change
+* With a commit message explaining why output changed
+
+Golden updates must never be automatic.
+
+==== How to update a golden file
+
+* Reproduce output manually
+* Inspect output
+* Update the golden file explicitly
+* Run tests
+
+To update a golden file, you can use the dedicated ./tests/update-golden-file.sh helper script.
+
+Example if there are new LTS tags:
+[source,bash]
+--
+./tests/update-golden-file.sh expected_tags_latest_lts make tags LATEST_LTS=true
+--
+
+Then ensure corresponding tests are passing with:
+[source,bash]
+--
+bats ./tests/tags.bats
+--
+
 == Multiarch support
 
 The buildx tool is used to build our multiarch images, this relies on either QEMU for emulating the architecture being built, or a remote builder configured for the required platform(s).
