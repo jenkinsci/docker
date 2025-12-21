@@ -106,7 +106,7 @@ Golden updates must never be automatic.
 * Update the golden file explicitly
 * Run tests
 
-To update a golden file, you can use the dedicated ./tests/update-golden-file.sh helpder script.
+To update a golden file, you can use the dedicated ./tests/update-golden-file.sh helper script.
 
 Example if there are new LTS tags:
 [source,bash]
