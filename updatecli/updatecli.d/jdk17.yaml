@@ -63,22 +63,8 @@ targets:
       key: $.services.jdk17.build.args.JAVA_VERSION
     scmid: default
   ## Dockerfiles
-  # Setting default JAVA_VERSION ARG to current Jenkins default JDK17
-  setJDK17VersionAlpine:
-    name: "Bump JDK17 version for Linux images in the Alpine Linux Dockerfile"
-    kind: dockerfile
-    transformers:
-      - replacer:
-          from: "+"
-          to: "_"
-    spec:
-      file: alpine/hotspot/Dockerfile
-      instruction:
-        keyword: ARG
-        matcher: JAVA_VERSION
-    scmid: default
-  setJDK17VersionDebian:
-    name: "Bump JDK17 version for Linux images in the Debian Dockerfiles"
+  setJDK17Version:
+    name: "Bump JDK17 version for Linux images in the Dockerfiles"
     kind: dockerfile
     transformers:
       - replacer:
@@ -86,34 +72,10 @@ targets:
           to: "_"
     spec:
       files:
-        - debian/trixie/hotspot/Dockerfile
-        - debian/trixie-slim/hotspot/Dockerfile
-      instruction:
-        keyword: ARG
-        matcher: JAVA_VERSION
-    scmid: default
-  setJDK17VersionRhel:
-    name: "Bump JDK17 version for Linux images in the Rhel Dockerfile"
-    kind: dockerfile
-    transformers:
-      - replacer:
-          from: "+"
-          to: "_"
-    spec:
-      file: rhel/ubi9/hotspot/Dockerfile
-      instruction:
-        keyword: ARG
-        matcher: JAVA_VERSION
-    scmid: default
-  setJDK17VersionWindowsDockerImage:
-    name: "Bump default JDK17 version for Linux images in the Windows Dockerfile"
-    kind: dockerfile
-    transformers:
-      - replacer:
-          from: "+"
-          to: "_"
-    spec:
-      file: windows/windowsservercore/hotspot/Dockerfile
+        - alpine/hotspot/Dockerfile
+        - debian/Dockerfile
+        - rhel/ubi9/hotspot/Dockerfile
+        - windows/windowsservercore/hotspot/Dockerfile
       instruction:
         keyword: ARG
         matcher: JAVA_VERSION
