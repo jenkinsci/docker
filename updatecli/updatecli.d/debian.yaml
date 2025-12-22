@@ -1,5 +1,5 @@
 ---
-name: Bump Debian Trixie version
+name: Bump Debian version
 
 scms:
   default:
@@ -14,42 +14,50 @@ scms:
       branch: "{{ .github.branch }}"
 
 sources:
-  trixieLatestVersion:
-    kind: dockerimage
-    name: "Get the latest Debian Trixie Linux version"
+  releaseLine:
+    kind: hcl
+    name: "Get the current Debian release line"
+    spec:
+      file: docker-bake.hcl
+      path: variable.DEBIAN_RELEASE_LINE.default
     transformers:
-      - trimprefix: "trixie-"
+      - addsuffix: "-"
+  latestVersion:
+    kind: dockerimage
+    name: "Get the latest Debian version"
     spec:
       image: "debian"
-      tagfilter: "trixie-*"
+      tagfilter: >-
+        {{ source "releaseLine" }}
       versionfilter:
         kind: regex
         pattern: >-
-          trixie-\d+$
+          {{ source "releaseLine" }}\d+$
+    transformers:
+      - trimprefix: >-
+          {{ source "releaseLine" }}
 
 conditions:
   testDockerfileArg:
-    name: "Does the Dockerfile have an ARG instruction for the Debian Trixie & Trixie Slim Linux version?"
+    name: "Does the Dockerfile have an ARG instruction for the Debian version?"
     kind: dockerfile
     disablesourceinput: true
     spec:
-      files:
-        - debian/trixie/hotspot/Dockerfile
-        - debian/trixie-slim/hotspot/Dockerfile
+      file: debian/Dockerfile
       instruction:
         keyword: "ARG"
-        matcher: "TRIXIE_TAG"
+        matcher: "DEBIAN_VERSION"
   testVersionInBakeFile:
-    name: "Does the bake file have variable TRIXIE_TAG"
+    name: "Does the bake file have variable DEBIAN_VERSION"
     kind: file
     disablesourceinput: true
     spec:
       file: docker-bake.hcl
-      matchpattern: "(.*TRIXIE_TAG.*)"
+      matchpattern: "(.*DEBIAN_VERSION.*)"
   checkArchitecturesAvailability:
     kind: dockerimage
     name: Check if container image is available for all architectures
-    sourceid: trixieLatestVersion
+    sourceid: latestVersion
     spec:
       image: "debian"
       architectures:
@@ -60,34 +68,30 @@ conditions:
 
 targets:
   updateDockerBake:
-    name: "Update the value of the base image (ARG TRIXIE_TAG) in the docker-bake.hcl"
-    kind: file
-    sourceid: trixieLatestVersion
+    name: "Update the value of the base image DEBIAN_VERSION in the docker-bake.hcl"
+    kind: hcl
+    sourceid: latestVersion
     spec:
       file: docker-bake.hcl
-      matchpattern: >-
-        variable(.*)"TRIXIE_TAG"(.*){(.*)(\r\n|\r|\n)(.*)default(.*)=(.*)
-      replacepattern: >-
-        variable${1}"TRIXIE_TAG"${2}{${3}${4}${5}default${6}= "{{ source "trixieLatestVersion" }}"
+      path: variable.DEBIAN_VERSION.default
     scmid: default
   updateDockerfile:
-    name: "Update the value of the base image (ARG TRIXIE_TAG) in the Dockerfiles"
+    name: "Update the value of the base image (ARG DEBIAN_VERSION) in the Dockerfile"
     kind: dockerfile
-    sourceid: trixieLatestVersion
+    sourceid: latestVersion
     spec:
-      files:
-        - debian/trixie/hotspot/Dockerfile
-        - debian/trixie-slim/hotspot/Dockerfile
+      file: debian/Dockerfile
       instruction:
         keyword: "ARG"
-        matcher: "TRIXIE_TAG"
+        matcher: "DEBIAN_VERSION"
     scmid: default
 actions:
   default:
     kind: github/pullrequest
     scmid: default
-    title: Bump Debian Trixie version to {{ source "trixieLatestVersion" }}
+    title: Bump Debian version to {{ source "latestVersion" }}
     spec:
       labels:
         - dependencies
         - debian
+        - debian-slim
