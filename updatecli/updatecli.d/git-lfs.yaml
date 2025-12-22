@@ -29,13 +29,11 @@ sources:
 
 targets:
   updateVersion:
-    name: Update `git-lfs` version in debian dockerfiles
+    name: Update `git-lfs` version in debian dockerfile
     sourceid: lastReleaseVersion
     kind: dockerfile
     spec:
-      files:
-        - debian/trixie/hotspot/Dockerfile
-        - debian/trixie-slim/hotspot/Dockerfile
+      file: debian/Dockerfile
       instruction:
         keyword: "ARG"
         matcher: "GIT_LFS_VERSION"
