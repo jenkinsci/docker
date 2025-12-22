@@ -31,7 +31,15 @@ if(($args.Count -eq 0) -or ($args[0] -match "^--.*")) {
     $java_opts_array += '-Xrunjdwp:server=y,transport=dt_socket,address=5005,suspend=y'
   }
 
-  $jenkins_opts_array = $env:JENKINS_OPTS -split ' '
+  # Add --enable-future-java flag for Java 25+
+  $jenkins_opts_array_temp = @()
+  $javaVersionOutput = & java -version 2>&1
+  $javaMajorVersion = $javaVersionOutput -replace '.*version "([^.]+).*', '$1'
+  if ($javaMajorVersion -ge 25) {
+    $jenkins_opts_array_temp = @('--enable-future-java')
+  }
+
+  $jenkins_opts_array = $jenkins_opts_array_temp + ($env:JENKINS_OPTS -split ' ')
   $proc = Start-Process -NoNewWindow -Wait -PassThru -FilePath 'java.exe' -ArgumentList "-D`"user.home=$JENKINS_HOME`" $java_opts_array -jar $JENKINS_WAR $jenkins_opts_array $args"
   if($null -ne $proc) {
     $proc.WaitForExit()
