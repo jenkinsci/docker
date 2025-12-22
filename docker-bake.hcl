@@ -1,4 +1,8 @@
 ## Variables
+variable "jdks_to_build" {
+  default = [17, 21]
+}
+
 variable "default_jdk" {
   default = 21
 }
@@ -71,58 +75,45 @@ variable "debian_variants" {
   default = ["debian", "debian-slim"]
 }
 
+## Internal variables
+variable "jdk_versions" {
+  default = {
+    17 = JAVA17_VERSION
+    21 = JAVA21_VERSION
+  }
+}
+
+variable "debian_variants" {
+  default = ["debian", "debian-slim"]
+}
+
 ## Targets
-target "alpine_jdk17" {
-  dockerfile = "alpine/hotspot/Dockerfile"
-  context    = "."
-  args = {
-    JENKINS_VERSION    = JENKINS_VERSION
-    WAR_SHA            = WAR_SHA
-    WAR_URL            = war_url()
-    COMMIT_SHA         = COMMIT_SHA
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    ALPINE_TAG         = ALPINE_FULL_TAG
-    JAVA_VERSION       = JAVA17_VERSION
-  }
-  tags = [
-    tag(true, "alpine-jdk17"),
-    tag_weekly(false, "alpine-jdk17"),
-    tag_weekly(false, "alpine${ALPINE_SHORT_TAG}-jdk17"),
-    tag_lts(false, "lts-alpine-jdk17"),
-  ]
-  platforms = ["linux/amd64"]
-}
-
-target "alpine_jdk21" {
-  dockerfile = "alpine/hotspot/Dockerfile"
-  context    = "."
-  args = {
-    JENKINS_VERSION    = JENKINS_VERSION
-    WAR_SHA            = WAR_SHA
-    WAR_URL            = war_url()
-    COMMIT_SHA         = COMMIT_SHA
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    ALPINE_TAG         = ALPINE_FULL_TAG
-    JAVA_VERSION       = JAVA21_VERSION
-  }
-  tags = [
-    tag(true, "alpine"),
-    tag(true, "alpine-jdk21"),
-    tag_weekly(false, "alpine"),
-    tag_weekly(false, "alpine-jdk21"),
-    tag_weekly(false, "alpine${ALPINE_SHORT_TAG}-jdk21"),
-    tag_lts(false, "lts-alpine"),
-    tag_lts(false, "lts-alpine-jdk21"),
-    tag_lts(true, "lts-alpine"),
-  ]
-  platforms = ["linux/amd64", "linux/arm64"]
-}
-
-target "debian_jdk17" {
+target "alpine" {
   matrix = {
+    jdk = jdks_to_build
+  }
+  name       = "alpine_jdk${jdk}"
+  dockerfile = "alpine/hotspot/Dockerfile"
+  context    = "."
+  args = {
+    JENKINS_VERSION    = JENKINS_VERSION
+    WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
+    COMMIT_SHA         = COMMIT_SHA
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    ALPINE_TAG         = ALPINE_FULL_TAG
+    JAVA_VERSION       = javaversion(jdk)
+  }
+  tags      = linux_tags("alpine", jdk)
+  platforms = platforms("alpine", jdk)
+}
+
+target "debian" {
+  matrix = {
+    jdk     = jdks_to_build
     variant = debian_variants
   }
-  name       = "${variant}_jdk17"
+  name       = "${variant}_jdk${jdk}"
   dockerfile = "debian/Dockerfile"
   context    = "."
   args = {
@@ -134,35 +125,17 @@ target "debian_jdk17" {
     DEBIAN_RELEASE_LINE = DEBIAN_RELEASE_LINE
     DEBIAN_VERSION      = DEBIAN_VERSION
     DEBIAN_VARIANT      = is_debian_slim(variant) ? "-slim" : ""
-    JAVA_VERSION        = JAVA17_VERSION
+    JAVA_VERSION        = javaversion(jdk)
   }
-  tags      = debian_tags(variant, 17)
-  platforms = debian_platforms(variant, 17)
+  tags      = linux_tags(variant, jdk)
+  platforms = platforms(variant, jdk)
 }
 
-target "debian_jdk21" {
+target "rhel_ubi9" {
   matrix = {
-    variant = debian_variants
+    jdk = jdks_to_build
   }
-  name       = "${variant}_jdk21"
-  dockerfile = "debian/Dockerfile"
-  context    = "."
-  args = {
-    JENKINS_VERSION     = JENKINS_VERSION
-    WAR_SHA             = WAR_SHA
-    WAR_URL             = war_url()
-    COMMIT_SHA          = COMMIT_SHA
-    PLUGIN_CLI_VERSION  = PLUGIN_CLI_VERSION
-    DEBIAN_RELEASE_LINE = DEBIAN_RELEASE_LINE
-    DEBIAN_VERSION      = DEBIAN_VERSION
-    DEBIAN_VARIANT      = is_debian_slim(variant) ? "-slim" : ""
-    JAVA_VERSION        = JAVA21_VERSION
-  }
-  tags      = debian_tags(variant, 21)
-  platforms = debian_platforms(variant, 21)
-}
-
-target "rhel_ubi9_jdk17" {
+  name       = "rhel_ubi9_jdk${jdk}"
   dockerfile = "rhel/ubi9/hotspot/Dockerfile"
   context    = "."
   args = {
@@ -171,48 +144,18 @@ target "rhel_ubi9_jdk17" {
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    JAVA_VERSION       = JAVA17_VERSION
+    JAVA_VERSION       = javaversion(jdk)
   }
-  tags = [
-    tag(true, "rhel-ubi9-jdk17"),
-    tag_weekly(false, "rhel-ubi9-jdk17"),
-    tag_lts(false, "lts-rhel-ubi9-jdk17"),
-    tag_lts(true, "lts-rhel-ubi9-jdk17")
-  ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le"]
-}
-
-target "rhel_ubi9_jdk21" {
-  dockerfile = "rhel/ubi9/hotspot/Dockerfile"
-  context    = "."
-  args = {
-    JENKINS_VERSION    = JENKINS_VERSION
-    WAR_SHA            = WAR_SHA
-    WAR_URL            = war_url()
-    COMMIT_SHA         = COMMIT_SHA
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    JAVA_VERSION       = JAVA21_VERSION
-  }
-  tags = [
-    tag(true, "rhel-ubi9-jdk21"),
-    tag_weekly(false, "rhel-ubi9-jdk21"),
-    tag_lts(false, "lts-rhel-ubi9-jdk21"),
-    tag_lts(true, "lts-rhel-ubi9-jdk21")
-  ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le"]
+  tags      = linux_tags("rhel", jdk)
+  platforms = platforms("rhel", jdk)
 }
 
 ## Groups
 group "linux" {
   targets = [
-    "alpine_jdk17",
-    "alpine_jdk21",
-    "debian_jdk17",
-    "debian_jdk21",
-    "debian-slim_jdk17",
-    "debian-slim_jdk21",
-    "rhel_ubi9_jdk17",
-    "rhel_ubi9_jdk21",
+    "alpine",
+    "debian",
+    "rhel_ubi9",
   ]
 }
 
@@ -287,19 +230,86 @@ function "is_default_jdk" {
   result = equal(default_jdk, jdk) ? true : false
 }
 
+# Return the complete Java version corresponding to the jdk passed as parameter
+function "javaversion" {
+  params = [jdk]
+  result = lookup(jdk_versions, jdk, "Unsupported JDK version")
+}
+
+# Return an array of platforms depending on the distribution and the jdk
+function "platforms" {
+  params = [distribution, jdk]
+  result = (
+    # RHEL
+    equal("rhel", distribution)
+    ? ["linux/amd64", "linux/arm64", "linux/ppc64le"]
+
+    # Alpine
+    : equal("alpine", distribution)
+    ? (equal(17, jdk)
+      ? ["linux/amd64"]
+    : ["linux/amd64", "linux/arm64"])
+
+    # Debian slim
+    : is_debian_slim(distribution)
+    ? (equal(17, jdk)
+      ? ["linux/amd64"]
+    : ["linux/amd64", "linux/arm64"])
+
+    # Default
+    : ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"]
+  )
+}
+
+# Return an array of tags for linux images depending on the distribution and the jdk
+function "linux_tags" {
+  params = [distribution, jdk]
+  result = (
+    ## Debian variants
+    is_debian_variant(distribution)
+    ? debian_tags(distribution, jdk)
+
+    ## Alpine
+    : equal("alpine", distribution)
+    ? [
+      ## Always publish explicit jdk tag
+      tag(true, "alpine-jdk${jdk}"),
+      tag_weekly(false, "alpine-jdk${jdk}"),
+      tag_weekly(false, "alpine${ALPINE_SHORT_TAG}-jdk${jdk}"),
+      tag_lts(false, "lts-alpine-jdk${jdk}"),
+
+      ## Default JDK extra tags
+      is_default_jdk(jdk) ? tag(true, "alpine") : "",
+      is_default_jdk(jdk) ? tag_weekly(false, "alpine") : "",
+      is_default_jdk(jdk) ? tag_lts(false, "lts-alpine") : "",
+      is_default_jdk(jdk) ? tag_lts(true, "lts-alpine") : "",
+    ]
+
+    ## RHEL UBI9
+    : equal("rhel", distribution)
+    ? [
+      tag(true, "rhel-ubi9-jdk${jdk}"),
+      tag_weekly(false, "rhel-ubi9-jdk${jdk}"),
+      tag_lts(false, "lts-rhel-ubi9-jdk${jdk}"),
+      tag_lts(true, "lts-rhel-ubi9-jdk${jdk}"),
+    ]
+
+    ## Fallback (should not happen)
+    : []
+  )
+}
+
 ## Debian specific functions
+# Return if the variant passed in parameter is a debian variant
+function "is_debian_variant" {
+  params = [variant]
+  result = contains(debian_variants, variant)
+}
+
 # Return if the variant passed in parameter is the debian slim one
 function "is_debian_slim" {
   params = [variant]
   result = equal("debian-slim", variant)
-}
-
-# Return an array of platforms for Debian images depending on their variant and the jdk
-function "debian_platforms" {
-  params = [variant, jdk]
-  result = (is_debian_slim(variant)
-    ? (equal(17, jdk) ? ["linux/amd64"] : ["linux/amd64", "linux/arm64"])
-  : ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"])
 }
 
 # Return text prefixed with "slim-" if the variant passed in parameter is the slim one
