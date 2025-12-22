@@ -1,4 +1,8 @@
 ## Variables
+variable "default_jdk" {
+  default = 21
+}
+
 variable "JENKINS_VERSION" {
   default = "2.504"
 }
@@ -51,12 +55,20 @@ variable "JAVA21_VERSION" {
   default = "21.0.9_10"
 }
 
-variable "TRIXIE_TAG" {
+variable "DEBIAN_RELEASE_LINE" {
+  default = "trixie"
+}
+
+variable "DEBIAN_VERSION" {
   default = "20251103"
 }
 
 variable "UBI9_TAG" {
   default = "9.7-1764794285"
+}
+
+variable "debian_variants" {
+  default = ["debian", "debian-slim"]
 }
 
 ## Targets
@@ -107,95 +119,47 @@ target "alpine_jdk21" {
 }
 
 target "debian_jdk17" {
-  dockerfile = "debian/trixie/hotspot/Dockerfile"
+  matrix = {
+    variant = debian_variants
+  }
+  name       = "${variant}_jdk17"
+  dockerfile = "debian/Dockerfile"
   context    = "."
   args = {
-    JENKINS_VERSION    = JENKINS_VERSION
-    WAR_SHA            = WAR_SHA
-    WAR_URL            = war_url()
-    COMMIT_SHA         = COMMIT_SHA
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    TRIXIE_TAG         = TRIXIE_TAG
-    JAVA_VERSION       = JAVA17_VERSION
+    JENKINS_VERSION     = JENKINS_VERSION
+    WAR_SHA             = WAR_SHA
+    WAR_URL             = war_url()
+    COMMIT_SHA          = COMMIT_SHA
+    PLUGIN_CLI_VERSION  = PLUGIN_CLI_VERSION
+    DEBIAN_RELEASE_LINE = DEBIAN_RELEASE_LINE
+    DEBIAN_VERSION      = DEBIAN_VERSION
+    DEBIAN_VARIANT      = is_debian_slim(variant) ? "-slim" : ""
+    JAVA_VERSION        = JAVA17_VERSION
   }
-  tags = [
-    tag(true, "jdk17"),
-    tag_weekly(false, "latest-jdk17"),
-    tag_weekly(false, "jdk17"),
-    tag_lts(false, "lts-jdk17"),
-    tag_lts(true, "lts-jdk17")
-  ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"]
+  tags      = debian_tags(variant, 17)
+  platforms = debian_platforms(variant, 17)
 }
 
 target "debian_jdk21" {
-  dockerfile = "debian/trixie/hotspot/Dockerfile"
+  matrix = {
+    variant = debian_variants
+  }
+  name       = "${variant}_jdk21"
+  dockerfile = "debian/Dockerfile"
   context    = "."
   args = {
-    JENKINS_VERSION    = JENKINS_VERSION
-    WAR_SHA            = WAR_SHA
-    WAR_URL            = war_url()
-    COMMIT_SHA         = COMMIT_SHA
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    TRIXIE_TAG         = TRIXIE_TAG
-    JAVA_VERSION       = JAVA21_VERSION
+    JENKINS_VERSION     = JENKINS_VERSION
+    WAR_SHA             = WAR_SHA
+    WAR_URL             = war_url()
+    COMMIT_SHA          = COMMIT_SHA
+    PLUGIN_CLI_VERSION  = PLUGIN_CLI_VERSION
+    DEBIAN_RELEASE_LINE = DEBIAN_RELEASE_LINE
+    DEBIAN_VERSION      = DEBIAN_VERSION
+    DEBIAN_VARIANT      = is_debian_slim(variant) ? "-slim" : ""
+    JAVA_VERSION        = JAVA21_VERSION
   }
-  tags = [
-    tag(true, ""),
-    tag(true, "jdk21"),
-    tag_weekly(false, "latest"),
-    tag_weekly(false, "latest-jdk21"),
-    tag_weekly(false, "jdk21"),
-    tag_lts(false, "lts"),
-    tag_lts(false, "lts-jdk21"),
-    tag_lts(true, "lts"),
-    tag_lts(true, "lts-jdk21")
-  ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"]
-}
-
-target "debian_slim_jdk17" {
-  dockerfile = "debian/trixie-slim/hotspot/Dockerfile"
-  context    = "."
-  args = {
-    JENKINS_VERSION    = JENKINS_VERSION
-    WAR_SHA            = WAR_SHA
-    WAR_URL            = war_url()
-    COMMIT_SHA         = COMMIT_SHA
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    TRIXIE_TAG         = TRIXIE_TAG
-    JAVA_VERSION       = JAVA17_VERSION
-  }
-  tags = [
-    tag(true, "slim-jdk17"),
-    tag_weekly(false, "slim-jdk17"),
-    tag_lts(false, "lts-slim-jdk17"),
-  ]
-  platforms = ["linux/amd64"]
-}
-
-target "debian_slim_jdk21" {
-  dockerfile = "debian/trixie-slim/hotspot/Dockerfile"
-  context    = "."
-  args = {
-    JENKINS_VERSION    = JENKINS_VERSION
-    WAR_SHA            = WAR_SHA
-    WAR_URL            = war_url()
-    COMMIT_SHA         = COMMIT_SHA
-    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    TRIXIE_TAG         = TRIXIE_TAG
-    JAVA_VERSION       = JAVA21_VERSION
-  }
-  tags = [
-    tag(true, "slim"),
-    tag(true, "slim-jdk21"),
-    tag_weekly(false, "slim"),
-    tag_weekly(false, "slim-jdk21"),
-    tag_lts(false, "lts-slim"),
-    tag_lts(false, "lts-slim-jdk21"),
-    tag_lts(true, "lts-slim"),
-  ]
-  platforms = ["linux/amd64", "linux/arm64"]
+  tags      = debian_tags(variant, 21)
+  platforms = debian_platforms(variant, 21)
 }
 
 target "rhel_ubi9_jdk17" {
@@ -245,8 +209,8 @@ group "linux" {
     "alpine_jdk21",
     "debian_jdk17",
     "debian_jdk21",
-    "debian_slim_jdk17",
-    "debian_slim_jdk21",
+    "debian-slim_jdk17",
+    "debian-slim_jdk21",
     "rhel_ubi9_jdk17",
     "rhel_ubi9_jdk21",
   ]
@@ -257,7 +221,7 @@ group "linux-arm64" {
     "alpine_jdk21",
     "debian_jdk17",
     "debian_jdk21",
-    "debian_slim_jdk21",
+    "debian-slim_jdk21",
     "rhel_ubi9_jdk17",
     "rhel_ubi9_jdk21",
   ]
@@ -315,4 +279,63 @@ function "war_url" {
     : (length(regexall("[0-9]+[.]", JENKINS_VERSION)) < 2
       ? "https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war"
   : "https://get.jenkins.io/war-stable/${JENKINS_VERSION}/jenkins.war"))
+}
+
+# Return "true" if the jdk passed as parameter is the same as the default jdk, "false" otherwise
+function "is_default_jdk" {
+  params = [jdk]
+  result = equal(default_jdk, jdk) ? true : false
+}
+
+## Debian specific functions
+# Return if the variant passed in parameter is the debian slim one
+function "is_debian_slim" {
+  params = [variant]
+  result = equal("debian-slim", variant)
+}
+
+# Return an array of platforms for Debian images depending on their variant and the jdk
+function "debian_platforms" {
+  params = [variant, jdk]
+  result = (is_debian_slim(variant)
+    ? (equal(17, jdk) ? ["linux/amd64"] : ["linux/amd64", "linux/arm64"])
+  : ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"])
+}
+
+# Return text prefixed with "slim-" if the variant passed in parameter is the slim one
+# Return only "slim" if the text passed in parameter is empty or "latest"
+function "slim_prefix" {
+  params = [variant, text]
+  result = (is_debian_slim(variant)
+    ? (equal("", text) ? "slim" : (equal("latest", text) ? "slim" : "slim-${text}"))
+  : text)
+}
+
+# Return text suffixed with "-slim" if the variant passed in parameter is the slim one
+# Return only "slim" if the text passed in parameter is empty
+function "slim_suffix" {
+  params = [variant, text]
+  result = (is_debian_slim(variant)
+    ? (equal("", text) ? "slim" : "${text}-slim")
+  : text)
+}
+
+# Return an array of tags for debian images depending on the variant and the jdk passed as parameters
+function "debian_tags" {
+  params = [variant, jdk]
+  result = [
+    ## Default tags including jdk
+    tag(true, slim_prefix(variant, "jdk${jdk}")),
+    tag_weekly(false, slim_prefix(variant, "jdk${jdk}")),
+    tag_lts(false, "${slim_suffix(variant, "lts")}-jdk${jdk}"),
+    # Tags for debian only
+    is_debian_slim(variant) ? "" : tag_weekly(false, slim_prefix(variant, "latest-jdk${jdk}")),
+    is_debian_slim(variant) ? "" : tag_lts(true, "${slim_suffix(variant, "lts")}-jdk${jdk}"),
+
+    ## If default jdk, short tags
+    is_default_jdk(jdk) ? tag(true, slim_prefix(variant, "")) : "",
+    is_default_jdk(jdk) ? tag_weekly(false, slim_prefix(variant, "latest")) : "",
+    is_default_jdk(jdk) ? tag_lts(false, slim_suffix(variant, "lts")) : "",
+    is_default_jdk(jdk) ? tag_lts(true, slim_suffix(variant, "lts")) : "",
+  ]
 }
