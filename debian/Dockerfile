@@ -1,6 +1,9 @@
 ARG TRIXIE_TAG=20251103
 
-FROM debian:trixie-"${TRIXIE_TAG}"-slim AS jre-build
+ARG DEBIAN_RELEASE_LINE=trixie
+ARG DEBIAN_VERSION=20251117
+ARG DEBIAN_VARIANT="-slim"
+FROM debian:"${DEBIAN_RELEASE_LINE}-${DEBIAN_VERSION}${DEBIAN_VARIANT}" AS jre-build
 
 ARG JAVA_VERSION=17.0.17_10
 
@@ -36,7 +39,7 @@ RUN case "$(jlink --version 2>&1)" in \
       --no-header-files \
       --output /javaruntime
 
-FROM debian:trixie-"${TRIXIE_TAG}"-slim AS controller
+FROM debian:"${DEBIAN_RELEASE_LINE}-${DEBIAN_VERSION}${DEBIAN_VARIANT}" AS controller
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
