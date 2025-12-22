@@ -52,12 +52,6 @@ if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
     jenkins_opts_array+=( "$item" )
   done < <([[ $JENKINS_OPTS ]] && xargs printf '%s\0' <<<"$JENKINS_OPTS")
 
-  # Add --enable-future-java flag for Java 25+
-  java_version=$(java -version 2>&1 | sed -n 's/.*version "\([^\.]*\).*/\1/p')
-  if [[ "${java_version}" -ge 25 ]]; then
-    jenkins_opts_array+=( "--enable-future-java" )
-  fi
-
   exec java -Duser.home="$JENKINS_HOME" "${java_opts_array[@]}" -jar "${JENKINS_WAR}" "${jenkins_opts_array[@]}" "$@"
 fi
 
