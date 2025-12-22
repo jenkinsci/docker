@@ -34,7 +34,7 @@ RUN case "$(jlink --version 2>&1)" in \
       --no-header-files \
       --output /javaruntime
 
-FROM registry.access.redhat.com/ubi9/ubi:9.7-1764794285 AS controller
+FROM registry.access.redhat.com/ubi9/ubi:9.7-1766364927 AS controller
 
 ENV LANG=C.UTF-8
 
