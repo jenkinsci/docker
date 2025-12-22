@@ -62,19 +62,19 @@ function get_sut_image {
     # Option --print for 'docker buildx bake' prints the JSON configuration on the stdout
     # Option --silent for 'make' suppresses the echoing of command so the output is valid JSON
     # The image name is the 1st of the "tags" array, on the first "image" found
-    make --silent show | jq -r ".target.\"${IMAGE}\".tags[0]"
+    make --silent show | jq -r '.target."'"${IMAGE}"'".tags[0]'
 }
 
 function get_jenkins_version() {
   test -n "${IMAGE:?"[sut_image] Please set the variable 'IMAGE' to the name of the image to test in 'docker-bake.hcl'."}"
 
-  make --silent show | jq -r ".target.\"${IMAGE}\".args.JENKINS_VERSION"
+  make --silent show | jq -r '.target."'"${IMAGE}"'".args.JENKINS_VERSION'
 }
 
 function get_commit_sha() {
   test -n "${IMAGE:?"[sut_image] Please set the variable 'IMAGE' to the name of the image to test in 'docker-bake.hcl'."}"
 
-  make --silent show | jq -r ".target.\"${IMAGE}\".args.COMMIT_SHA"
+  make --silent show | jq -r '.target."'"${IMAGE}"'".args.COMMIT_SHA'
 }
 
 function get_test_image {
