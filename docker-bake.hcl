@@ -75,10 +75,6 @@ variable "RHEL_RELEASE_LINE" {
   default = "ubi9"
 }
 
-variable "debian_variants" {
-  default = ["debian", "debian-slim"]
-}
-
 ## Internal variables
 variable "jdk_versions" {
   default = {
