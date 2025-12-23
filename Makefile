@@ -107,7 +107,7 @@ listarch-%: check-reqs
 bats:
 	git clone https://github.com/bats-core/bats-core bats ;\
 	cd bats ;\
-	git checkout 410dd229a5ed005c68167cc90ed0712ad2a1c909; # v1.7.0
+	git checkout 3bca150ec86275d6d9d5a4fd7d48ab8b6c6f3d87; # v1.13.0
 
 # Ensure all bats submodules are up to date and that the tests target folder exists
 prepare-test: bats check-reqs
