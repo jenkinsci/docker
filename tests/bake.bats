@@ -1,5 +1,8 @@
 #!/usr/bin/env bats
 
+# bats file_tags=test-suite:bake
+# bats file_tags=test-type:golden-file
+
 load test_helpers
 
 SUT_DESCRIPTION="docker bake"
