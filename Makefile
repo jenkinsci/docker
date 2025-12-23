@@ -105,12 +105,14 @@ test-%: prepare-test
 	@$(call check_image,$*)
 # Ensure that the image is built
 	@make --silent build-$*
+# Show bats version
+	@bats/bin/bats --version
 ifeq ($(CI), true)
 # Execute the test harness and write result to a TAP file
 	IMAGE=$* bats/bin/bats $(bats_flags) --formatter junit | tee target/junit-results-$*.xml
 else
 # Execute the test harness
-	IMAGE=$* bats/bin/bats $(bats_flags)
+	IMAGE=$* bats/bin/bats $(bats_flags) --timing
 endif
 
 test: prepare-test
