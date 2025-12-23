@@ -24,7 +24,8 @@ if (SIMULATE_LTS_BUILD) {
         'PUBLISH=false',
         'TAG_NAME=2.504.3',
         'JENKINS_VERSION=2.504.3',
-        'WAR_SHA=ea8883431b8b5ef6b68fe0e5817c93dc0a11def380054e7de3136486796efeb0'
+        'WAR_SHA=ea8883431b8b5ef6b68fe0e5817c93dc0a11def380054e7de3136486796efeb0',
+        'SIMULATED_BUILD=true'
     ]
 }
 
