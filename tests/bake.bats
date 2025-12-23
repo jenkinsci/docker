@@ -4,6 +4,12 @@ load test_helpers
 
 SUT_DESCRIPTION="docker bake"
 
+function setup() {
+  if [[ "${SIMULATED_BUILD:-}" == "true" ]]; then
+    skip "Simulated build, no golden file based tests"
+  fi
+}
+
 @test "[${SUT_DESCRIPTION}: tags] Default tags unchanged" {
   assert_matches_golden expected_tags make --silent tags
 }
