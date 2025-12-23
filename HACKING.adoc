@@ -60,7 +60,6 @@ Please note that:
 - You can disable the parallel execution by setting the environment variable `DISABLE_PARALLEL_TESTS` to the value `true`
 - Parallel execution is disabled if the commands `docker` or (GNU) `parallel` are not installed.
 
-
 You can restrict the execution to only a subset of test harness files. By setting the environment variable `TEST_SUITES`
 to the path of the bats test harness file to execute alone.
 
@@ -78,6 +77,20 @@ DISABLE_PARALLEL_TESTS=true make test-alpine_jdk17
 ## Only run the test suite `functions.bats` for the Debian JDK21 platform
 TEST_SUITES=./tests/functions.bats make test-debian_jdk21
 --
+
+You can also pass extra parameters to `bats` by setting `BATS_FLAGS`.
+
+Example:
+[source,bash]
+--
+## Run tests except those with a "test-type:golden-file" `bats` tag
+make test BATS_FLAGS="--filter-tags '\!test-type:golden-file'"
+
+## Add an extra parameter
+make test BATS_FLAGS="--filter-tags '\!test-type:golden-file' --verbose-run"
+--
+
+See https://bats-core.readthedocs.io/en/stable/usage.html for the list of `bats` options.
 
 === Golden files
 

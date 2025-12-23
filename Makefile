@@ -127,6 +127,10 @@ test-%: PARALLEL_JOBS ?= $(shell echo $$(( $(shell docker run --rm alpine grep -
 test-%: bats_flags += --jobs $(PARALLEL_JOBS)
 endif
 endif
+# Optional bats flags (see https://bats-core.readthedocs.io/en/stable/usage.html)
+ifneq (,$(BATS_FLAGS))
+test-%: bats_flags += $(BATS_FLAGS)
+endif
 test-%: prepare-test
 # Check that the image exists in the manifest
 	@$(call check_image,$*)
