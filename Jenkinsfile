@@ -193,9 +193,7 @@ stage('Build') {
                         }
 
                         if (architecture == currentArchitecture) {
-                            catchError(buildResult: 'SUCCESS', stageResult: 'NOT_BUILT') {
-                                error("Current architecture ${currentArchitecture} skipped as already build in other stages")
-                            }
+                            echo "Current architecture ${currentArchitecture} skipped as already build in other stages"
                             return
                         }
                         // sanity check that proves all images build on declared platforms not already built in other stages
