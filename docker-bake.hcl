@@ -323,7 +323,7 @@ function "is_debian_slim" {
 function "slim_prefix" {
   params = [variant, text]
   result = (is_debian_slim(variant)
-    ? (equal("", text) ? "slim" : (equal("latest", text) ? "slim" : "slim-${text}"))
+    ? (equal("", text) || equal("latest", text) ? "slim" : "slim-${text}")
   : text)
 }
 
