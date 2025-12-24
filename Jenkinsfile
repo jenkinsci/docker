@@ -153,20 +153,55 @@ stage('Build') {
                     }
                 }
             }
-            builds['multiarch-build'] = {
-                nodeWithTimeout('docker') {
-                    stage('Checkout') {
-                        deleteDir()
-                        checkout scm
-                    }
+            def allArchitectures = [
+                'amd64',
+                'arm64',
+                'ppc64le',
+                's390x'
+            ]
+            for (architecture in allArchitectures) {
+                builds[architecture] = {
+                    nodeWithTimeout('docker') {
+                        stage('Checkout') {
+                            deleteDir()
+                            checkout scm
+                        }
 
-                    // sanity check that proves all images build on declared platforms
-                    stage('Multi arch build') {
-                        infra.withDockerCredentials {
-                            sh '''
-                            make docker-init
-                            docker buildx bake --file docker-bake.hcl linux
-                            '''
+                        def currentArchitecture
+                        stage('Retrieve current architecture') {
+                            script {
+                                currentArchitecture = sh(script: '''
+                                    current_arch="$(uname -m)"
+                                    case "${current_arch}" in
+                                        x86_64)
+                                            echo amd64
+                                            ;;
+                                        aarch64|arm64)
+                                            echo arm64
+                                            ;;
+                                        s390*|ppc64le|riscv*)
+                                            echo "${current_arch}"
+                                            ;;
+                                        *)
+                                            echo "Unsupported architecture: ${current_arch}" >&2
+                                            exit 1
+                                            ;;
+                                    esac
+                                ''', returnStdout: true).trim()
+                            }
+                        }
+
+                        if (architecture == currentArchitecture) {
+                            catchError(buildResult: 'SUCCESS', stageResult: 'NOT_BUILT') {
+                                error("Current architecture ${currentArchitecture} skipped as already build in other stages")
+                            }
+                            return
+                        }
+                        // sanity check that proves all images build on declared platforms not already built in other stages
+                        stage("Multi arch build - ${architecture}") {
+                            infra.withDockerCredentials {
+                                sh "make docker-init archbuild-${architecture}"
+                            }
                         }
                     }
                 }
