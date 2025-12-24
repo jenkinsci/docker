@@ -45,7 +45,7 @@ updates:
 # RHEL UBI
 
 - package-ecosystem: docker
-  directory: "rhel/ubi9/hotspot"
+  directory: "rhel"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
