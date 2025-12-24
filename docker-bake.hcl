@@ -246,12 +246,8 @@ function "javaversion" {
 function "platforms" {
   params = [distribution, jdk]
   result = (
-    # RHEL
-    equal(current_rhel, distribution)
-    ? ["linux/amd64", "linux/arm64", "linux/ppc64le"]
-
     # Alpine
-    : equal("alpine", distribution)
+    is_alpine(distribution)
     ? (equal(17, jdk)
       ? ["linux/amd64"]
     : ["linux/amd64", "linux/arm64"])
@@ -262,7 +258,11 @@ function "platforms" {
       ? ["linux/amd64"]
     : ["linux/amd64", "linux/arm64"])
 
-    # Default
+    # RHEL
+    : is_rhel(distribution)
+    ? ["linux/amd64", "linux/arm64", "linux/ppc64le"]
+
+    # Default (Debian)
     : ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"]
   )
 }
@@ -275,41 +275,43 @@ function "linux_tags" {
     is_debian_variant(distribution)
     ? debian_tags(distribution, jdk)
 
-    ## Alpine
-    : equal("alpine", distribution)
-    ? [
+    : [
       ## Always publish explicit jdk tag
-      tag(true, "alpine-jdk${jdk}"),
-      tag_weekly(false, "alpine-jdk${jdk}"),
-      tag_weekly(false, "alpine${ALPINE_SHORT_TAG}-jdk${jdk}"),
-      tag_lts(false, "lts-alpine-jdk${jdk}"),
+      tag(true, "${distribution}-jdk${jdk}"),
+      tag_weekly(false, "${distribution}-jdk${jdk}"),
+      tag_lts(false, "lts-${distribution}-jdk${jdk}"),
 
-      ## Default JDK extra tags
-      is_default_jdk(jdk) ? tag(true, "alpine") : "",
-      is_default_jdk(jdk) ? tag_weekly(false, "alpine") : "",
-      is_default_jdk(jdk) ? tag_lts(false, "lts-alpine") : "",
-      is_default_jdk(jdk) ? tag_lts(true, "lts-alpine") : "",
+      # Special case for Alpine
+      is_alpine(distribution) ? tag_weekly(false, "alpine${ALPINE_SHORT_TAG}-jdk${jdk}") : "",
+
+      # Special case for RHEL
+      is_rhel(distribution) ? tag_lts(true, "lts-${distribution}-jdk${jdk}") : "",
+
+      ## Default JDK extra short tags (except for current rhel)
+      is_default_jdk(jdk) && !is_rhel(distribution) ? tag(true, distribution) : "",
+      is_default_jdk(jdk) && !is_rhel(distribution) ? tag_weekly(false, distribution) : "",
+      is_default_jdk(jdk) && !is_rhel(distribution) ? tag_lts(false, "lts-${distribution}") : "",
+      is_default_jdk(jdk) && !is_rhel(distribution) ? tag_lts(true, "lts-${distribution}") : "",
     ]
-
-    ## RHEL UBI9
-    : equal(current_rhel, distribution)
-    ? [
-      tag(true, "${current_rhel}-jdk${jdk}"),
-      tag_weekly(false, "${current_rhel}-jdk${jdk}"),
-      tag_lts(false, "lts-${current_rhel}-jdk${jdk}"),
-      tag_lts(true, "lts-${current_rhel}-jdk${jdk}"),
-    ]
-
-    ## Fallback (should not happen)
-    : []
   )
 }
 
-## Debian specific functions
-# Return if the variant passed in parameter is a debian variant
+# Return if the distribution passed in parameter is Alpine
+function "is_alpine" {
+  params = [distribution]
+  result = equal("alpine", distribution)
+}
+
+# Return if the distribution passed in parameter is Alpine
+function "is_rhel" {
+  params = [distribution]
+  result = equal(current_rhel, distribution)
+}
+
+# Return if the distribution passed in parameter is a debian variant
 function "is_debian_variant" {
-  params = [variant]
-  result = contains(debian_variants, variant)
+  params = [distribution]
+  result = contains(debian_variants, distribution)
 }
 
 # Return if the variant passed in parameter is the debian slim one
