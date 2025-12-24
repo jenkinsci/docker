@@ -201,7 +201,7 @@ stage('Build') {
                         // sanity check that proves all images build on declared platforms not already built in other stages
                         stage("Multi arch build - ${architecture}") {
                             infra.withDockerCredentials {
-                                sh "make docker-init archbuild-${architecture}"
+                                sh "make docker-init list-${architecture} archbuild-${architecture}"
                             }
                         }
                     }
