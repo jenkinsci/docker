@@ -159,7 +159,8 @@ stage('Build') {
                 'ppc64le',
                 's390x'
             ]
-            for (architecture in allArchitectures) {
+            for (a in allArchitectures) {
+                def architecture = a
                 builds[architecture] = {
                     nodeWithTimeout('docker') {
                         stage('Checkout') {
