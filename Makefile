@@ -10,7 +10,13 @@ export BUILDKIT_PROGRESS=plain
 export COMMIT_SHA=$(shell git rev-parse HEAD)
 
 current_arch := $(shell uname -m)
-export ARCH ?= $(shell case $(current_arch) in (x86_64) echo "amd64" ;; (aarch64|arm64) echo "arm64" ;; (s390*|riscv*|ppc64le) echo $(current_arch);; (*) echo "UNKNOWN-CPU";; esac)
+export ARCH ?= $(shell \
+	case $(current_arch) in \
+		(x86_64) echo "amd64" ;; \
+		(aarch64|arm64) echo "arm64" ;; \
+		(s390*|riscv*|ppc64le) echo $(current_arch);; \
+		(*) echo "UNKNOWN-CPU";; \
+	esac)
 
 all: hadolint shellcheck build test
 
