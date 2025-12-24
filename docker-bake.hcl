@@ -1,5 +1,5 @@
 ## Variables
-variable "jdks_to_build" {
+variable "jdk_list" {
   default = [17, 21]
 }
 
@@ -75,6 +75,10 @@ variable "debian_variants" {
   default = ["debian", "debian-slim"]
 }
 
+variable "DEFAULT_JDK_ONLY" {
+  default = "false"
+}
+
 ## Internal variables
 variable "jdk_versions" {
   default = {
@@ -90,7 +94,7 @@ variable "debian_variants" {
 ## Targets
 target "alpine" {
   matrix = {
-    jdk = jdks_to_build
+    jdk = jdks_to_build()
   }
   name       = "alpine_jdk${jdk}"
   dockerfile = "alpine/hotspot/Dockerfile"
@@ -110,7 +114,7 @@ target "alpine" {
 
 target "debian" {
   matrix = {
-    jdk     = jdks_to_build
+    jdk     = jdks_to_build()
     variant = debian_variants
   }
   name       = "${variant}_jdk${jdk}"
@@ -133,7 +137,7 @@ target "debian" {
 
 target "rhel_ubi9" {
   matrix = {
-    jdk = jdks_to_build
+    jdk = jdks_to_build()
   }
   name       = "rhel_ubi9_jdk${jdk}"
   dockerfile = "rhel/ubi9/hotspot/Dockerfile"
@@ -228,6 +232,12 @@ function "war_url" {
 function "is_default_jdk" {
   params = [jdk]
   result = equal(default_jdk, jdk) ? true : false
+}
+
+# Return the JDKs to build depending on the list of JDKs and DEFAULT_JDK_ONLY
+function "jdks_to_build" {
+  params = []
+  result = equal("true", DEFAULT_JDK_ONLY) ? [default_jdk] : jdk_list
 }
 
 # Return the complete Java version corresponding to the jdk passed as parameter
