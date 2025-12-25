@@ -12,9 +12,9 @@ debian_jdk21:linux/amd64
 debian_jdk21:linux/arm64
 debian_jdk21:linux/ppc64le
 debian_jdk21:linux/s390x
-rhel_ubi9_jdk17:linux/amd64
-rhel_ubi9_jdk17:linux/arm64
-rhel_ubi9_jdk17:linux/ppc64le
-rhel_ubi9_jdk21:linux/amd64
-rhel_ubi9_jdk21:linux/arm64
-rhel_ubi9_jdk21:linux/ppc64le
+rhel_jdk17:linux/amd64
+rhel_jdk17:linux/arm64
+rhel_jdk17:linux/ppc64le
+rhel_jdk21:linux/amd64
+rhel_jdk21:linux/arm64
+rhel_jdk21:linux/ppc64le
