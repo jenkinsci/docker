@@ -74,7 +74,7 @@ targets:
       files:
         - alpine/hotspot/Dockerfile
         - debian/Dockerfile
-        - rhel/ubi9/hotspot/Dockerfile
+        - rhel/Dockerfile
         - windows/windowsservercore/hotspot/Dockerfile
       instruction:
         keyword: ARG
