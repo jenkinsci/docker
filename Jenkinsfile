@@ -20,9 +20,7 @@ def architecturesAndCiJioAgentLabels = [
     'arm64': 'arm64docker',
     // No corresponding agent, using qemu
     'ppc64le': 'docker && amd64',
-    // TODO: install `make` on permanent x390x agent
-    // 's390x': 's390xdocker',
-    's390x': 'docker && amd64',
+    's390x': 's390xdocker',
 ]
 
 // Set to true in a replay to simulate a LTS build on ci.jenkins.io
