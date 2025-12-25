@@ -67,8 +67,12 @@ variable "DEBIAN_VERSION" {
   default = "20251117"
 }
 
-variable "UBI9_TAG" {
+variable "RHEL_TAG" {
   default = "9.7-1766364927"
+}
+
+variable "RHEL_RELEASE_LINE" {
+  default = "ubi9"
 }
 
 variable "debian_variants" {
@@ -85,6 +89,10 @@ variable "jdk_versions" {
 
 variable "debian_variants" {
   default = ["debian", "debian-slim"]
+}
+
+variable "current_rhel" {
+  default = "rhel-${RHEL_RELEASE_LINE}"
 }
 
 ## Targets
@@ -131,12 +139,12 @@ target "debian" {
   platforms = platforms(variant, jdk)
 }
 
-target "rhel_ubi9" {
+target "rhel" {
   matrix = {
     jdk = jdks_to_build
   }
-  name       = "rhel_ubi9_jdk${jdk}"
-  dockerfile = "rhel/ubi9/hotspot/Dockerfile"
+  name       = "rhel_jdk${jdk}"
+  dockerfile = "rhel/Dockerfile"
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
@@ -144,10 +152,12 @@ target "rhel_ubi9" {
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    RHEL_TAG           = RHEL_TAG
+    RHEL_RELEASE_LINE  = RHEL_RELEASE_LINE
     JAVA_VERSION       = javaversion(jdk)
   }
-  tags      = linux_tags("rhel", jdk)
-  platforms = platforms("rhel", jdk)
+  tags      = linux_tags(current_rhel, jdk)
+  platforms = platforms(current_rhel, jdk)
 }
 
 ## Groups
@@ -155,7 +165,7 @@ group "linux" {
   targets = [
     "alpine",
     "debian",
-    "rhel_ubi9",
+    "rhel",
   ]
 }
 
@@ -165,8 +175,8 @@ group "linux-arm64" {
     "debian_jdk17",
     "debian_jdk21",
     "debian-slim_jdk21",
-    "rhel_ubi9_jdk17",
-    "rhel_ubi9_jdk21",
+    "rhel_jdk17",
+    "rhel_jdk21",
   ]
 }
 
@@ -181,8 +191,8 @@ group "linux-ppc64le" {
   targets = [
     "debian_jdk17",
     "debian_jdk21",
-    "rhel_ubi9_jdk17",
-    "rhel_ubi9_jdk21",
+    "rhel_jdk17",
+    "rhel_jdk21",
   ]
 }
 
@@ -241,7 +251,7 @@ function "platforms" {
   params = [distribution, jdk]
   result = (
     # RHEL
-    equal("rhel", distribution)
+    equal(current_rhel, distribution)
     ? ["linux/amd64", "linux/arm64", "linux/ppc64le"]
 
     # Alpine
@@ -286,12 +296,12 @@ function "linux_tags" {
     ]
 
     ## RHEL UBI9
-    : equal("rhel", distribution)
+    : equal(current_rhel, distribution)
     ? [
-      tag(true, "rhel-ubi9-jdk${jdk}"),
-      tag_weekly(false, "rhel-ubi9-jdk${jdk}"),
-      tag_lts(false, "lts-rhel-ubi9-jdk${jdk}"),
-      tag_lts(true, "lts-rhel-ubi9-jdk${jdk}"),
+      tag(true, "${current_rhel}-jdk${jdk}"),
+      tag_weekly(false, "${current_rhel}-jdk${jdk}"),
+      tag_lts(false, "lts-${current_rhel}-jdk${jdk}"),
+      tag_lts(true, "lts-${current_rhel}-jdk${jdk}"),
     ]
 
     ## Fallback (should not happen)
