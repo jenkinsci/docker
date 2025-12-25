@@ -22,6 +22,7 @@ def SIMULATE_LTS_BUILD = false
 if (SIMULATE_LTS_BUILD) {
     envVars = [
         'PUBLISH=false',
+        // TODO: replace by first LTS including JDK25 when published
         'TAG_NAME=2.504.3',
         'JENKINS_VERSION=2.504.3',
         'WAR_SHA=ea8883431b8b5ef6b68fe0e5817c93dc0a11def380054e7de3136486796efeb0',
@@ -107,12 +108,16 @@ stage('Build') {
             def images = [
                 'alpine_jdk17',
                 'alpine_jdk21',
+                'alpine_jdk25',
                 'debian_jdk17',
                 'debian_jdk21',
+                'debian_jdk25',
                 'debian-slim_jdk17',
                 'debian-slim_jdk21',
+                'debian-slim_jdk25',
                 'rhel_ubi9_jdk17',
                 'rhel_ubi9_jdk21',
+                'rhel_ubi9_jdk25',
             ]
             for (i in images) {
                 def imageToBuild = i

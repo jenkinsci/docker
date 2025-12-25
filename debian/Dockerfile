@@ -25,16 +25,16 @@ ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
 # while still saving space (approx 200mb from the full distribution)
-RUN case "$(jlink --version 2>&1)" in \
-      "17."*) set -- "--compress=2" ;; \
-      # the compression argument is different for JDK21
-      "21."*) set -- "--compress=zip-6" ;; \
+# hadolint ignore=SC2086
+RUN case "$(jlink --version 2>&1 | cut -c1-2)" in \
+      "17") options="--compress=2 --add-modules ALL-MODULE-PATH" ;; \
+      "21") options="--compress=zip-6 --add-modules ALL-MODULE-PATH" ;; \
+      "25") options="--compress=zip-6 --add-modules java.base,java.logging,java.xml,java.se" ;; \
       *) echo "ERROR: unmanaged jlink version pattern" && exit 1 ;; \
     esac; \
     jlink \
       --strip-java-debug-attributes \
-      "$1" \
-      --add-modules ALL-MODULE-PATH \
+      ${options} \
       --no-man-pages \
       --no-header-files \
       --output /javaruntime
@@ -104,10 +104,10 @@ RUN mkdir -p ${REF}/init.groovy.d
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION=${JENKINS_VERSION:-2.504}
+ENV JENKINS_VERSION=${JENKINS_VERSION:-2.534}
 
 # jenkins.war checksum, download will be validated using it
-ARG WAR_SHA=efc91d6be8d79dd078e7f930fc4a5f135602d0822a5efe9091808fdd74607d32
+ARG WAR_SHA=fcf13a8ebbe69d678608cc4b3885ece7d7e697d6da4c3691025a06968ddef228
 
 # Can be used to customize where jenkins.war get downloaded from
 ARG WAR_URL=https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war
