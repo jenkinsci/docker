@@ -19,7 +19,7 @@ updates:
 # Debian Linux
 
 - package-ecosystem: docker
-  directory: "debian/trixie/hotspot"
+  directory: "debian"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
@@ -31,7 +31,7 @@ updates:
   - dependency-name: "eclipse-temurin"
 
 - package-ecosystem: docker
-  directory: "debian/trixie-slim/hotspot"
+  directory: "debian"
   schedule:
     interval: weekly
   open-pull-requests-limit: 2
