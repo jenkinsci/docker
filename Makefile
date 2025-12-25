@@ -69,12 +69,12 @@ shellcheck:
 
 # Build targets depending on the current architecture
 build: check-reqs
-	@$(bake_base_cli) --set '*.platform=linux/$(ARCH)' $(shell make --silent list)
+	@set -x; $(bake_base_cli) --set '*.platform=linux/$(ARCH)' $(shell make --silent list)
 
 # Build a specific target with the current architecture
 build-%: check-reqs
 	@$(call check_image,$*)
-	@$(bake_base_cli) --set '*.platform=linux/$(ARCH)' '$*'
+	@set -x; $(bake_base_cli) --set '*.platform=linux/$(ARCH)' '$*'
 
 # Show all targets
 show:
@@ -90,7 +90,7 @@ platforms:
 
 # Return the list of targets depending on the current architecture
 list: check-reqs
-	@make --silent show | jq -r '.target | path(.. | select(.platforms[] | contains("linux/$(ARCH)"))?) | add'
+	@set -x; make --silent show | jq -r '.target | path(.. | select(.platforms[] | contains("linux/$(ARCH)"))?) | add'
 
 # Ensure bats exists in the current folder
 bats:
