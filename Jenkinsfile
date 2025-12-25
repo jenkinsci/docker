@@ -14,6 +14,15 @@ properties(listOfProperties)
 // Default environment variable set to allow images publication
 def envVars = ['PUBLISH=true']
 
+// List of architectures and corresponding ci.jenkins.io agent labels
+def architecturesAndCiJioAgentLabels = [
+    'amd64': 'docker && amd64',
+    'arm64': 'arm64docker',
+    // No corresponding agent, using qemu
+    'ppc64le': 'docker && amd64',
+    's390x': 's390xdocker',
+]
+
 // Set to true in a replay to simulate a LTS build on ci.jenkins.io
 // It will set the environment variables needed for a LTS
 // and disable images publication out of caution
@@ -118,7 +127,7 @@ stage('Build') {
                 def imageToBuild = i
 
                 builds[imageToBuild] = {
-                    nodeWithTimeout('docker') {
+                    nodeWithTimeout(architecturesAndCiJioAgentLabels["amd64"]) {
                         deleteDir()
 
                         stage('Checkout') {
@@ -153,48 +162,13 @@ stage('Build') {
                     }
                 }
             }
-            def allArchitectures = [
-                'amd64',
-                'arm64',
-                'ppc64le',
-                's390x'
-            ]
-            for (a in allArchitectures) {
-                def architecture = a
+            // Building every other architectures than amd64 on agents with the corresponding labels if available
+            architecturesAndCiJioAgentLabels.findAll { arch, _ -> arch != 'amd64' }.each { architecture, labels ->
                 builds[architecture] = {
-                    nodeWithTimeout('docker') {
+                    nodeWithTimeout(labels) {
                         stage('Checkout') {
                             deleteDir()
                             checkout scm
-                        }
-
-                        def currentArchitecture
-                        stage('Retrieve current architecture') {
-                            script {
-                                currentArchitecture = sh(script: '''
-                                    current_arch="$(uname -m)"
-                                    case "${current_arch}" in
-                                        x86_64)
-                                            echo amd64
-                                            ;;
-                                        aarch64|arm64)
-                                            echo arm64
-                                            ;;
-                                        s390*|ppc64le|riscv*)
-                                            echo "${current_arch}"
-                                            ;;
-                                        *)
-                                            echo "Unsupported architecture: ${current_arch}" >&2
-                                            exit 1
-                                            ;;
-                                    esac
-                                ''', returnStdout: true).trim()
-                            }
-                        }
-
-                        if (architecture == currentArchitecture) {
-                            echo "Current architecture ${currentArchitecture} skipped as already build in other stages"
-                            return
                         }
                         // sanity check that proves all images build on declared platforms not already built in other stages
                         stage("Multi arch build - ${architecture}") {
