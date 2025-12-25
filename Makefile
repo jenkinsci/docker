@@ -57,7 +57,10 @@ endif
 else
 	@docker buildx create --use --bootstrap --driver docker-container
 endif
+# There is only an amd64 qemu image
+ifeq ($(ARCH),amd64)
 	@docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+endif
 
 # Lint check on all Dockerfiles
 hadolint:
