@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script fetches the latest tag from the Red Hat Container Catalog API for UBI9 images.
+# This script fetches the latest tag from the Red Hat Container Catalog API for the images of the current RHEL release line.
 # It ensures that `jq` and `curl` are installed, fetches the most recent tags, and processes them to find the unique tag associated to `latest`s.
 
 # The Swagger API endpoints for the Red Hat Container Catalog API are documented at:
@@ -8,17 +8,27 @@
 
 # The script uses the following parameters for the API request:
 # - registry: registry.access.redhat.com
-# - repository: ubi9
+# - repository: <rhel_release_line>
 # - page_size: 100
 # - page: 0
 # - sort_by: last_update_date[desc]
 
-# The curl command fetches the JSON data containing the tags for the UBI9 images, then parses it using `jq` to find the version associated with the "latest" tag.
+# The curl command fetches the JSON data containing the tags for the images of the RHEL release line passed in parameter,
+# then parses it using `jq` to find the version associated with the "latest" tag.
 # It focuses on tags that contain a hyphen, as these represent the long-form tag names.
 # The script ensures that only one instance of each tag is kept, in case of duplicates.
 
-# Correct URL of the Red Hat Container Catalog API for UBI9
-URL="https://catalog.redhat.com/api/containers/v1/repositories/registry/registry.access.redhat.com/repository/ubi9/images?page_size=100&page=0&sort_by=last_update_date%5Bdesc%5D"
+if [[ $# -lt 1 ]]; then
+  echo "Usage: $0 <rhel_release_line>"
+  echo "Example:"
+  echo "  $0 ubi9"
+  exit 1
+fi
+
+release_line="$1"
+
+# Correct URL of the Red Hat Container Catalog API for the release line
+URL="https://catalog.redhat.com/api/containers/v1/repositories/registry/registry.access.redhat.com/repository/${release_line}/images?page_size=100&page=0&sort_by=last_update_date%5Bdesc%5D"
 
 # Check if jq and curl are installed
 # If they are not installed, exit the script with an error message
@@ -27,7 +37,7 @@ if ! command -v jq >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1; then
     exit 1
 fi
 
-# Fetch `ubi9` from registry.access.redhat.com sorted by most recent update date, and keeping only the first page.
+# Fetch release line from registry.access.redhat.com sorted by most recent update date, and keeping only the first page.
 response=$(curl --silent --fail --location --connect-timeout 10 --retry 3 --retry-delay 2 --max-time 30 --header 'accept: application/json' "$URL")
 
 # Check if the response is empty or null
