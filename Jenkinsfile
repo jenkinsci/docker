@@ -14,6 +14,15 @@ properties(listOfProperties)
 // Default environment variable set to allow images publication
 def envVars = ['PUBLISH=true']
 
+// List of architectures and corresponding ci.jenkins.io agent labels
+def architecturesAndCiJioAgentLabels = [
+    'amd64': 'docker && amd64',
+    'arm64': 'arm64docker',
+    // No corresponding agent, using qemu
+    'ppc64le': 'docker && amd64',
+    's390x': 's390xdocker',
+]
+
 // Set to true in a replay to simulate a LTS build on ci.jenkins.io
 // It will set the environment variables needed for a LTS
 // and disable images publication out of caution
@@ -117,7 +126,7 @@ stage('Build') {
                 def imageToBuild = i
 
                 builds[imageToBuild] = {
-                    nodeWithTimeout('docker') {
+                    nodeWithTimeout(architecturesAndCiJioAgentLabels["amd64"]) {
                         deleteDir()
 
                         stage('Checkout') {
@@ -152,20 +161,19 @@ stage('Build') {
                     }
                 }
             }
-            builds['multiarch-build'] = {
-                nodeWithTimeout('docker') {
-                    stage('Checkout') {
-                        deleteDir()
-                        checkout scm
-                    }
-
-                    // sanity check that proves all images build on declared platforms
-                    stage('Multi arch build') {
-                        infra.withDockerCredentials {
-                            sh '''
-                            make docker-init
-                            docker buildx bake --file docker-bake.hcl linux
-                            '''
+            // Building every other architectures than amd64 on agents with the corresponding labels if available
+            architecturesAndCiJioAgentLabels.findAll { arch, _ -> arch != 'amd64' }.each { architecture, labels ->
+                builds[architecture] = {
+                    nodeWithTimeout(labels) {
+                        stage('Checkout') {
+                            deleteDir()
+                            checkout scm
+                        }
+                        // sanity check that proves all images build on declared platforms not already built in other stages
+                        stage("Multi arch build - ${architecture}") {
+                            infra.withDockerCredentials {
+                                sh "make docker-init listarch-${architecture} buildarch-${architecture}"
+                            }
                         }
                     }
                 }
