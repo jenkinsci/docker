@@ -1,5 +1,7 @@
 #!/usr/bin/env bats
 
+# bats file_tags=test-suite:functions
+
 load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
 load test_helpers
