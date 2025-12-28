@@ -24,11 +24,13 @@ RUN Write-Host 'javac --version' ; javac --version ; `
     Write-Host 'java --version' ; java --version
 
 RUN $version = (jlink --version) ; `
-    $compressArg = '--compress=2' ; `
+    $options = '--compress=2' ; `
     switch ($version.Substring(0,3)) { `
-        '17.' {} `
+        '17.' { $options = '--compress=2 --add-modules ALL-MODULE-PATH' } `
         # the compression argument is different for JDK21
-        '21.' { $compressArg = '--compress=zip-6' } `
+        '21.' { $options = '--compress=zip-6 --add-modules ALL-MODULE-PATH' } `
+        # the compression argument is different for JDK21
+        '21.' { $options = '--compress=zip-6 --add-modules ALL-MODULE-PATH' } `
         Default { `
             Write-Error 'ERROR: unmanaged jlink version pattern' ; `
             exit 1 ; `
@@ -36,8 +38,7 @@ RUN $version = (jlink --version) ; `
     } `
     & jlink `
     --strip-java-debug-attributes `
-    $compressArg `
-    --add-modules ALL-MODULE-PATH `
+    $options `
     --no-man-pages `
     --no-header-files `
     --output /javaruntime
