@@ -110,7 +110,7 @@ function get_jenkins_url {
 }
 
 function get_jenkins_password {
-    docker logs "$(get_sut_container_name)" 2>&1 | grep -A 2 "Please use the following password to proceed to installation" | tail -n 1
+    docker logs "$(get_sut_container_name)" 2>&1 | grep -A 2 "Please use the following password to proceed to installation" | tail -n 1 | sed 's/\[LF]> //'
 }
 
 function test_url {
