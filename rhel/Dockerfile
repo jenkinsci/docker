@@ -21,19 +21,24 @@ ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
 # while still saving space (approx 200mb from the full distribution)
-RUN case "$(jlink --version 2>&1)" in \
-      "17."*) set -- "--compress=2" ;; \
-      # the compression argument is different for JDK21
-      "21."*) set -- "--compress=zip-6" ;; \
-      *) echo "ERROR: unmanaged jlink version pattern" && exit 1 ;; \
-    esac; \
-    jlink \
-      --strip-java-debug-attributes \
-      "$1" \
-      --add-modules ALL-MODULE-PATH \
-      --no-man-pages \
-      --no-header-files \
-      --output /javaruntime
+# hadolint ignore=SC2086
+RUN java_major_version="$(jlink --version 2>&1 | cut -c1-2)"; \
+    if [ "$java_major_version" = "25" ]; then \
+      cp -r "/opt/jdk-${JAVA_VERSION}" /javaruntime; \
+    else \
+      case "$java_major_version" in \
+        "17") options="--compress=2" ;; \
+        "21") options="--compress=zip-6" ;; \
+        *) echo "ERROR: unmanaged jlink version pattern" && exit 1 ;; \
+      esac; \
+      jlink \
+        --strip-java-debug-attributes \
+        ${options} \
+        --add-modules ALL-MODULE-PATH \
+        --no-man-pages \
+        --no-header-files \
+        --output /javaruntime; \
+    fi
 
 FROM registry.access.redhat.com/${RHEL_RELEASE_LINE}/ubi:${RHEL_TAG} AS controller
 
