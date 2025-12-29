@@ -24,24 +24,28 @@ RUN Write-Host 'javac --version' ; javac --version ; `
     Write-Host 'java --version' ; java --version
 
 RUN $version = (jlink --version) ; `
-    $options = '--compress=2' ; `
-    switch ($version.Substring(0,3)) { `
-        '17.' { $options = '--compress=2 --add-modules ALL-MODULE-PATH' } `
-        # the compression argument is different for JDK21
-        '21.' { $options = '--compress=zip-6 --add-modules ALL-MODULE-PATH' } `
-        # the compression argument is different for JDK21
-        '21.' { $options = '--compress=zip-6 --add-modules ALL-MODULE-PATH' } `
-        Default { `
-            Write-Error 'ERROR: unmanaged jlink version pattern' ; `
-            exit 1 ; `
+    $javaMajorVersion = $version.Substring(0,2) ; `
+    if ($javaMajorVersion -eq '25') { `
+        $openjdkFolder = 'openjdk-{0}' -f $javaMajorVersion ; `
+        Copy-Item -Path $openjdkFolder -Destination C:\javaruntime -Recurse ; `
+    } else { `
+        $options = '--compress=2' ; `
+        switch ($version.Substring(0,3)) { `
+            '17.' { $options = '--compress=2' } `
+            '21.' { $options = '--compress=zip-6' } `
+            Default { `
+                Write-Error 'ERROR: unmanaged jlink version pattern' ; `
+                exit 1 ; `
+            } `
         } `
-    } `
-    & jlink `
-    --strip-java-debug-attributes `
-    $options `
-    --no-man-pages `
-    --no-header-files `
-    --output /javaruntime
+        & jlink `
+        --strip-java-debug-attributes `
+        $options `
+        --add-modules ALL-MODULE-PATH `
+        --no-man-pages `
+        --no-header-files `
+        --output /javaruntime ; `
+    }
 
 FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS controller
 
