@@ -1,0 +1,97 @@
+---
+name: Bump default `JENKINS_VERSION` version
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "{{ .github.branch }}"
+
+sources:
+  currentVersion:
+    kind: hcl
+    name: Get current JENKINS_VERSION
+    spec:
+      file: docker-bake.hcl
+      path: variable.JENKINS_VERSION.default
+  latestVersion:
+    kind: githubrelease
+    name: Get latest Jenkins Core release version
+    spec:
+      owner: jenkinsci
+      repository: jenkins
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      versionfilter:
+        kind: regex
+        pattern: >-
+          \d+\.\d+$
+    transformers:
+      - trimprefix: "jenkins-"
+  latestWarSha:
+    kind: shell
+    name: Get latest Jenkins Core sha256 checksum
+    spec:
+      command: curl --disable --fail --silent --show-error --location "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/{{ source "latestVersion" }}/jenkins-war-{{ source "latestVersion" }}.war.sha256"
+
+conditions:
+  isDockerImagePublished:
+    name: Check if the docker image has been published
+    kind: dockerimage
+    sourceid: latestVersion
+    spec:
+      image: jenkins/jenkins
+
+targets:
+  updateDockerBakeJenkinsVersion:
+    name: Update default value of JENKINS_VERSION in docker-bake.hcl
+    kind: hcl
+    sourceid: latestVersion
+    spec:
+      file: docker-bake.hcl
+      path: variable.JENKINS_VERSION.default
+  updateDockerBakeWarSha:
+    name: Update default value of WAR_SHA in docker-bake.hcl
+    kind: hcl
+    sourceid: latestWarSha
+    spec:
+      file: docker-bake.hcl
+      path: variable.WAR_SHA.default
+  updateDockerfilesJenkinsVersion:
+    name: Update value of JENKINS_VERSION in Dockerfile
+    kind: dockerfile
+    sourceid: latestVersion
+    spec:
+      files:
+        - alpine/hotspot/Dockerfile
+        - debian/Dockerfile
+        - rhel/Dockerfile
+        - windows/windowsservercore/hotspot/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: JENKINS_VERSION
+  updateGoldenFiles:
+    kind: file
+    sourceid: latestVersion
+    spec:
+      files:
+        - tests/golden/expected_tags.txt
+        - tests/golden/expected_tags_latest_weekly.txt
+        - tests/golden/expected_tags_latest_lts.txt
+      matchpattern: (\d+\.\d+)
+
+actions:
+  default:
+    kind: github/pullrequest
+    title: Bump default `JENKINS_VERSION` to {{ source "latestVersion" }}
+    scmid: default
+    spec:
+      labels:
+        - dependencies
+        - jenkins-version
