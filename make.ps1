@@ -11,7 +11,7 @@ $ProgressPreference = 'SilentlyContinue' # Disable Progress bar for faster downl
 
 $Repository = 'jenkins'
 $Organisation = 'jenkins4eval'
-$ImageType = 'windowsservercore-ltsc2019' # <WINDOWS_FLAVOR>-<WINDOWS_VERSION>
+$ImageType = 'windowsservercore-ltsc2022' # <WINDOWS_FLAVOR>-<WINDOWS_VERSION>
 
 if(![String]::IsNullOrWhiteSpace($env:DOCKERHUB_REPO)) {
     $Repository = $env:DOCKERHUB_REPO
