@@ -14,12 +14,6 @@ scms:
       branch: "{{ .github.branch }}"
 
 sources:
-  currentVersion:
-    kind: hcl
-    name: Get current JENKINS_VERSION
-    spec:
-      file: docker-bake.hcl
-      path: variable.JENKINS_VERSION.default
   latestVersion:
     kind: githubrelease
     name: Get latest Jenkins Core release version
