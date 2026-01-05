@@ -73,6 +73,7 @@ targets:
   updateGoldenFiles:
     kind: file
     sourceid: latestVersion
+    name: Update value of JENKINS_VERSION in golden files
     spec:
       files:
         - tests/golden/expected_tags.txt
