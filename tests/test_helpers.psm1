@@ -67,7 +67,7 @@ function Retry-Command {
 
 function Get-SutImage {
     $DOCKERFILE = Get-EnvOrDefault 'DOCKERFILE' ''
-    $IMAGENAME = Get-EnvOrDefault 'CONTROLLER_IMAGE' '' # Ex: jdk17-hotspot-windowsservercore-ltsc2019
+    $IMAGENAME = Get-EnvOrDefault 'CONTROLLER_IMAGE' '' # Ex: jdk17-hotspot-windowsservercore-ltsc2022
 
     $REAL_DOCKERFILE=Resolve-Path -Path "$PSScriptRoot/../${DOCKERFILE}"
 
