@@ -3,7 +3,6 @@
 
 ARG JAVA_VERSION=17.0.17_10
 ARG WINDOWS_VERSION=ltsc2019
-ARG TOOLS_WINDOWS_VERSION=1809
 
 FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS jre-build
 

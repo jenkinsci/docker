@@ -51,11 +51,6 @@ if([String]::IsNullOrWhiteSpace($env:WAR_URL)) {
 $items = $ImageType.Split('-')
 $env:WINDOWS_FLAVOR = $items[0]
 $env:WINDOWS_VERSION = $items[1]
-$env:TOOLS_WINDOWS_VERSION = $items[1]
-if ($items[1] -eq 'ltsc2019') {
-    # There are no eclipse-temurin:*-ltsc2019 or mcr.microsoft.com/powershell:*-ltsc2019 docker images unfortunately, only "1809" ones
-    $env:TOOLS_WINDOWS_VERSION = '1809'
-}
 
 # Retrieve the sha256 corresponding to the war file
 $warShaURL = '{0}.sha256' -f $env:WAR_URL
