@@ -1,17 +1,11 @@
-alpine_jdk17:linux/amd64
 alpine_jdk21:linux/amd64
 alpine_jdk21:linux/arm64
 alpine_jdk25:linux/amd64
 alpine_jdk25:linux/arm64
-debian-slim_jdk17:linux/amd64
 debian-slim_jdk21:linux/amd64
 debian-slim_jdk21:linux/arm64
 debian-slim_jdk25:linux/amd64
 debian-slim_jdk25:linux/arm64
-debian_jdk17:linux/amd64
-debian_jdk17:linux/arm64
-debian_jdk17:linux/ppc64le
-debian_jdk17:linux/s390x
 debian_jdk21:linux/amd64
 debian_jdk21:linux/arm64
 debian_jdk21:linux/ppc64le
@@ -20,9 +14,6 @@ debian_jdk25:linux/amd64
 debian_jdk25:linux/arm64
 debian_jdk25:linux/ppc64le
 debian_jdk25:linux/s390x
-rhel_jdk17:linux/amd64
-rhel_jdk17:linux/arm64
-rhel_jdk17:linux/ppc64le
 rhel_jdk21:linux/amd64
 rhel_jdk21:linux/arm64
 rhel_jdk21:linux/ppc64le
