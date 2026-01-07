@@ -116,7 +116,7 @@ stage('Build') {
         }
 
         if (!infra.isTrusted()) {
-            // This list can be updated with
+            // This list can be updated with the following command:
             // make show | jq -r '.target | keys[]' | sort
             def images = [
                 'alpine_jdk17',
