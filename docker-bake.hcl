@@ -174,33 +174,6 @@ group "linux" {
   ]
 }
 
-group "linux-arm64" {
-  targets = [
-    "alpine_jdk21",
-    "debian_jdk17",
-    "debian_jdk21",
-    "debian-slim_jdk21",
-    "rhel_jdk17",
-    "rhel_jdk21",
-  ]
-}
-
-group "linux-s390x" {
-  targets = [
-    "debian_jdk17",
-    "debian_jdk21",
-  ]
-}
-
-group "linux-ppc64le" {
-  targets = [
-    "debian_jdk17",
-    "debian_jdk21",
-    "rhel_jdk17",
-    "rhel_jdk21",
-  ]
-}
-
 ## Common functions
 # return true if JENKINS_VERSION is a Weekly (one sequence of digits with a trailing literal '.')
 function "is_jenkins_version_weekly" {
