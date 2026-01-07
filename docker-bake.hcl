@@ -1,9 +1,9 @@
 ## Variables
-variable "lts_jdks_to_build" {
+variable "jdks_to_build_for_lts" {
   default = [17, 21, 25]
 }
 
-variable "weekly_jdks_to_build" {
+variable "jdks_to_build_for_weekly" {
   default = [21, 25]
 }
 
@@ -214,7 +214,7 @@ function "is_jenkins_version_weekly" {
 # return the list of jdk to build depending on JENKINS_VERSION
 function "jdks_to_build" {
   params = []
-  result = is_jenkins_version_weekly() ? weekly_jdks_to_build : lts_jdks_to_build
+  result = is_jenkins_version_weekly() ? jdks_to_build_for_weekly : jdks_to_build_for_lts
 }
 
 # return a tag prefixed by the Jenkins version
