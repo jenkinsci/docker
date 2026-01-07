@@ -116,6 +116,7 @@ stage('Build') {
         }
 
         if (!infra.isTrusted()) {
+            // This list can be updated with: make show | jq -r '.target | keys[]'
             def images = [
                 'alpine_jdk21',
                 'alpine_jdk25',
