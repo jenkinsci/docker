@@ -6,6 +6,7 @@
 load test_helpers
 
 SUT_DESCRIPTION="docker bake"
+JENKINS_LTS_VERSION="2.504.3"
 
 @test "[${SUT_DESCRIPTION}: tags] Default tags unchanged" {
   assert_matches_golden expected_tags make --silent tags
@@ -14,7 +15,7 @@ SUT_DESCRIPTION="docker bake"
   assert_matches_golden expected_tags_latest_weekly make --silent tags LATEST_WEEKLY=true
 }
 @test "[${SUT_DESCRIPTION}: tags] Latest LTS tags unchanged" {
-  assert_matches_golden expected_tags_latest_lts make --silent tags LATEST_LTS=true
+  assert_matches_golden expected_tags_latest_lts make --silent tags LATEST_LTS=true JENKINS_VERSION="${JENKINS_LTS_VERSION}"
 }
 
 @test "[${SUT_DESCRIPTION}: platforms] Platforms per target unchanged" {
