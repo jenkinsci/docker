@@ -114,7 +114,10 @@ function get_jenkins_password {
 }
 
 function get_targets_from_jenkinsfile {
-    sed -n '/def images = \[/,/]/p' Jenkinsfile | grep "'" | tr -d "', " | sort
+    sed -n '/def images = \[/,/]/p' Jenkinsfile `# retrieve the images map from Jenkinsfile` \
+     | grep "'" `# keep only its items` \
+     | tr -d "', " `# cleanup the output` \
+     | sort `# ensure constant output sort`
 }
 
 function get_default_weekly_targets {
