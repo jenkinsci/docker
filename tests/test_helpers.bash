@@ -113,6 +113,14 @@ function get_jenkins_password {
     docker exec "$(get_sut_container_name)" cat /var/jenkins_home/secrets/initialAdminPassword
 }
 
+function get_targets_from_jenkinsfile {
+    sed -n '/def images = \[/,/]/p' Jenkinsfile | grep "'" | tr -d "', " | sort
+}
+
+function get_default_weekly_targets {
+    make show | jq -r '.target | keys[]' | sort
+}
+
 function test_url {
     run curl --user "admin:$(get_jenkins_password)" --output /dev/null --silent --head --fail --connect-timeout 30 --max-time 60 "$(get_jenkins_url)$1"
     if [ "$status" -eq 0 ]; then
