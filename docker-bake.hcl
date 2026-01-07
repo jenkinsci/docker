@@ -1,6 +1,10 @@
 ## Variables
-variable "jdks_to_build" {
+variable "lts_jdks_to_build" {
   default = [17, 21, 25]
+}
+
+variable "weekly_jdks_to_build" {
+  default = [21, 25]
 }
 
 variable "default_jdk" {
@@ -99,7 +103,7 @@ variable "current_rhel" {
 ## Targets
 target "alpine" {
   matrix = {
-    jdk = jdks_to_build
+    jdk = jdks_to_build()
   }
   name       = "alpine_jdk${jdk}"
   dockerfile = "alpine/hotspot/Dockerfile"
@@ -119,7 +123,7 @@ target "alpine" {
 
 target "debian" {
   matrix = {
-    jdk     = jdks_to_build
+    jdk     = jdks_to_build()
     variant = debian_variants
   }
   name       = "${variant}_jdk${jdk}"
@@ -142,7 +146,7 @@ target "debian" {
 
 target "rhel" {
   matrix = {
-    jdk = jdks_to_build
+    jdk = jdks_to_build()
   }
   name       = "rhel_jdk${jdk}"
   dockerfile = "rhel/Dockerfile"
@@ -198,6 +202,21 @@ group "linux-ppc64le" {
 }
 
 ## Common functions
+# return true if JENKINS_VERSION is a Weekly (one sequence of digits with a trailing literal '.')
+function "is_jenkins_version_weekly" {
+  # If JENKINS_VERSION has more than one sequence of digits with a trailing literal '.', this is LTS
+  # 2.523 has only one sequence of digits with a trailing literal '.'
+  # 2.516.1 has two sequences of digits with a trailing literal '.'
+  params = []
+  result = length(regexall("[0-9]+[.]", JENKINS_VERSION)) < 2 ? true : false
+}
+
+# return the list of jdk to build depending on JENKINS_VERSION
+function "jdks_to_build" {
+  params = []
+  result = is_jenkins_version_weekly() ? weekly_jdks_to_build : lts_jdks_to_build
+}
+
 # return a tag prefixed by the Jenkins version
 function "_tag_jenkins_version" {
   params = [tag]
@@ -224,13 +243,10 @@ function "tag_lts" {
 
 # return WAR_URL if not empty, get.jenkins.io URL depending on JENKINS_VERSION release line otherwise
 function "war_url" {
-  # If JENKINS_VERSION has more than one sequence of digits with a trailing literal '.', this is LTS
-  # 2.523 has only one sequence of digits with a trailing literal '.'
-  # 2.516.1 has two sequences of digits with a trailing literal '.'
   params = []
   result = (notequal(WAR_URL, "")
     ? WAR_URL
-    : (length(regexall("[0-9]+[.]", JENKINS_VERSION)) < 2
+    : (is_jenkins_version_weekly()
       ? "https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war"
   : "https://get.jenkins.io/war-stable/${JENKINS_VERSION}/jenkins.war"))
 }
