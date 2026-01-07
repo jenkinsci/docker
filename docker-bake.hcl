@@ -170,33 +170,6 @@ group "linux" {
   ]
 }
 
-group "linux-arm64" {
-  targets = [
-    "alpine_jdk21",
-    "debian_jdk17",
-    "debian_jdk21",
-    "debian-slim_jdk21",
-    "rhel_jdk17",
-    "rhel_jdk21",
-  ]
-}
-
-group "linux-s390x" {
-  targets = [
-    "debian_jdk17",
-    "debian_jdk21",
-  ]
-}
-
-group "linux-ppc64le" {
-  targets = [
-    "debian_jdk17",
-    "debian_jdk21",
-    "rhel_jdk17",
-    "rhel_jdk21",
-  ]
-}
-
 ## Common functions
 # return a tag prefixed by the Jenkins version
 function "_tag_jenkins_version" {
