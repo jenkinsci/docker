@@ -115,9 +115,9 @@ function get_jenkins_password {
 }
 
 function get_targets_from_jenkinsfile {
-    sed -n '/def images = \[/,/]/p' Jenkinsfile `# retrieve the images map from Jenkinsfile` \
+    sed -n '/def images = \[/,/]/p' Jenkinsfile `# retrieve images array from Jenkinsfile` \
      | grep "'" `# keep only its items` \
-     | tr -d "', " `# cleanup the output` \
+     | tr -d "', " `# cleanup output` \
      | sort `# ensure constant output sort`
 }
 
