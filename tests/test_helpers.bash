@@ -120,7 +120,7 @@ function get_targets_from_jenkinsfile {
      | sort `# ensure constant output sort`
 }
 
-function get_default_weekly_targets {
+function get_default_docker_bake_targets {
     make show | jq -r '.target | keys[]' | sort
 }
 
