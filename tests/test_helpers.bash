@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Assert that $1 is the outputof a command $2
 function assert {
