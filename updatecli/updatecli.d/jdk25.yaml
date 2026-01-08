@@ -1,0 +1,74 @@
+name: Bump JDK25 version
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "{{ .github.branch }}"
+
+sources:
+  lastTemurin25Version:
+    kind: temurin
+    name: Get the latest Adoptium JDK25 version via the API
+    spec:
+      featureversion: 25
+    transformers:
+      - trimprefix: "jdk-"
+
+conditions:
+  checkTemurinAllReleases:
+    name: Check if the "<lastTemurin25Version>" is available for all platforms
+    kind: temurin
+    sourceid: lastTemurin25Version
+    spec:
+      featureversion: 25
+      platforms:
+        - alpine-linux/x64
+        - alpine-linux/aarch64
+        - linux/x64
+        - linux/aarch64
+        - linux/ppc64le
+        - linux/s390x
+        - windows/x64
+
+targets:
+  setJDK25VersionDockerBake:
+    name: "Bump JDK25 version for Linux images in the docker-bake.hcl file"
+    kind: hcl
+    transformers:
+      - replacer:
+          from: "+"
+          to: "_"
+    spec:
+      file: docker-bake.hcl
+      path: variable.JAVA25_VERSION.default
+    scmid: default
+
+  setJDK25VersionWindowsDockerCompose:
+    name: "Bump JDK25 version in build-windows.yaml"
+    kind: yaml
+    transformers:
+      - replacer:
+          from: "+"
+          to: "_"
+    spec:
+      files:
+        - build-windows.yaml
+      key: $.services.jdk25.build.args.JAVA_VERSION
+    scmid: default
+
+actions:
+  default:
+    kind: github/pullrequest
+    scmid: default
+    title: Bump JDK25 version to {{ source "lastTemurin25Version" }}
+    spec:
+      labels:
+        - dependencies
+        - jdk25
