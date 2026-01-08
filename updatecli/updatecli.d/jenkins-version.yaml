@@ -66,12 +66,11 @@ targets:
   updateJenkinsVersionInGoldenFiles:
     kind: file
     sourceid: latestVersion
-    name: Update value of JENKINS_VERSION in golden files
+    name: Update value of JENKINS_VERSION in (weekly) golden files
     spec:
       files:
         - tests/golden/expected_tags.txt
         - tests/golden/expected_tags_latest_weekly.txt
-        - tests/golden/expected_tags_latest_lts.txt
       matchpattern: (\d+\.\d+)
   updateWarShaInDockerBake:
     name: Update default value of WAR_SHA in docker-bake.hcl
