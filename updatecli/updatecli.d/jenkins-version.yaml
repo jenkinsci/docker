@@ -43,21 +43,14 @@ conditions:
       image: jenkins/jenkins
 
 targets:
-  updateDockerBakeJenkinsVersion:
+  updateJenkinsVersionInDockerBake:
     name: Update default value of JENKINS_VERSION in docker-bake.hcl
     kind: hcl
     sourceid: latestVersion
     spec:
       file: docker-bake.hcl
       path: variable.JENKINS_VERSION.default
-  updateDockerBakeWarSha:
-    name: Update default value of WAR_SHA in docker-bake.hcl
-    kind: hcl
-    sourceid: latestWarSha
-    spec:
-      file: docker-bake.hcl
-      path: variable.WAR_SHA.default
-  updateDockerfilesJenkinsVersion:
+  updateJenkinsVersionInDockerfiles:
     name: Update value of JENKINS_VERSION in Dockerfile
     kind: dockerfile
     sourceid: latestVersion
@@ -70,7 +63,7 @@ targets:
       instruction:
         keyword: ARG
         matcher: JENKINS_VERSION
-  updateGoldenFiles:
+  updateJenkinsVersionInGoldenFiles:
     kind: file
     sourceid: latestVersion
     name: Update value of JENKINS_VERSION in golden files
@@ -80,6 +73,13 @@ targets:
         - tests/golden/expected_tags_latest_weekly.txt
         - tests/golden/expected_tags_latest_lts.txt
       matchpattern: (\d+\.\d+)
+  updateWarShaInDockerBake:
+    name: Update default value of WAR_SHA in docker-bake.hcl
+    kind: hcl
+    sourceid: latestWarSha
+    spec:
+      file: docker-bake.hcl
+      path: variable.WAR_SHA.default
 
 actions:
   default:
