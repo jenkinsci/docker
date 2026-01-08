@@ -101,11 +101,12 @@ function docker_build_child {
 }
 
 function get_jenkins_url {
-    if [ -z "${DOCKER_HOST}" ]; then
+    docker_host="${DOCKER_HOST:-}"
+    if [ -z "${docker_host}" ]; then
         DOCKER_IP=localhost
     else
         # shellcheck disable=SC2001
-        DOCKER_IP=$(echo "$DOCKER_HOST" | sed -e 's|tcp://\(.*\):[0-9]*|\1|')
+        DOCKER_IP=$(echo "${docker_host}" | sed -e 's|tcp://\(.*\):[0-9]*|\1|')
     fi
     echo "http://$DOCKER_IP:$(docker port "$(get_sut_container_name)" 8080 | cut -d: -f2)"
 }
