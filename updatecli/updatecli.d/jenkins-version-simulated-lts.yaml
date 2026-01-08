@@ -43,7 +43,7 @@ conditions:
       image: jenkins/jenkins
 
 targets:
-  updateJenkinsVersion:
+  updateJenkinsVersionInJenkinsfile:
     name: Update default value of simulated LTS JENKINS_VERSION in Jenkinsfile
     kind: file
     sourceid: latestVersion
@@ -53,6 +53,16 @@ targets:
         'JENKINS_VERSION=(.*)'
       content: >-
         'JENKINS_VERSION={{ source "latestVersion" }}'
+  updateJenkinsVersionInTests:
+    name: Update default value of LTS_JENKINS_VERSION in tests
+    kind: file
+    sourceid: latestVersion
+    spec:
+      file: tests/bake.bats
+      matchpattern: >-
+        LTS_JENKINS_VERSION=(.*)
+      content: >-
+        LTS_JENKINS_VERSION="{{ source "latestVersion" }}"
   updateWarSha:
     name: Update default value of simulated LTS WAR_SHA in Jenkinsfile
     kind: file
