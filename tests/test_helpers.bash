@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Assert that $1 is the outputof a command $2
 function assert {
@@ -100,17 +101,29 @@ function docker_build_child {
 }
 
 function get_jenkins_url {
-    if [ -z "${DOCKER_HOST}" ]; then
+    docker_host="${DOCKER_HOST:-}"
+    if [ -z "${docker_host}" ]; then
         DOCKER_IP=localhost
     else
         # shellcheck disable=SC2001
-        DOCKER_IP=$(echo "$DOCKER_HOST" | sed -e 's|tcp://\(.*\):[0-9]*|\1|')
+        DOCKER_IP=$(echo "${docker_host}" | sed -e 's|tcp://\(.*\):[0-9]*|\1|')
     fi
     echo "http://$DOCKER_IP:$(docker port "$(get_sut_container_name)" 8080 | cut -d: -f2)"
 }
 
 function get_jenkins_password {
     docker exec "$(get_sut_container_name)" cat /var/jenkins_home/secrets/initialAdminPassword
+}
+
+function get_targets_from_jenkinsfile {
+    sed -n '/def images = \[/,/]/p' Jenkinsfile `# retrieve images array from Jenkinsfile` \
+     | grep "'" `# keep only its items` \
+     | tr -d "', " `# cleanup output` \
+     | sort `# ensure constant output sort`
+}
+
+function get_default_docker_bake_targets {
+    make --silent show | jq -r '.target | keys[]' | sort
 }
 
 function test_url {
