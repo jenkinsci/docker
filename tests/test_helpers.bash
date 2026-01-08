@@ -121,7 +121,7 @@ function get_targets_from_jenkinsfile {
 }
 
 function get_default_docker_bake_targets {
-    make show | jq -r '.target | keys[]' | sort
+    make --silent show | jq -r '.target | keys[]' | sort
 }
 
 function test_url {
