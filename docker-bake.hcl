@@ -4,7 +4,7 @@ variable "jdks_to_build_for_lts" {
 }
 
 variable "jdks_to_build_for_weekly" {
-  default = [17, 21, 25]
+  default = [21, 25]
 }
 
 variable "default_jdk" {
