@@ -114,8 +114,8 @@ target "alpine" {
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    ALPINE_TAG         = ALPINE_FULL_TAG
     JAVA_VERSION       = javaversion(jdk)
+    ALPINE_TAG         = ALPINE_FULL_TAG
   }
   tags      = linux_tags("alpine", jdk)
   platforms = platforms("alpine", jdk)
@@ -135,10 +135,10 @@ target "debian" {
     WAR_URL             = war_url()
     COMMIT_SHA          = COMMIT_SHA
     PLUGIN_CLI_VERSION  = PLUGIN_CLI_VERSION
+    JAVA_VERSION        = javaversion(jdk)
     DEBIAN_RELEASE_LINE = DEBIAN_RELEASE_LINE
     DEBIAN_VERSION      = DEBIAN_VERSION
     DEBIAN_VARIANT      = is_debian_slim(variant) ? "-slim" : ""
-    JAVA_VERSION        = javaversion(jdk)
   }
   tags      = linux_tags(variant, jdk)
   platforms = platforms(variant, jdk)
@@ -157,9 +157,9 @@ target "rhel" {
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    JAVA_VERSION       = javaversion(jdk)
     RHEL_TAG           = RHEL_TAG
     RHEL_RELEASE_LINE  = RHEL_RELEASE_LINE
-    JAVA_VERSION       = javaversion(jdk)
   }
   tags      = linux_tags(current_rhel, jdk)
   platforms = platforms(current_rhel, jdk)
