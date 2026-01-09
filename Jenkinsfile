@@ -64,6 +64,7 @@ stage('Build') {
                             stage("Build ${imageType}") {
                                 infra.withDockerCredentials {
                                     powershell './make.ps1 build'
+                                    archiveArtifacts artifacts: 'build-windows_*.yaml', allowEmptyArchive: true
                                 }
                             }
 
@@ -117,7 +118,7 @@ stage('Build') {
 
         if (!infra.isTrusted()) {
             // This list can be updated with the following command:
-            // make show | jq -r '.target | keys[]' | sort
+            // make show-linux | jq -r '.target | keys[]' | sort
             def images = [
                 'alpine_jdk21',
                 'alpine_jdk25',

@@ -20,3 +20,6 @@ rhel_jdk21:linux/ppc64le
 rhel_jdk25:linux/amd64
 rhel_jdk25:linux/arm64
 rhel_jdk25:linux/ppc64le
+windowsservercore_jdk17:windows/amd64
+windowsservercore_jdk21:windows/amd64
+windowsservercore_jdk25:windows/amd64

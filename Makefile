@@ -9,7 +9,17 @@ export BUILDKIT_PROGRESS=plain
 ## Required to have the commit SHA added as a Docker image label
 export COMMIT_SHA=$(shell git rev-parse HEAD)
 
+current_os := $(shell uname -s)
 current_arch := $(shell uname -m)
+
+export OS := $(shell \
+	case "$(current_os)" in \
+		(Linux) echo linux ;; \
+		(Darwin) echo linux ;; \
+		(MINGW*|MSYS*|CYGWIN*) echo windows ;; \
+		(*) echo unknown ;; \
+	esac)
+
 export ARCH ?= $(shell \
 	case $(current_arch) in \
 		(x86_64) echo "amd64" ;; \
@@ -31,7 +41,7 @@ TEST_SUITES ?= $(CURDIR)/tests
 ## Check the presence of a CLI in the current PATH
 check_cli = type "$(1)" >/dev/null 2>&1 || { echo "Error: command '$(1)' required but not found. Exiting." ; exit 1 ; }
 ## Check if a given image exists in the current manifest docker-bake.hcl
-check_image = make --silent list | grep -w '$(1)' >/dev/null 2>&1 || { echo "Error: the image '$(1)' does not exist in manifest for the platform 'linux/$(ARCH)'. Please check the output of 'make list'. Exiting." ; exit 1 ; }
+check_image = make --silent list | grep -w '$(1)' >/dev/null 2>&1 || { echo "Error: the image '$(1)' does not exist in manifest for the current platform '$(OS)/$(ARCH)'. Please check the output of 'make list'. Exiting." ; exit 1 ; }
 ## Base "docker buildx base" command to be reused everywhere
 bake_base_cli := docker buildx bake -f docker-bake.hcl --load
 
@@ -70,38 +80,50 @@ hadolint:
 shellcheck:
 	@$(ROOT_DIR)/tools/shellcheck -e SC1091 jenkins-support *.sh tests/test_helpers.bash tools/hadolint tools/shellcheck .ci/publish.sh
 
-# Build targets depending on the current architecture
+# Build all targets with on the current OS and architecture
 build: check-reqs
-	@set -x; $(bake_base_cli) --set '*.platform=linux/$(ARCH)' $(shell make --silent list)
+	@set -x; $(bake_base_cli) --set '*.platform=$(OS)/$(ARCH)' $(shell make --silent list)
 
-# Build targets depending on the architecture
+# Build targets depending on the architecture (Linux only, no multiarch for Windows)
 buildarch-%: check-reqs
 	@$(bake_base_cli) --set '*.platform=linux/$*' $(shell make --silent listarch-$*)
 
-# Build a specific target with the current architecture
+# Build a specific target with the current OS and architecture
 build-%: check-reqs
 	@$(call check_image,$*)
-	@set -x; $(bake_base_cli) --set '*.platform=linux/$(ARCH)' '$*'
+	@set -x; $(bake_base_cli) --set '*.platform=$(OS)/$(ARCH)' '$*'
 
 # Show all targets
 show:
-	@$(bake_base_cli) --progress=quiet linux --print | jq
+	@make show-all
 
-# List all tags
+# Show a specific target
+show-%:
+	@$(bake_base_cli) --progress=quiet '$*' --print | jq
+
+# List tags of all targets
 tags:
-	@make show | jq -r ' .target | to_entries[] | .key as $$name | .value.tags[] | "\(.) (\($$name))"' | LC_ALL=C sort -u
+	@make tags-all
 
-# List all platforms
+# List tags of a specific target
+tags-%:
+	@make show-$* | jq -r ' .target | to_entries[] | .key as $$name | .value.tags[] | "\(.) (\($$name))"' | LC_ALL=C sort -u
+
+# List tags of all targets
 platforms:
-	@make show | jq -r ' .target | to_entries[] | .key as $$name | .value.platforms[] | "\($$name):\(.)"' | LC_ALL=C sort -u
+	@make platforms-all
 
-# Return the list of targets depending on the current architecture
+# List platforms of a specific target
+platforms-%:
+	@make show-$* | jq -r ' .target | to_entries[] | .key as $$name | .value.platforms[] | "\($$name):\(.)"' | LC_ALL=C sort -u
+
+# Return the list of targets depending on the current OS and architecture
 list: check-reqs
-	@set -x; make --silent show | jq -r '.target | path(.. | select(.platforms[] | contains("linux/$(ARCH)"))?) | add'
+	@set -x; make --silent show | jq -r '.target | path(.. | select(.platforms[] | contains("$(OS)/$(ARCH)"))?) | add'
 
-# Return the list of targets depending on the architecture
+# Return the list of targets depending on the architecture (Linux only, no multiarch for Windows)
 listarch-%: check-reqs
-	@make --silent show | jq -r '.target | path(.. | select(.platforms[] | contains("linux/$*"))?) | add'
+	@set -x; make --silent show | jq -r '.target | path(.. | select(.platforms[] | contains("linux/$*"))?) | add'
 
 # Ensure bats exists in the current folder
 bats:

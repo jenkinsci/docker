@@ -66,8 +66,9 @@ function Retry-Command {
 }
 
 function Get-SutImage {
-    $DOCKERFILE = Get-EnvOrDefault 'DOCKERFILE' ''
-    $IMAGENAME = Get-EnvOrDefault 'CONTROLLER_IMAGE' '' # Ex: jdk17-hotspot-windowsservercore-ltsc2022
+    # TODO: don't hardcode Windows flavor
+    $DOCKERFILE = 'windows/windowsservercore/hotspot/Dockerfile'
+    $IMAGETAG = Get-EnvOrDefault 'CONTROLLER_TAG' ''
 
     $REAL_DOCKERFILE=Resolve-Path -Path "$PSScriptRoot/../${DOCKERFILE}"
 
@@ -76,7 +77,7 @@ function Get-SutImage {
         exit 1
     }
 
-    return "pester-jenkins-$IMAGENAME"
+    return "pester-jenkins-$IMAGETAG"
 }
 
 function Run-Program($cmd, $params, $verbose=$false) {
@@ -105,11 +106,12 @@ function Run-Program($cmd, $params, $verbose=$false) {
 }
 
 function Build-Docker($tag) {
-    $exitCode, $stdout, $stderr = Run-Program 'docker-compose' '--file=build-windows.yaml build --parallel'
+    # TODO: don't hardcode Windows flavor and Windows version
+    $exitCode, $stdout, $stderr = Run-Program 'docker-compose' '--file=build-windows_windowsservercore-ltsc2022.yaml build --parallel'
     if($exitCode -ne 0) {
         return $exitCode, $stdout, $stderr
     }
-    return(Run-Program 'docker' $('tag {0}/{1}:{2} {3}' -f $env:DOCKERHUB_ORGANISATION, $env:DOCKERHUB_REPO, $env:CONTROLLER_IMAGE, $tag))
+    return(Run-Program 'docker' $('tag {0}:{1} {2}' -f $env:DOCKERHUB_ORG_REPO, $env:CONTROLLER_TAG, $tag))
 }
 
 function Build-DockerChild($tag, $dir) {
