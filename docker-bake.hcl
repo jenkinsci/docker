@@ -184,10 +184,36 @@ function "is_jenkins_version_weekly" {
   result = length(regexall("[0-9]+[.]", JENKINS_VERSION)) < 2 ? true : false
 }
 
-# return the list of jdk to build depending on JENKINS_VERSION
+# Return true if the Jenkins version corresponds to an LTS release.
+function "is_jenkins_version_lts" {
+    # Weekly releases have a single numeric segment (e.g. 2.545),
+    # while LTS releases include a patch segment (e.g. 2.541.1).
+  params = []
+  result = !is_jenkins_version_weekly()
+}
+
+# Return true if the Jenkins version belongs to the 2.541.x LTS line.
+# JDK 17 is kept only for this LTS for compatibility reasons.
+function "is_lts_2541" {
+  params = []
+  result = is_jenkins_version_lts() && length(regexall("^2\\.541\\.", JENKINS_VERSION)) > 0
+}
+
+# Return the list of JDKs to build depending on the Jenkins release line.
+# - Weekly releases must not build JDK 17 (Java 21+ required).
+# - LTS 2.541.x keeps JDK 17 for backward compatibility.
+# - Future LTS releases must not build JDK 17.
 function "jdks_to_build" {
   params = []
-  result = is_jenkins_version_weekly() ? jdks_to_build_for_weekly : jdks_to_build_for_lts
+    result = (
+      is_jenkins_version_weekly()
+        ? [for jdk in jdks_to_build_for_weekly : jdk if jdk != 17]
+        : (
+            is_lts_2541()
+              ? jdks_to_build_for_lts
+              : [for jdk in jdks_to_build_for_lts : jdk if jdk != 17]
+          )
+    )
 }
 
 # return a tag prefixed by the Jenkins version
