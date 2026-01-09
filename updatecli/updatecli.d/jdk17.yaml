@@ -38,7 +38,7 @@ conditions:
         - windows/x64
 
 targets:
-  ## Global config files
+  ## Global config file
   setJDK17VersionDockerBake:
     name: "Bump JDK17 version for Linux images in the docker-bake.hcl file"
     kind: hcl
@@ -49,18 +49,6 @@ targets:
     spec:
       file: docker-bake.hcl
       path: variable.JAVA17_VERSION.default
-    scmid: default
-  setJDK17VersionWindowsDockerCompose:
-    name: "Bump JDK17 version in build-windows.yaml"
-    kind: yaml
-    transformers:
-      - replacer:
-          from: "+"
-          to: "_"
-    spec:
-      files:
-        - build-windows.yaml
-      key: $.services.jdk17.build.args.JAVA_VERSION
     scmid: default
   ## Dockerfiles
   setJDK17Version:
