@@ -15,19 +15,10 @@ scms:
 
 sources:
   latestVersion:
-    kind: githubrelease
+    kind: file
     name: Get latest Jenkins Core release version
     spec:
-      owner: jenkinsci
-      repository: jenkins
-      token: "{{ requiredEnv .github.token }}"
-      username: "{{ .github.username }}"
-      versionfilter:
-        kind: regex
-        pattern: >-
-          \d+\.\d+$
-    transformers:
-      - trimprefix: "jenkins-"
+      file: https://updates.jenkins.io/latestCore.txt
   latestWarSha:
     kind: shell
     name: Get latest Jenkins Core sha256 checksum
