@@ -83,7 +83,7 @@ stage('Build') {
                         // if (branchName ==~ 'master'){
                         //    stage('Publish Experimental') {
                         //        infra.withDockerCredentials {
-                        //            withEnv(['DOCKERHUB_ORGANISATION=jenkins4eval','DOCKERHUB_REPO=jenkins']) {
+                        //            withEnv(['CONTAINER_ORGANISATION=jenkins4eval','CONTAINER_REPOSITORY=jenkins']) {
                         //                powershell './make.ps1 publish'
                         //            }
                         //        }
@@ -101,7 +101,7 @@ stage('Build') {
                                 ]) {
                                     stage('Publish') {
                                         infra.withDockerCredentials {
-                                            withEnv(['DOCKERHUB_ORGANISATION=jenkins', 'DOCKERHUB_REPO=jenkins']) {
+                                            withEnv(['CONTAINER_ORGANISATION=jenkins', 'CONTAINER_REPOSITORY=jenkins']) {
                                                 powershell './make.ps1 build'
                                                 powershell './make.ps1 publish'
                                             }
