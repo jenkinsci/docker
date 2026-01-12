@@ -47,11 +47,11 @@ stage('Build') {
     withEnv(envVars) {
         echo '= bake target: linux'
 
-        def windowsImageTypes = ['windowsservercore-ltsc2022']
+        def windowsImageTypes = ['windowsservercore-ltsc2022', 'windowsservercore-ltsc2025']
         for (anImageType in windowsImageTypes) {
             def imageType = anImageType
             builds[imageType] = {
-                nodeWithTimeout('windows-2022') {
+                nodeWithTimeout('windows-2025') {
                     stage('Checkout') {
                         checkout scm
                     }
