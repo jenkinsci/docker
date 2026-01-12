@@ -83,7 +83,7 @@ stage('Build') {
                         // if (branchName ==~ 'master'){
                         //    stage('Publish Experimental') {
                         //        infra.withDockerCredentials {
-                        //            withEnv(['CONTAINER_ORGANISATION=jenkins4eval','CONTAINER_REPOSITORY=jenkins']) {
+                        //            withEnv(['CONTAINER_NAMESPACE=jenkins4eval','CONTAINER_REPOSITORY=jenkins']) {
                         //                powershell './make.ps1 publish'
                         //            }
                         //        }
@@ -101,7 +101,7 @@ stage('Build') {
                                 ]) {
                                     stage('Publish') {
                                         infra.withDockerCredentials {
-                                            withEnv(['CONTAINER_ORGANISATION=jenkins', 'CONTAINER_REPOSITORY=jenkins']) {
+                                            withEnv(['CONTAINER_NAMESPACE=jenkins', 'CONTAINER_REPOSITORY=jenkins']) {
                                                 powershell './make.ps1 build'
                                                 powershell './make.ps1 publish'
                                             }

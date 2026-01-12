@@ -27,7 +27,7 @@ variable "DOCKERHUB_REGISTRY" {
   default = "docker.io"
 }
 
-variable "CONTAINER_ORGANISATION" {
+variable "CONTAINER_NAMESPACE" {
   default = "jenkins"
 }
 
@@ -198,14 +198,14 @@ function "jdks_to_build" {
 function "_tag_jenkins_version" {
   params = [tag]
   result = (notequal(tag, "")
-    ? "${DOCKERHUB_REGISTRY}/${CONTAINER_ORGANISATION}/${CONTAINER_REPOSITORY}:${JENKINS_VERSION}-${tag}"
-    : "${DOCKERHUB_REGISTRY}/${CONTAINER_ORGANISATION}/${CONTAINER_REPOSITORY}:${JENKINS_VERSION}")
+    ? "${DOCKERHUB_REGISTRY}/${CONTAINER_NAMESPACE}/${CONTAINER_REPOSITORY}:${JENKINS_VERSION}-${tag}"
+    : "${DOCKERHUB_REGISTRY}/${CONTAINER_NAMESPACE}/${CONTAINER_REPOSITORY}:${JENKINS_VERSION}")
 }
 
 # return a tag optionaly prefixed by the Jenkins version
 function "tag" {
   params = [prepend_jenkins_version, tag]
-  result = equal(prepend_jenkins_version, true) ? _tag_jenkins_version(tag) : "${DOCKERHUB_REGISTRY}/${CONTAINER_ORGANISATION}/${CONTAINER_REPOSITORY}:${tag}"
+  result = equal(prepend_jenkins_version, true) ? _tag_jenkins_version(tag) : "${DOCKERHUB_REGISTRY}/${CONTAINER_NAMESPACE}/${CONTAINER_REPOSITORY}:${tag}"
 }
 
 # return a weekly optionaly prefixed by the Jenkins version

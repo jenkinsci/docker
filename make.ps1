@@ -17,8 +17,8 @@ if(![String]::IsNullOrWhiteSpace($env:CONTAINER_REPOSITORY)) {
     $Repository = $env:CONTAINER_REPOSITORY
 }
 
-if(![String]::IsNullOrWhiteSpace($env:CONTAINER_ORGANISATION)) {
-    $Organisation = $env:CONTAINER_ORGANISATION
+if(![String]::IsNullOrWhiteSpace($env:CONTAINER_NAMESPACE)) {
+    $Organisation = $env:CONTAINER_NAMESPACE
 }
 
 if(![String]::IsNullOrWhiteSpace($env:JENKINS_VERSION)) {
@@ -29,7 +29,7 @@ if(![String]::IsNullOrWhiteSpace($env:IMAGE_TYPE)) {
     $ImageType = $env:IMAGE_TYPE
 }
 
-$env:CONTAINER_ORGANISATION = "$Organisation"
+$env:CONTAINER_NAMESPACE = "$Organisation"
 $env:CONTAINER_REPOSITORY = "$Repository"
 $env:JENKINS_VERSION = "$JenkinsVersion"
 
