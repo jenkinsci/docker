@@ -57,13 +57,17 @@ stage('Build') {
                     }
 
                     withEnv(["IMAGE_TYPE=${imageType}"]) {
+                        stage('Prepare Docker') {
+                            infra.withDockerCredentials {
+                                powershell './make.ps1 -Target docker-init'
+                            }
+                        }
                         if (!infra.isTrusted()) {
                             /* Outside of the trusted.ci environment, we're building and testing
                             * the Dockerfile in this repository, but not publishing to docker hub
                             */
                             stage("Build ${imageType}") {
                                 infra.withDockerCredentials {
-                                    powershell 'docker info'
                                     powershell './make.ps1 build'
                                 }
                             }

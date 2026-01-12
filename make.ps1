@@ -62,6 +62,30 @@ $env:COMMIT_SHA=$(git rev-parse HEAD)
 $baseDockerCmd = 'docker-compose --file=build-windows.yaml'
 $baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
 
+function Initialize-Docker() {
+    # Cf https://github.com/jenkins-infra/jenkins-infra/blob/production/modules/profile/templates/jenkinscontroller/casc/clouds-ec2.yaml.erb
+    $dockerDaemonConfigPath = 'C:\ProgramData\Docker\config\daemon.json'
+    if (Test-Path $dockerDaemonConfigPath) {
+        $dockerDaemonConfig = Get-Content -Path $dockerDaemonConfigPath -Raw | ConvertFrom-Json
+        Write-Host "${dockerDaemonConfigPath} file content:"
+        $dockerDaemonConfig | ConvertTo-Json
+        # Remove docker daemon config setting "data-root" to Z:\docker (NVMe mount) to avoid hitting moby/moby#48093
+        Remove-Item -Path $dockerDaemonConfigPath
+        Restart-Service docker
+    }
+    Get-ComputerInfo | Select-Object OsName, OsBuildNumber, WindowsVersion
+    Get-WindowsFeature Containers | Out-String
+    Invoke-Expression 'docker info'
+    Get-CimInstance -ClassName Win32_Processor
+    Get-ChildItem env: | Select-Object Name, Value
+}
+
+if($target -eq 'docker-init') {
+    Write-Host '= Initialize-Docker then exit'
+    Initialize-Docker
+    exit 0
+}
+
 Write-Host "= PREPARE: List of $Organisation/$Repository images and tags to be processed:"
 Invoke-Expression "$baseDockerCmd config"
 
