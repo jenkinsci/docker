@@ -119,14 +119,14 @@ stage('Build') {
             // This list can be updated with the following command:
             // make show | jq -r '.target | keys[]' | sort
             def images = [
-                'alpine_jdk21',
-                'alpine_jdk25',
-                'debian_jdk21',
-                'debian_jdk25',
-                'debian-slim_jdk21',
-                'debian-slim_jdk25',
-                'rhel_jdk21',
-                'rhel_jdk25',
+                // 'alpine_jdk21',
+                // 'alpine_jdk25',
+                // 'debian_jdk21',
+                // 'debian_jdk25',
+                // 'debian-slim_jdk21',
+                // 'debian-slim_jdk25',
+                // 'rhel_jdk21',
+                // 'rhel_jdk25',
             ]
             for (i in images) {
                 def imageToBuild = i
@@ -167,23 +167,23 @@ stage('Build') {
                     }
                 }
             }
-            // Building every other architectures than amd64 on agents with the corresponding labels if available
-            architecturesAndCiJioAgentLabels.findAll { arch, _ -> arch != 'amd64' }.each { architecture, labels ->
-                builds[architecture] = {
-                    nodeWithTimeout(labels) {
-                        stage('Checkout') {
-                            deleteDir()
-                            checkout scm
-                        }
-                        // sanity check that proves all images build on declared platforms not already built in other stages
-                        stage("Multi arch build - ${architecture}") {
-                            infra.withDockerCredentials {
-                                sh "make docker-init listarch-${architecture} buildarch-${architecture}"
-                            }
-                        }
-                    }
-                }
-            }
+            // // Building every other architectures than amd64 on agents with the corresponding labels if available
+            // architecturesAndCiJioAgentLabels.findAll { arch, _ -> arch != 'amd64' }.each { architecture, labels ->
+            //     builds[architecture] = {
+            //         nodeWithTimeout(labels) {
+            //             stage('Checkout') {
+            //                 deleteDir()
+            //                 checkout scm
+            //             }
+            //             // sanity check that proves all images build on declared platforms not already built in other stages
+            //             stage("Multi arch build - ${architecture}") {
+            //                 infra.withDockerCredentials {
+            //                     sh "make docker-init listarch-${architecture} buildarch-${architecture}"
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
         } else {
             // Only publish when a tag triggered the build
             if (env.TAG_NAME) {
