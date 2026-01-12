@@ -160,7 +160,7 @@ export CONTAINER_REPOSITORY=test-jenkins
 # The log below will help confirm this override was taken in account:
 ./publish.sh
 Docker repository in Use:
-* DOCKERHUB_REGISTRY: docker.io
+* CONTAINER_REGISTRY: docker.io
 * CONTAINER_NAMESPACE: jenkins4eval
 * CONTAINER_REPOSITORY: test-jenkins
 ...
