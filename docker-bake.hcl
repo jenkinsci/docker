@@ -7,6 +7,14 @@ variable "jdks_to_build_for_weekly" {
   default = [21, 25]
 }
 
+variable "windows_version_to_build_for_lts" {
+  default = ["windowsservercore-ltsc2019"]
+}
+
+variable "windows_version_to_build_for_weekly" {
+  default = ["windowsservercore-ltsc2022"]
+}
+
 variable "default_jdk" {
   default = 21
 }
@@ -175,9 +183,9 @@ target "windowsservercore" {
     # TODO: to be restored to jdks_to_build() in #2179
     # jdk             = jdks_to_build()
     jdk             = [21, 25]
-    windows_version = windowsversions("windowsservercore")
+    windows_version = windowsversions()
   }
-  name       = "windowsservercore_jdk${jdk}"
+  name       = "${windows_version}_jdk${jdk}"
   dockerfile = "windows/windowsservercore/hotspot/Dockerfile"
   context    = "."
   args = {
@@ -190,7 +198,7 @@ target "windowsservercore" {
     JAVA_HOME          = "C:/openjdk-${jdk}"
     WINDOWS_VERSION    = windows_version
   }
-  tags      = windows_tags("windowsservercore-${windows_version}", jdk)
+  tags      = windows_tags(windows_version, jdk)
   platforms = ["windows/amd64"]
 }
 
@@ -417,6 +425,8 @@ function "debian_tags" {
 # Can be overriden by setting WINDOWS_VERSION_OVERRIDE to a specific Windows version
 # Ex: WINDOWS_VERSION_OVERRIDE=ltsc2025 docker buildx bake windows
 function "windowsversions" {
-  params = [flavor]
-  result = notequal(WINDOWS_VERSION_OVERRIDE, "") ? [WINDOWS_VERSION_OVERRIDE] : ["ltsc2022"]
+  params = []
+  result = (notequal(WINDOWS_VERSION_OVERRIDE, "")
+    ? [WINDOWS_VERSION_OVERRIDE]
+    : is_jenkins_version_weekly() ? windows_version_to_build_for_weekly : windows_version_to_build_for_lts)
 }
