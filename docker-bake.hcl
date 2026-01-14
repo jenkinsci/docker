@@ -180,9 +180,7 @@ target "rhel" {
 
 target "windowsservercore" {
   matrix = {
-    # TODO: to be restored to jdks_to_build() in #2179
-    # jdk             = jdks_to_build()
-    jdk             = [21, 25]
+    jdk             = jdks_to_build()
     windows_version = windowsversions()
   }
   name       = "${windows_version}_jdk${jdk}"
