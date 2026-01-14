@@ -80,7 +80,7 @@ hadolint:
 shellcheck:
 	@$(ROOT_DIR)/tools/shellcheck -e SC1091 jenkins-support *.sh tests/test_helpers.bash tools/hadolint tools/shellcheck .ci/publish.sh
 
-# Build all targets with on the current OS and architecture
+# Build all targets with the current OS and architecture
 build: check-reqs
 	@set -x; $(bake_base_cli) --set '*.platform=$(OS)/$(ARCH)' $(shell make --silent list)
 
