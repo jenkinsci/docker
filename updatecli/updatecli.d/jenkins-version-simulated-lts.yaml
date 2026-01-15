@@ -95,3 +95,4 @@ actions:
       labels:
         - dependencies
         - jenkins-version
+        - skip-changelog
