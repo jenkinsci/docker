@@ -72,7 +72,8 @@ targets:
     name: Update value of JENKINS_VERSION in LTS golden file
     spec:
       file: tests/golden/expected_tags_latest_lts.txt
-      matchpattern: (\d+\.\d+\.\d+)
+      matchpattern: :(\d+\.\d+\.\d+)
+      replacepattern: :{{ source "latestVersion" }}-
   updateWarSha:
     name: Update default value of simulated LTS WAR_SHA in Jenkinsfile
     kind: file
