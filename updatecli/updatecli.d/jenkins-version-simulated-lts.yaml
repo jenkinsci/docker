@@ -46,6 +46,7 @@ targets:
   updateJenkinsVersionInJenkinsfile:
     name: Update default value of simulated LTS JENKINS_VERSION in Jenkinsfile
     kind: file
+    scmid: default
     sourceid: latestVersion
     spec:
       file: Jenkinsfile
@@ -56,6 +57,7 @@ targets:
   updateJenkinsVersionInTests:
     name: Update default value of LTS_JENKINS_VERSION in tests
     kind: file
+    scmid: default
     sourceid: latestVersion
     spec:
       file: tests/bake.bats
@@ -65,6 +67,7 @@ targets:
         LTS_JENKINS_VERSION="{{ source "latestVersion" }}"
   updateJenkinsVersionInGoldenFiles:
     kind: file
+    scmid: default
     sourceid: latestVersion
     name: Update value of JENKINS_VERSION in LTS golden file
     spec:
@@ -73,6 +76,7 @@ targets:
   updateWarSha:
     name: Update default value of simulated LTS WAR_SHA in Jenkinsfile
     kind: file
+    scmid: default
     sourceid: latestWarSha
     spec:
       file: Jenkinsfile
