@@ -64,8 +64,8 @@ targets:
       files:
         - tests/golden/expected_tags.txt
         - tests/golden/expected_tags_latest_weekly.txt
-      matchpattern: :(\d+\.\d+)-
-      replacepattern: :{{ source "latestVersion" }}-
+      matchpattern: :(\d+\.\d+)
+      replacepattern: :{{ source "latestVersion" }}
   updateWarShaInDockerBake:
     name: Update default value of WAR_SHA in docker-bake.hcl
     kind: hcl
