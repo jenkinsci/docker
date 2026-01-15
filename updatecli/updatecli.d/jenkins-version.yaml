@@ -66,6 +66,20 @@ targets:
         - tests/golden/expected_tags_latest_weekly.txt
       matchpattern: :(\d+\.\d+)
       replacepattern: :{{ source "latestVersion" }}
+  updateWarShaInDockerfiles:
+    name: Update default value of WAR_SHA in Dockerfiles
+    kind: dockerfile
+    scmid: default
+    sourceid: latestWarSha
+    spec:
+      files:
+        - alpine/hotspot/Dockerfile
+        - debian/Dockerfile
+        - rhel/Dockerfile
+        - windows/windowsservercore/hotspot/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: WAR_SHA
   updateWarShaInDockerBake:
     name: Update default value of WAR_SHA in docker-bake.hcl
     kind: hcl
