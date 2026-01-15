@@ -44,7 +44,7 @@ targets:
       path: variable.JENKINS_VERSION.default
   updateJenkinsVersionInDockerfiles:
     name: Update value of JENKINS_VERSION in Dockerfile
-    kind: dockerfile
+    kind: file
     scmid: default
     sourceid: latestVersion
     spec:
@@ -53,9 +53,8 @@ targets:
         - debian/Dockerfile
         - rhel/Dockerfile
         - windows/windowsservercore/hotspot/Dockerfile
-      instruction:
-        keyword: ARG
-        matcher: JENKINS_VERSION
+      matchpattern: :-(\d+\.\d+)}
+      replacepattern: :-{{ source "latestVersion" }}}
   updateJenkinsVersionInGoldenFiles:
     kind: file
     scmid: default
@@ -65,7 +64,8 @@ targets:
       files:
         - tests/golden/expected_tags.txt
         - tests/golden/expected_tags_latest_weekly.txt
-      matchpattern: (\d+\.\d+)
+      matchpattern: :(\d+\.\d+)-
+      replacepattern: :{{ source "latestVersion" }}-
   updateWarShaInDockerBake:
     name: Update default value of WAR_SHA in docker-bake.hcl
     kind: hcl
@@ -78,7 +78,7 @@ targets:
 actions:
   default:
     kind: github/pullrequest
-    title: Bump default `JENKINS_VERSION` to {{ source "latestVersion" }}
+    title: Bump default `JENKINS_VERSION` to Weekly {{ source "latestVersion" }}
     scmid: default
     spec:
       labels:
