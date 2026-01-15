@@ -37,6 +37,7 @@ targets:
   updateJenkinsVersionInDockerBake:
     name: Update default value of JENKINS_VERSION in docker-bake.hcl
     kind: hcl
+    scmid: default
     sourceid: latestVersion
     spec:
       file: docker-bake.hcl
@@ -44,6 +45,7 @@ targets:
   updateJenkinsVersionInDockerfiles:
     name: Update value of JENKINS_VERSION in Dockerfile
     kind: dockerfile
+    scmid: default
     sourceid: latestVersion
     spec:
       files:
@@ -56,6 +58,7 @@ targets:
         matcher: JENKINS_VERSION
   updateJenkinsVersionInGoldenFiles:
     kind: file
+    scmid: default
     sourceid: latestVersion
     name: Update value of JENKINS_VERSION in (weekly) golden files
     spec:
@@ -66,6 +69,7 @@ targets:
   updateWarShaInDockerBake:
     name: Update default value of WAR_SHA in docker-bake.hcl
     kind: hcl
+    scmid: default
     sourceid: latestWarSha
     spec:
       file: docker-bake.hcl
