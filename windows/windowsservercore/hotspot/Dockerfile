@@ -98,7 +98,7 @@ RUN New-Item -ItemType Directory -Force -Path C:/ProgramData/Jenkins/Reference/i
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION=${JENKINS_VERSION:-2.534}
+ENV JENKINS_VERSION=${JENKINS_VERSION:-2.546}
 
 # jenkins.war checksum, download will be validated using it
 ARG WAR_SHA=f1b03ebf8fdb0ac893fbac9df9835d736ab9825399dc43de8a00d3f3913d8983
