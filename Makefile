@@ -77,33 +77,41 @@ build: check-reqs target
 	@set -x; $(bake_base_cli) --metadata-file=target/build-result-metadata_$(bake_default_target).json --set '*.platform=linux/$(ARCH)' $(shell make --silent list)
 
 # Build targets depending on the architecture
-buildarch-%: check-reqs target
-	@$(bake_base_cli) --metadata-file=target/build-result-metadata_$*.json --set '*.platform=linux/$*' $(shell make --silent listarch-$*)
+buildarch-%: check-reqs target showarch-%
+	@set -x; $(bake_base_cli) --metadata-file=target/build-result-metadata_$*.json --set '*.platform=linux/$*' $(shell make --silent listarch-$*)
 
 # Build a specific target with the current architecture
-build-%: check-reqs target
+build-%: check-reqs target show-%
 	@$(call check_image,$*)
 	@set -x; $(bake_base_cli) --metadata-file=target/build-result-metadata_$*.json --set '*.platform=linux/$(ARCH)' '$*'
 
 # Show all targets
 show:
-	@$(bake_base_cli) --progress=quiet $(bake_default_target) --print | jq
+	@set -x; make --silent show-$(bake_default_target)
+
+# Show a specific target
+show-%:
+	@set -x; $(bake_base_cli) --progress=quiet $* --print | jq
+
+# Show all targets depending on the architecture
+showarch-%:
+	@set -x; make --silent show | jq --arg arch "linux/$*" '.target |= with_entries(select(.value.platforms | index($$arch)))'
 
 # List all tags
 tags:
-	@make show | jq -r ' .target | to_entries[] | .key as $$name | .value.tags[] | "\(.) (\($$name))"' | LC_ALL=C sort -u
+	@set -x; make show | jq -r ' .target | to_entries[] | .key as $$name | .value.tags[] | "\(.) (\($$name))"' | LC_ALL=C sort -u
 
 # List all platforms
 platforms:
-	@make show | jq -r ' .target | to_entries[] | .key as $$name | .value.platforms[] | "\($$name):\(.)"' | LC_ALL=C sort -u
+	@set -x; make show | jq -r ' .target | to_entries[] | .key as $$name | .value.platforms[] | "\($$name):\(.)"' | LC_ALL=C sort -u
 
 # Return the list of targets depending on the current architecture
 list: check-reqs
-	@set -x; make --silent show | jq -r '.target | path(.. | select(.platforms[] | contains("linux/$(ARCH)"))?) | add'
+	@set -x; make --silent showarch-$(ARCH) | jq -r '.target | keys[]'
 
 # Return the list of targets depending on the architecture
 listarch-%: check-reqs
-	@make --silent show | jq -r '.target | path(.. | select(.platforms[] | contains("linux/$*"))?) | add'
+	@set -x; make --silent showarch-$* | jq -r '.target | keys[]'
 
 # Ensure bats exists in the current folder
 bats:
