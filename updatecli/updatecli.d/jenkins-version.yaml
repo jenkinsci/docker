@@ -37,14 +37,40 @@ targets:
   updateJenkinsVersionInDockerBake:
     name: Update default value of JENKINS_VERSION in docker-bake.hcl
     kind: hcl
+    scmid: default
     sourceid: latestVersion
     spec:
       file: docker-bake.hcl
       path: variable.JENKINS_VERSION.default
   updateJenkinsVersionInDockerfiles:
     name: Update value of JENKINS_VERSION in Dockerfile
-    kind: dockerfile
+    kind: file
+    scmid: default
     sourceid: latestVersion
+    spec:
+      files:
+        - alpine/hotspot/Dockerfile
+        - debian/Dockerfile
+        - rhel/Dockerfile
+        - windows/windowsservercore/hotspot/Dockerfile
+      matchpattern: :-(\d+\.\d+)}
+      replacepattern: :-{{ source "latestVersion" }}}
+  updateJenkinsVersionInGoldenFiles:
+    kind: file
+    scmid: default
+    sourceid: latestVersion
+    name: Update value of JENKINS_VERSION in (weekly) golden files
+    spec:
+      files:
+        - tests/golden/expected_tags.txt
+        - tests/golden/expected_tags_latest_weekly.txt
+      matchpattern: :(\d+\.\d+)
+      replacepattern: :{{ source "latestVersion" }}
+  updateWarShaInDockerfiles:
+    name: Update default value of WAR_SHA in Dockerfiles
+    kind: dockerfile
+    scmid: default
+    sourceid: latestWarSha
     spec:
       files:
         - alpine/hotspot/Dockerfile
@@ -53,19 +79,11 @@ targets:
         - windows/windowsservercore/hotspot/Dockerfile
       instruction:
         keyword: ARG
-        matcher: JENKINS_VERSION
-  updateJenkinsVersionInGoldenFiles:
-    kind: file
-    sourceid: latestVersion
-    name: Update value of JENKINS_VERSION in (weekly) golden files
-    spec:
-      files:
-        - tests/golden/expected_tags.txt
-        - tests/golden/expected_tags_latest_weekly.txt
-      matchpattern: (\d+\.\d+)
+        matcher: WAR_SHA
   updateWarShaInDockerBake:
     name: Update default value of WAR_SHA in docker-bake.hcl
     kind: hcl
+    scmid: default
     sourceid: latestWarSha
     spec:
       file: docker-bake.hcl
@@ -74,9 +92,10 @@ targets:
 actions:
   default:
     kind: github/pullrequest
-    title: Bump default `JENKINS_VERSION` to {{ source "latestVersion" }}
+    title: Bump default `JENKINS_VERSION` to Weekly {{ source "latestVersion" }}
     scmid: default
     spec:
       labels:
         - dependencies
         - jenkins-version
+        - skip-changelog

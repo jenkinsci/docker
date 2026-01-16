@@ -1,0 +1,98 @@
+---
+name: Bump simulated LTS `JENKINS_VERSION` version
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "{{ .github.branch }}"
+
+sources:
+  latestVersion:
+    kind: githubrelease
+    name: Get latest Jenkins Core LTS release version (.1 only)
+    spec:
+      owner: jenkinsci
+      repository: jenkins
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      versionfilter:
+        kind: regex
+        pattern: >-
+          \d+\.\d+\.1$
+    transformers:
+      - trimprefix: "jenkins-"
+  latestWarSha:
+    kind: shell
+    name: Get latest Jenkins Core LTS sha256 checksum
+    spec:
+      command: curl --disable --fail --silent --show-error --location "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/{{ source "latestVersion" }}/jenkins-war-{{ source "latestVersion" }}.war.sha256"
+
+conditions:
+  isDockerImagePublished:
+    name: Check if the docker image has been published
+    kind: dockerimage
+    sourceid: latestVersion
+    spec:
+      image: jenkins/jenkins
+
+targets:
+  updateJenkinsVersionInJenkinsfile:
+    name: Update default value of simulated LTS JENKINS_VERSION in Jenkinsfile
+    kind: file
+    scmid: default
+    sourceid: latestVersion
+    spec:
+      file: Jenkinsfile
+      matchpattern: >-
+        'JENKINS_VERSION=(.*)'
+      content: >-
+        'JENKINS_VERSION={{ source "latestVersion" }}'
+  updateJenkinsVersionInTests:
+    name: Update default value of LTS_JENKINS_VERSION in tests
+    kind: file
+    scmid: default
+    sourceid: latestVersion
+    spec:
+      file: tests/bake.bats
+      matchpattern: >-
+        LTS_JENKINS_VERSION=(.*)
+      content: >-
+        LTS_JENKINS_VERSION="{{ source "latestVersion" }}"
+  updateJenkinsVersionInGoldenFiles:
+    kind: file
+    scmid: default
+    sourceid: latestVersion
+    name: Update value of JENKINS_VERSION in LTS golden file
+    spec:
+      file: tests/golden/expected_tags_latest_lts.txt
+      matchpattern: :(\d+\.\d+\.\d+)
+      replacepattern: :{{ source "latestVersion" }}
+  updateWarSha:
+    name: Update default value of simulated LTS WAR_SHA in Jenkinsfile
+    kind: file
+    scmid: default
+    sourceid: latestWarSha
+    spec:
+      file: Jenkinsfile
+      matchpattern: >-
+        'WAR_SHA=(.*)'
+      content: >-
+        'WAR_SHA={{ source "latestWarSha" }}'
+
+actions:
+  default:
+    kind: github/pullrequest
+    title: Bump simulated LTS `JENKINS_VERSION` to {{ source "latestVersion" }}
+    scmid: default
+    spec:
+      labels:
+        - dependencies
+        - jenkins-version
+        - skip-changelog
