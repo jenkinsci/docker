@@ -34,6 +34,8 @@ check_cli = type "$(1)" >/dev/null 2>&1 || { echo "Error: command '$(1)' require
 check_image = make --silent list | grep -w '$(1)' >/dev/null 2>&1 || { echo "Error: the image '$(1)' does not exist in manifest for the platform 'linux/$(ARCH)'. Please check the output of 'make list'. Exiting." ; exit 1 ; }
 ## Base "docker buildx base" command to be reused everywhere
 bake_base_cli := docker buildx bake -f docker-bake.hcl --load
+## Default bake target
+bake_default_target := linux
 
 check-reqs:
 ## Build requirements
@@ -71,21 +73,21 @@ shellcheck:
 	@$(ROOT_DIR)/tools/shellcheck -e SC1091 jenkins-support *.sh tests/test_helpers.bash tools/hadolint tools/shellcheck .ci/publish.sh
 
 # Build targets depending on the current architecture
-build: check-reqs
-	@set -x; $(bake_base_cli) --set '*.platform=linux/$(ARCH)' $(shell make --silent list)
+build: check-reqs target
+	@set -x; $(bake_base_cli) --metadata-file=target/build-result-metadata_$(bake_default_target).json --set '*.platform=linux/$(ARCH)' $(shell make --silent list)
 
 # Build targets depending on the architecture
-buildarch-%: check-reqs
-	@$(bake_base_cli) --set '*.platform=linux/$*' $(shell make --silent listarch-$*)
+buildarch-%: check-reqs target
+	@$(bake_base_cli) --metadata-file=target/build-result-metadata_$*.json --set '*.platform=linux/$*' $(shell make --silent listarch-$*)
 
 # Build a specific target with the current architecture
-build-%: check-reqs
+build-%: check-reqs target
 	@$(call check_image,$*)
-	@set -x; $(bake_base_cli) --set '*.platform=linux/$(ARCH)' '$*'
+	@set -x; $(bake_base_cli) --metadata-file=target/build-result-metadata_$*.json --set '*.platform=linux/$(ARCH)' '$*'
 
 # Show all targets
 show:
-	@$(bake_base_cli) --progress=quiet linux --print | jq
+	@$(bake_base_cli) --progress=quiet $(bake_default_target) --print | jq
 
 # List all tags
 tags:
@@ -109,9 +111,12 @@ bats:
 	cd bats ;\
 	git checkout 3bca150ec86275d6d9d5a4fd7d48ab8b6c6f3d87; # v1.13.0
 
-# Ensure all bats submodules are up to date and that the tests target folder exists
-prepare-test: bats check-reqs
+# Ensure all bats submodules are up to date
+prepare-test: bats check-reqs target
 	git submodule update --init --recursive
+
+# Ensure tests and build metadata "target" folder exist
+target:
 	mkdir -p target
 
 ## Define bats options based on environment
@@ -151,7 +156,7 @@ test: prepare-test
 	@make --silent list | while read image; do make --silent "test-$${image}"; done
 
 # Set all required variables and publish all targets
-publish:
+publish: target
 	./.ci/publish.sh
 
 clean:
