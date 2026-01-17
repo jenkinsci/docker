@@ -48,6 +48,7 @@ stage('Build') {
         echo '= bake target: linux'
 
         def windowsImageTypes = [
+            'windowsservercore-ltsc2019',
             'windowsservercore-ltsc2022'
         ]
         for (anImageType in windowsImageTypes) {
