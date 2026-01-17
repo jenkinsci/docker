@@ -153,6 +153,7 @@ stage('Build') {
                         stage("Build linux-${imageToBuild}") {
                             infra.withDockerCredentials {
                                 sh "make build-${imageToBuild}"
+                                archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
                             }
                         }
 
@@ -182,7 +183,8 @@ stage('Build') {
                         // sanity check that proves all images build on declared platforms not already built in other stages
                         stage("Multi arch build - ${architecture}") {
                             infra.withDockerCredentials {
-                                sh "make docker-init listarch-${architecture} buildarch-${architecture}"
+                                sh "make docker-init buildarch-${architecture}"
+                                archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
                             }
                         }
                     }
@@ -210,6 +212,7 @@ stage('Build') {
                                     infra.withDockerCredentials {
                                         sh 'make docker-init'
                                         sh 'make publish'
+                                        archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
                                     }
                                 }
                             }
