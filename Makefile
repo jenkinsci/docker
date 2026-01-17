@@ -12,7 +12,7 @@ export COMMIT_SHA=$(shell git rev-parse HEAD)
 current_os := $(shell uname -s)
 current_arch := $(shell uname -m)
 
-export OS := $(shell \
+export OS ?= $(shell \
 	case "$(current_os)" in \
 		(Linux) echo linux ;; \
 		(Darwin) echo linux ;; \
