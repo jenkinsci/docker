@@ -135,8 +135,8 @@ function Initialize-DockerComposeFile {
     # - Convert with yq to the format expected by docker compose
     # - Store the result in the docker compose file
     docker buildx bake --progress=plain --file=docker-bake.hcl $windowsFlavor --print |
-        yq --input-format=json --output-format=yaml --prettyPrint $yqMainQuery |
-        yq --input-format=yaml --output-format=yaml $yqServicesQuery |
+        yq --prettyPrint "$yqMainQuery" |
+        yq "$yqServicesQuery "|
         Out-File -FilePath $DockerComposeFile
 
     # Remove override
