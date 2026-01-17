@@ -145,6 +145,9 @@ Test-CommandExists 'docker-compose'
 Test-CommandExists 'docker buildx'
 Test-CommandExists 'yq'
 
+# Sanity check
+yq --version
+
 $dockerComposeFile = 'build-windows_{0}.yaml' -f $ImageType
 $baseDockerCmd = 'docker-compose --file={0}' -f $dockerComposeFile
 $baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
