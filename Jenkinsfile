@@ -67,14 +67,14 @@ stage('Build') {
                             */
                             stage("Build ${imageType}") {
                                 infra.withDockerCredentials {
-                                    powershell './make.ps1 build'
+                                    pwsh './make.ps1 build'
                                     archiveArtifacts artifacts: 'build-windows_*.yaml', allowEmptyArchive: true
                                 }
                             }
 
                             stage("Test ${imageType}") {
                                 infra.withDockerCredentials {
-                                    def windowsTestStatus = powershell(script: './make.ps1 test', returnStatus: true)
+                                    def windowsTestStatus = pwsh(script: './make.ps1 test', returnStatus: true)
                                     junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
                                     if (windowsTestStatus > 0) {
                                         // If something bad happened let's clean up the docker images
@@ -107,8 +107,8 @@ stage('Build') {
                                     stage('Publish') {
                                         infra.withDockerCredentials {
                                             withEnv(['DOCKERHUB_ORGANISATION=jenkins', 'DOCKERHUB_REPO=jenkins']) {
-                                                powershell './make.ps1 build'
-                                                powershell './make.ps1 publish'
+                                                pwsh './make.ps1 build'
+                                                pwsh './make.ps1 publish'
                                             }
                                         }
                                     }
