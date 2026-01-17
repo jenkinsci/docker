@@ -113,7 +113,7 @@ function Initialize-DockerComposeFile {
         [String] $DockerComposeFile
     )
 
-    $baseDockerBakeCmd = 'docker buildx bake --progress=plain --file=docker-bake.hcl'
+    Write-Host "= PREPARE: Docker compose file generation for $ImageType"
 
     $items = $ImageType.Split('-')
     $windowsFlavor = $items[0]
@@ -127,22 +127,14 @@ function Initialize-DockerComposeFile {
     # For each target name as service key, return a map consisting of:
     # - 'image' set to the first tag value
     # - 'build' set to the content of the bake target
-    $yqMainQuery = '''.target[]' + `
-        ' | del(.output)' + `
-        ' | {(. | key): {\"image\": .tags[0], \"build\": .}}'''
+    $yqMainQuery = '.target[] | del(.output) | {(. | key): {"image": .tags[0], "build": .}}'
     # Encapsulate under a top level 'services' map
-    $yqServicesQuery = '''{\"services\": .}'''
+    $yqServicesQuery = '{"services": .}'
 
     # - Use docker buildx bake to output image definitions from the "<windowsFlavor>" bake target
     # - Convert with yq to the format expected by docker compose
     # - Store the result in the docker compose file
-    $generateDockerComposeFileCmd = ' {0} {1} --print' -f $baseDockerBakeCmd, $windowsFlavor + `
-        ' | yq --prettyPrint {0} | yq {1}' -f $yqMainQuery, $yqServicesQuery + `
-        ' | Out-File -FilePath {0}' -f $DockerComposeFile
-
-    Write-Host "= PREPARE: Docker compose file generation command`n$generateDockerComposeFileCmd"
-
-    Invoke-Expression $generateDockerComposeFileCmd
+    docker buildx bake --progress=plain --file=docker-bake.hcl $windowsFlavor --print | yq --prettyPrint $yqMainQuery | yq $yqServicesQuery | Out-File -FilePath $DockerComposeFile
 
     # Remove override
     Remove-Item env:\WINDOWS_VERSION_OVERRIDE
