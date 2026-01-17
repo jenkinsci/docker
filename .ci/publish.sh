@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 
-# Publish any versions of the docker image not yet pushed to ${JENKINS_REPO}
+# Publish any versions of the docker image not yet pushed to CONTAINER_NAMESPACE/CONTAINER_REPOSITORY
 # Arguments:
 #   -n dry run, do not build or publish images
 #   -d debug
@@ -9,10 +9,9 @@
 
 set -eu -o pipefail
 
-: "${DOCKERHUB_ORGANISATION:=jenkins}"
-: "${DOCKERHUB_REPO:=jenkins}"
-
-export JENKINS_REPO="${DOCKERHUB_ORGANISATION}/${DOCKERHUB_REPO}"
+: "${CONTAINER_REGISTRY:=docker.io}"
+: "${CONTAINER_NAMESPACE:=jenkins}"
+: "${CONTAINER_REPOSITORY:=jenkins}"
 
 function sort-versions() {
     if [ "$(uname)" == 'Darwin' ]; then
@@ -94,7 +93,9 @@ export COMMIT_SHA JENKINS_VERSION WAR_SHA LATEST_WEEKLY LATEST_LTS BUILD_METADAT
 
 cat <<EOF
 Using the following settings:
-* JENKINS_REPO: ${JENKINS_REPO}
+* CONTAINER_REGISTRY: ${CONTAINER_REGISTRY}
+* CONTAINER_NAMESPACE: ${CONTAINER_NAMESPACE}
+* CONTAINER_REPOSITORY: ${CONTAINER_REPOSITORY}
 * JENKINS_VERSION: ${JENKINS_VERSION}
 * WAR_SHA: ${WAR_SHA}
 * COMMIT_SHA: ${COMMIT_SHA}

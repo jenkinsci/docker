@@ -13,12 +13,12 @@ $Repository = 'jenkins'
 $Organisation = 'jenkins4eval'
 $ImageType = 'windowsservercore-ltsc2022' # <WINDOWS_FLAVOR>-<WINDOWS_VERSION>
 
-if(![String]::IsNullOrWhiteSpace($env:DOCKERHUB_REPO)) {
-    $Repository = $env:DOCKERHUB_REPO
+if(![String]::IsNullOrWhiteSpace($env:CONTAINER_REPOSITORY)) {
+    $Repository = $env:CONTAINER_REPOSITORY
 }
 
-if(![String]::IsNullOrWhiteSpace($env:DOCKERHUB_ORGANISATION)) {
-    $Organisation = $env:DOCKERHUB_ORGANISATION
+if(![String]::IsNullOrWhiteSpace($env:CONTAINER_NAMESPACE)) {
+    $Organisation = $env:CONTAINER_NAMESPACE
 }
 
 if(![String]::IsNullOrWhiteSpace($env:JENKINS_VERSION)) {
@@ -29,8 +29,8 @@ if(![String]::IsNullOrWhiteSpace($env:IMAGE_TYPE)) {
     $ImageType = $env:IMAGE_TYPE
 }
 
-$env:DOCKERHUB_ORGANISATION = "$Organisation"
-$env:DOCKERHUB_REPO = "$Repository"
+$env:CONTAINER_NAMESPACE = "$Organisation"
+$env:CONTAINER_REPOSITORY = "$Repository"
 $env:JENKINS_VERSION = "$JenkinsVersion"
 
 # Add 'lts-' prefix to LTS tags not including Jenkins version

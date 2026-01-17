@@ -23,12 +23,16 @@ variable "WAR_URL" {
   default = ""
 }
 
-variable "REGISTRY" {
+variable "CONTAINER_REGISTRY" {
   default = "docker.io"
 }
 
-variable "JENKINS_REPO" {
-  default = "jenkins/jenkins"
+variable "CONTAINER_NAMESPACE" {
+  default = "jenkins"
+}
+
+variable "CONTAINER_REPOSITORY" {
+  default = "jenkins"
 }
 
 variable "LATEST_WEEKLY" {
@@ -193,13 +197,15 @@ function "jdks_to_build" {
 # return a tag prefixed by the Jenkins version
 function "_tag_jenkins_version" {
   params = [tag]
-  result = notequal(tag, "") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-${tag}" : "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}"
+  result = (notequal(tag, "")
+    ? "${CONTAINER_REGISTRY}/${CONTAINER_NAMESPACE}/${CONTAINER_REPOSITORY}:${JENKINS_VERSION}-${tag}"
+    : "${CONTAINER_REGISTRY}/${CONTAINER_NAMESPACE}/${CONTAINER_REPOSITORY}:${JENKINS_VERSION}")
 }
 
 # return a tag optionaly prefixed by the Jenkins version
 function "tag" {
   params = [prepend_jenkins_version, tag]
-  result = equal(prepend_jenkins_version, true) ? _tag_jenkins_version(tag) : "${REGISTRY}/${JENKINS_REPO}:${tag}"
+  result = equal(prepend_jenkins_version, true) ? _tag_jenkins_version(tag) : "${CONTAINER_REGISTRY}/${CONTAINER_NAMESPACE}/${CONTAINER_REPOSITORY}:${tag}"
 }
 
 # return a weekly optionaly prefixed by the Jenkins version

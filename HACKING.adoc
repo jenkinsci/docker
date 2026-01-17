@@ -155,11 +155,13 @@ Create a new dedicated target repository in your Docker Hub account, and use it 
 
 [source,bash]
 --
-export DOCKERHUB_ORGANISATION=batmat
-export DOCKERHUB_REPO=test-jenkins
+export CONTAINER_NAMESPACE=jenkins4eval
+export CONTAINER_REPOSITORY=test-jenkins
 # The log below will help confirm this override was taken in account:
 ./publish.sh
 Docker repository in Use:
-* JENKINS_REPO: batmat/test-jenkins
+* CONTAINER_REGISTRY: docker.io
+* CONTAINER_NAMESPACE: jenkins4eval
+* CONTAINER_REPOSITORY: test-jenkins
 ...
 --

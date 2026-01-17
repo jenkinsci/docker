@@ -109,7 +109,7 @@ function Build-Docker($tag) {
     if($exitCode -ne 0) {
         return $exitCode, $stdout, $stderr
     }
-    return(Run-Program 'docker' $('tag {0}/{1}:{2} {3}' -f $env:DOCKERHUB_ORGANISATION, $env:DOCKERHUB_REPO, $env:CONTROLLER_IMAGE, $tag))
+    return(Run-Program 'docker' $('tag {0}/{1}:{2} {3}' -f $env:CONTAINER_NAMESPACE, $env:CONTAINER_REPOSITORY, $env:CONTROLLER_IMAGE, $tag))
 }
 
 function Build-DockerChild($tag, $dir) {
