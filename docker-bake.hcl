@@ -8,7 +8,7 @@ variable "jdks_to_build_for_weekly" {
 }
 
 variable "windows_version_to_build_for_lts" {
-  default = ["windowsservercore-ltsc2019", "windowsservercore-ltsc2022"]
+  default = ["windowsservercore-ltsc2019"]
 }
 
 variable "windows_version_to_build_for_weekly" {
