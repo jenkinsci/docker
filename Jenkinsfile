@@ -144,6 +144,7 @@ stage('Build') {
                         stage("Build linux-${imageToBuild}") {
                             infra.withDockerCredentials {
                                 sh "make build-${imageToBuild}"
+                                archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
                             }
                         }
 
@@ -174,6 +175,7 @@ stage('Build') {
                         stage("Multi arch build - ${architecture}") {
                             infra.withDockerCredentials {
                                 sh "make docker-init buildarch-${architecture}"
+                                archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
                             }
                         }
                     }
@@ -201,6 +203,7 @@ stage('Build') {
                                     infra.withDockerCredentials {
                                         sh 'make docker-init'
                                         sh 'make publish'
+                                        archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
                                     }
                                 }
                             }
