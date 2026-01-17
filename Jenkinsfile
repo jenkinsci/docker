@@ -121,8 +121,7 @@ stage('Build') {
         }
 
         if (!infra.isTrusted()) {
-            // This list can be updated with the following command:
-            // make show-linux | jq -r '.target | keys[]' | sort
+            // An up to date list can be obtained with make list-linux
             def images = [
                 'alpine_jdk21',
                 'alpine_jdk25',
