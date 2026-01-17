@@ -106,8 +106,12 @@ function Run-Program($cmd, $params, $verbose=$false) {
 }
 
 function Build-Docker($tag) {
-    # TODO: don't hardcode Windows flavor and Windows version
-    $exitCode, $stdout, $stderr = Run-Program 'docker-compose' '--file=build-windows_windowsservercore-ltsc2022.yaml build --parallel'
+    $windowsVersion = '2019'
+    if ($tag -match 'ltsc(\d+)$') {
+        $windowsVersion = $matches[1]
+    }
+    $composeParams = '--file=build-windows_windowsservercore-ltsc{0}.yaml build --parallel' -f $windowsVersion
+    $exitCode, $stdout, $stderr = Run-Program 'docker-compose' $composeParams
     if($exitCode -ne 0) {
         return $exitCode, $stdout, $stderr
     }
