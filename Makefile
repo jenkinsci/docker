@@ -125,11 +125,11 @@ platforms-%:
 
 # Return the list of targets depending on the current OS and architecture
 list: check-reqs
-	@set -x; make --silent list-$(ARCH)
+	@set -x; make --silent listarch-$(ARCH)
 
 # Return the list of targets of a specific "target" (can be a docker bake group)
 list-%: check-reqs
-	@set -x; make --silent showarch-$* | jq -r '.target | keys[]'
+	@set -x; make --silent show-$* | jq -r '.target | keys[]'
 
 # Return the list of targets depending on the architecture (Linux only, no multiarch for Windows)
 listarch-%: check-reqs
