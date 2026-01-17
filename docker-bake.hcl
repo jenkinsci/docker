@@ -20,11 +20,11 @@ variable "default_jdk" {
 }
 
 variable "JENKINS_VERSION" {
-  default = "2.535"
+  default = "2.545"
 }
 
 variable "WAR_SHA" {
-  default = "2a32d433bf82355a3f78318a5affa21866c9a98b151785494b386e6b08f40b25"
+  default = "d9be5cd8090074b859b264f89e19e78e3b28efd0acdf6a47e1d12d5d2bd68ad5"
 }
 
 variable "WAR_URL" {
