@@ -47,11 +47,15 @@ stage('Build') {
     withEnv(envVars) {
         echo '= bake target: linux'
 
-        def windowsImageTypes = ['windowsservercore-ltsc2022']
+        def windowsImageTypes = [
+            'windowsservercore-ltsc2022'
+        ]
         for (anImageType in windowsImageTypes) {
             def imageType = anImageType
             builds[imageType] = {
-                nodeWithTimeout('windows-2022') {
+                def windowsVersionNumber = imageType.split('-')[1].replace('ltsc', '')
+                def windowsLabel = "windows-${windowsVersionNumber}"
+                nodeWithTimeout(windowsLabel) {
                     stage('Checkout') {
                         checkout scm
                     }
@@ -63,13 +67,14 @@ stage('Build') {
                             */
                             stage("Build ${imageType}") {
                                 infra.withDockerCredentials {
-                                    powershell './make.ps1 build'
+                                    powershell './make.ps1 build -ImageType ${env:IMAGE_TYPE}'
+                                    archiveArtifacts artifacts: 'build-windows_*.yaml', allowEmptyArchive: true
                                 }
                             }
 
                             stage("Test ${imageType}") {
                                 infra.withDockerCredentials {
-                                    def windowsTestStatus = powershell(script: './make.ps1 test', returnStatus: true)
+                                    def windowsTestStatus = powershell(script: './make.ps1 test -ImageType ${env:IMAGE_TYPE}', returnStatus: true)
                                     junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
                                     if (windowsTestStatus > 0) {
                                         // If something bad happened let's clean up the docker images
@@ -102,8 +107,8 @@ stage('Build') {
                                     stage('Publish') {
                                         infra.withDockerCredentials {
                                             withEnv(['DOCKERHUB_ORGANISATION=jenkins', 'DOCKERHUB_REPO=jenkins']) {
-                                                powershell './make.ps1 build'
-                                                powershell './make.ps1 publish'
+                                                powershell './make.ps1 build -ImageType ${env:IMAGE_TYPE}'
+                                                powershell './make.ps1 publish -ImageType ${env:IMAGE_TYPE}'
                                             }
                                         }
                                     }
@@ -116,8 +121,7 @@ stage('Build') {
         }
 
         if (!infra.isTrusted()) {
-            // This list can be updated with the following command:
-            // make show | jq -r '.target | keys[]' | sort
+            // An up to date list can be obtained with make list-linux
             def images = [
                 'alpine_jdk21',
                 'alpine_jdk25',

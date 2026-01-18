@@ -7,6 +7,14 @@ variable "jdks_to_build_for_weekly" {
   default = [21, 25]
 }
 
+variable "windows_version_to_build_for_lts" {
+  default = ["windowsservercore-ltsc2019"]
+}
+
+variable "windows_version_to_build_for_weekly" {
+  default = ["windowsservercore-ltsc2022"]
+}
+
 variable "default_jdk" {
   default = 21
 }
@@ -83,6 +91,11 @@ variable "RHEL_RELEASE_LINE" {
   default = "ubi9"
 }
 
+# Set this value to a specific Windows version to override Windows versions to build returned by windowsversions function
+variable "WINDOWS_VERSION_OVERRIDE" {
+  default = ""
+}
+
 ## Internal variables
 variable "jdk_versions" {
   default = {
@@ -114,8 +127,8 @@ target "alpine" {
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    ALPINE_TAG         = ALPINE_FULL_TAG
     JAVA_VERSION       = javaversion(jdk)
+    ALPINE_TAG         = ALPINE_FULL_TAG
   }
   tags      = linux_tags("alpine", jdk)
   platforms = platforms("alpine", jdk)
@@ -135,10 +148,10 @@ target "debian" {
     WAR_URL             = war_url()
     COMMIT_SHA          = COMMIT_SHA
     PLUGIN_CLI_VERSION  = PLUGIN_CLI_VERSION
+    JAVA_VERSION        = javaversion(jdk)
     DEBIAN_RELEASE_LINE = DEBIAN_RELEASE_LINE
     DEBIAN_VERSION      = DEBIAN_VERSION
     DEBIAN_VARIANT      = is_debian_slim(variant) ? "-slim" : ""
-    JAVA_VERSION        = javaversion(jdk)
   }
   tags      = linux_tags(variant, jdk)
   platforms = platforms(variant, jdk)
@@ -157,12 +170,34 @@ target "rhel" {
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    JAVA_VERSION       = javaversion(jdk)
     RHEL_TAG           = RHEL_TAG
     RHEL_RELEASE_LINE  = RHEL_RELEASE_LINE
-    JAVA_VERSION       = javaversion(jdk)
   }
   tags      = linux_tags(current_rhel, jdk)
   platforms = platforms(current_rhel, jdk)
+}
+
+target "windowsservercore" {
+  matrix = {
+    jdk             = jdks_to_build()
+    windows_version = windowsversions()
+  }
+  name       = "${windows_version}_jdk${jdk}"
+  dockerfile = "windows/windowsservercore/hotspot/Dockerfile"
+  context    = "."
+  args = {
+    JENKINS_VERSION    = JENKINS_VERSION
+    WAR_SHA            = WAR_SHA
+    WAR_URL            = war_url()
+    COMMIT_SHA         = COMMIT_SHA
+    PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
+    JAVA_VERSION       = javaversion(jdk)
+    JAVA_HOME          = "C:/openjdk-${jdk}"
+    WINDOWS_VERSION    = windows_version
+  }
+  tags      = windows_tags(windows_version, jdk)
+  platforms = ["windows/amd64"]
 }
 
 ## Groups
@@ -171,6 +206,19 @@ group "linux" {
     "alpine",
     "debian",
     "rhel",
+  ]
+}
+
+group "windows" {
+  targets = [
+    "windowsservercore"
+  ]
+}
+
+group "all" {
+  targets = [
+    "linux",
+    "windows",
   ]
 }
 
@@ -290,6 +338,25 @@ function "linux_tags" {
   )
 }
 
+# Return an array of tags depending on the agent type, the jdk
+# and the flavor and version of Windows passed as parameters (ex: windowsservercore-ltsc2022)
+function "windows_tags" {
+  params = [distribution, jdk]
+  result = [
+    ## Always publish explicit jdk tag
+    tag(true, "jdk${jdk}-hotspot-${distribution}"),
+    tag_weekly(false, "jdk${jdk}-hotspot-${distribution}"),
+    tag_lts(false, "lts-jdk${jdk}-hotspot-${distribution}"),
+
+    # ## Default JDK extra short tags
+    is_default_jdk(jdk) ? tag(true, "hotspot-${distribution}") : "",
+    is_default_jdk(jdk) ? tag_weekly(false, distribution) : "",
+    is_default_jdk(jdk) ? tag_weekly(true, distribution) : "",
+    is_default_jdk(jdk) ? tag_lts(false, "lts-${distribution}") : "",
+    is_default_jdk(jdk) ? tag_lts(true, distribution) : "",
+  ]
+}
+
 # Return if the distribution passed in parameter is Alpine
 function "is_alpine" {
   params = [distribution]
@@ -350,4 +417,14 @@ function "debian_tags" {
     is_default_jdk(jdk) ? tag_lts(false, slim_suffix(variant, "lts")) : "",
     is_default_jdk(jdk) ? tag_lts(true, slim_suffix(variant, "lts")) : "",
   ]
+}
+
+# Return array of Windows version(s) to build
+# Can be overriden by setting WINDOWS_VERSION_OVERRIDE to a specific Windows version
+# Ex: WINDOWS_VERSION_OVERRIDE=ltsc2025 docker buildx bake windows
+function "windowsversions" {
+  params = []
+  result = (notequal(WINDOWS_VERSION_OVERRIDE, "")
+    ? [WINDOWS_VERSION_OVERRIDE]
+    : is_jenkins_version_weekly() ? windows_version_to_build_for_weekly : windows_version_to_build_for_lts)
 }

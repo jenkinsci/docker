@@ -50,19 +50,6 @@ targets:
       path: variable.JAVA25_VERSION.default
     scmid: default
 
-  setJDK25VersionWindowsDockerCompose:
-    name: "Bump JDK25 version in build-windows.yaml"
-    kind: yaml
-    transformers:
-      - replacer:
-          from: "+"
-          to: "_"
-    spec:
-      files:
-        - build-windows.yaml
-      key: $.services.jdk25.build.args.JAVA_VERSION
-    scmid: default
-
 actions:
   default:
     kind: github/pullrequest
