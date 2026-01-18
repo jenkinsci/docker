@@ -4,7 +4,7 @@ variable "jdks_to_build" {
 }
 
 variable "windows_version_to_build" {
-  default = ["windowsservercore-ltsc2019"]
+  default = ["windowsservercore-ltsc2019", "windowsservercore-ltsc2022"]
 }
 
 variable "default_jdk" {

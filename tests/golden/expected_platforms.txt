@@ -32,3 +32,6 @@ rhel_jdk25:linux/ppc64le
 windowsservercore-ltsc2019_jdk17:windows/amd64
 windowsservercore-ltsc2019_jdk21:windows/amd64
 windowsservercore-ltsc2019_jdk25:windows/amd64
+windowsservercore-ltsc2022_jdk17:windows/amd64
+windowsservercore-ltsc2022_jdk21:windows/amd64
+windowsservercore-ltsc2022_jdk25:windows/amd64
