@@ -186,8 +186,13 @@ test: prepare-test
 	@make --silent list | while read image; do make --silent "test-$${image}"; done
 
 # Set all required variables and publish all targets
+# Calling publish.sh with `-n` (dry-run) arg in case `PUBLISH` is not set to true
 publish: target
+ifeq ($(PUBLISH),true)
 	./.ci/publish.sh
+else
+	./.ci/publish.sh -n
+endif
 
 clean:
 	rm -rf tests/test_helper/bats-*; \

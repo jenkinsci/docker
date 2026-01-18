@@ -149,17 +149,116 @@ In order to debug the controller, use the `-e DEBUG=true -p 5005:5005` when star
 Jenkins will be suspended on the startup in such case,
 and then it will be possible to attach a debugger from IDE to it.
 
-== Test the publishing using an overridden target repository on Docker Hub
+== Test images publication
 
-Create a new dedicated target repository in your Docker Hub account, and use it like follows:
+You can test the script used for publication in dry-run by setting an existing Jenkins Core version and by passing the `-n` option:
 
 [source,bash]
 --
-export DOCKERHUB_ORGANISATION=batmat
-export DOCKERHUB_REPO=test-jenkins
+$ export JENKINS_VERSION=2.528.3
+$ ./.ci/publish.sh -n
+Dry run, will not publish images
+Using the following settings:
+* JENKINS_REPO: jenkins/jenkins
+* JENKINS_VERSION: 2.528.3
+* WAR_SHA: bfa31f1e3aacebb5bce3d5076c73df97bf0c0567eeb8d8738f54f6bac48abd74
+* COMMIT_SHA: 1c72a9383191562eb3c44838aeeadad0839c2c92
+* LATEST_WEEKLY: false
+* LATEST_LTS: true
+* BUILD_METADATA_PATH: target/build-result-metadata_linux_dry-run.json
+[+] Building 104.6s (59/73)
+<...snip...>
+--
+
+Note that if you can set `BAKE_TARGET` to a unique target to test the publication of a single target instead the default "linux" multiarch build:
+
+[source,bash]
+--
+$ export BAKE_TARGET=debiand_jdk25
+$ ./.ci/publish.sh -n
+Using the following settings:
+* JENKINS_REPO: jenkins/jenkins
+* JENKINS_VERSION: 2.528.3
+* WAR_SHA: bfa31f1e3aacebb5bce3d5076c73df97bf0c0567eeb8d8738f54f6bac48abd74
+* COMMIT_SHA: aaf4e7faf887b7ac4879c3bf540ede48220cca9f
+* LATEST_WEEKLY: false
+* LATEST_LTS: true
+* BUILD_METADATA_PATH: target/build-result-metadata_debian_jdk25_dry-run.json
+* BAKE TARGET: debian_jdk25
+* BUILDX OPTIONS:
+  --pull
+  --set=*.output=type=cacheonly
+  --metadata-file=target/build-result-metadata_debian_jdk25_dry-run.json
+
+* RESOLVED BAKE CONFIG:
+{
+  "group": {
+    "default": {
+      "targets": [
+        "debian_jdk25"
+      ]
+    }
+  },
+  "target": {
+    "debian_jdk25": {
+      "context": ".",
+      "dockerfile": "debian/Dockerfile",
+      "args": {
+        "COMMIT_SHA": "aaf4e7faf887b7ac4879c3bf540ede48220cca9f",
+        "DEBIAN_RELEASE_LINE": "trixie",
+        "DEBIAN_VARIANT": "",
+        "DEBIAN_VERSION": "20251117",
+        "JAVA_VERSION": "25.0.1_8",
+        "JENKINS_VERSION": "2.528.3",
+        "PLUGIN_CLI_VERSION": "2.13.2",
+        "WAR_SHA": "bfa31f1e3aacebb5bce3d5076c73df97bf0c0567eeb8d8738f54f6bac48abd74",
+        "WAR_URL": "https://get.jenkins.io/war-stable/2.528.3/jenkins.war"
+      },
+      "tags": [
+        "docker.io/jenkins/jenkins:2.528.3-jdk25",
+        "docker.io/jenkins/jenkins:lts-jdk25",
+        "docker.io/jenkins/jenkins:2.528.3-lts-jdk25"
+      ],
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64",
+        "linux/s390x",
+        "linux/ppc64le"
+      ]
+    }
+  }
+}
+[+] Building 104.6s (59/73)
+...
+--
+
+You can also pass the `-d` option (debug) to see traces from the script.
+
+=== Using an overridden target repository on Docker Hub
+
+Create a new dedicated target repository in your Docker Hub account, and use it like follows (note the absence of `-d` option):
+
+[source,bash]
+--
+$ export DOCKERHUB_ORGANISATION=jenkins4eval
+$ export DOCKERHUB_REPO=test-jenkins
 # The log below will help confirm this override was taken in account:
-./publish.sh
-Docker repository in Use:
-* JENKINS_REPO: batmat/test-jenkins
+$ ./.ci/publish.sh
+Using the following settings:
+* JENKINS_REPO: jenkins4eval/test-jenkins
+* JENKINS_VERSION: 2.528.3
+* WAR_SHA: bfa31f1e3aacebb5bce3d5076c73df97bf0c0567eeb8d8738f54f6bac48abd74
+* COMMIT_SHA: aaf4e7faf887b7ac4879c3bf540ede48220cca9f
+* LATEST_WEEKLY: false
+* LATEST_LTS: true
+* BUILD_METADATA_PATH: target/build-result-metadata_linux_publish.json
+* BAKE TARGET: linux
+* BUILDX OPTIONS:
+  --pull
+  --push
+  --metadata-file=target/build-result-metadata_linux_publish.json
+
+* RESOLVED BAKE CONFIG:
+{
 ...
 --
