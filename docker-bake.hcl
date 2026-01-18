@@ -8,11 +8,11 @@ variable "jdks_to_build_for_weekly" {
 }
 
 variable "windows_version_to_build_for_lts" {
-  default = ["windowsservercore-ltsc2019"]
+  default = ["windowsservercore-ltsc2019", "windowsservercore-ltsc2022"]
 }
 
 variable "windows_version_to_build_for_weekly" {
-  default = ["windowsservercore-ltsc2022"]
+  default = ["windowsservercore-ltsc2019", "windowsservercore-ltsc2022"]
 }
 
 variable "default_jdk" {
