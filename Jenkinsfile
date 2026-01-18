@@ -23,22 +23,29 @@ def architecturesAndCiJioAgentLabels = [
     's390x': 'docker && amd64',
 ]
 
+def simulateTargetsAndEnvVars = [
+    'alpine_jdk21': ['JENKINS_VERSION=2.534', 'BAKE_TARGET=alpine_jdk21'],
+    'debian_jdk25': ['JENKINS_VERSION=2.504.3', 'BAKE_TARGET=debian_jdk25'],
+]
+
+def simulatedLtsEnvVars = [
+    'PUBLISH=false',
+    'TAG_NAME=2.504.3',
+    // TODO: replace by the first LTS based on 2.534+ when available
+    'JENKINS_VERSION=2.504.3',
+    'WAR_SHA=ea8883431b8b5ef6b68fe0e5817c93dc0a11def380054e7de3136486796efeb0',
+    // Filter out golden file based testing
+    // To filter out all tests, set BATS_FLAGS="--filter-tags none"
+    'BATS_FLAGS=--filter-tags "\\!test-type:golden-file"'
+]
+
 // Set to true in a replay to simulate a LTS build on ci.jenkins.io
 // It will set the environment variables needed for a LTS
 // and disable images publication out of caution
 def SIMULATE_LTS_BUILD = false
 
 if (SIMULATE_LTS_BUILD) {
-    envVars = [
-        'PUBLISH=false',
-        'TAG_NAME=2.504.3',
-        // TODO: replace by the first LTS based on 2.534+ when available
-        'JENKINS_VERSION=2.504.3',
-        'WAR_SHA=ea8883431b8b5ef6b68fe0e5817c93dc0a11def380054e7de3136486796efeb0',
-        // Filter out golden file based testing
-        // To filter out all tests, set BATS_FLAGS="--filter-tags none"
-        'BATS_FLAGS=--filter-tags "\\!test-type:golden-file"'
-    ]
+    envVars = simulatedLtsEnvVars
 }
 
 stage('Build') {
@@ -186,6 +193,28 @@ stage('Build') {
                             infra.withDockerCredentials {
                                 sh "make docker-init buildarch-${architecture}"
                                 archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
+                            }
+                        }
+                    }
+                }
+            }
+            // Building simulated Weekly targets (Linux only, Windows images don't use .ci/publish.sh)
+            simulateTargetsAndEnvVars.each { simulateTarget, simulatedEnvVars ->
+                builds["simulated-${simulateTarget}"] = {
+                    nodeWithTimeout('docker') {
+                        withEnv(simulatedLtsEnvVars) {
+                            stage('Checkout') {
+                                deleteDir()
+                                checkout scm
+                            }
+                            stage("Simulated multiarch publication of ${simulateTarget}") {
+                                infra.withDockerCredentials {
+                                    withEnv(simulatedEnvVars) {
+                                        sh 'make docker-init'
+                                        sh 'make publish'
+                                        archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
+                                    }
+                                }
                             }
                         }
                     }
