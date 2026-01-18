@@ -9,7 +9,17 @@ export BUILDKIT_PROGRESS=plain
 ## Required to have the commit SHA added as a Docker image label
 export COMMIT_SHA=$(shell git rev-parse HEAD)
 
+current_os := $(shell uname -s)
 current_arch := $(shell uname -m)
+
+export OS ?= $(shell \
+	case "$(current_os)" in \
+		(Linux) echo linux ;; \
+		(Darwin) echo linux ;; \
+		(MINGW*|MSYS*|CYGWIN*) echo windows ;; \
+		(*) echo unknown ;; \
+	esac)
+
 export ARCH ?= $(shell \
 	case $(current_arch) in \
 		(x86_64) echo "amd64" ;; \
@@ -31,11 +41,11 @@ TEST_SUITES ?= $(CURDIR)/tests
 ## Check the presence of a CLI in the current PATH
 check_cli = type "$(1)" >/dev/null 2>&1 || { echo "Error: command '$(1)' required but not found. Exiting." ; exit 1 ; }
 ## Check if a given image exists in the current manifest docker-bake.hcl
-check_image = make --silent list | grep -w '$(1)' >/dev/null 2>&1 || { echo "Error: the image '$(1)' does not exist in manifest for the platform 'linux/$(ARCH)'. Please check the output of 'make list'. Exiting." ; exit 1 ; }
+check_image = make --silent list | grep -w '$(1)' >/dev/null 2>&1 || { echo "Error: the image '$(1)' does not exist in manifest for the current platform '$(OS)/$(ARCH)'. Please check the output of 'make list'. Exiting." ; exit 1 ; }
 ## Base "docker buildx base" command to be reused everywhere
 bake_base_cli := docker buildx bake -f docker-bake.hcl --load
 ## Default bake target
-bake_default_target := linux
+bake_default_target := all
 
 check-reqs:
 ## Build requirements
@@ -72,18 +82,18 @@ hadolint:
 shellcheck:
 	@$(ROOT_DIR)/tools/shellcheck -e SC1091 jenkins-support *.sh tests/test_helpers.bash tools/hadolint tools/shellcheck .ci/publish.sh
 
-# Build targets depending on the current architecture
+# Build all targets with the current OS and architecture
 build: check-reqs target
-	@set -x; $(bake_base_cli) --metadata-file=target/build-result-metadata_$(bake_default_target).json --set '*.platform=linux/$(ARCH)' $(shell make --silent list)
+	@set -x; $(bake_base_cli) --metadata-file=target/build-result-metadata_$(bake_default_target).json --set '*.platform=$(OS)/$(ARCH)' $(shell make --silent list)
 
-# Build targets depending on the architecture
+# Build targets depending on the architecture (Linux only, no multiarch for Windows)
 buildarch-%: check-reqs target showarch-%
 	@set -x; $(bake_base_cli) --metadata-file=target/build-result-metadata_$*.json --set '*.platform=linux/$*' $(shell make --silent listarch-$*)
 
-# Build a specific target with the current architecture
+# Build a specific target with the current OS and architecture
 build-%: check-reqs target show-%
 	@$(call check_image,$*)
-	@set -x; $(bake_base_cli) --metadata-file=target/build-result-metadata_$*.json --set '*.platform=linux/$(ARCH)' '$*'
+	@set -x; $(bake_base_cli) --metadata-file=target/build-result-metadata_$*.json --set '*.platform=$(OS)/$(ARCH)' '$*'
 
 # Show all targets
 show:
@@ -91,25 +101,37 @@ show:
 
 # Show a specific target
 show-%:
-	@set -x; $(bake_base_cli) --progress=quiet $* --print | jq
+	@set -x; $(bake_base_cli) --progress=quiet '$*' --print | jq
 
 # Show all targets depending on the architecture
 showarch-%:
-	@set -x; make --silent show | jq --arg arch "linux/$*" '.target |= with_entries(select(.value.platforms | index($$arch)))'
+	@set -x; make --silent show | jq --arg arch "$(OS)/$*" '.target |= with_entries(select(.value.platforms | index($$arch)))'
 
-# List all tags
+# List tags of all targets
 tags:
-	@set -x; make show | jq -r ' .target | to_entries[] | .key as $$name | .value.tags[] | "\(.) (\($$name))"' | LC_ALL=C sort -u
+	@set -x; make tags-$(bake_default_target)
+
+# List tags of a specific target
+tags-%:
+	@set -x; make show-$* | jq -r ' .target | to_entries[] | .key as $$name | .value.tags[] | "\(.) (\($$name))"' | LC_ALL=C sort -u
 
 # List all platforms
 platforms:
-	@set -x; make show | jq -r ' .target | to_entries[] | .key as $$name | .value.platforms[] | "\($$name):\(.)"' | LC_ALL=C sort -u
+	@set -x; make platforms-$(bake_default_target)
 
-# Return the list of targets depending on the current architecture
+# List platforms of a specific target
+platforms-%:
+	@set -x; make show-$* | jq -r ' .target | to_entries[] | .key as $$name | .value.platforms[] | "\($$name):\(.)"' | LC_ALL=C sort -u
+
+# Return the list of targets depending on the current OS and architecture
 list: check-reqs
-	@set -x; make --silent showarch-$(ARCH) | jq -r '.target | keys[]'
+	@set -x; make --silent listarch-$(ARCH)
 
-# Return the list of targets depending on the architecture
+# Return the list of targets of a specific "target" (can be a docker bake group)
+list-%: check-reqs
+	@set -x; make --silent show-$* | jq -r '.target | keys[]'
+
+# Return the list of targets depending on the architecture (Linux only, no multiarch for Windows)
 listarch-%: check-reqs
 	@set -x; make --silent showarch-$* | jq -r '.target | keys[]'
 
