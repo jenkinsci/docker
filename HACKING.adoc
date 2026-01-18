@@ -170,7 +170,7 @@ Using the following settings:
 <...snip...>
 --
 
-Note that if you can set `BAKE_TARGET` to a unique target to test the publication of a single target instead the default "linux" multiarch build:
+Note that if you can set `BAKE_TARGET` to test the publication of a single target instead the default "linux" multiarch (heavy) build:
 
 [source,bash]
 --
