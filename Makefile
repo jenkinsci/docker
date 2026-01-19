@@ -30,7 +30,7 @@ export ARCH ?= $(shell \
 
 all: hadolint shellcheck build test
 
-# Set to 'true' to disable parellel tests
+# Set to 'true' to disable parallel tests
 DISABLE_PARALLEL_TESTS ?= false
 
 # Set to the path of a specific test suite to restrict execution only to this
