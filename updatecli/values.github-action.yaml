@@ -3,6 +3,6 @@ github:
   email: "41898282+github-actions[bot]@users.noreply.github.com"
   username: "github-actions"
   token: "UPDATECLI_GITHUB_TOKEN"
-  branch: "master"
+  branch: "stable-2.541"
   owner: "jenkinsci"
   repository: "docker"
