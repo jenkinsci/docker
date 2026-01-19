@@ -14,6 +14,15 @@ properties(listOfProperties)
 // Default environment variable set to allow images publication
 def envVars = ['PUBLISH=true']
 
+// List of architectures and corresponding ci.jenkins.io agent labels
+def architecturesAndCiJioAgentLabels = [
+    'amd64': 'docker && amd64',
+    'arm64': 'arm64docker',
+    // Using qemu
+    'ppc64le': 'docker && amd64',
+    's390x': 'docker && amd64',
+]
+
 // Set to true in a replay to simulate a LTS build on ci.jenkins.io
 // It will set the environment variables needed for a LTS
 // and disable images publication out of caution
@@ -23,6 +32,7 @@ if (SIMULATE_LTS_BUILD) {
     envVars = [
         'PUBLISH=false',
         'TAG_NAME=2.504.3',
+        // TODO: replace by the first LTS based on 2.534+ when available
         'JENKINS_VERSION=2.504.3',
         'WAR_SHA=ea8883431b8b5ef6b68fe0e5817c93dc0a11def380054e7de3136486796efeb0'
     ]
@@ -34,11 +44,15 @@ stage('Build') {
     withEnv(envVars) {
         echo '= bake target: linux'
 
-        def windowsImageTypes = ['windowsservercore-ltsc2019']
+        def windowsImageTypes = [
+            'windowsservercore-ltsc2019'
+        ]
         for (anImageType in windowsImageTypes) {
             def imageType = anImageType
             builds[imageType] = {
-                nodeWithTimeout('windows-2019') {
+                def windowsVersionNumber = imageType.split('-')[1].replace('ltsc', '')
+                def windowsLabel = "windows-${windowsVersionNumber}"
+                nodeWithTimeout(windowsLabel) {
                     stage('Checkout') {
                         checkout scm
                     }
@@ -50,13 +64,14 @@ stage('Build') {
                             */
                             stage("Build ${imageType}") {
                                 infra.withDockerCredentials {
-                                    powershell './make.ps1 build'
+                                    powershell './make.ps1 build -ImageType ${env:IMAGE_TYPE}'
+                                    archiveArtifacts artifacts: 'build-windows_*.yaml', allowEmptyArchive: true
                                 }
                             }
 
                             stage("Test ${imageType}") {
                                 infra.withDockerCredentials {
-                                    def windowsTestStatus = powershell(script: './make.ps1 test', returnStatus: true)
+                                    def windowsTestStatus = powershell(script: './make.ps1 test -ImageType ${env:IMAGE_TYPE}', returnStatus: true)
                                     junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
                                     if (windowsTestStatus > 0) {
                                         // If something bad happened let's clean up the docker images
@@ -89,8 +104,8 @@ stage('Build') {
                                     stage('Publish') {
                                         infra.withDockerCredentials {
                                             withEnv(['DOCKERHUB_ORGANISATION=jenkins', 'DOCKERHUB_REPO=jenkins']) {
-                                                powershell './make.ps1 build'
-                                                powershell './make.ps1 publish'
+                                                powershell './make.ps1 build -ImageType ${env:IMAGE_TYPE}'
+                                                powershell './make.ps1 publish -ImageType ${env:IMAGE_TYPE}'
                                             }
                                         }
                                     }
@@ -103,21 +118,22 @@ stage('Build') {
         }
 
         if (!infra.isTrusted()) {
+            // An up to date list can be obtained with make list-linux
             def images = [
                 'alpine_jdk17',
                 'alpine_jdk21',
                 'debian_jdk17',
                 'debian_jdk21',
-                'debian_slim_jdk17',
-                'debian_slim_jdk21',
-                'rhel_ubi9_jdk17',
-                'rhel_ubi9_jdk21',
+                'debian-slim_jdk17',
+                'debian-slim_jdk21',
+                'rhel_jdk17',
+                'rhel_jdk21',
             ]
             for (i in images) {
                 def imageToBuild = i
 
                 builds[imageToBuild] = {
-                    nodeWithTimeout('docker') {
+                    nodeWithTimeout(architecturesAndCiJioAgentLabels["amd64"]) {
                         deleteDir()
 
                         stage('Checkout') {
@@ -134,6 +150,7 @@ stage('Build') {
                         stage("Build linux-${imageToBuild}") {
                             infra.withDockerCredentials {
                                 sh "make build-${imageToBuild}"
+                                archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
                             }
                         }
 
@@ -152,20 +169,20 @@ stage('Build') {
                     }
                 }
             }
-            builds['multiarch-build'] = {
-                nodeWithTimeout('docker') {
-                    stage('Checkout') {
-                        deleteDir()
-                        checkout scm
-                    }
-
-                    // sanity check that proves all images build on declared platforms
-                    stage('Multi arch build') {
-                        infra.withDockerCredentials {
-                            sh '''
-                            make docker-init
-                            docker buildx bake --file docker-bake.hcl linux
-                            '''
+            // Building every other architectures than amd64 on agents with the corresponding labels if available
+            architecturesAndCiJioAgentLabels.findAll { arch, _ -> arch != 'amd64' }.each { architecture, labels ->
+                builds[architecture] = {
+                    nodeWithTimeout(labels) {
+                        stage('Checkout') {
+                            deleteDir()
+                            checkout scm
+                        }
+                        // sanity check that proves all images build on declared platforms not already built in other stages
+                        stage("Multi arch build - ${architecture}") {
+                            infra.withDockerCredentials {
+                                sh "make docker-init buildarch-${architecture}"
+                                archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
+                            }
                         }
                     }
                 }
@@ -192,6 +209,7 @@ stage('Build') {
                                     infra.withDockerCredentials {
                                         sh 'make docker-init'
                                         sh 'make publish'
+                                        archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
                                     }
                                 }
                             }

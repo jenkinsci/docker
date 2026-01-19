@@ -76,15 +76,21 @@ else
 fi
 
 build_opts=("--pull")
+metadata_suffix="publish"
 if test "${dry_run}" == "true"; then
     build_opts+=("--load")
+    metadata_suffix="dry-run"
 else
     build_opts+=("--push")
 fi
 
+# Save build result metadata
+BUILD_METADATA_PATH="target/build-result-metadata_${metadata_suffix}.json"
+build_opts+=("--metadata-file=${BUILD_METADATA_PATH}")
+
 WAR_SHA="$(curl --disable --fail --silent --show-error --location "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war.sha256")"
 COMMIT_SHA=$(git rev-parse HEAD)
-export COMMIT_SHA JENKINS_VERSION WAR_SHA LATEST_WEEKLY LATEST_LTS
+export COMMIT_SHA JENKINS_VERSION WAR_SHA LATEST_WEEKLY LATEST_LTS BUILD_METADATA_PATH
 
 cat <<EOF
 Using the following settings:
@@ -94,6 +100,7 @@ Using the following settings:
 * COMMIT_SHA: ${COMMIT_SHA}
 * LATEST_WEEKLY: ${LATEST_WEEKLY}
 * LATEST_LTS: ${LATEST_LTS}
+* BUILD_METADATA_PATH: ${BUILD_METADATA_PATH}
 EOF
 
 docker buildx bake --file docker-bake.hcl "${build_opts[@]}" linux

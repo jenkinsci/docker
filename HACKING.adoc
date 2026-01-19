@@ -60,7 +60,6 @@ Please note that:
 - You can disable the parallel execution by setting the environment variable `DISABLE_PARALLEL_TESTS` to the value `true`
 - Parallel execution is disabled if the commands `docker` or (GNU) `parallel` are not installed.
 
-
 You can restrict the execution to only a subset of test harness files. By setting the environment variable `TEST_SUITES`
 to the path of the bats test harness file to execute alone.
 
@@ -77,6 +76,61 @@ DISABLE_PARALLEL_TESTS=true make test-alpine_jdk17
 
 ## Only run the test suite `functions.bats` for the Debian JDK21 platform
 TEST_SUITES=./tests/functions.bats make test-debian_jdk21
+--
+
+You can also pass extra parameters to `bats` by setting `BATS_FLAGS`.
+
+Example:
+[source,bash]
+--
+## Run tests except those with a "test-type:golden-file" `bats` tag
+make test BATS_FLAGS="--filter-tags '\!test-type:golden-file'"
+
+## Add an extra parameter
+make test BATS_FLAGS="--filter-tags '\!test-type:golden-file' --verbose-run"
+--
+
+See https://bats-core.readthedocs.io/en/stable/usage.html for the list of `bats` options.
+
+=== Golden files
+
+A golden file (sometimes called a snapshot) is a file that contains the expected output of a program or function.
+Tests compare the current output of the code against this "golden" reference to detect regressions or unintended changes.
+They are treated as contract artifacts, not test fixtures.
+
+Golden files may be updated only when:
+
+* Output behavior is intentionally changed
+* A bug fix corrects previously incorrect output
+* A new test case is added
+
+Golden updates must be reviewed like code.
+
+If your work implies golden file changes, those changes must be committed:
+* In the same commit as the behavior change
+* With a commit message explaining why output changed
+
+Golden updates must never be automatic.
+
+==== How to update a golden file
+
+* Reproduce output manually
+* Inspect output
+* Update the golden file explicitly
+* Run tests
+
+To update a golden file, you can use the dedicated ./tests/update-golden-file.sh helper script.
+
+Example if there are new LTS tags:
+[source,bash]
+--
+./tests/update-golden-file.sh expected_tags_latest_lts make tags LATEST_LTS=true
+--
+
+Then ensure corresponding tests are passing with:
+[source,bash]
+--
+bats ./tests/tags.bats
 --
 
 == Multiarch support

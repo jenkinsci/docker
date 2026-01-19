@@ -9,8 +9,24 @@ export BUILDKIT_PROGRESS=plain
 ## Required to have the commit SHA added as a Docker image label
 export COMMIT_SHA=$(shell git rev-parse HEAD)
 
+current_os := $(shell uname -s)
 current_arch := $(shell uname -m)
-export ARCH ?= $(shell case $(current_arch) in (x86_64) echo "amd64" ;; (aarch64|arm64) echo "arm64" ;; (s390*|riscv*|ppc64le) echo $(current_arch);; (*) echo "UNKNOWN-CPU";; esac)
+
+export OS ?= $(shell \
+	case "$(current_os)" in \
+		(Linux) echo linux ;; \
+		(Darwin) echo linux ;; \
+		(MINGW*|MSYS*|CYGWIN*) echo windows ;; \
+		(*) echo unknown ;; \
+	esac)
+
+export ARCH ?= $(shell \
+	case $(current_arch) in \
+		(x86_64) echo "amd64" ;; \
+		(aarch64|arm64) echo "arm64" ;; \
+		(s390*|riscv*|ppc64le) echo $(current_arch);; \
+		(*) echo "UNKNOWN-CPU";; \
+	esac)
 
 all: hadolint shellcheck build test
 
@@ -25,9 +41,11 @@ TEST_SUITES ?= $(CURDIR)/tests
 ## Check the presence of a CLI in the current PATH
 check_cli = type "$(1)" >/dev/null 2>&1 || { echo "Error: command '$(1)' required but not found. Exiting." ; exit 1 ; }
 ## Check if a given image exists in the current manifest docker-bake.hcl
-check_image = make --silent list | grep -w '$(1)' >/dev/null 2>&1 || { echo "Error: the image '$(1)' does not exist in manifest for the platform 'linux/$(ARCH)'. Please check the output of 'make list'. Exiting." ; exit 1 ; }
+check_image = make --silent list | grep -w '$(1)' >/dev/null 2>&1 || { echo "Error: the image '$(1)' does not exist in manifest for the current platform '$(OS)/$(ARCH)'. Please check the output of 'make list'. Exiting." ; exit 1 ; }
 ## Base "docker buildx base" command to be reused everywhere
 bake_base_cli := docker buildx bake -f docker-bake.hcl --load
+## Default bake target
+bake_default_target := all
 
 check-reqs:
 ## Build requirements
@@ -43,7 +61,7 @@ check-reqs:
 docker-init: check-reqs
 ifeq ($(CI),true)
 ifeq ($(wildcard /etc/buildkitd.toml),)
-	echo 'WARNING: /etc/buildkitd.toml not found, using default configuration.'
+	@echo 'WARNING: /etc/buildkitd.toml not found, using default configuration.'
 	docker buildx create --use --bootstrap --driver docker-container
 else
 	docker buildx create --use --bootstrap --driver docker-container --config /etc/buildkitd.toml
@@ -51,34 +69,84 @@ endif
 else
 	docker buildx create --use --bootstrap --driver docker-container
 endif
+# There is only an amd64 qemu image
+ifeq ($(ARCH),amd64)
 	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+endif
 
+# Lint check on all Dockerfiles
 hadolint:
 	find . -type f -name 'Dockerfile*' -not -path "./bats/*" -print0 | xargs -0 $(ROOT_DIR)/tools/hadolint
 
+# Shellcheck on all bash scripts
 shellcheck:
-	$(ROOT_DIR)/tools/shellcheck -e SC1091 jenkins-support *.sh tests/test_helpers.bash tools/hadolint tools/shellcheck .ci/publish.sh
+	@$(ROOT_DIR)/tools/shellcheck -e SC1091 jenkins-support *.sh tests/test_helpers.bash tools/hadolint tools/shellcheck .ci/publish.sh
 
-build: check-reqs
-	@set -x; $(bake_base_cli) --set '*.platform=linux/$(ARCH)' $(shell make --silent list)
+# Build all targets with the current OS and architecture
+build: check-reqs target
+	@set -x; $(bake_base_cli) --metadata-file=target/build-result-metadata_$(bake_default_target).json --set '*.platform=$(OS)/$(ARCH)' $(shell make --silent list)
 
-build-%: check-reqs
+# Build targets depending on the architecture (Linux only, no multiarch for Windows)
+buildarch-%: check-reqs target showarch-%
+	@set -x; $(bake_base_cli) --metadata-file=target/build-result-metadata_$*.json --set '*.platform=linux/$*' $(shell make --silent listarch-$*)
+
+# Build a specific target with the current OS and architecture
+build-%: check-reqs target show-%
 	@$(call check_image,$*)
-	@set -x; $(bake_base_cli) --set '*.platform=linux/$(ARCH)' '$*'
+	@set -x; $(bake_base_cli) --metadata-file=target/build-result-metadata_$*.json --set '*.platform=$(OS)/$(ARCH)' '$*'
 
+# Show all targets
 show:
-	@$(bake_base_cli) linux --print
+	@set -x; make --silent show-$(bake_default_target)
 
+# Show a specific target
+show-%:
+	@set -x; $(bake_base_cli) --progress=quiet '$*' --print | jq
+
+# Show all targets depending on the architecture
+showarch-%:
+	@set -x; make --silent show | jq --arg arch "$(OS)/$*" '.target |= with_entries(select(.value.platforms | index($$arch)))'
+
+# List tags of all targets
+tags:
+	@set -x; make tags-$(bake_default_target)
+
+# List tags of a specific target
+tags-%:
+	@set -x; make show-$* | jq -r ' .target | to_entries[] | .key as $$name | .value.tags[] | "\(.) (\($$name))"' | LC_ALL=C sort -u
+
+# List all platforms
+platforms:
+	@set -x; make platforms-$(bake_default_target)
+
+# List platforms of a specific target
+platforms-%:
+	@set -x; make show-$* | jq -r ' .target | to_entries[] | .key as $$name | .value.platforms[] | "\($$name):\(.)"' | LC_ALL=C sort -u
+
+# Return the list of targets depending on the current OS and architecture
 list: check-reqs
-	@set -x; make --silent show | jq -r '.target | path(.. | select(.platforms[] | contains("linux/$(ARCH)"))?) | add'
+	@set -x; make --silent listarch-$(ARCH)
 
+# Return the list of targets of a specific "target" (can be a docker bake group)
+list-%: check-reqs
+	@set -x; make --silent show-$* | jq -r '.target | keys[]'
+
+# Return the list of targets depending on the architecture (Linux only, no multiarch for Windows)
+listarch-%: check-reqs
+	@set -x; make --silent showarch-$* | jq -r '.target | keys[]'
+
+# Ensure bats exists in the current folder
 bats:
 	git clone https://github.com/bats-core/bats-core bats ;\
 	cd bats ;\
-	git checkout 410dd229a5ed005c68167cc90ed0712ad2a1c909; # v1.7.0
+	git checkout 3bca150ec86275d6d9d5a4fd7d48ab8b6c6f3d87; # v1.13.0
 
-prepare-test: bats check-reqs
+# Ensure all bats submodules are up to date
+prepare-test: bats check-reqs target
 	git submodule update --init --recursive
+
+# Ensure tests and build metadata "target" folder exist
+target:
 	mkdir -p target
 
 ## Define bats options based on environment
@@ -94,11 +162,17 @@ test-%: PARALLEL_JOBS ?= $(shell echo $$(( $(shell docker run --rm alpine grep -
 test-%: bats_flags += --jobs $(PARALLEL_JOBS)
 endif
 endif
+# Optional bats flags (see https://bats-core.readthedocs.io/en/stable/usage.html)
+ifneq (,$(BATS_FLAGS))
+test-%: bats_flags += $(BATS_FLAGS)
+endif
 test-%: prepare-test
 # Check that the image exists in the manifest
 	@$(call check_image,$*)
 # Ensure that the image is built
 	@make --silent build-$*
+# Show bats version
+	@bats/bin/bats --version
 ifeq ($(CI), true)
 # Execute the test harness and write result to a TAP file
 	IMAGE=$* bats/bin/bats $(bats_flags) --formatter junit | tee target/junit-results-$*.xml
@@ -107,10 +181,12 @@ else
 	IMAGE=$* bats/bin/bats $(bats_flags)
 endif
 
+# Test targets depending on the current architecture
 test: prepare-test
 	@make --silent list | while read image; do make --silent "test-$${image}"; done
 
-publish:
+# Set all required variables and publish all targets
+publish: target
 	./.ci/publish.sh
 
 clean:

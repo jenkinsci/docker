@@ -1,5 +1,7 @@
-ARG UBI9_TAG=9.7-1764794285
-FROM registry.access.redhat.com/ubi9/ubi:${UBI9_TAG} AS jre-build
+ARG DEBIAN_RELEASE_LINE=trixie
+ARG DEBIAN_VERSION=20251103
+ARG DEBIAN_VARIANT="-slim"
+FROM debian:"${DEBIAN_RELEASE_LINE}-${DEBIAN_VERSION}${DEBIAN_VARIANT}" AS jre-build
 
 ARG JAVA_VERSION=17.0.17_10
 
@@ -8,12 +10,13 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 COPY jdk-download-url.sh /usr/bin/jdk-download-url.sh
 COPY jdk-download.sh /usr/bin/jdk-download.sh
 
-RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs --allowerasing -y \
+RUN apt-get update \
+  && apt-get install --no-install-recommends -y \
     ca-certificates \
     curl \
     jq \
-    && dnf clean --disableplugin=subscription-manager all \
-    && /usr/bin/jdk-download.sh
+  && rm -rf /var/lib/apt/lists/* \
+  && /usr/bin/jdk-download.sh
 
 ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
 
@@ -34,22 +37,38 @@ RUN case "$(jlink --version 2>&1)" in \
       --no-header-files \
       --output /javaruntime
 
-FROM registry.access.redhat.com/ubi9/ubi:9.7-1764794285 AS controller
+FROM debian:"${DEBIAN_RELEASE_LINE}-${DEBIAN_VERSION}${DEBIAN_VARIANT}" AS controller
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    git \
+    gnupg \
+    gpg \
+    libfontconfig1 \
+    libfreetype6 \
+    procps \
+    ssh-client \
+    tini \
+    unzip \
+    tzdata \
+  && rm -rf /var/lib/apt/lists/*
+
+# Git LFS is not available from a package manager on all the platforms we support
+# Download and unpack the tar.gz distribution
+ARG GIT_LFS_VERSION=3.7.1
+# hadolint ignore=DL4006
+RUN arch=$(uname -m | sed -e 's/x86_64/amd64/g' -e 's/aarch64/arm64/g') \
+  && curl -L -s -o git-lfs.tgz "https://github.com/git-lfs/git-lfs/releases/download/v${GIT_LFS_VERSION}/git-lfs-linux-${arch}-v${GIT_LFS_VERSION}.tar.gz" \
+  && tar xzf git-lfs.tgz \
+  && bash git-lfs-*/install.sh \
+  && rm -rf git-lfs*
 
 ENV LANG=C.UTF-8
 
 ARG TARGETARCH
 ARG COMMIT_SHA
-
-RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs -y \
-        fontconfig \
-        freetype \
-        git \
-        git-lfs \
-        unzip \
-        which \
-        tzdata \
-    && dnf clean --disableplugin=subscription-manager all
 
 ARG user=jenkins
 ARG group=jenkins
@@ -70,7 +89,7 @@ ENV REF=$REF
 RUN mkdir -p $JENKINS_HOME \
   && chown ${uid}:${gid} $JENKINS_HOME \
   && groupadd -g ${gid} ${group} \
-  && useradd -N -d "$JENKINS_HOME" -u ${uid} -g ${gid} -l -m -s /bin/bash ${user}
+  && useradd -d "$JENKINS_HOME" -u ${uid} -g ${gid} -l -m -s /bin/bash ${user}
 
 # Jenkins home directory is a volume, so configuration and build history
 # can be persisted and survive image upgrades
@@ -81,22 +100,12 @@ VOLUME $JENKINS_HOME
 # or config file with your custom jenkins Docker image.
 RUN mkdir -p ${REF}/init.groovy.d
 
-# Use tini as subreaper in Docker container to adopt zombie processes
-ARG TINI_VERSION=v0.19.0
-COPY tini_pub.gpg "${JENKINS_HOME}/tini_pub.gpg"
-RUN curl -fsSL "https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-${TARGETARCH}" -o /sbin/tini \
-  && curl -fsSL "https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-${TARGETARCH}.asc" -o /sbin/tini.asc \
-  && gpg --no-tty --import "${JENKINS_HOME}/tini_pub.gpg" \
-  && gpg --verify /sbin/tini.asc \
-  && rm -rf /sbin/tini.asc /root/.gnupg \
-  && chmod +x /sbin/tini
-
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION=${JENKINS_VERSION:-2.504}
+ENV JENKINS_VERSION=${JENKINS_VERSION:-2.534}
 
 # jenkins.war checksum, download will be validated using it
-ARG WAR_SHA=efc91d6be8d79dd078e7f930fc4a5f135602d0822a5efe9091808fdd74607d32
+ARG WAR_SHA=fcf13a8ebbe69d678608cc4b3885ece7d7e697d6da4c3691025a06968ddef228
 
 # Can be used to customize where jenkins.war get downloaded from
 ARG WAR_URL=https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war
@@ -138,7 +147,7 @@ COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
 COPY jenkins-plugin-cli.sh /bin/jenkins-plugin-cli
 
-ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
 # metadata labels
 LABEL \

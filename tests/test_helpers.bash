@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Assert that $1 is the outputof a command $2
 function assert {
@@ -12,6 +13,26 @@ function assert {
         echo "actual:   \"$actual_output\""
         false
     fi
+}
+
+# Assert that golden file $1 matches the output of a command $2
+assert_matches_golden() {
+    local golden="$1"
+    shift
+    local golden_path="tests/golden/${golden}.txt"
+
+    if [[ ! -f "${golden_path}" ]]; then
+        echo "Golden file '${golden_path}' does not exist"
+        return 1
+    fi
+
+    # Run the command passed as arguments and capture its output
+    local output
+    output="$(mktemp)"
+    "$@" > "${output}"
+
+    # Compare with golden file
+    diff -u "${golden_path}" <(cat "${output}")
 }
 
 # Retry a command $1 times until it succeeds. Wait $2 seconds between retries.
@@ -42,19 +63,19 @@ function get_sut_image {
     # Option --print for 'docker buildx bake' prints the JSON configuration on the stdout
     # Option --silent for 'make' suppresses the echoing of command so the output is valid JSON
     # The image name is the 1st of the "tags" array, on the first "image" found
-    make --silent show | jq -r ".target.${IMAGE}.tags[0]"
+    make --silent show | jq -r '.target."'"${IMAGE}"'".tags[0]'
 }
 
 function get_jenkins_version() {
   test -n "${IMAGE:?"[sut_image] Please set the variable 'IMAGE' to the name of the image to test in 'docker-bake.hcl'."}"
 
-  make --silent show | jq -r ".target.${IMAGE}.args.JENKINS_VERSION"
+  make --silent show | jq -r '.target."'"${IMAGE}"'".args.JENKINS_VERSION'
 }
 
 function get_commit_sha() {
   test -n "${IMAGE:?"[sut_image] Please set the variable 'IMAGE' to the name of the image to test in 'docker-bake.hcl'."}"
 
-  make --silent show | jq -r ".target.${IMAGE}.args.COMMIT_SHA"
+  make --silent show | jq -r '.target."'"${IMAGE}"'".args.COMMIT_SHA'
 }
 
 function get_test_image {
@@ -80,17 +101,29 @@ function docker_build_child {
 }
 
 function get_jenkins_url {
-    if [ -z "${DOCKER_HOST}" ]; then
+    docker_host="${DOCKER_HOST:-}"
+    if [ -z "${docker_host}" ]; then
         DOCKER_IP=localhost
     else
         # shellcheck disable=SC2001
-        DOCKER_IP=$(echo "$DOCKER_HOST" | sed -e 's|tcp://\(.*\):[0-9]*|\1|')
+        DOCKER_IP=$(echo "${docker_host}" | sed -e 's|tcp://\(.*\):[0-9]*|\1|')
     fi
     echo "http://$DOCKER_IP:$(docker port "$(get_sut_container_name)" 8080 | cut -d: -f2)"
 }
 
 function get_jenkins_password {
-    docker logs "$(get_sut_container_name)" 2>&1 | grep -A 2 "Please use the following password to proceed to installation" | tail -n 1
+    docker exec "$(get_sut_container_name)" cat /var/jenkins_home/secrets/initialAdminPassword
+}
+
+function get_targets_from_jenkinsfile {
+    sed -n '/def images = \[/,/]/p' Jenkinsfile `# retrieve images array from Jenkinsfile` \
+     | grep "'" `# keep only its items` \
+     | tr -d "', " `# cleanup output` \
+     | sort `# ensure constant output sort`
+}
+
+function get_default_docker_bake_linux_targets {
+    make --silent show-linux | jq -r '.target | keys[]' | sort
 }
 
 function test_url {

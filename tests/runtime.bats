@@ -1,5 +1,7 @@
 #!/usr/bin/env bats
 
+# bats file_tags=test-suite:runtime
+
 load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
 load test_helpers
@@ -105,6 +107,7 @@ runInScriptConsole() {
   bash -c "curl -fssL -X POST -u \"admin:$PASSWORD\" --cookie \"$COOKIEJAR\" -H \"$CRUMB\" \"$SERVER\"/scriptText -d script=\"$1\" | sed -e 's/Result: //'"
 }
 
+# bats test_tags=use:start-jenkins-with-jvm-opts
 @test "[${SUT_DESCRIPTION}] passes JAVA_OPTS as JVM options" {
   start-jenkins-with-jvm-opts --env JAVA_OPTS="-Duser.timezone=Europe/Madrid -Dhudson.model.DirectoryBrowserSupport.CSP=\"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';\""
 
@@ -113,6 +116,7 @@ runInScriptConsole() {
   assert 'Europe/Madrid' get-timezone-value
 }
 
+# bats test_tags=use:start-jenkins-with-jvm-opts
 @test "[${SUT_DESCRIPTION}] passes JENKINS_JAVA_OPTS as JVM options" {
   start-jenkins-with-jvm-opts --env JENKINS_JAVA_OPTS="-Duser.timezone=Europe/Madrid -Dhudson.model.DirectoryBrowserSupport.CSP=\"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';\""
 
@@ -121,6 +125,7 @@ runInScriptConsole() {
   assert 'Europe/Madrid' get-timezone-value
 }
 
+# bats test_tags=use:start-jenkins-with-jvm-opts
 @test "[${SUT_DESCRIPTION}] JENKINS_JAVA_OPTS overrides JAVA_OPTS" {
   start-jenkins-with-jvm-opts \
     --env JAVA_OPTS="-Duser.timezone=Europe/Madrid -Dhudson.model.DirectoryBrowserSupport.CSP=\"default-src 'self'\"" \
