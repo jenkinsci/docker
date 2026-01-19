@@ -84,7 +84,7 @@ variable "DEBIAN_VERSION" {
 }
 
 variable "RHEL_TAG" {
-  default = "9.7-1767674301"
+  default = "9.7-1768785530"
 }
 
 variable "RHEL_RELEASE_LINE" {
@@ -426,5 +426,5 @@ function "windowsversions" {
   params = []
   result = (notequal(WINDOWS_VERSION_OVERRIDE, "")
     ? [WINDOWS_VERSION_OVERRIDE]
-    : is_jenkins_version_weekly() ? windows_version_to_build_for_weekly : windows_version_to_build_for_lts)
+  : is_jenkins_version_weekly() ? windows_version_to_build_for_weekly : windows_version_to_build_for_lts)
 }
