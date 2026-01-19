@@ -236,7 +236,7 @@ if ($target -eq 'publish') {
         $false { Invoke-Expression "$baseDockerCmd push" }
     }
 
-    # Fail if any issues when publising the docker images
+    # Fail if any issues when publishing the docker images
     if ($lastExitCode -ne 0) {
         Write-Error '= PUBLISH: failed!'
         exit 1
