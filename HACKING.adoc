@@ -174,7 +174,7 @@ Note that you can set `BAKE_TARGET` to test the publication of a single target i
 
 [source,bash]
 --
-$ export BAKE_TARGET=debiand_jdk25
+$ export BAKE_TARGET=debian_jdk25
 $ ./.ci/publish.sh -n
 Using the following settings:
 * JENKINS_REPO: jenkins/jenkins
