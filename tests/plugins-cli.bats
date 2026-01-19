@@ -124,7 +124,7 @@ teardown() {
   run docker_build_child "${SUT_IMAGE}" "${custom_sut_image_second}" "${BATS_TEST_DIRNAME}/upgrade-plugins"
   assert_success
 
-  # Execute the second image with the existing jenkins volume: junit plugin should be updated, and ant shoud NOT be downgraded
+  # Execute the second image with the existing jenkins volume: junit plugin should be updated, and ant should NOT be downgraded
   run docker run --volume "$volume_name:/var/jenkins_home" --rm "${custom_sut_image_second}" true
   assert_success
   run unzip_manifest junit.jpi "$volume_name"
