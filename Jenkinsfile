@@ -45,7 +45,8 @@ stage('Build') {
         echo '= bake target: linux'
 
         def windowsImageTypes = [
-            'windowsservercore-ltsc2019'
+            'windowsservercore-ltsc2019',
+            'windowsservercore-ltsc2022'
         ]
         for (anImageType in windowsImageTypes) {
             def imageType = anImageType
@@ -122,12 +123,16 @@ stage('Build') {
             def images = [
                 'alpine_jdk17',
                 'alpine_jdk21',
+                'alpine_jdk25',
                 'debian_jdk17',
                 'debian_jdk21',
+                'debian_jdk25',
                 'debian-slim_jdk17',
                 'debian-slim_jdk21',
+                'debian-slim_jdk25',
                 'rhel_jdk17',
                 'rhel_jdk21',
+                'rhel_jdk25',
             ]
             for (i in images) {
                 def imageToBuild = i

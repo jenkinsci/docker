@@ -1,10 +1,10 @@
 ## Variables
 variable "jdks_to_build" {
-  default = [17, 21]
+  default = [17, 21, 25]
 }
 
 variable "windows_version_to_build" {
-  default = ["windowsservercore-ltsc2019"]
+  default = ["windowsservercore-ltsc2019", "windowsservercore-ltsc2022"]
 }
 
 variable "default_jdk" {
@@ -63,6 +63,10 @@ variable "JAVA21_VERSION" {
   default = "21.0.9_10"
 }
 
+variable "JAVA25_VERSION" {
+  default = "25.0.1_8"
+}
+
 variable "DEBIAN_RELEASE_LINE" {
   default = "trixie"
 }
@@ -89,6 +93,7 @@ variable "jdk_versions" {
   default = {
     17 = JAVA17_VERSION
     21 = JAVA21_VERSION
+    25 = JAVA25_VERSION
   }
 }
 
