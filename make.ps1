@@ -11,7 +11,7 @@ Param(
     [switch] $OverwriteDockerComposeFile = $false,
     # Print the build and publish command instead of executing them if set
     [switch] $DryRun = $false,
-    # Output debug info for tests: 'empty' (no additional test output), 'debug' (test cmd & stderr outputed), 'verbose' (test cmd, stderr, stdout outputed)
+    # Output debug info for tests: 'empty' (no additional test output), 'debug' (test cmd & stderr output), 'verbose' (test cmd, stderr, stdout output)
     [String] $TestsDebug = ''
 )
 
