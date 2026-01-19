@@ -7,11 +7,11 @@ on:
     - cron: '0 2 * * 1' # Every Monday at 2am UTC
   push:
   push:
-    branches-ignore:
-      - stable-*
+    branches:
+      - master
   pull_request:
     branches-ignore:
-      - stable-*
+      - master
 jobs:
   updatecli:
     runs-on: ubuntu-latest
