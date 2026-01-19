@@ -6,7 +6,11 @@ on:
     # Run once per week (to avoid alert fatigue)
     - cron: '0 2 * * 1' # Every Monday at 2am UTC
   push:
+    branches:
+      - master
   pull_request:
+    branches:
+      - master
 jobs:
   updatecli:
     runs-on: ubuntu-latest
