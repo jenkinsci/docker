@@ -244,19 +244,19 @@ function "_tag_jenkins_version" {
   result = notequal(tag, "") ? "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}-${tag}" : "${REGISTRY}/${JENKINS_REPO}:${JENKINS_VERSION}"
 }
 
-# return a tag optionaly prefixed by the Jenkins version
+# return a tag optionally prefixed by the Jenkins version
 function "tag" {
   params = [prepend_jenkins_version, tag]
   result = equal(prepend_jenkins_version, true) ? _tag_jenkins_version(tag) : "${REGISTRY}/${JENKINS_REPO}:${tag}"
 }
 
-# return a weekly optionaly prefixed by the Jenkins version
+# return a weekly optionally prefixed by the Jenkins version
 function "tag_weekly" {
   params = [prepend_jenkins_version, tag]
   result = equal(LATEST_WEEKLY, "true") ? tag(prepend_jenkins_version, tag) : ""
 }
 
-# return a LTS optionaly prefixed by the Jenkins version
+# return a LTS optionally prefixed by the Jenkins version
 function "tag_lts" {
   params = [prepend_jenkins_version, tag]
   result = equal(LATEST_LTS, "true") ? tag(prepend_jenkins_version, tag) : ""
@@ -420,7 +420,7 @@ function "debian_tags" {
 }
 
 # Return array of Windows version(s) to build
-# Can be overriden by setting WINDOWS_VERSION_OVERRIDE to a specific Windows version
+# Can be overridden by setting WINDOWS_VERSION_OVERRIDE to a specific Windows version
 # Ex: WINDOWS_VERSION_OVERRIDE=ltsc2025 docker buildx bake windows
 function "windowsversions" {
   params = []
