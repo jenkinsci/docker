@@ -20,7 +20,7 @@ variable "default_jdk" {
 }
 
 variable "JENKINS_VERSION" {
-  default = "2.534"
+  default = "2.547"
 }
 
 variable "WAR_SHA" {
