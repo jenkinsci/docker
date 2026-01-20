@@ -111,7 +111,7 @@ ARG WAR_URL=https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war
 RUN $warShaURL = '{0}.sha256' -f $env:WAR_URL; `
     $webClient = New-Object System.Net.WebClient; `
     $env:WAR_SHA = $webClient.DownloadString($warShaURL).Split(' ')[0]; `
-    Write-Output "downloaded SHA: $env:WAR_SHA"
+    Write-Output "downloaded SHA: $env:WAR_SHA"; `
     Invoke-WebRequest -Uri "$env:WAR_URL" -OutFile C:/ProgramData/Jenkins/jenkins.war; `
     if ((Get-FileHash C:/ProgramData/Jenkins/jenkins.war -Algorithm SHA256).Hash -ne $env:WAR_SHA) {exit 1}
 
