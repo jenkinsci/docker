@@ -55,6 +55,7 @@ if ($JenkinsVersion.Split('.').Count -eq 3) {
 # If there is no WAR_URL set, using get.jenkins.io URL depending on the release line
 if([String]::IsNullOrWhiteSpace($env:WAR_URL)) {
     $env:WAR_URL = 'https://get.jenkins.io/{0}/{1}/jenkins.war' -f $releaseLine, $env:JENKINS_VERSION
+    Write-Host "Using env:WAR_URL: $env:WAR_URL"
 }
 
 # Retrieve the sha256 corresponding to the war file
