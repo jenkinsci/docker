@@ -24,7 +24,7 @@ variable "JENKINS_VERSION" {
 }
 
 variable "WAR_SHA" {
-  default = "f1b03ebf8fdb0ac893fbac9df9835d736ab9825399dc43de8a00d3f3913d8983"
+  default = "ef0301ce35bff7ead76201a8202acad6338568f0832666a2672831b260e08088"
 }
 
 variable "WAR_URL" {
