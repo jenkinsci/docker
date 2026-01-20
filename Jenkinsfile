@@ -61,7 +61,12 @@ stage('Build') {
                         checkout scm
                     }
 
-                    withEnv(["IMAGE_TYPE=${imageType}"]) {
+                    withEnv([
+                        "IMAGE_TYPE=${imageType}",
+                        // DEBUG
+                        "JENKINS_VERSION=2.547",
+                        "WAR_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/2.547/jenkins-war-2.547.war"
+                    ]) {
                         if (!infra.isTrusted()) {
                             /* Outside of the trusted.ci environment, we're building and testing
                             * the Dockerfile in this repository, but not publishing to docker hub
