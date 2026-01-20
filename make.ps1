@@ -151,6 +151,11 @@ function Initialize-DockerComposeFile {
     $yqMainQuery = '.target[] | del(.output) | {(. | key): {\"image\": .tags[0], \"build\": .}}'
     # Encapsulate under a top level 'services' map
     $yqServicesQuery = '{\"services\": .}'
+    if ($PSVersionTable.PSVersion.Major -ge 7) {
+        Write-Host 'Using a query compatible with PowerShell 7'
+        $yqMainQuery = '.target[] | del(.output) | {(. | key): {"image": .tags[0], "build": .}}'
+        $yqServicesQuery = '{"services": .}'
+    }
 
     # - Use docker buildx bake to output image definitions from the "<windowsFlavor>" bake target
     # - Convert with yq to the format expected by docker compose
