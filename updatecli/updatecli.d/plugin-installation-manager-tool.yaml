@@ -1,0 +1,60 @@
+---
+name: Bump `plugin-installation-manager-tool` version
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "{{ .github.branch }}"
+
+sources:
+  lastReleaseVersion:
+    kind: githubrelease
+    name: Get latest `plugin-installation-manager-tool` release version
+    spec:
+      owner: jenkinsci
+      repository: plugin-installation-manager-tool
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      versionfilter:
+        kind: semver
+    transformers:
+      - trimprefix: v
+
+targets:
+  updateDockerBake:
+    name: Bump `plugin-installation-manager-tool` version for Linux images in the docker-bake.hcl file
+    kind: hcl
+    spec:
+      file: docker-bake.hcl
+      path: variable.PLUGIN_CLI_VERSION.default
+    scmid: default
+  updateDockerfiles:
+    name: Bump `plugin-installation-manager-tool` version in Dockerfiles
+    kind: dockerfile
+    spec:
+      files:
+        - alpine/hotspot/Dockerfile
+        - debian/Dockerfile
+        - rhel/Dockerfile
+        - windows/windowsservercore/hotspot/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: PLUGIN_CLI_VERSION
+    scmid: default
+
+actions:
+  default:
+    kind: github/pullrequest
+    title: Bump `plugin-installation-manager-tool` version to {{ source "lastReleaseVersion" }}
+    scmid: default
+    spec:
+      labels:
+        - dependencies
+        - plugin-installation-manager-tool
