@@ -19,11 +19,6 @@ sources:
     name: Get latest Jenkins Core release version
     spec:
       file: https://updates.jenkins.io/latestCore.txt
-  latestWarSha:
-    kind: shell
-    name: Get latest Jenkins Core sha256 checksum
-    spec:
-      command: curl --disable --fail --silent --show-error --location "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/{{ source "latestVersion" }}/jenkins-war-{{ source "latestVersion" }}.war.sha256"
 
 conditions:
   isDockerImagePublished:
@@ -66,28 +61,6 @@ targets:
         - tests/golden/expected_tags_latest_weekly.txt
       matchpattern: :(\d+\.\d+)
       replacepattern: :{{ source "latestVersion" }}
-  updateWarShaInDockerfiles:
-    name: Update default value of WAR_SHA in Dockerfiles
-    kind: dockerfile
-    scmid: default
-    sourceid: latestWarSha
-    spec:
-      files:
-        - alpine/hotspot/Dockerfile
-        - debian/Dockerfile
-        - rhel/Dockerfile
-        - windows/windowsservercore/hotspot/Dockerfile
-      instruction:
-        keyword: ARG
-        matcher: WAR_SHA
-  updateWarShaInDockerBake:
-    name: Update default value of WAR_SHA in docker-bake.hcl
-    kind: hcl
-    scmid: default
-    sourceid: latestWarSha
-    spec:
-      file: docker-bake.hcl
-      path: variable.WAR_SHA.default
 
 actions:
   default:

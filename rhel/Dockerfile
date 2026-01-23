@@ -101,18 +101,17 @@ RUN curl -fsSL "https://github.com/krallin/tini/releases/download/${TINI_VERSION
 ARG JENKINS_VERSION
 ENV JENKINS_VERSION=${JENKINS_VERSION:-2.547}
 
-# jenkins.war checksum, download will be validated using it
-ARG WAR_SHA=ef0301ce35bff7ead76201a8202acad6338568f0832666a2672831b260e08088
-
 # Can be used to customize where jenkins.war get downloaded from
 ARG WAR_URL=https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war
+COPY jenkins.io-2026.key /tmp/jenkins-key.pub
 
-# could use ADD but this one does not check Last-Modified header neither does it allow to control checksum
+# could use ADD but this one does not check Last-Modified header
 # see https://github.com/docker/docker/issues/8331
-RUN curl -fsSL ${WAR_URL} -o /usr/share/jenkins/jenkins.war \
-  && echo "${WAR_SHA}  /usr/share/jenkins/jenkins.war" >/tmp/war_sha \
-  && sha256sum -c --strict /tmp/war_sha \
-  && rm -f /tmp/war_sha
+RUN curl -fsSL "${WAR_URL}" -o /usr/share/jenkins/jenkins.war \
+  && curl -fsSL "${WAR_URL}.asc" -o /tmp/jenkins.war.asc \
+  && gpg --import /tmp/jenkins-key.pub \
+  && gpg --verify --trust-model direct /tmp/jenkins.war.asc /usr/share/jenkins/jenkins.war \
+  && rm -f /tmp/*
 
 ENV JENKINS_UC=https://updates.jenkins.io
 ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
@@ -122,9 +121,9 @@ RUN chown -R ${user} "$JENKINS_HOME" "$REF"
 ARG PLUGIN_CLI_VERSION=2.13.2
 ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
 RUN curl -fsSL ${PLUGIN_CLI_URL} -o /opt/jenkins-plugin-manager.jar \
-  && echo "$(curl -fsSL "${PLUGIN_CLI_URL}.sha256")  /opt/jenkins-plugin-manager.jar" >/tmp/war_sha \
-  && sha256sum -c --strict /tmp/war_sha \
-  && rm -f /tmp/war_sha
+  && echo "$(curl -fsSL "${PLUGIN_CLI_URL}.sha256")  /opt/jenkins-plugin-manager.jar" >/tmp/jpm_sha \
+  && sha256sum -c --strict /tmp/jpm_sha \
+  && rm -f /tmp/jpm_sha
 
 # for main web interface:
 EXPOSE ${http_port}

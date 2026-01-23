@@ -28,11 +28,6 @@ sources:
           \d+\.\d+\.1$
     transformers:
       - trimprefix: "jenkins-"
-  latestWarSha:
-    kind: shell
-    name: Get latest Jenkins Core LTS sha256 checksum
-    spec:
-      command: curl --disable --fail --silent --show-error --location "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/{{ source "latestVersion" }}/jenkins-war-{{ source "latestVersion" }}.war.sha256"
 
 conditions:
   isDockerImagePublished:
@@ -74,17 +69,6 @@ targets:
       file: tests/golden/expected_tags_latest_lts.txt
       matchpattern: :(\d+\.\d+\.\d+)
       replacepattern: :{{ source "latestVersion" }}
-  updateWarSha:
-    name: Update default value of simulated LTS WAR_SHA in Jenkinsfile
-    kind: file
-    scmid: default
-    sourceid: latestWarSha
-    spec:
-      file: Jenkinsfile
-      matchpattern: >-
-        'WAR_SHA=(.*)'
-      content: >-
-        'WAR_SHA={{ source "latestWarSha" }}'
 
 actions:
   default:

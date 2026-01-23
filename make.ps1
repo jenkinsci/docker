@@ -4,7 +4,7 @@ Param(
     # Default script target
     [String] $Target = 'build',
     # Jenkins version to include
-    [String] $JenkinsVersion = '2.534',
+    [String] $JenkinsVersion = '2.547',
     # Windows flavor and windows version to build
     [String] $ImageType = 'windowsservercore-ltsc2022',
     # Generate a docker compose file even if it already exists
@@ -56,11 +56,6 @@ if ($JenkinsVersion.Split('.').Count -eq 3) {
 if([String]::IsNullOrWhiteSpace($env:WAR_URL)) {
     $env:WAR_URL = 'https://get.jenkins.io/{0}/{1}/jenkins.war' -f $releaseLine, $env:JENKINS_VERSION
 }
-
-# Retrieve the sha256 corresponding to the war file
-$warShaURL = '{0}.sha256' -f $env:WAR_URL
-$webClient = New-Object System.Net.WebClient
-$env:WAR_SHA = $webClient.DownloadString($warShaURL).Split(' ')[0]
 
 # Check for required commands
 Function Test-CommandExists {
