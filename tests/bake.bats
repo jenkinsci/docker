@@ -6,7 +6,7 @@
 load test_helpers
 
 SUT_DESCRIPTION="docker bake"
-LTS_JENKINS_VERSION="2.504.3"
+LTS_JENKINS_VERSION="2.541.1"
 
 @test "[${SUT_DESCRIPTION}: tags] Default tags unchanged" {
   assert_matches_golden expected_tags make --silent tags
