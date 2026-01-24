@@ -1,6 +1,6 @@
 ARG RHEL_TAG=9.7-1768785530
 ARG RHEL_RELEASE_LINE=ubi9
-FROM registry.access.redhat.com/${RHEL_RELEASE_LINE}/ubi:${RHEL_TAG} AS jre-build
+FROM registry.access.redhat.com/${RHEL_RELEASE_LINE}/ubi:${RHEL_TAG} AS jre-and-war
 
 ARG JAVA_VERSION=17.0.17_10
 
@@ -39,6 +39,20 @@ RUN java_major_version="$(jlink --version 2>&1 | cut -c1-2)"; \
         --no-header-files \
         --output /javaruntime; \
     fi
+
+# Jenkins version being bundled in this docker image
+ARG JENKINS_VERSION=2.547
+# Can be used to customize where jenkins.war get downloaded from
+ARG WAR_URL=https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war
+
+COPY jenkins.io-2026.key /war/jenkins-key.pub
+
+# Not using ADD as it does not check Last-Modified header
+# see https://github.com/docker/docker/issues/8331
+RUN curl -fsSL "${WAR_URL}" -o /war/jenkins.war \
+  && curl -fsSL "${WAR_URL}.asc" -o /war/jenkins.war.asc \
+  && gpg --import /war/jenkins-key.pub \
+  && gpg --verify --trust-model direct /war/jenkins.war.asc /war/jenkins.war
 
 FROM registry.access.redhat.com/${RHEL_RELEASE_LINE}/ubi:${RHEL_TAG} AS controller
 
@@ -97,22 +111,6 @@ RUN curl -fsSL "https://github.com/krallin/tini/releases/download/${TINI_VERSION
   && rm -rf /sbin/tini.asc /root/.gnupg \
   && chmod +x /sbin/tini
 
-# jenkins version being bundled in this docker image
-ARG JENKINS_VERSION
-ENV JENKINS_VERSION=${JENKINS_VERSION:-2.547}
-
-# Can be used to customize where jenkins.war get downloaded from
-ARG WAR_URL=https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war
-COPY jenkins.io-2026.key /tmp/jenkins-key.pub
-
-# could use ADD but this one does not check Last-Modified header
-# see https://github.com/docker/docker/issues/8331
-RUN curl -fsSL "${WAR_URL}" -o /usr/share/jenkins/jenkins.war \
-  && curl -fsSL "${WAR_URL}.asc" -o /tmp/jenkins.war.asc \
-  && gpg --import /tmp/jenkins-key.pub \
-  && gpg --verify --trust-model direct /tmp/jenkins.war.asc /usr/share/jenkins/jenkins.war \
-  && rm -f /tmp/*
-
 ENV JENKINS_UC=https://updates.jenkins.io
 ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
 ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
@@ -135,13 +133,16 @@ ENV COPY_REFERENCE_FILE_LOG=$JENKINS_HOME/copy_reference_file.log
 
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
-COPY --from=jre-build /javaruntime $JAVA_HOME
+COPY --from=jre-and-war /javaruntime $JAVA_HOME
+COPY --from=jre-and-war /war/jenkins.war /usr/share/jenkins/jenkins.war
 
 USER ${user}
 
 COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
 COPY jenkins-plugin-cli.sh /bin/jenkins-plugin-cli
+
+ARG JENKINS_VERSION=2.547
 
 ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
