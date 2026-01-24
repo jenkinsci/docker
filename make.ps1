@@ -57,11 +57,6 @@ if([String]::IsNullOrWhiteSpace($env:WAR_URL)) {
     $env:WAR_URL = 'https://get.jenkins.io/{0}/{1}/jenkins.war' -f $releaseLine, $env:JENKINS_VERSION
 }
 
-# Retrieve the sha256 corresponding to the war file
-$warShaURL = '{0}.sha256' -f $env:WAR_URL
-$webClient = New-Object System.Net.WebClient
-$env:WAR_SHA = $webClient.DownloadString($warShaURL).Split(' ')[0]
-
 # Check for required commands
 Function Test-CommandExists {
     Param (

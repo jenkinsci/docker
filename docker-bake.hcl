@@ -15,10 +15,6 @@ variable "JENKINS_VERSION" {
   default = "2.544"
 }
 
-variable "WAR_SHA" {
-  default = "ef0301ce35bff7ead76201a8202acad6338568f0832666a2672831b260e08088"
-}
-
 variable "WAR_URL" {
   default = ""
 }
@@ -115,7 +111,6 @@ target "alpine" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    WAR_SHA            = WAR_SHA
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
@@ -136,7 +131,6 @@ target "debian" {
   context    = "."
   args = {
     JENKINS_VERSION     = JENKINS_VERSION
-    WAR_SHA             = WAR_SHA
     WAR_URL             = war_url()
     COMMIT_SHA          = COMMIT_SHA
     PLUGIN_CLI_VERSION  = PLUGIN_CLI_VERSION
@@ -158,7 +152,6 @@ target "rhel" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    WAR_SHA            = WAR_SHA
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
@@ -180,7 +173,6 @@ target "windowsservercore" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    WAR_SHA            = WAR_SHA
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
