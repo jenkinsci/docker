@@ -3,7 +3,7 @@ ARG TRIXIE_TAG=20251103
 ARG DEBIAN_RELEASE_LINE=trixie
 ARG DEBIAN_VERSION=20251117
 ARG DEBIAN_VARIANT="-slim"
-FROM debian:"${DEBIAN_RELEASE_LINE}-${DEBIAN_VERSION}${DEBIAN_VARIANT}" AS jre-build
+FROM debian:"${DEBIAN_RELEASE_LINE}-${DEBIAN_VERSION}${DEBIAN_VARIANT}" AS jre-and-war
 
 ARG JAVA_VERSION=17.0.17_10
 
@@ -16,6 +16,7 @@ RUN apt-get update \
   && apt-get install --no-install-recommends -y \
     ca-certificates \
     curl \
+    gnupg \
     jq \
   && rm -rf /var/lib/apt/lists/* \
   && /usr/bin/jdk-download.sh
@@ -44,6 +45,20 @@ RUN java_major_version="$(jlink --version 2>&1 | cut -c1-2)"; \
         --output /javaruntime; \
     fi
 
+# Jenkins version being bundled in this docker image
+ARG JENKINS_VERSION=2.547
+# Can be used to customize where jenkins.war get downloaded from
+ARG WAR_URL=https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war
+
+COPY jenkins.io-2026.key /war/jenkins-key.pub
+
+# Not using ADD as it does not check Last-Modified header
+# see https://github.com/docker/docker/issues/8331
+RUN curl -fsSL "${WAR_URL}" -o /war/jenkins.war \
+  && curl -fsSL "${WAR_URL}.asc" -o /war/jenkins.war.asc \
+  && gpg --import /war/jenkins-key.pub \
+  && gpg --verify --trust-model direct /war/jenkins.war.asc /war/jenkins.war
+
 FROM debian:"${DEBIAN_RELEASE_LINE}-${DEBIAN_VERSION}${DEBIAN_VARIANT}" AS controller
 
 RUN apt-get update \
@@ -51,8 +66,6 @@ RUN apt-get update \
     ca-certificates \
     curl \
     git \
-    gnupg \
-    gpg \
     libfontconfig1 \
     libfreetype6 \
     procps \
@@ -107,23 +120,6 @@ VOLUME $JENKINS_HOME
 # or config file with your custom jenkins Docker image.
 RUN mkdir -p ${REF}/init.groovy.d
 
-# jenkins version being bundled in this docker image
-ARG JENKINS_VERSION
-ENV JENKINS_VERSION=${JENKINS_VERSION:-2.547}
-
-# jenkins.war checksum, download will be validated using it
-ARG WAR_SHA=ef0301ce35bff7ead76201a8202acad6338568f0832666a2672831b260e08088
-
-# Can be used to customize where jenkins.war get downloaded from
-ARG WAR_URL=https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war
-
-# could use ADD but this one does not check Last-Modified header neither does it allow to control checksum
-# see https://github.com/docker/docker/issues/8331
-RUN curl -fsSL ${WAR_URL} -o /usr/share/jenkins/jenkins.war \
-  && echo "${WAR_SHA}  /usr/share/jenkins/jenkins.war" >/tmp/war_sha \
-  && sha256sum -c --strict /tmp/war_sha \
-  && rm -f /tmp/war_sha
-
 ENV JENKINS_UC=https://updates.jenkins.io
 ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
 ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
@@ -132,9 +128,9 @@ RUN chown -R ${user} "$JENKINS_HOME" "$REF"
 ARG PLUGIN_CLI_VERSION=2.13.2
 ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
 RUN curl -fsSL ${PLUGIN_CLI_URL} -o /opt/jenkins-plugin-manager.jar \
-  && echo "$(curl -fsSL "${PLUGIN_CLI_URL}.sha256")  /opt/jenkins-plugin-manager.jar" >/tmp/war_sha \
-  && sha256sum -c --strict /tmp/war_sha \
-  && rm -f /tmp/war_sha
+  && echo "$(curl -fsSL "${PLUGIN_CLI_URL}.sha256")  /opt/jenkins-plugin-manager.jar" >/tmp/jpm_sha \
+  && sha256sum -c --strict /tmp/jpm_sha \
+  && rm -f /tmp/jpm_sha
 
 # for main web interface:
 EXPOSE ${http_port}
@@ -146,13 +142,16 @@ ENV COPY_REFERENCE_FILE_LOG=$JENKINS_HOME/copy_reference_file.log
 
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
-COPY --from=jre-build /javaruntime $JAVA_HOME
+COPY --from=jre-and-war /javaruntime $JAVA_HOME
+COPY --from=jre-and-war /war/jenkins.war /usr/share/jenkins/jenkins.war
 
 USER ${user}
 
 COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
 COPY jenkins-plugin-cli.sh /bin/jenkins-plugin-cli
+
+ARG JENKINS_VERSION=2.547
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
