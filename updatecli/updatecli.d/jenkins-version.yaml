@@ -39,7 +39,7 @@ targets:
       path: variable.JENKINS_VERSION.default
   updateJenkinsVersionInDockerfiles:
     name: Update value of JENKINS_VERSION in Dockerfile
-    kind: file
+    kind: dockerfile
     scmid: default
     sourceid: latestVersion
     spec:
@@ -48,8 +48,9 @@ targets:
         - debian/Dockerfile
         - rhel/Dockerfile
         - windows/windowsservercore/hotspot/Dockerfile
-      matchpattern: :-(\d+\.\d+)}
-      replacepattern: :-{{ source "latestVersion" }}}
+      instruction:
+        keyword: "ARG"
+        matcher: "JENKINS_VERSION"
   updateJenkinsVersionInGoldenFiles:
     kind: file
     scmid: default
@@ -61,6 +62,15 @@ targets:
         - tests/golden/expected_tags_latest_weekly.txt
       matchpattern: :(\d+\.\d+)
       replacepattern: :{{ source "latestVersion" }}
+  updateJenkinsVersionInMakePs1:
+    name: Update value of $JenkinsVersion in make.ps1
+    kind: file
+    scmid: default
+    sourceid: latestVersion
+    spec:
+      file: make.ps1
+      matchpattern: JenkinsVersion = '(\d+\.\d+)'
+      replacepattern: JenkinsVersion = '{{ source "latestVersion" }}'
 
 actions:
   default:
