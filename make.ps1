@@ -205,14 +205,7 @@ if ($target -eq 'test') {
         $mod = Get-InstalledModule -Name Pester -MinimumVersion 5.3.0 -MaximumVersion 5.3.3 -ErrorAction SilentlyContinue
         if ($null -eq $mod) {
             Write-Host '= TEST: Pester 5.3.x not found: installing...'
-            $module = 'C:\Program Files\WindowsPowerShell\Modules\Pester'
-            if (Test-Path $module) {
-                takeown /F $module /A /R
-                icacls $module /reset
-                icacls $module /grant Administrators:'F' /inheritance:d /T
-                Remove-Item -Path $module -Recurse -Force -Confirm:$false
-            }
-            Install-Module -Force -Name Pester -MaximumVersion 5.3.3
+            Install-Module -Force -Name Pester -MaximumVersion 5.3.3 -Scope CurrentUser
         }
 
         Import-Module Pester
