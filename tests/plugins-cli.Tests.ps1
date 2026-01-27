@@ -5,8 +5,6 @@ $global:SUT_IMAGE=Get-SutImage
 $global:SUT_CONTAINER=Get-SutImage
 $global:TEST_TAG=$global:SUT_IMAGE.Replace('pester-jenkins-', '')
 
-$global:WORK = Join-Path $PSScriptRoot "upgrade-plugins/work-${global:SUT_IMAGE}"
-
 Describe "[plugins-cli > $global:TEST_TAG] build image" {
   BeforeEach {
     Push-Location -StackName 'jenkins' -Path "$PSScriptRoot/.."
@@ -161,7 +159,8 @@ Describe "[plugins-cli > $global:TEST_TAG] plugins are installed with jenkins-pl
 # Only test on Java 21, one JDK is enough to test all versions
 Describe "[plugins-cli > $global:TEST_TAG] plugins are getting upgraded but not downgraded" -Skip:(-not $global:TEST_TAG.Contains('jdk21-')) {
   BeforeAll {
-    Cleanup-Workdir $global:SUT_IMAGE  $global:WORK
+    $dockerVolume = (New-Guid).Guid
+    docker volume rm -f $dockerVolume
   }
   It 'builds child image' {
     # Initial execution
@@ -171,13 +170,13 @@ Describe "[plugins-cli > $global:TEST_TAG] plugins are getting upgraded but not 
 
   It 'has correct version of junit and ant plugins' {
     # Image contains junit 1.6 and ant-plugin 1.3
-    $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run -v `"${work}:C:\ProgramData\Jenkins\JenkinsHome`" --rm $global:SUT_IMAGE-plugins-cli exit 0"
+    $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run -v ${dockerVolume}:C:\ProgramData\Jenkins\JenkinsHome --rm $global:SUT_IMAGE-plugins-cli exit 0"
     $exitCode | Should -Be 0
 
-    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE "junit.jpi" $global:WORK
+    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE "junit.jpi" $dockerVolume
     $exitCode | Should -Be 0
     $stdout | Should -Match 'Plugin-Version: 1.6'
-    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE "ant.jpi" $global:WORK
+    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE "ant.jpi" $dockerVolume
     $exitCode | Should -Be 0
     $stdout | Should -Match 'Plugin-Version: 1.3'
   }
@@ -187,23 +186,27 @@ Describe "[plugins-cli > $global:TEST_TAG] plugins are getting upgraded but not 
     $exitCode, $stdout, $stderr = Build-DockerChild $global:SUT_IMAGE-upgrade-plugins $PSScriptRoot/upgrade-plugins
     $exitCode | Should -Be 0
     # Images contains junit 1.28 and ant-plugin 1.2
-    $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run -v `"${work}:C:\ProgramData\Jenkins\JenkinsHome`" --rm $global:SUT_IMAGE-upgrade-plugins exit 0"
+    $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run -v ${dockerVolume}:C:\ProgramData\Jenkins\JenkinsHome --rm $global:SUT_IMAGE-upgrade-plugins exit 0"
     $exitCode | Should -Be 0
-    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE 'junit.jpi' $global:WORK
+    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE 'junit.jpi' $dockerVolume
     $exitCode | Should -Be 0
     # Should be updated
     $stdout | Should -Match 'Plugin-Version: 1.28'
-    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE 'ant.jpi' $global:WORK
+    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE 'ant.jpi' $dockerVolume
     $exitCode | Should -Be 0
     # 1.2 is older than the existing 1.3, so keep 1.3
     $stdout | Should -Match 'Plugin-Version: 1.3'
+  }
+  AfterAll {
+    docker volume rm -f $dockerVolume
   }
 }
 
 # Only test on Java 21, one JDK is enough to test all versions
 Describe "[plugins-cli > $global:TEST_TAG] do not upgrade if plugin has been manually updated" -Skip:(-not $global:TEST_TAG.Contains('jdk21-')) {
   BeforeAll {
-    Cleanup-Workdir $global:SUT_IMAGE $global:WORK
+    $dockerVolume = (New-Guid).Guid
+    docker volume rm -f $dockerVolume
   }
 
   It 'builds child image' {
@@ -213,12 +216,12 @@ Describe "[plugins-cli > $global:TEST_TAG] do not upgrade if plugin has been man
 
   It 'updates plugin manually and then via plugin-cli' {
     # Image contains junit 1.8 and ant-plugin 1.3
-    $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run -v `"${work}:C:\ProgramData\Jenkins\JenkinsHome`" --rm $global:SUT_IMAGE-plugins-cli curl.exe --connect-timeout 20 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L https://updates.jenkins.io/download/plugins/junit/1.8/junit.hpi -o C:/ProgramData/Jenkins/JenkinsHome/plugins/junit.jpi"
+    $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run -v ${dockerVolume}:C:\ProgramData\Jenkins\JenkinsHome --rm $global:SUT_IMAGE-plugins-cli curl.exe --connect-timeout 20 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L https://updates.jenkins.io/download/plugins/junit/1.8/junit.hpi -o C:/ProgramData/Jenkins/JenkinsHome/plugins/junit.jpi"
     $exitCode | Should -Be 0
-    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE 'junit.jpi' $global:WORK
+    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE 'junit.jpi' $dockerVolume
     $exitCode | Should -Be 0
     $stdout | Should -Match 'Plugin-Version: 1.8'
-    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE 'ant.jpi' $global:WORK
+    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE 'ant.jpi' $dockerVolume
     $exitCode | Should -Be 0
     $stdout | Should -Match 'Plugin-Version: 1.3'
 
@@ -226,25 +229,29 @@ Describe "[plugins-cli > $global:TEST_TAG] do not upgrade if plugin has been man
     $exitCode | Should -Be 0
 
     # Images contains junit 1.28 and ant-plugin 1.2
-    $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run -v `"${work}:C:\ProgramData\Jenkins\JenkinsHome`" --rm $global:SUT_IMAGE-upgrade-plugins exit 0"
+    $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run -v ${dockerVolume}:C:\ProgramData\Jenkins\JenkinsHome --rm $global:SUT_IMAGE-upgrade-plugins exit 0"
     $exitCode | Should -Be 0
     # junit shouldn't be upgraded
-    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE 'junit.jpi' $global:WORK
+    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE 'junit.jpi' $dockerVolume
     $exitCode | Should -Be 0
     $stdout | Should -Match 'Plugin-Version: 1.8'
     $stdout | Should -Not -Match 'Plugin-Version: 1.28'
     # ant shouldn't be downgraded
-    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE 'ant.jpi' $global:WORK
+    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE 'ant.jpi' $dockerVolume
     $exitCode | Should -Be 0
     $stdout | Should -Match 'Plugin-Version: 1.3'
     $stdout | Should -Not -Match 'Plugin-Version: 1.2'
+  }
+  AfterAll {
+    docker volume rm -f $dockerVolume
   }
 }
 
 # Only test on Java 21, one JDK is enough to test all versions
 Describe "[plugins-cli > $global:TEST_TAG] upgrade plugin even if it has been manually updated when PLUGINS_FORCE_UPGRADE=true" -Skip:(-not $global:TEST_TAG.Contains('jdk21-')) {
-  BeforeAll {
-    Cleanup-Workdir $global:SUT_IMAGE $global:WORK
+   BeforeAll {
+    $dockerVolume = (New-Guid).Guid
+    docker volume rm -f $dockerVolume
   }
 
   It 'builds child image' {
@@ -254,10 +261,10 @@ Describe "[plugins-cli > $global:TEST_TAG] upgrade plugin even if it has been ma
 
   It 'upgrades plugins' {
     # Image contains junit 1.6 and ant-plugin 1.3
-    $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run -v `"${work}:C:\ProgramData\Jenkins\JenkinsHome`" --rm $global:SUT_IMAGE-plugins-cli curl.exe --connect-timeout 20 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L https://updates.jenkins.io/download/plugins/junit/1.8/junit.hpi -o C:/ProgramData/Jenkins/JenkinsHome/plugins/junit.jpi"
+    $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run -v ${dockerVolume}:C:\ProgramData\Jenkins\JenkinsHome --rm $global:SUT_IMAGE-plugins-cli curl.exe --connect-timeout 20 --retry 5 --retry-delay 0 --retry-max-time 60 -s -f -L https://updates.jenkins.io/download/plugins/junit/1.8/junit.hpi -o C:/ProgramData/Jenkins/JenkinsHome/plugins/junit.jpi"
     $exitCode | Should -Be 0
 
-    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE 'junit.jpi' $global:WORK
+    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE 'junit.jpi' $dockerVolume
     $exitCode | Should -Be 0
     $stdout | Should -Match 'Plugin-Version: 1.8'
 
@@ -265,18 +272,21 @@ Describe "[plugins-cli > $global:TEST_TAG] upgrade plugin even if it has been ma
     $exitCode | Should -Be 0
 
     # Images contains junit 1.28 and ant-plugin 1.2
-    $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run -e PLUGINS_FORCE_UPGRADE=true -v ${work}:C:/ProgramData/Jenkins/JenkinsHome --rm $global:SUT_IMAGE-upgrade-plugins exit 0"
+    $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run -e PLUGINS_FORCE_UPGRADE=true -v ${dockerVolume}:C:\ProgramData\Jenkins\JenkinsHome --rm $global:SUT_IMAGE-upgrade-plugins exit 0" true
     $exitCode | Should -Be 0
     # junit should be upgraded
-    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE 'junit.jpi' $global:WORK
+    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE 'junit.jpi' $dockerVolume
     $exitCode | Should -Be 0
     $stdout | Should -Not -Match 'Plugin-Version: 1.8'
     $stdout | Should -Match 'Plugin-Version: 1.28'
     # ant shouldn't be downgraded
-    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE 'ant.jpi' $global:WORK
+    $exitCode, $stdout, $stderr = Unzip-Manifest $global:SUT_IMAGE 'ant.jpi' $dockerVolume
     $exitCode | Should -Be 0
     $stdout | Should -Match 'Plugin-Version: 1.3'
     $stdout | Should -Not -Match 'Plugin-Version: 1.2'
+  }
+  AfterAll {
+    docker volume rm -f $dockerVolume
   }
 }
 

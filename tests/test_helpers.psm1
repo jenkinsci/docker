@@ -182,13 +182,6 @@ function Cleanup($image) {
     docker rm -fv "$image" 2>&1 | Out-Null
 }
 
-function Unzip-Manifest($Container, $Plugin, $Work) {
-    return (Run-Program "docker.exe" "run --rm -v `"${Work}:C:\ProgramData\Jenkins\JenkinsHome`" $Container mkdir C:/ProgramData/Jenkins/temp | Out-Null ; Copy-Item C:/ProgramData/Jenkins/JenkinsHome/plugins/$Plugin C:/ProgramData/Jenkins/temp/$Plugin.zip ; Expand-Archive C:/ProgramData/Jenkins/temp/$Plugin.zip -Destinationpath C:/ProgramData/Jenkins/temp ; `$content = Get-Content C:/ProgramData/Jenkins/temp/META-INF/MANIFEST.MF ; Remove-Item -Force -Recurse C:/ProgramData/Jenkins/temp ; Write-Host `$content ; exit 0")
-}
-
-function Cleanup-Workdir($Image, $Work) {
-    if(-not (Test-Path $Work)) {
-        New-Item -ItemType Directory -Path $Work -Force
-    }
-    return (Run-Program "docker.exe" "run --rm -v `"${Work}:C:\App`" $Image Remove-Item -Recurse -Force C:\App")
+function Unzip-Manifest($Container, $Plugin, $DockerVolume) {
+    return (Run-Program "docker.exe" "run --rm -v `"${DockerVolume}:C:\ProgramData\Jenkins\JenkinsHome`" $Container mkdir C:/ProgramData/Jenkins/temp | Out-Null ; Copy-Item C:/ProgramData/Jenkins/JenkinsHome/plugins/$Plugin C:/ProgramData/Jenkins/temp/$Plugin.zip ; Expand-Archive C:/ProgramData/Jenkins/temp/$Plugin.zip -Destinationpath C:/ProgramData/Jenkins/temp ; `$content = Get-Content C:/ProgramData/Jenkins/temp/META-INF/MANIFEST.MF ; Remove-Item -Force -Recurse C:/ProgramData/Jenkins/temp ; Write-Host `$content ; exit 0")
 }
