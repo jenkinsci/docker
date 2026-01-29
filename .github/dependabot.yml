@@ -4,6 +4,8 @@ updates:
 
 # GitHub actions
 - package-ecosystem: "github-actions"
+  labels:
+    - "skip-changelog"
   target-branch: master
   directory: "/"
   schedule:
