@@ -4,7 +4,7 @@ Param(
     # Default script target
     [String] $Target = 'build',
     # Jenkins version to include
-    [String] $JenkinsVersion = '2.548',
+    [String] $JenkinsVersion = '2.549',
     # Windows flavor and windows version to build
     [String] $ImageType = 'windowsservercore-ltsc2022',
     # Generate a docker compose file even if it already exists
