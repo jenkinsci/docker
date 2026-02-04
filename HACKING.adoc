@@ -208,7 +208,7 @@ Using the following settings:
         "DEBIAN_VERSION": "20251117",
         "JAVA_VERSION": "25.0.1_8",
         "JENKINS_VERSION": "2.528.3",
-        "PLUGIN_CLI_VERSION": "2.13.2",
+        "PLUGIN_CLI_VERSION": "2.14.0",
         "WAR_URL": "https://get.jenkins.io/war-stable/2.528.3/jenkins.war"
       },
       "tags": [

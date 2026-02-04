@@ -36,7 +36,7 @@ variable "LATEST_LTS" {
 }
 
 variable "PLUGIN_CLI_VERSION" {
-  default = "2.13.2"
+  default = "2.14.0"
 }
 
 variable "COMMIT_SHA" {
