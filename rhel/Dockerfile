@@ -2,7 +2,7 @@ ARG RHEL_TAG=9.7-1768785530
 ARG RHEL_RELEASE_LINE=ubi9
 FROM registry.access.redhat.com/${RHEL_RELEASE_LINE}/ubi:${RHEL_TAG} AS jre-build
 
-ARG JAVA_VERSION=17.0.17_10
+ARG JAVA_VERSION=17.0.18_8
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
