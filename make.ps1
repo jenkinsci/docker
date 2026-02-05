@@ -55,6 +55,7 @@ if ($JenkinsVersion.Split('.').Count -eq 3) {
 # If there is no WAR_URL set, using get.jenkins.io URL depending on the release line
 if([String]::IsNullOrWhiteSpace($env:WAR_URL)) {
     $env:WAR_URL = 'https://get.jenkins.io/{0}/{1}/jenkins.war' -f $releaseLine, $env:JENKINS_VERSION
+    Write-Host "Using env:WAR_URL: $env:WAR_URL"
 }
 
 # Check for required commands
@@ -145,6 +146,11 @@ function Initialize-DockerComposeFile {
     $yqMainQuery = '.target[] | del(.output) | {(. | key): {\"image\": .tags[0], \"build\": .}}'
     # Encapsulate under a top level 'services' map
     $yqServicesQuery = '{\"services\": .}'
+    if ($PSVersionTable.PSVersion.Major -ge 7) {
+        Write-Host 'Using a query compatible with PowerShell 7'
+        $yqMainQuery = '.target[] | del(.output) | {(. | key): {"image": .tags[0], "build": .}}'
+        $yqServicesQuery = '{"services": .}'
+    }
 
     # - Use docker buildx bake to output image definitions from the "<windowsFlavor>" bake target
     # - Convert with yq to the format expected by docker compose
