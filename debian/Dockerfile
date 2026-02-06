@@ -138,6 +138,8 @@ EXPOSE ${http_port}
 # will be used by attached agents:
 EXPOSE ${agent_port}
 
+HEALTHCHECK --interval=10s --timeout=5s --start-period=5m --retries=3 CMD curl -f http://localhost:8080/health || exit 1
+
 ENV COPY_REFERENCE_FILE_LOG=$JENKINS_HOME/copy_reference_file.log
 
 ENV JAVA_HOME=/opt/java/openjdk
