@@ -155,6 +155,8 @@ ARG JENKINS_VERSION=2.549
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
+HEALTHCHECK --interval=10s --timeout=5s --start-period=5m --retries=3 CMD curl -f http://localhost:8080/health || exit 1
+
 # metadata labels
 LABEL \
     org.opencontainers.image.vendor="Jenkins project" \
