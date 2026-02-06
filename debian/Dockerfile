@@ -138,7 +138,7 @@ EXPOSE ${http_port}
 # will be used by attached agents:
 EXPOSE ${agent_port}
 
-HEALTHCHECK --interval=10s --timeout=5s --start-period=5m --retries=3 CMD curl -f http://localhost:8080/health || exit 1
+
 
 ENV COPY_REFERENCE_FILE_LOG=$JENKINS_HOME/copy_reference_file.log
 
@@ -157,7 +157,11 @@ ARG JENKINS_VERSION=2.549
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
+# Start period of 5m because Jenkins can be slow to start
+HEALTHCHECK --interval=10s --timeout=5s --start-period=5m --retries=3 CMD curl -f http://localhost:8080/health || exit 1
+
 # metadata labels
+
 LABEL \
     org.opencontainers.image.vendor="Jenkins project" \
     org.opencontainers.image.title="Official Jenkins Docker image" \
