@@ -2,6 +2,32 @@
 
 : "${REF:="/usr/share/jenkins/ref"}"
 
+# Substitute environment variables in file content
+# Supports ${VAR} and ${VAR:-default} syntax
+substitute_env_vars() {
+    local file="$1"
+    local content
+    content=$(cat "$file")
+    
+    # Loop until no more substitutions found
+    while [[ "$content" =~ \$\{([A-Za-z_][A-Za-z0-9_]*)(:-([^}]*))?\} ]]; do
+        local var_name="${BASH_REMATCH[1]}"
+        local default_value="${BASH_REMATCH[3]}"
+        local full_match="${BASH_REMATCH[0]}"
+        
+        # Get variable value using indirect expansion, or use default if empty
+        local var_value="${!var_name:-}"
+        if [[ -z "$var_value" && -n "$default_value" ]]; then
+            var_value="$default_value"
+        fi
+        
+        # Replace all occurrences
+        content="${content//$full_match/$var_value}"
+    done
+    
+    echo "$content" > "$file"
+}
+
 # compare if version1 < version2
 versionLT() {
     local normalized_version1 normalized_version2 first_part_of_1 first_char_other_part_of_1 first_part_of_2
@@ -134,6 +160,13 @@ copy_reference_file() {
             log=true
             mkdir -p "$JENKINS_HOME/${dir}"
             cp -pr "$(realpath "${f}")" "$JENKINS_HOME/${rel}";
+            
+            # Perform environment variable substitution on config files
+            if [[ "$rel" == *.xml || "$rel" == *.conf || "$rel" == *.properties || "$rel" == *.groovy ]]; then
+                if [[ -f "$JENKINS_HOME/${rel}" ]]; then
+                    substitute_env_vars "$JENKINS_HOME/${rel}"
+                fi
+            fi
         else
             action="SKIPPED"
         fi
