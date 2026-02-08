@@ -68,3 +68,44 @@ SUT_DESCRIPTION="${IMAGE}-functions"
   # Cleanup
   run docker volume rm "${volume_name}"
 }
+
+@test "[${SUT_DESCRIPTION}] substitute_env_vars replaces variable with env value" {
+  run docker run --rm $SUT_IMAGE bash -c "
+    source /usr/local/bin/jenkins-support
+    tmp=\$(mktemp)
+    echo '<jenkinsUrl>\${JENKINS_URL:-http://localhost:8080/}</jenkinsUrl>' > \$tmp
+    JENKINS_URL=http://prod.example.com substitute_env_vars \$tmp
+    cat \$tmp
+  "
+  assert_success
+  assert_output '<jenkinsUrl>http://prod.example.com</jenkinsUrl>'
+}
+
+@test "[${SUT_DESCRIPTION}] substitute_env_vars uses default when variable unset" {
+  run docker run --rm $SUT_IMAGE bash -c "
+    source /usr/local/bin/jenkins-support
+    tmp=\$(mktemp)
+    echo '<jenkinsUrl>\${JENKINS_URL:-http://localhost:8080/}</jenkinsUrl>' > \$tmp
+    unset JENKINS_URL
+    substitute_env_vars \$tmp
+    cat \$tmp
+  "
+  assert_success
+  assert_output '<jenkinsUrl>http://localhost:8080/</jenkinsUrl>'
+}
+
+@test "[${SUT_DESCRIPTION}] copy_reference_file skips substitution when JENKINS_ENABLE_ENV_SUBST is unset" {
+  run docker run --rm \
+    -e JENKINS_ENABLE_ENV_SUBST=false \
+    -e JENKINS_URL=http://prod.example.com \
+    --volume "$(mktemp -d):/var/jenkins_home" \
+    $SUT_IMAGE bash -c "
+      mkdir -p /usr/share/jenkins/ref
+      echo '<jenkinsUrl>\${JENKINS_URL:-http://localhost:8080/}</jenkinsUrl>' > /usr/share/jenkins/ref/test.xml
+      source /usr/local/bin/jenkins-support
+      copy_reference_file /usr/share/jenkins/ref/test.xml
+      cat /var/jenkins_home/test.xml
+    "
+  assert_success
+  assert_output '<jenkinsUrl>${JENKINS_URL:-http://localhost:8080/}</jenkinsUrl>'
+}
