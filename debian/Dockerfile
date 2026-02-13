@@ -14,10 +14,10 @@ COPY jdk-download.sh /usr/bin/jdk-download.sh
 
 RUN apt-get update \
   && apt-get install --no-install-recommends -y \
-    ca-certificates \
-    curl \
-    gnupg \
-    jq \
+  ca-certificates \
+  curl \
+  gnupg \
+  jq \
   && rm -rf /var/lib/apt/lists/* \
   && /usr/bin/jdk-download.sh
 
@@ -28,22 +28,22 @@ ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
 # while still saving space (approx 200mb from the full distribution)
 # hadolint ignore=SC2086
 RUN java_major_version="$(jlink --version 2>&1 | cut -c1-2)"; \
-    if [ "$java_major_version" = "25" ]; then \
-      cp -r "/opt/jdk-${JAVA_VERSION}" /javaruntime; \
-    else \
-      case "$java_major_version" in \
-        "17") options="--compress=2" ;; \
-        "21") options="--compress=zip-6" ;; \
-        *) echo "ERROR: unmanaged jlink version pattern" && exit 1 ;; \
-      esac; \
-      jlink \
-        --strip-java-debug-attributes \
-        ${options} \
-        --add-modules ALL-MODULE-PATH \
-        --no-man-pages \
-        --no-header-files \
-        --output /javaruntime; \
-    fi
+  if [ "$java_major_version" = "25" ]; then \
+  cp -r "/opt/jdk-${JAVA_VERSION}" /javaruntime; \
+  else \
+  case "$java_major_version" in \
+  "17") options="--compress=2" ;; \
+  "21") options="--compress=zip-6" ;; \
+  *) echo "ERROR: unmanaged jlink version pattern" && exit 1 ;; \
+  esac; \
+  jlink \
+  --strip-java-debug-attributes \
+  ${options} \
+  --add-modules ALL-MODULE-PATH \
+  --no-man-pages \
+  --no-header-files \
+  --output /javaruntime; \
+  fi
 
 # Jenkins version being bundled in this docker image
 ARG JENKINS_VERSION=2.549
@@ -63,16 +63,16 @@ FROM debian:"${DEBIAN_RELEASE_LINE}-${DEBIAN_VERSION}${DEBIAN_VARIANT}" AS contr
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    curl \
-    git \
-    libfontconfig1 \
-    libfreetype6 \
-    procps \
-    ssh-client \
-    tini \
-    unzip \
-    tzdata \
+  ca-certificates \
+  curl \
+  git \
+  libfontconfig1 \
+  libfreetype6 \
+  procps \
+  ssh-client \
+  tini \
+  unzip \
+  tzdata \
   && rm -rf /var/lib/apt/lists/*
 
 # Git LFS is not available from a package manager on all the platforms we support
@@ -145,10 +145,16 @@ ENV PATH="${JAVA_HOME}/bin:${PATH}"
 COPY --from=jre-and-war /javaruntime $JAVA_HOME
 COPY --from=jre-and-war /war/jenkins.war /usr/share/jenkins/jenkins.war
 
+# Allow the jenkins user to import custom CA certificates at runtime
+# Backup original cacerts and make it writable by jenkins user
+RUN cp "${JAVA_HOME}/lib/security/cacerts" "${JAVA_HOME}/lib/security/cacerts.original" \
+  && chown ${user} "${JAVA_HOME}/lib/security/cacerts"
+
 USER ${user}
 
 COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
+COPY import-custom-certs.sh /usr/local/bin/import-custom-certs.sh
 COPY jenkins-plugin-cli.sh /bin/jenkins-plugin-cli
 
 ARG JENKINS_VERSION=2.549
@@ -157,11 +163,11 @@ ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
 # metadata labels
 LABEL \
-    org.opencontainers.image.vendor="Jenkins project" \
-    org.opencontainers.image.title="Official Jenkins Docker image" \
-    org.opencontainers.image.description="The Jenkins Continuous Integration and Delivery server" \
-    org.opencontainers.image.version="${JENKINS_VERSION}" \
-    org.opencontainers.image.url="https://www.jenkins.io/" \
-    org.opencontainers.image.source="https://github.com/jenkinsci/docker" \
-    org.opencontainers.image.revision="${COMMIT_SHA}" \
-    org.opencontainers.image.licenses="MIT"
+  org.opencontainers.image.vendor="Jenkins project" \
+  org.opencontainers.image.title="Official Jenkins Docker image" \
+  org.opencontainers.image.description="The Jenkins Continuous Integration and Delivery server" \
+  org.opencontainers.image.version="${JENKINS_VERSION}" \
+  org.opencontainers.image.url="https://www.jenkins.io/" \
+  org.opencontainers.image.source="https://github.com/jenkinsci/docker" \
+  org.opencontainers.image.revision="${COMMIT_SHA}" \
+  org.opencontainers.image.licenses="MIT"
