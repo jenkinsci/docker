@@ -146,18 +146,24 @@ runInScriptConsole() {
   cleanup "${container_name}"
   test_cert_dir="$(mktemp -d)"
 
-  # Generate a self-signed test CA certificate
-  openssl req -x509 -newkey rsa:2048 -keyout /dev/null -out "${test_cert_dir}/test-ca.crt" \
-    -days 1 -nodes -subj "/CN=Test CA"
+  # Generate a self-signed test CA certificate using keytool from the SUT image
+  # (avoids dependency on openssl being installed on the CI host)
+  docker run --rm -v "${test_cert_dir}:/certs" "${SUT_IMAGE}" \
+    bash -c 'keytool -genkeypair -alias testca -keyalg RSA -keysize 2048 \
+      -dname "CN=Test CA" -validity 1 -keypass changeit \
+      -keystore /tmp/test.jks -storepass changeit 2>/dev/null && \
+    keytool -exportcert -alias testca -rfc \
+      -keystore /tmp/test.jks -storepass changeit \
+      -file /certs/test-ca.crt 2>/dev/null'
 
   # Start Jenkins with the test cert volume-mounted
   docker run -d --name "${container_name}" \
     -v "${test_cert_dir}:/usr/share/jenkins/ref/certs:ro" \
     "${SUT_IMAGE}"
 
-  # Wait for import and verify (JAVA_HOME is resolved inside the container)
+  # Wait for import and verify the certificate was added to the keystore
   retry 30 5 docker exec "${container_name}" \
-    bash -c 'keytool -list -keystore "$JAVA_HOME/lib/security/cacerts" -storepass changeit -alias custom-test-ca'
+    keytool -list -cacerts -storepass changeit -alias custom-test-ca
 
   rm -rf "${test_cert_dir}"
 }
