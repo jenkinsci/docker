@@ -164,6 +164,9 @@ Using the following settings:
 * COMMIT_SHA: 1c72a9383191562eb3c44838aeeadad0839c2c92
 * LATEST_WEEKLY: false
 * LATEST_LTS: true
+* latest_weekly_version: 2.545
+* latest_lts_version: 2.528.3
+* BYPASS_ONLY_LATEST_PUBLICATION: false
 * BUILD_METADATA_PATH: target/build-result-metadata_linux_dry-run.json
 [+] Building 104.6s (59/73)
 <...snip...>
@@ -181,6 +184,9 @@ Using the following settings:
 * COMMIT_SHA: aaf4e7faf887b7ac4879c3bf540ede48220cca9f
 * LATEST_WEEKLY: false
 * LATEST_LTS: true
+* latest_weekly_version: 2.545
+* latest_lts_version: 2.528.3
+* BYPASS_ONLY_LATEST_PUBLICATION: false
 * BUILD_METADATA_PATH: target/build-result-metadata_debian_jdk25_dry-run.json
 * BAKE TARGET: debian_jdk25
 * BUILDX OPTIONS:
@@ -231,6 +237,9 @@ Using the following settings:
 
 You can also pass the `-d` option (debug) to see traces from the script.
 
+If you need to publish images with a JENKINS_VERSION which is not the latest Weekly nor the latest LTS from Artifactory,
+set `BYPASS_LATEST_PUBLICATION_ONLY` to `true`.
+
 === Using an overridden target repository on Docker Hub
 
 Create a new dedicated target repository in your Docker Hub account, and use it like follows (note the absence of `-d` option):
@@ -248,6 +257,9 @@ Using the following settings:
 * COMMIT_SHA: aaf4e7faf887b7ac4879c3bf540ede48220cca9f
 * LATEST_WEEKLY: false
 * LATEST_LTS: true
+* latest_weekly_version: 2.545
+* latest_lts_version: 2.528.3
+* BYPASS_ONLY_LATEST_PUBLICATION: false
 * BUILD_METADATA_PATH: target/build-result-metadata_linux_publish.json
 * BAKE TARGET: linux
 * BUILDX OPTIONS:
