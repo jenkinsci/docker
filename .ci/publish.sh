@@ -113,7 +113,7 @@ Using the following settings:
 * LATEST_LTS: ${LATEST_LTS}
 * latest_weekly_version: ${latest_weekly_version}
 * latest_lts_version: ${latest_lts_version}
-* BYPASS_ONLY_LATEST_PUBLICATION: ${BYPASS_ONLY_LATEST_PUBLICATION}
+* BYPASS_LATEST_PUBLICATION_ONLY: ${BYPASS_LATEST_PUBLICATION_ONLY}
 * BUILD_METADATA_PATH: ${BUILD_METADATA_PATH}
 * BAKE_TARGET: ${BAKE_TARGET}
 * BAKE OPTIONS:
