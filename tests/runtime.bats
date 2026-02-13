@@ -148,7 +148,7 @@ runInScriptConsole() {
 
   # Generate a self-signed test CA certificate using keytool from the SUT image
   # (avoids dependency on openssl being installed on the CI host)
-  docker run --rm -v "${test_cert_dir}:/certs" "${SUT_IMAGE}" \
+  docker run --rm --user root -v "${test_cert_dir}:/certs" "${SUT_IMAGE}" \
     bash -c 'keytool -genkeypair -alias testca -keyalg RSA -keysize 2048 \
       -dname "CN=Test CA" -validity 1 -keypass changeit \
       -keystore /tmp/test.jks -storepass changeit 2>/dev/null && \
