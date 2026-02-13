@@ -123,4 +123,12 @@ EOF
 echo '* RESOLVED BAKE CONFIG:'
 docker buildx bake --file docker-bake.hcl --print "${BAKE_TARGET}"
 
+if [[ "${CI:-false}" == "false" ]]; then
+  read -rp "Confirm? [y/N] " answer
+
+  if [[ ! "${answer}" =~ ^[Yy]$ ]]; then
+      exit 0
+  fi
+fi
+
 docker buildx bake --file docker-bake.hcl "${build_opts[@]}" "${BAKE_TARGET}"
