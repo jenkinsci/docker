@@ -185,7 +185,7 @@ function Initialize-DockerComposeFile {
     # - Use docker buildx bake to output image definitions from the "<windowsFlavor>" bake target
     # - Convert with yq to the format expected by docker compose
     # - Store the result in the docker compose file
-    docker buildx bake --progress=plain --file=docker-bake.hcl $windowsFlavor --print |
+    docker buildx bake --progress=quiet --file=docker-bake.hcl $windowsFlavor --print |
         yq --prettyPrint $yqMainQuery |
         yq $yqServicesQuery |
         Out-File -FilePath $DockerComposeFile
