@@ -143,6 +143,7 @@ runInScriptConsole() {
 @test "[${SUT_DESCRIPTION}] custom CA certificate is imported into keystore" {
   local container_name test_cert_dir
   container_name="$(get_sut_container_name)"
+  cleanup "${container_name}"
   test_cert_dir="$(mktemp -d)"
 
   # Generate a self-signed test CA certificate
@@ -154,10 +155,9 @@ runInScriptConsole() {
     -v "${test_cert_dir}:/usr/share/jenkins/ref/certs:ro" \
     "${SUT_IMAGE}"
 
-  # Verify the certificate was imported
-  retry 20 5 docker exec "${container_name}" \
-    keytool -list -keystore "${JAVA_HOME:-/opt/java/openjdk}/lib/security/cacerts" \
-    -storepass changeit -alias custom-test-ca
+  # Wait for import and verify (JAVA_HOME is resolved inside the container)
+  retry 30 5 docker exec "${container_name}" \
+    bash -c 'keytool -list -keystore "$JAVA_HOME/lib/security/cacerts" -storepass changeit -alias custom-test-ca'
 
   rm -rf "${test_cert_dir}"
 }
