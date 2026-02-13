@@ -46,7 +46,7 @@ RUN java_major_version="$(jlink --version 2>&1 | cut -c1-2)"; \
     fi
 
 # Jenkins version being bundled in this docker image
-ARG JENKINS_VERSION=2.549
+ARG JENKINS_VERSION=2.550
 # Can be used to customize where jenkins.war get downloaded from
 ARG WAR_URL=https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war
 
@@ -151,7 +151,7 @@ COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
 COPY jenkins-plugin-cli.sh /bin/jenkins-plugin-cli
 
-ARG JENKINS_VERSION=2.549
+ARG JENKINS_VERSION=2.550
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
