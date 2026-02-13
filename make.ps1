@@ -173,9 +173,14 @@ function Initialize-DockerComposeFile {
     # For each target name as service key, return a map consisting of:
     # - 'image' set to the first tag value
     # - 'build' set to the content of the bake target
-    $yqMainQuery = '.target[] | del(.output) | {(. | key): {\"image\": .tags[0], \"build\": .}}'
+    $yqMainQuery = '.target[] | del(.output) | {(. | key): {"image": .tags[0], "build": .}}'
     # Encapsulate under a top level 'services' map
-    $yqServicesQuery = '{\"services\": .}'
+    $yqServicesQuery = '{"services": .}'
+
+    if ($PSVersionTable.PSVersion.Major -eq 5) {
+        $yqMainQuery = $yqMainQuery -replace '"', '\"'
+        $yqServicesQuery = $yqServicesQuery -replace '"', '\"'
+    }
 
     # - Use docker buildx bake to output image definitions from the "<windowsFlavor>" bake target
     # - Convert with yq to the format expected by docker compose
