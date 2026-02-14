@@ -4,7 +4,7 @@ variable "jdks_to_build" {
 }
 
 variable "windows_version_to_build" {
-  default = ["windowsservercore-ltsc2019", "windowsservercore-ltsc2022"]
+  default = ["ltsc2019", "ltsc2022"]
 }
 
 variable "default_jdk" {
@@ -168,7 +168,7 @@ target "windowsservercore" {
     jdk             = jdks_to_build
     windows_version = windowsversions()
   }
-  name       = "${windows_version}_jdk${jdk}"
+  name       = "windowsservercore-${windows_version}_jdk${jdk}"
   dockerfile = "windows/windowsservercore/hotspot/Dockerfile"
   context    = "."
   args = {
@@ -180,7 +180,7 @@ target "windowsservercore" {
     JAVA_HOME          = "C:/openjdk-${jdk}"
     WINDOWS_VERSION    = windows_version
   }
-  tags      = windows_tags(windows_version, jdk)
+  tags      = windows_tags("windowsservercore-${windows_version}", jdk)
   platforms = ["windows/amd64"]
 }
 
@@ -326,7 +326,7 @@ function "windows_tags" {
     tag_weekly(false, "jdk${jdk}-hotspot-${distribution}"),
     tag_lts(false, "lts-jdk${jdk}-hotspot-${distribution}"),
 
-    # ## Default JDK extra short tags
+    ## Default JDK extra short tags
     is_default_jdk(jdk) ? tag(true, "hotspot-${distribution}") : "",
     is_default_jdk(jdk) ? tag_weekly(false, distribution) : "",
     is_default_jdk(jdk) ? tag_weekly(true, distribution) : "",
