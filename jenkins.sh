@@ -12,7 +12,7 @@ fi
 
 # Import custom CA certificates if the script exists
 if [ -f /usr/local/bin/import-custom-certs.sh ]; then
-  bash /usr/local/bin/import-custom-certs.sh
+  bash /usr/local/bin/import-custom-certs.sh || true
 fi
 
 if ! [ -r "${JENKINS_HOME}" ] || ! [ -w "${JENKINS_HOME}" ]; then

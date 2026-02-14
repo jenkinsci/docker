@@ -154,7 +154,8 @@ runInScriptConsole() {
       -keystore /tmp/test.jks -storepass changeit 2>/dev/null && \
     keytool -exportcert -alias testca -rfc \
       -keystore /tmp/test.jks -storepass changeit \
-      -file /certs/test-ca.crt 2>/dev/null'
+      -file /certs/test-ca.crt 2>/dev/null && \
+    chmod -R 777 /certs'
 
   # Start Jenkins with the test cert volume-mounted
   docker run -d --name "${container_name}" \
