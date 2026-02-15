@@ -12,7 +12,6 @@ set -eu -o pipefail
 : "${DOCKERHUB_ORGANISATION:=jenkins}"
 : "${DOCKERHUB_REPO:=jenkins}"
 : "${BAKE_TARGET:=linux}"
-: "${BYPASS_LATEST_PUBLICATION_ONLY:=false}"
 
 export JENKINS_REPO="${DOCKERHUB_ORGANISATION}/${DOCKERHUB_REPO}"
 
@@ -77,16 +76,6 @@ else
     LATEST_LTS="false"
 fi
 
-if [[ "${LATEST_WEEKLY}" == "false" && "${LATEST_LTS}" == "false" ]]; then
-    if [[ "${BYPASS_LATEST_PUBLICATION_ONLY}" == "false" ]]; then
-        echo "ERROR: ${JENKINS_VERSION} is neither the lastest Weekly nor the latest LTS version, not publishing any image"
-        exit 1
-    else
-        echo "WARNING: ${JENKINS_VERSION} is neither the lastest Weekly nor the latest LTS version"
-        echo 'As BYPASS_LATEST_PUBLICATION_ONLY has been set to "true", still proceeding to its publication'
-    fi
-fi
-
 build_opts=("--pull")
 metadata_suffix="publish"
 if test "${dry_run}" == "true"; then
@@ -111,9 +100,6 @@ Using the following settings:
 * COMMIT_SHA: ${COMMIT_SHA}
 * LATEST_WEEKLY: ${LATEST_WEEKLY}
 * LATEST_LTS: ${LATEST_LTS}
-* latest_weekly_version: ${latest_weekly_version}
-* latest_lts_version: ${latest_lts_version}
-* BYPASS_ONLY_LATEST_PUBLICATION: ${BYPASS_ONLY_LATEST_PUBLICATION}
 * BUILD_METADATA_PATH: ${BUILD_METADATA_PATH}
 * BAKE_TARGET: ${BAKE_TARGET}
 * BAKE OPTIONS:
