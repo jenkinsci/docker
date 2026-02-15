@@ -161,7 +161,6 @@ Dry run, will not publish images
 Using the following settings:
 * JENKINS_REPO: jenkins/jenkins
 * JENKINS_VERSION: 2.528.3
-* WAR_SHA: bfa31f1e3aacebb5bce3d5076c73df97bf0c0567eeb8d8738f54f6bac48abd74
 * COMMIT_SHA: 1c72a9383191562eb3c44838aeeadad0839c2c92
 * LATEST_WEEKLY: false
 * LATEST_LTS: true
@@ -179,7 +178,6 @@ $ ./.ci/publish.sh -n
 Using the following settings:
 * JENKINS_REPO: jenkins/jenkins
 * JENKINS_VERSION: 2.528.3
-* WAR_SHA: bfa31f1e3aacebb5bce3d5076c73df97bf0c0567eeb8d8738f54f6bac48abd74
 * COMMIT_SHA: aaf4e7faf887b7ac4879c3bf540ede48220cca9f
 * LATEST_WEEKLY: false
 * LATEST_LTS: true
@@ -211,7 +209,6 @@ Using the following settings:
         "JAVA_VERSION": "25.0.1_8",
         "JENKINS_VERSION": "2.528.3",
         "PLUGIN_CLI_VERSION": "2.13.2",
-        "WAR_SHA": "bfa31f1e3aacebb5bce3d5076c73df97bf0c0567eeb8d8738f54f6bac48abd74",
         "WAR_URL": "https://get.jenkins.io/war-stable/2.528.3/jenkins.war"
       },
       "tags": [

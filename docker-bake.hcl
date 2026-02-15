@@ -4,7 +4,7 @@ variable "jdks_to_build" {
 }
 
 variable "windows_version_to_build" {
-  default = ["windowsservercore-ltsc2019", "windowsservercore-ltsc2022"]
+  default = ["ltsc2019", "ltsc2022"]
 }
 
 variable "default_jdk" {
@@ -12,11 +12,7 @@ variable "default_jdk" {
 }
 
 variable "JENKINS_VERSION" {
-  default = "2.534"
-}
-
-variable "WAR_SHA" {
-  default = "fcf13a8ebbe69d678608cc4b3885ece7d7e697d6da4c3691025a06968ddef228"
+  default = "2.544"
 }
 
 variable "WAR_URL" {
@@ -48,7 +44,7 @@ variable "COMMIT_SHA" {
 }
 
 variable "ALPINE_FULL_TAG" {
-  default = "3.23.2"
+  default = "3.23.3"
 }
 
 variable "ALPINE_SHORT_TAG" {
@@ -56,7 +52,7 @@ variable "ALPINE_SHORT_TAG" {
 }
 
 variable "JAVA17_VERSION" {
-  default = "17.0.17_10"
+  default = "17.0.18_8"
 }
 
 variable "JAVA21_VERSION" {
@@ -64,7 +60,7 @@ variable "JAVA21_VERSION" {
 }
 
 variable "JAVA25_VERSION" {
-  default = "25.0.1_8"
+  default = "25.0.2_10"
 }
 
 variable "DEBIAN_RELEASE_LINE" {
@@ -76,7 +72,7 @@ variable "DEBIAN_VERSION" {
 }
 
 variable "RHEL_TAG" {
-  default = "9.7-1768785530"
+  default = "9.7-1770238273"
 }
 
 variable "RHEL_RELEASE_LINE" {
@@ -115,7 +111,6 @@ target "alpine" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    WAR_SHA            = WAR_SHA
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
@@ -136,7 +131,6 @@ target "debian" {
   context    = "."
   args = {
     JENKINS_VERSION     = JENKINS_VERSION
-    WAR_SHA             = WAR_SHA
     WAR_URL             = war_url()
     COMMIT_SHA          = COMMIT_SHA
     PLUGIN_CLI_VERSION  = PLUGIN_CLI_VERSION
@@ -158,7 +152,6 @@ target "rhel" {
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    WAR_SHA            = WAR_SHA
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
@@ -175,12 +168,11 @@ target "windowsservercore" {
     jdk             = jdks_to_build
     windows_version = windowsversions()
   }
-  name       = "${windows_version}_jdk${jdk}"
+  name       = "windowsservercore-${windows_version}_jdk${jdk}"
   dockerfile = "windows/windowsservercore/hotspot/Dockerfile"
   context    = "."
   args = {
     JENKINS_VERSION    = JENKINS_VERSION
-    WAR_SHA            = WAR_SHA
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
@@ -188,7 +180,7 @@ target "windowsservercore" {
     JAVA_HOME          = "C:/openjdk-${jdk}"
     WINDOWS_VERSION    = windows_version
   }
-  tags      = windows_tags(windows_version, jdk)
+  tags      = windows_tags("windowsservercore-${windows_version}", jdk)
   platforms = ["windows/amd64"]
 }
 
@@ -215,6 +207,15 @@ group "all" {
 }
 
 ## Common functions
+# return true if JENKINS_VERSION is a Weekly (one sequence of digits with a trailing literal '.')
+function "is_jenkins_version_weekly" {
+  # If JENKINS_VERSION has more than one sequence of digits with a trailing literal '.', this is LTS
+  # 2.523 has only one sequence of digits with a trailing literal '.'
+  # 2.516.1 has two sequences of digits with a trailing literal '.'
+  params = []
+  result = length(regexall("[0-9]+[.]", JENKINS_VERSION)) < 2 ? true : false
+}
+
 # return a tag prefixed by the Jenkins version
 function "_tag_jenkins_version" {
   params = [tag]
@@ -241,13 +242,10 @@ function "tag_lts" {
 
 # return WAR_URL if not empty, get.jenkins.io URL depending on JENKINS_VERSION release line otherwise
 function "war_url" {
-  # If JENKINS_VERSION has more than one sequence of digits with a trailing literal '.', this is LTS
-  # 2.523 has only one sequence of digits with a trailing literal '.'
-  # 2.516.1 has two sequences of digits with a trailing literal '.'
   params = []
   result = (notequal(WAR_URL, "")
     ? WAR_URL
-    : (length(regexall("[0-9]+[.]", JENKINS_VERSION)) < 2
+    : (is_jenkins_version_weekly()
       ? "https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war"
   : "https://get.jenkins.io/war-stable/${JENKINS_VERSION}/jenkins.war"))
 }
@@ -328,7 +326,7 @@ function "windows_tags" {
     tag_weekly(false, "jdk${jdk}-hotspot-${distribution}"),
     tag_lts(false, "lts-jdk${jdk}-hotspot-${distribution}"),
 
-    # ## Default JDK extra short tags
+    ## Default JDK extra short tags
     is_default_jdk(jdk) ? tag(true, "hotspot-${distribution}") : "",
     is_default_jdk(jdk) ? tag_weekly(false, distribution) : "",
     is_default_jdk(jdk) ? tag_weekly(true, distribution) : "",
@@ -400,11 +398,9 @@ function "debian_tags" {
 }
 
 # Return array of Windows version(s) to build
-# Can be overriden by setting WINDOWS_VERSION_OVERRIDE to a specific Windows version
+# Can be overridden by setting WINDOWS_VERSION_OVERRIDE to a specific Windows version
 # Ex: WINDOWS_VERSION_OVERRIDE=ltsc2025 docker buildx bake windows
 function "windowsversions" {
   params = []
-  result = (notequal(WINDOWS_VERSION_OVERRIDE, "")
-    ? [WINDOWS_VERSION_OVERRIDE]
-    : windows_version_to_build)
+  result = notequal(WINDOWS_VERSION_OVERRIDE, "") ? [WINDOWS_VERSION_OVERRIDE] : windows_version_to_build
 }

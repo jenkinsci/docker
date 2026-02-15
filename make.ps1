@@ -4,7 +4,7 @@ Param(
     # Default script target
     [String] $Target = 'build',
     # Jenkins version to include
-    [String] $JenkinsVersion = '2.534',
+    [String] $JenkinsVersion = '2.544',
     # Windows flavor and windows version to build
     [String] $ImageType = 'windowsservercore-ltsc2019',
     # Generate a docker compose file even if it already exists
@@ -41,26 +41,6 @@ $env:DOCKERHUB_ORGANISATION = "$Organisation"
 $env:DOCKERHUB_REPO = "$Repository"
 $env:JENKINS_VERSION = "$JenkinsVersion"
 $env:COMMIT_SHA = git rev-parse HEAD
-
-# Add 'lts-' prefix to LTS tags not including Jenkins version
-# Compared to weekly releases, LTS releases include an additional build number in their version
-# Note: the ':' separator is included as trying to set an environment variable to empty on Windows unset it.
-$env:SEPARATOR_LTS_PREFIX = ':'
-$releaseLine = 'war'
-if ($JenkinsVersion.Split('.').Count -eq 3) {
-    $env:SEPARATOR_LTS_PREFIX = ':lts-'
-    $releaseLine = 'war-stable'
-}
-
-# If there is no WAR_URL set, using get.jenkins.io URL depending on the release line
-if([String]::IsNullOrWhiteSpace($env:WAR_URL)) {
-    $env:WAR_URL = 'https://get.jenkins.io/{0}/{1}/jenkins.war' -f $releaseLine, $env:JENKINS_VERSION
-}
-
-# Retrieve the sha256 corresponding to the war file
-$warShaURL = '{0}.sha256' -f $env:WAR_URL
-$webClient = New-Object System.Net.WebClient
-$env:WAR_SHA = $webClient.DownloadString($warShaURL).Split(' ')[0]
 
 # Check for required commands
 Function Test-CommandExists {
@@ -126,6 +106,52 @@ function Test-Image {
 
     return $failed
 }
+function Test-IsLatestJenkinsRelease {
+    param (
+        [String] $Version
+    )
+
+    Write-Host "= PREPARE: Checking if $env:JENKINS_VERSION is latest Weekly or LTS..."
+
+    $metadataUrl = "https://repo.jenkins-ci.org/releases/org/jenkins-ci/main/jenkins-war/maven-metadata.xml"
+    try {
+        [xml]$metadata = Invoke-WebRequest $metadataUrl -UseBasicParsing
+    }
+    catch {
+        Write-Error "Failed to retrieve Jenkins versions from Artifactory"
+        exit 1
+    }
+    $allVersions = $metadata.metadata.versioning.versions.version
+
+    # Weekly
+    $weeklyVersions = $allVersions |
+        Where-Object { $_ -match '^\d+\.\d+$' } |
+        ForEach-Object { [version]$_ } |
+        Sort-Object
+
+    # LTS
+    $ltsVersions = $allVersions |
+        Where-Object { $_ -match '^\d+\.\d+\.\d+$' } |
+        ForEach-Object { [version]$_ } |
+        Sort-Object
+
+    $latestWeeklyVersion = $weeklyVersions[-1]
+    Write-Host "latest Weekly version: $latestWeeklyVersion"
+    $latestLTSVersion    = $ltsVersions[-1]
+    Write-Host "latest LTS version: $latestLTSVersion"
+
+    $latest = $false
+    if ($Version -eq $latestWeeklyVersion) {
+        $latest = $true
+    }
+    if ($Version -eq $latestLTSVersion) {
+        $latest = $true
+    }
+    if (!$latest) {
+        Write-Host "WARNING: $JenkinsVersion is neither the lastest Weekly nor the latest LTS version"
+    }
+    return $latest
+}
 
 function Initialize-DockerComposeFile {
     param (
@@ -171,6 +197,24 @@ Test-CommandExists 'yq'
 # Sanity check
 yq --version
 
+# Add 'lts-' prefix to LTS tags not including Jenkins version
+# Compared to weekly releases, LTS releases include an additional build number in their version
+$releaseLine = 'war'
+# Determine if the current JENKINS_VERSION corresponds to the latest Weekly or LTS version from Artifactory 
+$isJenkinsVersionLatest = Test-IsLatestJenkinsRelease -Version $JenkinsVersion
+
+if ($JenkinsVersion.Split('.').Count -eq 3) {
+    $releaseLine = 'war-stable'
+    $env:LATEST_LTS = If ($isJenkinsVersionLatest) { "true" } Else { "false" }
+} else {
+    $env:LATEST_WEEKLY = If ($isJenkinsVersionLatest) { "true" } Else { "false" }
+}
+
+# If there is no WAR_URL set, using get.jenkins.io URL depending on the release line
+if([String]::IsNullOrWhiteSpace($env:WAR_URL)) {
+    $env:WAR_URL = 'https://get.jenkins.io/{0}/{1}/jenkins.war' -f $releaseLine, $JenkinsVersion
+}
+
 $dockerComposeFile = 'build-windows_{0}.yaml' -f $ImageType
 $baseDockerCmd = 'docker-compose --file={0}' -f $dockerComposeFile
 $baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
@@ -210,14 +254,7 @@ if ($target -eq 'test') {
         $mod = Get-InstalledModule -Name Pester -MinimumVersion 5.3.0 -MaximumVersion 5.3.3 -ErrorAction SilentlyContinue
         if ($null -eq $mod) {
             Write-Host '= TEST: Pester 5.3.x not found: installing...'
-            $module = 'C:\Program Files\WindowsPowerShell\Modules\Pester'
-            if (Test-Path $module) {
-                takeown /F $module /A /R
-                icacls $module /reset
-                icacls $module /grant Administrators:'F' /inheritance:d /T
-                Remove-Item -Path $module -Recurse -Force -Confirm:$false
-            }
-            Install-Module -Force -Name Pester -MaximumVersion 5.3.3
+            Install-Module -Force -Name Pester -MaximumVersion 5.3.3 -Scope CurrentUser
         }
 
         Import-Module Pester
