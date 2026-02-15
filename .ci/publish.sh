@@ -29,7 +29,7 @@ debug=false
 
 while [[ $# -gt 0 ]]; do
     key="$1"
-    case $key in
+    case "${key}" in
         -n)
         dry_run=true
         ;;
@@ -37,7 +37,7 @@ while [[ $# -gt 0 ]]; do
         debug=true
         ;;
         *)
-        echo "ERROR: Unknown option: $key"
+        echo "ERROR: Unknown option: ${key}"
         exit 1
         ;;
     esac
@@ -45,12 +45,12 @@ while [[ $# -gt 0 ]]; do
 done
 
 
-if [ "$debug" = true ]; then
+if [[ "${debug}" = true ]]; then
     echo "Debug mode enabled"
     set -x
 fi
 
-if [ "$dry_run" = true ]; then
+if [[ "${dry_run}" = true ]]; then
     echo "Dry run, will not publish images"
 fi
 
@@ -104,9 +104,17 @@ Using the following settings:
 * BAKE_TARGET: ${BAKE_TARGET}
 * BAKE OPTIONS:
 $(printf '  %s\n' "${build_opts[@]}")
-
-* RESOLVED BAKE CONFIG:
-$(docker buildx bake --file docker-bake.hcl --print "${BAKE_TARGET}")
 EOF
+
+echo '* RESOLVED BAKE CONFIG:'
+docker buildx bake --file docker-bake.hcl --progress=quiet --print "${BAKE_TARGET}"
+
+if [[ "${CI:-false}" == "false" ]]; then
+  read -rp "Confirm? [y/N] " answer
+
+  if [[ ! "${answer}" =~ ^[Yy]$ ]]; then
+      exit 0
+  fi
+fi
 
 docker buildx bake --file docker-bake.hcl "${build_opts[@]}" "${BAKE_TARGET}"
