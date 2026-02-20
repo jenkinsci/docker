@@ -149,3 +149,32 @@ runInScriptConsole() {
 @test "[${SUT_DESCRIPTION}] ensure that 'ps' command is available" {
   command -v ps # Check for binary presence in the current PATH
 }
+
+@test "[${SUT_DESCRIPTION}] custom CA certificate is imported into keystore" {
+  local container_name test_cert_dir
+  container_name="$(get_sut_container_name)"
+  cleanup "${container_name}"
+  test_cert_dir="$(mktemp -d)"
+
+  # Generate a self-signed test CA certificate using keytool from the SUT image
+  # (avoids dependency on openssl being installed on the CI host)
+  docker run --rm --user root -v "${test_cert_dir}:/certs" "${SUT_IMAGE}" \
+    bash -c 'keytool -genkeypair -alias testca -keyalg RSA -keysize 2048 \
+      -dname "CN=Test CA" -validity 1 -keypass changeit \
+      -keystore /tmp/test.jks -storepass changeit 2>/dev/null && \
+    keytool -exportcert -alias testca -rfc \
+      -keystore /tmp/test.jks -storepass changeit \
+      -file /certs/test-ca.crt 2>/dev/null && \
+    chmod -R 777 /certs'
+
+  # Start Jenkins with the test cert volume-mounted
+  docker run -d --name "${container_name}" \
+    -v "${test_cert_dir}:/usr/share/jenkins/ref/certs:ro" \
+    "${SUT_IMAGE}"
+
+  # Wait for import and verify the certificate was added to the keystore
+  retry 30 5 docker exec "${container_name}" \
+    keytool -list -cacerts -storepass changeit -alias custom-test-ca
+
+  rm -rf "${test_cert_dir}"
+}

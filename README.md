@@ -133,6 +133,20 @@ To potentially solve the issue, start the container specifying a dns server (for
 docker run -p 8080:8080 -p 50000:50000 --restart=on-failure --dns 1.1.1.1 --dns 8.8.8.8 jenkins/jenkins:lts-jdk21
 ```
 
+## Custom CA Certificates
+
+You can add custom root CA certificates to the Jenkins Java keystore by volume-mounting `.crt` or `.pem` files into `/usr/share/jenkins/ref/certs/`. The certificates will be automatically imported at container startup.
+
+```bash
+docker run -p 8080:8080 -v /path/to/my-certs:/usr/share/jenkins/ref/certs:ro jenkins/jenkins:lts-jdk21
+```
+
+You can also specify a custom directory for certificates using the `JENKINS_CUSTOM_CERTS_DIR` environment variable:
+
+```bash
+docker run -p 8080:8080 -e JENKINS_CUSTOM_CERTS_DIR=/custom/path -v /path/to/my-certs:/custom/path:ro jenkins/jenkins:lts-jdk21
+```
+
 ## Passing Jenkins launcher parameters
 
 Arguments you pass to docker running the Jenkins image are passed to jenkins launcher, so for example you can run:
