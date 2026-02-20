@@ -1,0 +1,15 @@
+COPY_REFERENCE_FILE_LOG=/var/jenkins_home/copy_reference_file.log
+HOME=/var/jenkins_home
+JAVA_HOME=/opt/java/openjdk
+JENKINS_HOME=/var/jenkins_home
+JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
+JENKINS_SLAVE_AGENT_PORT=50000
+JENKINS_UC=https://updates.jenkins.io
+JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
+JENKINS_VERSION=2.551
+LANG=C.UTF-8
+PATH=/opt/java/openjdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+PWD=/
+REF=/usr/share/jenkins/ref
+SHLVL=1
+_=/usr/bin/env

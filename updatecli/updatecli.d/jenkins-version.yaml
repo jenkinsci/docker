@@ -51,17 +51,26 @@ targets:
       instruction:
         keyword: "ARG"
         matcher: "JENKINS_VERSION"
-  updateJenkinsVersionInGoldenFiles:
+  updateJenkinsVersionInGoldenFilesTags:
     kind: file
     scmid: default
     sourceid: latestVersion
-    name: Update value of JENKINS_VERSION in (weekly) golden files
+    name: Update value of JENKINS_VERSION in (weekly) golden files for tags
     spec:
       files:
         - tests/golden/expected_tags.txt
         - tests/golden/expected_tags_latest_weekly.txt
       matchpattern: :(\d+\.\d+)
       replacepattern: :{{ source "latestVersion" }}
+  updateJenkinsVersionInGoldenFilesEnvVars:
+    kind: file
+    scmid: default
+    sourceid: latestVersion
+    name: Update value of JENKINS_VERSION in golden file for env vars
+    spec:
+      file: tests/golden/expected_env_vars_except_hostname.txt
+      matchpattern: JENKINS_VERSION=(\d+\.\d+)
+      replacepattern: JENKINS_VERSION={{ source "latestVersion" }}
   updateJenkinsVersionInMakePs1:
     name: Update value of $JenkinsVersion in make.ps1
     kind: file

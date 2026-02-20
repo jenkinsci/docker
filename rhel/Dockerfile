@@ -1,4 +1,4 @@
-ARG RHEL_TAG=9.7-1770238273
+ARG RHEL_TAG=9.7-1771346757
 ARG RHEL_RELEASE_LINE=ubi9
 FROM registry.access.redhat.com/${RHEL_RELEASE_LINE}/ubi:${RHEL_TAG} AS jre-and-war
 
@@ -41,7 +41,7 @@ RUN java_major_version="$(jlink --version 2>&1 | cut -c1-2)"; \
     fi
 
 # Jenkins version being bundled in this docker image
-ARG JENKINS_VERSION=2.550
+ARG JENKINS_VERSION=2.551
 # Can be used to customize where jenkins.war get downloaded from
 ARG WAR_URL=https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war
 
@@ -147,7 +147,8 @@ COPY jenkins.sh /usr/local/bin/jenkins.sh
 COPY import-custom-certs.sh /usr/local/bin/import-custom-certs.sh
 COPY jenkins-plugin-cli.sh /bin/jenkins-plugin-cli
 
-ARG JENKINS_VERSION=2.550
+ARG JENKINS_VERSION=2.551
+ENV JENKINS_VERSION=${JENKINS_VERSION}
 
 ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
