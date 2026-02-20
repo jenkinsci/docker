@@ -66,20 +66,16 @@ stage('Build') {
                             * the Dockerfile in this repository, but not publishing to docker hub
                             */
                             stage("Build ${imageType}") {
-                                infra.withDockerCredentials {
-                                    powershell './make.ps1 build -ImageType ${env:IMAGE_TYPE}'
-                                    archiveArtifacts artifacts: 'build-windows_*.yaml', allowEmptyArchive: true
-                                }
+                                powershell './make.ps1 build -ImageType ${env:IMAGE_TYPE}'
+                                archiveArtifacts artifacts: 'build-windows_*.yaml', allowEmptyArchive: true
                             }
 
                             stage("Test ${imageType}") {
-                                infra.withDockerCredentials {
-                                    def windowsTestStatus = powershell(script: './make.ps1 test -ImageType ${env:IMAGE_TYPE}', returnStatus: true)
-                                    junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
-                                    if (windowsTestStatus > 0) {
-                                        // If something bad happened let's clean up the docker images
-                                        error('Windows test stage failed.')
-                                    }
+                                def windowsTestStatus = powershell(script: './make.ps1 test -ImageType ${env:IMAGE_TYPE}', returnStatus: true)
+                                junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
+                                if (windowsTestStatus > 0) {
+                                    // If something bad happened let's clean up the docker images
+                                    error('Windows test stage failed.')
                                 }
                             }
 
@@ -105,11 +101,9 @@ stage('Build') {
                                     "WAR_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${jenkins_version}/jenkins-war-${jenkins_version}.war"
                                 ]) {
                                     stage('Publish') {
-                                        infra.withDockerCredentials {
-                                            withEnv(['DOCKERHUB_ORGANISATION=jenkins', 'DOCKERHUB_REPO=jenkins']) {
-                                                powershell './make.ps1 build -ImageType ${env:IMAGE_TYPE}'
-                                                powershell './make.ps1 publish -ImageType ${env:IMAGE_TYPE}'
-                                            }
+                                        withEnv(['DOCKERHUB_ORGANISATION=jenkins', 'DOCKERHUB_REPO=jenkins']) {
+                                            powershell './make.ps1 build -ImageType ${env:IMAGE_TYPE}'
+                                            powershell './make.ps1 publish -ImageType ${env:IMAGE_TYPE}'
                                         }
                                     }
                                 }
@@ -151,18 +145,14 @@ stage('Build') {
                         * the Dockerfile in this repository, but not publishing to docker hub
                         */
                         stage("Build linux-${imageToBuild}") {
-                            infra.withDockerCredentials {
-                                sh "make build-${imageToBuild}"
-                                archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
-                            }
+                            sh "make build-${imageToBuild}"
+                            archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
                         }
 
                         stage("Test linux-${imageToBuild}") {
                             sh 'make prepare-test'
                             try {
-                                infra.withDockerCredentials {
-                                    sh "make test-${imageToBuild}"
-                                }
+                                sh "make test-${imageToBuild}"
                             } catch (err) {
                                 error("${err.toString()}")
                             } finally {
@@ -182,10 +172,8 @@ stage('Build') {
                         }
                         // sanity check that proves all images build on declared platforms not already built in other stages
                         stage("Multi arch build - ${architecture}") {
-                            infra.withDockerCredentials {
-                                sh "make docker-init buildarch-${architecture}"
-                                archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
-                            }
+                            sh "make docker-init buildarch-${architecture}"
+                            archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
                         }
                     }
                 }
