@@ -152,6 +152,7 @@ COPY jenkins.sh /usr/local/bin/jenkins.sh
 COPY jenkins-plugin-cli.sh /bin/jenkins-plugin-cli
 
 ARG JENKINS_VERSION=2.550
+ENV JENKINS_VERSION=${JENKINS_VERSION}
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 

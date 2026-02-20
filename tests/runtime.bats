@@ -41,6 +41,16 @@ teardown() {
   assert "${version}" docker run --rm --env JENKINS_OPTS="--help --version" --name "${container_name}" -P $SUT_IMAGE | tail -n 1
 }
 
+# bats test_tags=test-type:golden-file
+@test "[${SUT_DESCRIPTION}] ensure expected environment variables are set" {
+  local container_name
+  container_name="$(get_sut_container_name)"
+  cleanup "${container_name}"
+
+  # Excluding HOSTNAME as its value is variable, and 'container=oci' existing only in RHEL images
+  assert_matches_golden expected_env_vars_except_hostname docker run --rm --name "${container_name}" "${SUT_IMAGE}" bash -c "env | sort | grep -v -e HOSTNAME -e container=oci"
+}
+
 @test "[${SUT_DESCRIPTION}] test jenkins arguments" {
   local container_name version
   # running --help --version should return the version, not the help

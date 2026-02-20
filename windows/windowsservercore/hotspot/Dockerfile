@@ -147,6 +147,7 @@ COPY jenkins.ps1 C:/ProgramData/Jenkins
 COPY jenkins-plugin-cli.ps1 C:/ProgramData/Jenkins
 
 ARG JENKINS_VERSION=2.550
+ENV JENKINS_VERSION=${JENKINS_VERSION}
 
 ENTRYPOINT ["powershell.exe", "-f", "C:/ProgramData/Jenkins/jenkins.ps1"]
 
