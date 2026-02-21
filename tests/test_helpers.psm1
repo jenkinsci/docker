@@ -106,11 +106,10 @@ function Run-Program($cmd, $params, $verbose=$false) {
 }
 
 function Build-Docker($tag) {
-    $windowsVersion = '2019'
-    if ($tag -match 'ltsc(\d+)$') {
-        $windowsVersion = $matches[1]
-    }
-    $composeParams = '--file=build-windows_windowsservercore-ltsc{0}.yaml build --parallel' -f $windowsVersion
+    # Ex of tag: pester-jenkins-2.550-jdk21-hotspot-windowsservercore-ltsc2022
+    $windowsVersion = $tag.replace('pester-jenkins-', '').split('-')[4]
+    $jenkinsVersion = $tag.replace('pester-jenkins-', '').split('-')[0]
+    $composeParams = '--file=build-windows_windowsservercore-{0}_{1}.yaml build --parallel' -f $windowsVersion, $jenkinsVersion
     $exitCode, $stdout, $stderr = Run-Program 'docker-compose' $composeParams
     if($exitCode -ne 0) {
         return $exitCode, $stdout, $stderr
