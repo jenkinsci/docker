@@ -145,10 +145,15 @@ ENV PATH="${JAVA_HOME}/bin:${PATH}"
 COPY --from=jre-and-war /javaruntime $JAVA_HOME
 COPY --from=jre-and-war /war/jenkins.war /usr/share/jenkins/jenkins.war
 
+# Allow the jenkins user to import custom CA certificates at runtime
+RUN cp "${JAVA_HOME}/lib/security/cacerts" "${JAVA_HOME}/lib/security/cacerts.original" \
+  && chown ${user}:${group} "${JAVA_HOME}/lib/security/cacerts"
+
 USER ${user}
 
 COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
+COPY import-custom-certs.sh /usr/local/bin/import-custom-certs.sh
 COPY jenkins-plugin-cli.sh /bin/jenkins-plugin-cli
 
 ARG JENKINS_VERSION=2.552

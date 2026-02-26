@@ -10,6 +10,11 @@ fi
 : "${COPY_REFERENCE_FILE_LOG:="${JENKINS_HOME}/copy_reference_file.log"}"
 : "${REF:="/usr/share/jenkins/ref"}"
 
+# Import custom CA certificates if the script exists
+if [ -f /usr/local/bin/import-custom-certs.sh ]; then
+  bash /usr/local/bin/import-custom-certs.sh || true
+fi
+
 if ! [ -r "${JENKINS_HOME}" ] || ! [ -w "${JENKINS_HOME}" ]; then
         echo "INSTALL WARNING: User: ${USER} missing rw permissions on JENKINS_HOME: ${JENKINS_HOME}"
 fi
