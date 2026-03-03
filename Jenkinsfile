@@ -101,9 +101,11 @@ stage('Build') {
                                     "WAR_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${jenkins_version}/jenkins-war-${jenkins_version}.war"
                                 ]) {
                                     stage('Publish') {
-                                        withEnv(['DOCKERHUB_ORGANISATION=jenkins', 'DOCKERHUB_REPO=jenkins']) {
-                                            powershell './make.ps1 build -ImageType ${env:IMAGE_TYPE}'
-                                            powershell './make.ps1 publish -ImageType ${env:IMAGE_TYPE}'
+                                        infra.withDockerCredentials {
+                                            withEnv(['DOCKERHUB_ORGANISATION=jenkins', 'DOCKERHUB_REPO=jenkins']) {
+                                                powershell './make.ps1 build -ImageType ${env:IMAGE_TYPE}'
+                                                powershell './make.ps1 publish -ImageType ${env:IMAGE_TYPE}'
+                                            }
                                         }
                                     }
                                 }
