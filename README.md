@@ -135,17 +135,9 @@ docker run -p 8080:8080 -p 50000:50000 --restart=on-failure --dns 1.1.1.1 --dns 
 
 ## Custom CA Certificates
 
-You can add custom root CA certificates to the Jenkins Java keystore by volume-mounting `.crt` or `.pem` files into `/usr/share/jenkins/ref/certs/`. The certificates will be automatically imported at container startup.
+If your Jenkins instance needs to trust custom root CA certificates (for corporate proxies, internal services, or self-signed certificates), see the documentation on jenkins.io for detailed instructions on using init containers or building custom images.
 
-```bash
-docker run -p 8080:8080 -v /path/to/my-certs:/usr/share/jenkins/ref/certs:ro jenkins/jenkins:lts-jdk21
-```
-
-You can also specify a custom directory for certificates using the `JENKINS_CUSTOM_CERTS_DIR` environment variable:
-
-```bash
-docker run -p 8080:8080 -e JENKINS_CUSTOM_CERTS_DIR=/custom/path -v /path/to/my-certs:/custom/path:ro jenkins/jenkins:lts-jdk21
-```
+Full documentation will be available at: https://www.jenkins.io/doc/book/installing/docker/#custom-ca-certificates
 
 ## Passing Jenkins launcher parameters
 

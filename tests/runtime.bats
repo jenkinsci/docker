@@ -150,31 +150,62 @@ runInScriptConsole() {
   command -v ps # Check for binary presence in the current PATH
 }
 
-@test "[${SUT_DESCRIPTION}] custom CA certificate is imported into keystore" {
-  local container_name test_cert_dir
+@test "[${SUT_DESCRIPTION}] custom CA certificate is imported via init-container pattern" {
+  local container_name init_container_name test_cert_dir cacerts_vol
   container_name="$(get_sut_container_name)"
+  init_container_name="${container_name}-cert-init"
   cleanup "${container_name}"
+  cleanup "${init_container_name}"
   test_cert_dir="$(mktemp -d)"
+  cacerts_vol="${container_name}-cacerts"
 
-  # Generate a self-signed test CA certificate using keytool from the SUT image
-  # (avoids dependency on openssl being installed on the CI host)
+  # Clean up any leftover volume
+  docker volume rm "${cacerts_vol}" 2>/dev/null || true
+
+  # Generate a self-signed test CA certificate
   docker run --rm --user root -v "${test_cert_dir}:/certs" "${SUT_IMAGE}" \
-    bash -c 'keytool -genkeypair -alias testca -keyalg RSA -keysize 2048 \
+    bash -c '"${JAVA_HOME}/bin/keytool" -genkeypair -alias testca -keyalg RSA -keysize 2048 \
       -dname "CN=Test CA" -validity 1 -keypass changeit \
       -keystore /tmp/test.jks -storepass changeit 2>/dev/null && \
-    keytool -exportcert -alias testca -rfc \
+    "${JAVA_HOME}/bin/keytool" -exportcert -alias testca -rfc \
       -keystore /tmp/test.jks -storepass changeit \
       -file /certs/test-ca.crt 2>/dev/null && \
     chmod -R 777 /certs'
 
-  # Start Jenkins with the test cert volume-mounted
+  # Run init container as root: copy system cacerts to shared volume and import custom cert
+  docker run --rm --name "${init_container_name}" --user root \
+    -v "${test_cert_dir}:/certs:ro" \
+    -v "${cacerts_vol}:/cacerts-volume" \
+    "${SUT_IMAGE}" \
+    bash -c '
+      cp "${JAVA_HOME}/lib/security/cacerts" /cacerts-volume/cacerts
+      for cert in /certs/*.crt /certs/*.pem; do
+        [ -f "$cert" ] || continue
+        alias="custom-$(basename "${cert%.*}")"
+        "${JAVA_HOME}/bin/keytool" -importcert -noprompt \
+          -keystore /cacerts-volume/cacerts \
+          -storepass changeit \
+          -alias "$alias" \
+          -file "$cert"
+      done
+    '
+
+  # Start Jenkins with the shared volume truststore (read-only)
   docker run -d --name "${container_name}" \
-    -v "${test_cert_dir}:/usr/share/jenkins/ref/certs:ro" \
+    -v "${cacerts_vol}:/cacerts:ro" \
+    --env JAVA_OPTS="-Djavax.net.ssl.trustStore=/cacerts/cacerts" \
     "${SUT_IMAGE}"
 
-  # Wait for import and verify the certificate was added to the keystore
-  retry 30 5 docker exec "${container_name}" \
-    keytool -list -cacerts -storepass changeit -alias custom-test-ca
+  # Verify the certificate exists in the shared truststore
+  retry 10 2 docker exec "${container_name}" \
+    "${JAVA_HOME}/bin/keytool" -list -keystore /cacerts/cacerts -storepass changeit -alias custom-test-ca
 
+  # Verify the system truststore was NOT modified (still root-owned, no custom cert)
+  run docker exec "${container_name}" \
+    "${JAVA_HOME}/bin/keytool" -list -keystore "${JAVA_HOME}/lib/security/cacerts" -storepass changeit -alias custom-test-ca
+  assert_failure
+
+  # Cleanup
   rm -rf "${test_cert_dir}"
+  docker volume rm "${cacerts_vol}" 2>/dev/null || true
 }
