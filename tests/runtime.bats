@@ -151,11 +151,9 @@ runInScriptConsole() {
 }
 
 @test "[${SUT_DESCRIPTION}] custom CA certificate is imported via init-container pattern" {
-  local container_name init_container_name test_cert_dir cacerts_vol
+  local container_name test_cert_dir cacerts_vol
   container_name="$(get_sut_container_name)"
-  init_container_name="${container_name}-cert-init"
   cleanup "${container_name}"
-  cleanup "${init_container_name}"
   test_cert_dir="$(mktemp -d)"
   cacerts_vol="${container_name}-cacerts"
 
@@ -170,39 +168,28 @@ runInScriptConsole() {
     "${JAVA_HOME}/bin/keytool" -exportcert -alias testca -rfc \
       -keystore /tmp/test.jks -storepass changeit \
       -file /certs/test-ca.crt 2>/dev/null && \
-    chmod -R 777 /certs'
+    chmod 644 /certs/test-ca.crt'
 
-  # Run init container as root: copy system cacerts to shared volume and import custom cert
-  docker run --rm --name "${init_container_name}" --user root \
+  # Run init container as root: copy system cacerts and import custom cert
+  docker run --rm --user root \
     -v "${test_cert_dir}:/certs:ro" \
     -v "${cacerts_vol}:/cacerts-volume" \
     "${SUT_IMAGE}" \
-    bash -c '
-      cp "${JAVA_HOME}/lib/security/cacerts" /cacerts-volume/cacerts
-      for cert in /certs/*.crt /certs/*.pem; do
-        [ -f "$cert" ] || continue
-        alias="custom-$(basename "${cert%.*}")"
-        "${JAVA_HOME}/bin/keytool" -importcert -noprompt \
-          -keystore /cacerts-volume/cacerts \
-          -storepass changeit \
-          -alias "$alias" \
-          -file "$cert"
-      done
-    '
+    sh -c 'cp "${JAVA_HOME}/lib/security/cacerts" /cacerts-volume/cacerts && "${JAVA_HOME}/bin/keytool" -importcert -noprompt -keystore /cacerts-volume/cacerts -storepass changeit -alias custom-test-ca -file /certs/test-ca.crt'
 
-  # Start Jenkins with the shared volume truststore (read-only)
+  # Start Jenkins with the custom truststore (read-only)
   docker run -d --name "${container_name}" \
     -v "${cacerts_vol}:/cacerts:ro" \
     --env JAVA_OPTS="-Djavax.net.ssl.trustStore=/cacerts/cacerts" \
     "${SUT_IMAGE}"
 
-  # Verify the certificate exists in the shared truststore
+  # Verify custom cert exists in custom truststore
   retry 10 2 docker exec "${container_name}" \
-    "${JAVA_HOME}/bin/keytool" -list -keystore /cacerts/cacerts -storepass changeit -alias custom-test-ca
+    sh -c '"${JAVA_HOME}/bin/keytool" -list -keystore /cacerts/cacerts -storepass changeit -alias custom-test-ca'
 
-  # Verify the system truststore was NOT modified (still root-owned, no custom cert)
+  # Verify system truststore was NOT modified
   run docker exec "${container_name}" \
-    "${JAVA_HOME}/bin/keytool" -list -keystore "${JAVA_HOME}/lib/security/cacerts" -storepass changeit -alias custom-test-ca
+    sh -c '"${JAVA_HOME}/bin/keytool" -list -keystore "${JAVA_HOME}/lib/security/cacerts" -storepass changeit -alias custom-test-ca'
   assert_failure
 
   # Cleanup
