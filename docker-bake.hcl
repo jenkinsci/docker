@@ -276,7 +276,7 @@ function "platforms" {
     : is_debian_slim(distribution)
     ? (equal(17, jdk)
       ? ["linux/amd64"]
-    : ["linux/amd64", "linux/arm64"])
+    : ["linux/amd64", "linux/arm64", "linux/riscv64"])
 
     # RHEL
     : is_rhel(distribution)
