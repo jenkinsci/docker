@@ -9,10 +9,12 @@ debian-slim_jdk25:linux/arm64
 debian_jdk21:linux/amd64
 debian_jdk21:linux/arm64
 debian_jdk21:linux/ppc64le
+debian_jdk21:linux/riscv64
 debian_jdk21:linux/s390x
 debian_jdk25:linux/amd64
 debian_jdk25:linux/arm64
 debian_jdk25:linux/ppc64le
+debian_jdk25:linux/riscv64
 debian_jdk25:linux/s390x
 rhel_jdk21:linux/amd64
 rhel_jdk21:linux/arm64
