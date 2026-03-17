@@ -283,7 +283,7 @@ function "platforms" {
     ? ["linux/amd64", "linux/arm64", "linux/ppc64le"]
 
     # Default (Debian)
-    : ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"]
+    : ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le", "linux/riscv64"]
   )
 }
 
