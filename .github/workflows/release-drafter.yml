@@ -15,5 +15,5 @@ jobs:
     steps:
       # Drafts your next Release notes as Pull Requests are merged into the default branch
       - uses: release-drafter/release-drafter@v7
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
