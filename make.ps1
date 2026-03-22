@@ -220,7 +220,7 @@ if([String]::IsNullOrWhiteSpace($env:WAR_URL)) {
     $env:WAR_URL = 'https://get.jenkins.io/{0}/{1}/jenkins.war' -f $releaseLine, $JenkinsVersion
 }
 
-$dockerComposeFile = 'build-windows_{0}.yaml' -f $ImageType
+$dockerComposeFile = 'build-windows_{0}_{1}.yaml' -f $ImageType, $JenkinsVersion
 $baseDockerCmd = 'docker-compose --file={0}' -f $dockerComposeFile
 $baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
 
