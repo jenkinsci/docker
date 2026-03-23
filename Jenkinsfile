@@ -20,6 +20,7 @@ def architecturesAndCiJioAgentLabels = [
     'arm64': 'arm64docker',
     // Using qemu
     'ppc64le': 'docker && amd64',
+    'riscv64': 'docker && amd64',
     's390x': 'docker && amd64',
 ]
 
