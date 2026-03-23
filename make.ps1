@@ -222,7 +222,7 @@ if([String]::IsNullOrWhiteSpace($env:WAR_URL)) {
 
 $dockerComposeFile = 'build-windows_{0}.yaml' -f $ImageType
 $baseDockerCmd = 'docker-compose --file={0}' -f $dockerComposeFile
-$baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
+$baseDockerBuildCmd = '{0} build --pull' -f $baseDockerCmd
 
 # Generate the docker compose file if it doesn't exists or if the parameter OverwriteDockerComposeFile is set
 if ((Test-Path $dockerComposeFile) -and -not $OverwriteDockerComposeFile) {
