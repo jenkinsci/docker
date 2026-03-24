@@ -377,7 +377,17 @@ To force upgrades of plugins that have been manually upgraded, run the docker im
 The default behaviour when upgrading from a docker image that didn't write marker files is to leave existing plugins in place.
 If you want to upgrade existing plugins without marker you may run the docker image with `-e TRY_UPGRADE_IF_NO_MARKER=true`.
 Then plugins will be upgraded if the version provided by the docker image is newer.
+## Jenkins Docker Cookbook
 
+This section provides simple examples to help users quickly get started with Jenkins using Docker.
+
+### Install plugins
+
+You can install plugins while building your Docker image:
+
+```dockerfile
+FROM jenkins/jenkins:lts
+RUN jenkins-plugin-cli --plugins git maven workflow-aggregator
 # Hacking
 
 If you wish to contribute fixes to this repository, please refer to the [dedicated documentation](HACKING.adoc).
