@@ -4,7 +4,7 @@ Param(
     # Default script target
     [String] $Target = 'build',
     # Jenkins version to include
-    [String] $JenkinsVersion = '2.550',
+    [String] $JenkinsVersion = '2.555',
     # Windows flavor and windows version to build
     [String] $ImageType = 'windowsservercore-ltsc2022',
     # Generate a docker compose file even if it already exists
@@ -222,7 +222,7 @@ if([String]::IsNullOrWhiteSpace($env:WAR_URL)) {
 
 $dockerComposeFile = 'build-windows_{0}_{1}.yaml' -f $ImageType, $JenkinsVersion
 $baseDockerCmd = 'docker-compose --file={0}' -f $dockerComposeFile
-$baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
+$baseDockerBuildCmd = '{0} build --pull' -f $baseDockerCmd
 
 # Generate the docker compose file if it doesn't exists or if the parameter OverwriteDockerComposeFile is set
 if ((Test-Path $dockerComposeFile) -and -not $OverwriteDockerComposeFile) {
