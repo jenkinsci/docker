@@ -1,7 +1,7 @@
 # escape=`
 # hadolint shell=powershell
 
-ARG JAVA_VERSION=17.0.18_8
+ARG JAVA_VERSION=21.0.10_7
 ARG WINDOWS_VERSION=ltsc2022
 
 FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS jre-and-war
@@ -9,7 +9,7 @@ FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS jre-and-war
 # $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-ARG JAVA_VERSION=17.0.18_8
+ARG JAVA_VERSION=21.0.10_7
 
 RUN New-Item -ItemType Directory -Path C:\temp | Out-Null ; `
     $javaMajorVersion = $env:JAVA_VERSION.substring(0,2) ; `
@@ -30,7 +30,6 @@ RUN $version = (jlink --version) ; `
     } else { `
         $options = '--compress=2' ; `
         switch ($version.Substring(0,3)) { `
-            '17.' { $options = '--compress=2' } `
             '21.' { $options = '--compress=zip-6' } `
             Default { `
                 Write-Error 'ERROR: unmanaged jlink version pattern' ; `
@@ -74,7 +73,7 @@ RUN & 'C:/Program Files/GnuPG/bin/gpg.exe' --version ; `
 
 FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS controller
 
-ARG JAVA_HOME="C:/openjdk-17"
+ARG JAVA_HOME="C:/openjdk-21"
 ENV JAVA_HOME=${JAVA_HOME}
 
 COPY --from=jre-and-war /javaruntime $JAVA_HOME

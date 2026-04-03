@@ -5,7 +5,7 @@ ARG DEBIAN_VERSION=20260316
 ARG DEBIAN_VARIANT="-slim"
 FROM debian:"${DEBIAN_RELEASE_LINE}-${DEBIAN_VERSION}${DEBIAN_VARIANT}" AS jre-and-war
 
-ARG JAVA_VERSION=17.0.18_8
+ARG JAVA_VERSION=21.0.10_7
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -32,7 +32,6 @@ RUN java_major_version="$(jlink --version 2>&1 | cut -c1-2)"; \
       cp -r "/opt/jdk-${JAVA_VERSION}" /javaruntime; \
     else \
       case "$java_major_version" in \
-        "17") options="--compress=2" ;; \
         "21") options="--compress=zip-6" ;; \
         *) echo "ERROR: unmanaged jlink version pattern" && exit 1 ;; \
       esac; \
