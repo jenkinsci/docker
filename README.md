@@ -133,6 +133,12 @@ To potentially solve the issue, start the container specifying a dns server (for
 docker run -p 8080:8080 -p 50000:50000 --restart=on-failure --dns 1.1.1.1 --dns 8.8.8.8 jenkins/jenkins:lts-jdk21
 ```
 
+## Custom CA Certificates
+
+If your Jenkins instance needs to trust custom root CA certificates (for corporate proxies, internal services, or self-signed certificates), see the documentation on jenkins.io for detailed instructions on using init containers or building custom images.
+
+Full documentation will be available at: https://www.jenkins.io/doc/book/installing/docker/#custom-ca-certificates
+
 ## Passing Jenkins launcher parameters
 
 Arguments you pass to docker running the Jenkins image are passed to jenkins launcher, so for example you can run:
