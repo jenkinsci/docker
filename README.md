@@ -89,7 +89,7 @@ In order to connect agents **through an inbound TCP connection**, map the port: 
 That port will be used when you connect agents to the controller.
 
 If you are only using [SSH (outbound) build agents](https://plugins.jenkins.io/ssh-slaves/), this port is not required, as connections are established from the controller.
-If you connect agents using web sockets (since Jenkins 2.217), the TCP agent port is not used either.
+If you connect agents using web sockets, the TCP agent port is not used either.
 
 ## Passing JVM parameters
 
