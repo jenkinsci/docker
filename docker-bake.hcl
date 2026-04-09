@@ -68,11 +68,11 @@ variable "DEBIAN_RELEASE_LINE" {
 }
 
 variable "DEBIAN_VERSION" {
-  default = "20251117"
+  default = "20260316"
 }
 
 variable "RHEL_TAG" {
-  default = "9.7-1773204657"
+  default = "9.7-1775624009"
 }
 
 variable "RHEL_RELEASE_LINE" {
@@ -276,14 +276,14 @@ function "platforms" {
     : is_debian_slim(distribution)
     ? (equal(17, jdk)
       ? ["linux/amd64"]
-    : ["linux/amd64", "linux/arm64"])
+    : ["linux/amd64", "linux/arm64", "linux/riscv64"])
 
     # RHEL
     : is_rhel(distribution)
     ? ["linux/amd64", "linux/arm64", "linux/ppc64le"]
 
     # Default (Debian)
-    : ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"]
+    : ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le", "linux/riscv64"]
   )
 }
 

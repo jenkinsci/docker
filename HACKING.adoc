@@ -205,7 +205,7 @@ Using the following settings:
         "COMMIT_SHA": "aaf4e7faf887b7ac4879c3bf540ede48220cca9f",
         "DEBIAN_RELEASE_LINE": "trixie",
         "DEBIAN_VARIANT": "",
-        "DEBIAN_VERSION": "20251117",
+        "DEBIAN_VERSION": "20260316",
         "JAVA_VERSION": "25.0.1_8",
         "JENKINS_VERSION": "2.528.3",
         "PLUGIN_CLI_VERSION": "2.14.0",
