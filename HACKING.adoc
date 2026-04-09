@@ -155,13 +155,13 @@ You can test the script used for publication in dry-run by setting an existing J
 
 [source,bash]
 --
-$ export JENKINS_VERSION=2.528.3
+$ export JENKINS_VERSION=2.541.3
 $ ./.ci/publish.sh -n
 Dry run, will not publish images
 Using the following settings:
 * JENKINS_REPO: jenkins/jenkins
-* JENKINS_VERSION: 2.528.3
-* COMMIT_SHA: 1c72a9383191562eb3c44838aeeadad0839c2c92
+* JENKINS_VERSION: 2.541.3
+* COMMIT_SHA: 298c1ad0266a019c80d01eff5f35823d1732bb26
 * LATEST_WEEKLY: false
 * LATEST_LTS: true
 * BUILD_METADATA_PATH: target/build-result-metadata_linux_dry-run.json
@@ -177,17 +177,16 @@ $ export BAKE_TARGET=debian_jdk25
 $ ./.ci/publish.sh -n
 Using the following settings:
 * JENKINS_REPO: jenkins/jenkins
-* JENKINS_VERSION: 2.528.3
-* COMMIT_SHA: aaf4e7faf887b7ac4879c3bf540ede48220cca9f
+* JENKINS_VERSION: 2.541.3
+* COMMIT_SHA: 298c1ad0266a019c80d01eff5f35823d1732bb26
 * LATEST_WEEKLY: false
 * LATEST_LTS: true
 * BUILD_METADATA_PATH: target/build-result-metadata_debian_jdk25_dry-run.json
-* BAKE TARGET: debian_jdk25
-* BUILDX OPTIONS:
+* BAKE_TARGET: debian_jdk25
+* BAKE OPTIONS:
   --pull
   --set=*.output=type=cacheonly
   --metadata-file=target/build-result-metadata_debian_jdk25_dry-run.json
-
 * RESOLVED BAKE CONFIG:
 {
   "group": {
@@ -202,25 +201,26 @@ Using the following settings:
       "context": ".",
       "dockerfile": "debian/Dockerfile",
       "args": {
-        "COMMIT_SHA": "aaf4e7faf887b7ac4879c3bf540ede48220cca9f",
+        "COMMIT_SHA": "298c1ad0266a019c80d01eff5f35823d1732bb26",
         "DEBIAN_RELEASE_LINE": "trixie",
         "DEBIAN_VARIANT": "",
-        "DEBIAN_VERSION": "20260316",
-        "JAVA_VERSION": "25.0.1_8",
-        "JENKINS_VERSION": "2.528.3",
+        "DEBIAN_VERSION": "20260406",
+        "JAVA_VERSION": "25.0.2_10",
+        "JENKINS_VERSION": "2.541.3",
         "PLUGIN_CLI_VERSION": "2.14.0",
-        "WAR_URL": "https://get.jenkins.io/war-stable/2.528.3/jenkins.war"
+        "WAR_URL": "https://get.jenkins.io/war-stable/2.541.3/jenkins.war"
       },
       "tags": [
-        "docker.io/jenkins/jenkins:2.528.3-jdk25",
+        "docker.io/jenkins/jenkins:2.541.3-jdk25",
         "docker.io/jenkins/jenkins:lts-jdk25",
-        "docker.io/jenkins/jenkins:2.528.3-lts-jdk25"
+        "docker.io/jenkins/jenkins:2.541.3-lts-jdk25"
       ],
       "platforms": [
         "linux/amd64",
         "linux/arm64",
         "linux/s390x",
-        "linux/ppc64le"
+        "linux/ppc64le",
+        "linux/riscv64"
       ]
     }
   }
