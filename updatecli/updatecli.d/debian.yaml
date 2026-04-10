@@ -38,7 +38,7 @@ sources:
           {{ source "releaseLine" }}
   latestVersionFull:
     kind: dockerimage
-    name: "Get the latest Debian version"
+    name: "Get the latest Debian version including its release line"
     spec:
       image: "debian"
       tagfilter: >-
