@@ -36,6 +36,17 @@ sources:
     transformers:
       - trimprefix: >-
           {{ source "releaseLine" }}
+  latestVersionFull:
+    kind: dockerimage
+    name: "Get the latest Debian version"
+    spec:
+      image: "debian"
+      tagfilter: >-
+        {{ source "releaseLine" }}
+      versionfilter:
+        kind: regex
+        pattern: >-
+          {{ source "releaseLine" }}\d+$
 
 conditions:
   testDockerfileArg:
@@ -57,7 +68,7 @@ conditions:
   checkArchitecturesAvailability:
     kind: dockerimage
     name: Check if container image is available for all architectures
-    sourceid: latestVersion
+    sourceid: latestVersionFull
     spec:
       image: "debian"
       architectures:
