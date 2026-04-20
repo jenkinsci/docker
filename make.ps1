@@ -259,7 +259,8 @@ if ($target -eq 'test') {
         $mod = Get-InstalledModule -Name Pester -MinimumVersion 5.3.0 -MaximumVersion 5.3.3 -ErrorAction SilentlyContinue
         if ($null -eq $mod) {
             Write-Host '= TEST: Pester 5.3.x not found: installing...'
-            Install-Module -Force -Name Pester -MaximumVersion 5.3.3 -Scope CurrentUser
+            # TODO: remove -SkipPublisherCheck when Pester 3.4.0 isn't present by default in Windows agents images anymore
+            Install-Module -Force -Name Pester -MaximumVersion 5.3.3 -Scope CurrentUser -SkipPublisherCheck
         }
 
         Import-Module Pester
