@@ -34,7 +34,7 @@ if (SIMULATE_LTS_BUILD) {
         'PUBLISH=false',
         'TAG_NAME=2.504.3',
         // TODO: replace by the first LTS based on 2.534+ when available
-        'JENKINS_VERSION=2.541.1',
+        'JENKINS_VERSION=2.555.1',
         // Filter out golden file based testing
         // To filter out all tests, set BATS_FLAGS="--filter-tags none"
         'BATS_FLAGS=--filter-tags "\\!test-type:golden-file"'
