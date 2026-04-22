@@ -33,7 +33,7 @@ URL="https://catalog.redhat.com/api/containers/v1/repositories/registry/registry
 # Check if jq and curl are installed
 # If they are not installed, exit the script with an error message
 if ! command -v jq >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1; then
-    >&2 echo "jq and curl are required but not installed. Exiting with status 1." >&2
+    echo "jq and curl are required but not installed. Exiting with status 1." >&2
     exit 1
 fi
 
@@ -42,7 +42,7 @@ response=$(curl --silent --fail --location --connect-timeout 10 --retry 3 --retr
 
 # Check if the response is empty or null
 if [ -z "$response" ] || [ "$response" == "null" ]; then
-  >&2 echo "Error: Failed to fetch tags from the Red Hat Container Catalog API."
+  echo "Error: Failed to fetch tags from the Red Hat Container Catalog API." >&2
   exit 1
 fi
 
