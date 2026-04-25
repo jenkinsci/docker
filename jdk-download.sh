@@ -6,6 +6,12 @@ if ! command -v curl >/dev/null 2>&1 || ! command -v tar >/dev/null 2>&1 ; then
     exit 1
 fi
 
+# Check if JAVA_VERSION is set
+if [ -z "$JAVA_VERSION" ]; then
+    echo "Error: No Java version specified. Please set the JAVA_VERSION environment variable or pass it as an argument. Exiting with status 1." >&2
+    exit 1
+fi
+
 # Set the OS to "standard" by default
 OS="standard"
 
