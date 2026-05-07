@@ -4,7 +4,7 @@
 
 # compare if version1 < version2
 versionLT() {
-    local normalized_version1 normalized_version2 first_part_of_1 first_char_other_part_of_1 first_part_of_2
+    local normalized_version1 normalized_version2 first_part_of_1 other_part_of_1 first_char_other_part_of_1 first_part_of_2 other_part_of_2 first_char_other_part_of_2
 
     # Quick check for equality
     if [ "$1" = "$2" ]; then
@@ -18,18 +18,34 @@ versionLT() {
     other_part_of_1=${normalized_version1#*.}
     first_char_other_part_of_1=${other_part_of_1:0:1}
     first_part_of_2=${normalized_version2%%.*}
+    other_part_of_2=${normalized_version2#*.}
+    first_char_other_part_of_2=${other_part_of_2:0:1}
 
 
-    # Security fix backport special case
+    # Security fix backport / maintenance-branch special case.
     # Ex: 3894.vd0f0248b_a_fc4 < 3894.3896.vca_2c931e7935
     # -> normal incrementals version includes a "v" as first char of second part
     # -> security fix backport adds the backport source first part as second part
     # https://github.com/jenkinsci/workflow-cps-plugin/releases/tag/3894.vd0f0248b_a_fc4
     # https://github.com/jenkinsci/workflow-cps-plugin/releases/tag/3894.3896.vca_2c931e7935
+    #
+    # Whenever the first parts match and exactly one of the two "second parts"
+    # starts with "v", that side is the older one regardless of argument order.
+    # The check has to be symmetric: copy_reference_file() calls versionLT()
+    # with the image version as $1 and the installed version as $2, so the
+    # original one-sided check missed the "image is the 4-part backport,
+    # installed is the 3-part normal release" direction. In that direction the
+    # function would otherwise fall through to `sort --version-sort`, which
+    # ranks the older "<base>.v<sha>" form *after* the newer
+    # "<base>.<buildnum>.v<sha>" form (because "v" sorts after digits in
+    # ASCII), and the entrypoint would silently skip the upgrade.
+    # Tracked at https://github.com/jenkinsci/docker/issues/2328
     if [[ "$first_part_of_1" = "$first_part_of_2" ]]; then
-        # If the second part of $version1 starts with a "v", then $version1 is older
-        if [[ "$first_char_other_part_of_1" == "v" ]]; then
+        if [[ "$first_char_other_part_of_1" == "v" && "$first_char_other_part_of_2" != "v" ]]; then
             return 0
+        fi
+        if [[ "$first_char_other_part_of_2" == "v" && "$first_char_other_part_of_1" != "v" ]]; then
+            return 1
         fi
     fi
 
