@@ -34,6 +34,21 @@ SUT_DESCRIPTION="${IMAGE}-functions"
   # workflow-cps-plugin, security fix backport of an older release, published later than a newer normal release
   run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 4106.4108.v841a_e1819d4d 4151.v5406e29e3c90"
   assert_success
+  ## https://github.com/jenkinsci/docker/issues/2328
+  ## Reverse-direction cases: image is the 4-part backport / maintenance release, installed is the 3-part normal release.
+  ## copy_reference_file() calls versionLT(image, container) at this site, so the workaround has to handle both argument orders.
+  # workflow-cps-plugin, reverse-direction
+  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 3894.3896.vca_2c931e7935 3894.vd0f0248b_a_fc4"
+  assert_failure
+  # github-branch-source-plugin, 1967.x security maintenance branch
+  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 1967.1969.v205fd594c821 1967.vdea_d580c1a_b_a_"
+  assert_failure
+  # workflow-job-plugin, same shape
+  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 1571.1580.v18e46842c125 1571.vb_423c255d6d9"
+  assert_failure
+  # role-strategy-plugin, reverse-direction
+  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 587.588.v850a_20a_30162 587.v2872c41fa_e51"
+  assert_failure
 }
 
 @test "[${SUT_DESCRIPTION}] permissions are propagated from override file" {
