@@ -9,8 +9,6 @@ FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS jre-and-war
 # $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-ARG JAVA_VERSION=21.0.10_7
-
 RUN New-Item -ItemType Directory -Path C:\temp | Out-Null ; `
     $javaMajorVersion = $env:JAVA_VERSION.substring(0,2) ; `
     $msiUrl = 'https://api.adoptium.net/v3/installer/version/jdk-{0}/windows/x64/jdk/hotspot/normal/eclipse?project=jdk' -f $env:JAVA_VERSION.Replace('_', '%2B') ; `
