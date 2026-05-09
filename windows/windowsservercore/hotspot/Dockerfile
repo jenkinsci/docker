@@ -1,7 +1,7 @@
 # escape=`
 # hadolint shell=powershell
 
-ARG JAVA_VERSION=21.0.10_7
+ARG JAVA_VERSION=21.0.11_10
 ARG WINDOWS_VERSION=ltsc2022
 
 FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS jre-and-war
