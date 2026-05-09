@@ -197,4 +197,3 @@ copy_reference_file() {
         fi
     fi
 }
-
