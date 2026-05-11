@@ -44,7 +44,7 @@ variable "COMMIT_SHA" {
 }
 
 variable "ALPINE_FULL_TAG" {
-  default = "3.23.3"
+  default = "3.23.4"
 }
 
 variable "ALPINE_SHORT_TAG" {
@@ -56,11 +56,11 @@ variable "JAVA17_VERSION" {
 }
 
 variable "JAVA21_VERSION" {
-  default = "21.0.10_7"
+  default = "21.0.11_10"
 }
 
 variable "JAVA25_VERSION" {
-  default = "25.0.2_10"
+  default = "25.0.3_9"
 }
 
 variable "DEBIAN_RELEASE_LINE" {
@@ -68,11 +68,11 @@ variable "DEBIAN_RELEASE_LINE" {
 }
 
 variable "DEBIAN_VERSION" {
-  default = 20260406
+  default = 20260505
 }
 
 variable "RHEL_TAG" {
-  default = "9.7-1775624009"
+  default = "9.7-1778044007"
 }
 
 variable "RHEL_RELEASE_LINE" {
