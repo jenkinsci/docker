@@ -149,3 +149,50 @@ runInScriptConsole() {
 @test "[${SUT_DESCRIPTION}] ensure that 'ps' command is available" {
   command -v ps # Check for binary presence in the current PATH
 }
+
+@test "[${SUT_DESCRIPTION}] custom CA certificate is imported via init-container pattern" {
+  local container_name test_cert_dir cacerts_vol
+  container_name="$(get_sut_container_name)"
+  cleanup "${container_name}"
+  test_cert_dir="$(mktemp -d)"
+  cacerts_vol="${container_name}-cacerts"
+
+  # Clean up any leftover volume
+  docker volume rm "${cacerts_vol}" 2>/dev/null || true
+
+  # Generate a self-signed test CA certificate
+  docker run --rm --user root -v "${test_cert_dir}:/certs" "${SUT_IMAGE}" \
+    bash -c '"${JAVA_HOME}/bin/keytool" -genkeypair -alias testca -keyalg RSA -keysize 2048 \
+      -dname "CN=Test CA" -validity 1 -keypass changeit \
+      -keystore /tmp/test.jks -storepass changeit 2>/dev/null && \
+    "${JAVA_HOME}/bin/keytool" -exportcert -alias testca -rfc \
+      -keystore /tmp/test.jks -storepass changeit \
+      -file /certs/test-ca.crt 2>/dev/null && \
+    chmod 644 /certs/test-ca.crt'
+
+  # Run init container as root: copy system cacerts and import custom cert
+  docker run --rm --user root \
+    -v "${test_cert_dir}:/certs:ro" \
+    -v "${cacerts_vol}:/cacerts-volume" \
+    "${SUT_IMAGE}" \
+    sh -c 'cp "${JAVA_HOME}/lib/security/cacerts" /cacerts-volume/cacerts && "${JAVA_HOME}/bin/keytool" -importcert -noprompt -keystore /cacerts-volume/cacerts -storepass changeit -alias custom-test-ca -file /certs/test-ca.crt'
+
+  # Start Jenkins with the custom truststore (read-only)
+  docker run -d --name "${container_name}" \
+    -v "${cacerts_vol}:/cacerts:ro" \
+    --env JAVA_OPTS="-Djavax.net.ssl.trustStore=/cacerts/cacerts" \
+    "${SUT_IMAGE}"
+
+  # Verify custom cert exists in custom truststore
+  retry 10 2 docker exec "${container_name}" \
+    sh -c '"${JAVA_HOME}/bin/keytool" -list -keystore /cacerts/cacerts -storepass changeit -alias custom-test-ca'
+
+  # Verify system truststore was NOT modified
+  run docker exec "${container_name}" \
+    sh -c '"${JAVA_HOME}/bin/keytool" -list -keystore "${JAVA_HOME}/lib/security/cacerts" -storepass changeit -alias custom-test-ca'
+  assert_failure
+
+  # Cleanup
+  rm -rf "${test_cert_dir}"
+  docker volume rm "${cacerts_vol}" 2>/dev/null || true
+}
