@@ -199,6 +199,34 @@ COPY --chown=jenkins:jenkins custom.groovy /usr/share/jenkins/ref/init.groovy.d/
 
 If you need to maintain the entire init.groovy.d directory and have a persistent JENKINS_HOME you may run the docker image with `-e PRE_CLEAR_INIT_GROOVY_D=true`
 
+### Environment variable substitution for reference files
+
+By default, environment variable substitution is disabled to preserve backward compatibility.
+Set `JENKINS_ENABLE_ENV_SUBST=true` to enable it for configuration files copied from `/usr/share/jenkins/ref` to `$JENKINS_HOME` during container initialization.
+
+Supported syntax:
+- `${VAR}`
+- `${VAR:-default}`
+
+Supported file types: `.xml`, `.conf`, `.properties`, `.groovy`
+
+Example configuration file:
+```xml
+<jenkinsUrl>${JENKINS_URL:-http://localhost:8080/}</jenkinsUrl>
+<smtpHost>${SMTP_HOST}</smtpHost>
+```
+
+Example container startup:
+```bash
+docker run \
+  -e JENKINS_ENABLE_ENV_SUBST=true \
+  -e JENKINS_URL=https://jenkins.example.com \
+  -e SMTP_HOST=smtp.example.com \
+  jenkins/jenkins:lts-jdk21
+```
+> [!NOTE]
+> For most dynamic configuration use cases, [Jenkins Configuration as Code](https://www.jenkins.io/projects/jcasc/) remains the recommended approach.
+
 ## Preinstalling plugins
 
 ### Install plugins
