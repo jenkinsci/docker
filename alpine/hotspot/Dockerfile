@@ -132,6 +132,7 @@ COPY --from=jre-and-war /javaruntime $JAVA_HOME
 COPY --from=jre-and-war /war/jenkins.war /usr/share/jenkins/jenkins.war
 
 USER ${user}
+RUN git lfs install
 
 COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
