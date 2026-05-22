@@ -12,7 +12,7 @@ variable "default_jdk" {
 }
 
 variable "JENKINS_VERSION" {
-  default = "2.554"
+  default = "2.565"
 }
 
 variable "WAR_URL" {
@@ -36,7 +36,7 @@ variable "LATEST_LTS" {
 }
 
 variable "PLUGIN_CLI_VERSION" {
-  default = "2.14.0"
+  default = "2.15.0"
 }
 
 variable "COMMIT_SHA" {
@@ -44,23 +44,19 @@ variable "COMMIT_SHA" {
 }
 
 variable "ALPINE_FULL_TAG" {
-  default = "3.23.3"
+  default = "3.23.4"
 }
 
 variable "ALPINE_SHORT_TAG" {
   default = regex_replace(ALPINE_FULL_TAG, "\\.\\d+$", "")
 }
 
-variable "JAVA17_VERSION" {
-  default = "17.0.18_8"
-}
-
 variable "JAVA21_VERSION" {
-  default = "21.0.10_7"
+  default = "21.0.11_10"
 }
 
 variable "JAVA25_VERSION" {
-  default = "25.0.2_10"
+  default = "25.0.3_9"
 }
 
 variable "DEBIAN_RELEASE_LINE" {
@@ -68,11 +64,11 @@ variable "DEBIAN_RELEASE_LINE" {
 }
 
 variable "DEBIAN_VERSION" {
-  default = "20251117"
+  default = 20260518
 }
 
 variable "RHEL_TAG" {
-  default = "9.7-1773204657"
+  default = "9.8-1777460305"
 }
 
 variable "RHEL_RELEASE_LINE" {
@@ -87,7 +83,6 @@ variable "WINDOWS_VERSION_OVERRIDE" {
 ## Internal variables
 variable "jdk_versions" {
   default = {
-    17 = JAVA17_VERSION
     21 = JAVA21_VERSION
     25 = JAVA25_VERSION
   }
@@ -268,22 +263,18 @@ function "platforms" {
   result = (
     # Alpine
     is_alpine(distribution)
-    ? (equal(17, jdk)
-      ? ["linux/amd64"]
-    : ["linux/amd64", "linux/arm64"])
+    ? ["linux/amd64", "linux/arm64"]
 
     # Debian slim
     : is_debian_slim(distribution)
-    ? (equal(17, jdk)
-      ? ["linux/amd64"]
-    : ["linux/amd64", "linux/arm64"])
+    ? ["linux/amd64", "linux/arm64", "linux/riscv64"]
 
     # RHEL
     : is_rhel(distribution)
     ? ["linux/amd64", "linux/arm64", "linux/ppc64le"]
 
     # Default (Debian)
-    : ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"]
+    : ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le", "linux/riscv64"]
   )
 }
 

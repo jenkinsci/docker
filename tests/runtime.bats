@@ -6,7 +6,7 @@ load 'test_helper/bats-support/load'
 load 'test_helper/bats-assert/load'
 load test_helpers
 
-IMAGE=${IMAGE:-debian_jdk17}
+IMAGE=${IMAGE:-debian_jdk21}
 SUT_IMAGE=$(get_sut_image)
 SUT_DESCRIPTION="${IMAGE}-runtime"
 

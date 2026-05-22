@@ -17,12 +17,12 @@ This is a fully functional Jenkins server.
 docker run -p 8080:8080 -p 50000:50000 --restart=on-failure jenkins/jenkins:lts-jdk21
 ```
 
-NOTE: read the section [_Connecting agents_](#connecting-agents) below for the role of the `50000` port mapping.
-NOTE: read the section [_DNS Configuration_](#dns-configuration) in case you see the message "This Jenkins instance appears to be offline." 
+NOTE: Read the section [_Connecting agents_](#connecting-agents) below for the role of the `50000` port mapping.
+NOTE: Read the section [_DNS Configuration_](#dns-configuration) in case you see the message "This Jenkins instance appears to be offline."
 
 This will store the workspace in `/var/jenkins_home`.
 All Jenkins data lives in there - including plugins and configuration.
-You will probably want to make that an explicit volume so you can manage it and attach to another container for upgrades :
+You will probably want to make that an explicit volume so you can manage it and attach to another container for upgrades:
 
 ```
 docker run -p 8080:8080 -p 50000:50000 --restart=on-failure -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts-jdk21
@@ -38,20 +38,20 @@ If you _really_ need to bind mount jenkins_home, ensure that the directory on th
 docker run -d -v jenkins_home:/var/jenkins_home -p 8080:8080 -p 50000:50000 --restart=on-failure jenkins/jenkins:lts-jdk21
 ```
 
-This will run Jenkins in detached mode with port forwarding and volume added. You can access logs with command 'docker logs CONTAINER_ID' in order to check first login token. ID of container will be returned from output of command above.
+This will run Jenkins in detached mode with port forwarding and a volume attached. You can access logs using the command 'docker logs CONTAINER_ID' to check the first login token. The container ID will be returned in the output of the command above.
 
 Or, directly print the initial admin password using:
 
 ```
 docker exec <jenkins_container_id_or_name> cat /var/jenkins_home/secrets/initialAdminPassword
 ```
-Replace <jenkins_container_id_or_name> with your actual Jenkins container id or name.
+Replace `<jenkins_container_id_or_name>` with your actual Jenkins container ID or name.
 
 To access Jenkins and complete the initial setup, follow the instructions in the [installation guide](https://www.jenkins.io/doc/book/installing/docker/#setup-wizard).
 
 ## Backing up data
 
-If you bind mount in a volume - you can simply back up that directory
+If you bind mount a volume - you can simply back up that directory
 (which is jenkins_home) at any time.
 
 Using a bind mount is not recommended since it can lead to permission issues. Treat the jenkins_home directory as you would a database - in Docker you would generally put a database on a volume.
@@ -89,7 +89,7 @@ In order to connect agents **through an inbound TCP connection**, map the port: 
 That port will be used when you connect agents to the controller.
 
 If you are only using [SSH (outbound) build agents](https://plugins.jenkins.io/ssh-slaves/), this port is not required, as connections are established from the controller.
-If you connect agents using web sockets (since Jenkins 2.217), the TCP agent port is not used either.
+If you connect agents using web sockets, the TCP agent port is not used either.
 
 ## Passing JVM parameters
 
@@ -119,7 +119,7 @@ docker run --name myjenkins -p 8080:8080 -p 50000:50000 --restart=on-failure --e
 
 ## Configuring reverse proxy
 
-If you want to install Jenkins behind a reverse proxy with a prefix, example: mysite.com/jenkins, you need to add environment variable `JENKINS_OPTS="--prefix=/jenkins"` and then follow the below procedures to configure your reverse proxy, which will depend if you have Apache or Nginx:
+If you want to install Jenkins behind a reverse proxy with a prefix, example: mysite.com/jenkins, you need to add environment variable `JENKINS_OPTS="--prefix=/jenkins"` and then follow the below procedures to configure your reverse proxy, which will depend on whether you have Apache or Nginx:
 
 - [Apache](https://www.jenkins.io/doc/book/system-administration/reverse-proxy-configuration-apache/)
 - [Nginx](https://www.jenkins.io/doc/book/system-administration/reverse-proxy-configuration-nginx/)
@@ -128,7 +128,7 @@ If you want to install Jenkins behind a reverse proxy with a prefix, example: my
 
 If the message "This Jenkins instance appears to be offline." appears on first startup, and the container logs show lines such as `java.net.UnknownHostException: updates.jenkins.io`, your container may be having issues with resolving DNS names.
 
-To potentially solve the issue, start the container specifying a dns server (for example Cloudflare's 1.1.1.1 or Google's 8.8.8.8, or any other DNS server):
+To potentially solve the issue, start the container specifying a DNS server (for example Cloudflare's 1.1.1.1 or Google's 8.8.8.8, or any other DNS server):
 ```
 docker run -p 8080:8080 -p 50000:50000 --restart=on-failure --dns 1.1.1.1 --dns 8.8.8.8 jenkins/jenkins:lts-jdk21
 ```
@@ -141,7 +141,7 @@ Full documentation will be available at: https://www.jenkins.io/doc/book/install
 
 ## Passing Jenkins launcher parameters
 
-Arguments you pass to docker running the Jenkins image are passed to jenkins launcher, so for example you can run:
+Arguments you pass to docker running the Jenkins image are passed to the Jenkins launcher, so for example you can run:
 
 ```
 docker run jenkins/jenkins:lts-jdk21 --version
@@ -205,6 +205,34 @@ COPY --chown=jenkins:jenkins custom.groovy /usr/share/jenkins/ref/init.groovy.d/
 
 If you need to maintain the entire init.groovy.d directory and have a persistent JENKINS_HOME you may run the docker image with `-e PRE_CLEAR_INIT_GROOVY_D=true`
 
+### Environment variable substitution for reference files
+
+By default, environment variable substitution is disabled to preserve backward compatibility.
+Set `JENKINS_ENABLE_ENV_SUBST=true` to enable it for configuration files copied from `/usr/share/jenkins/ref` to `$JENKINS_HOME` during container initialization.
+
+Supported syntax:
+- `${VAR}`
+- `${VAR:-default}`
+
+Supported file types: `.xml`, `.conf`, `.properties`, `.groovy`
+
+Example configuration file:
+```xml
+<jenkinsUrl>${JENKINS_URL:-http://localhost:8080/}</jenkinsUrl>
+<smtpHost>${SMTP_HOST}</smtpHost>
+```
+
+Example container startup:
+```bash
+docker run \
+  -e JENKINS_ENABLE_ENV_SUBST=true \
+  -e JENKINS_URL=https://jenkins.example.com \
+  -e SMTP_HOST=smtp.example.com \
+  jenkins/jenkins:lts-jdk21
+```
+> [!NOTE]
+> For most dynamic configuration use cases, [Jenkins Configuration as Code](https://www.jenkins.io/projects/jcasc/) remains the recommended approach.
+
 ## Preinstalling plugins
 
 ### Install plugins
@@ -251,7 +279,7 @@ FROM jenkins/jenkins:lts-jdk21
 RUN jenkins-plugin-cli --plugins pipeline-model-definition github-branch-source:1.8
 ```
 
-Furthermore it is possible to pass a file that contains this set of plugins (with or without line breaks).
+Furthermore, it is possible to pass a file that contains this set of plugins (with or without line breaks).
 
 ```Dockerfile
 FROM jenkins/jenkins:lts-jdk21
@@ -259,9 +287,9 @@ COPY --chown=jenkins:jenkins plugins.txt /usr/share/jenkins/ref/plugins.txt
 RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
 ```
 
-When jenkins container starts, it will check `JENKINS_HOME` has this reference content, and copy them
-there if required. It will not override such files, so if you upgraded some plugins from UI they won't
-be reverted on next start.
+When the Jenkins container starts, it will check whether `JENKINS_HOME` has this reference content and copy it
+there if required. It will not override such files, so if you upgraded some plugins from the UI they won't
+be reverted on the next start.
 
 In case you _do_ want to override, append '.override' to the name of the reference file. E.g. a file named
 `/usr/share/jenkins/ref/config.xml.override` will overwrite an existing `config.xml` file in JENKINS_HOME.
@@ -295,7 +323,7 @@ which may be inappropriate.
 
 ### Access logs
 
-To enable Jenkins user access logs from Jenkins home directory inside a docker container, set the `JENKINS_OPTS` environment variable value to `--accessLoggerClassName=winstone.accesslog.SimpleAccessLogger --simpleAccessLogger.format=combined --simpleAccessLogger.file=/var/jenkins_home/logs/access_log`
+To enable Jenkins user access logs from the Jenkins home directory inside a Docker container, set the `JENKINS_OPTS` environment variable value to `--accessLoggerClassName=winstone.accesslog.SimpleAccessLogger --simpleAccessLogger.format=combined --simpleAccessLogger.file=/var/jenkins_home/logs/access_log`
 
 ### Naming convention in tags
 
@@ -303,7 +331,7 @@ The naming convention for the tags on Docker Hub follows the format `<repository
 In the case of the LTS and latest versions, the tags are `lts` and `latest`, respectively.
 
 You can use these tags to pull the corresponding Jenkins images from Docker Hub and run them on your system.
-For example, to pull the LTS version of the Jenkins image use this command: `docker pull jenkins/jenkins:lts`
+For example, to pull the LTS version of the Jenkins image, use this command: `docker pull jenkins/jenkins:lts`
 
 ### Docker Compose with Jenkins
 
@@ -339,7 +367,7 @@ This will pull the necessary images from Docker Hub if they are not already pres
 
 You can then access the Jenkins web interface on `http://localhost:8080` on your host system to configure and manage your Jenkins instance (where `localhost` points to the published port by your Docker Engine).
 
-NOTE: read the section [_DNS Configuration_](#dns-configuration) in case you see the message "This Jenkins instance appears to be offline." In that case add the dns configuration to the yaml:
+NOTE: Read the section [_DNS Configuration_](#dns-configuration) in case you see the message "This Jenkins instance appears to be offline." In that case, add the DNS configuration to the YAML:
 ```yaml
 services:
   jenkins:

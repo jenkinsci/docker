@@ -1,7 +1,7 @@
 # escape=`
 # hadolint shell=powershell
 
-ARG JAVA_VERSION=17.0.18_8
+ARG JAVA_VERSION=21.0.11_10
 ARG WINDOWS_VERSION=ltsc2022
 
 FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS jre-and-war
@@ -9,7 +9,7 @@ FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS jre-and-war
 # $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-ARG JAVA_VERSION=17.0.18_8
+ARG JAVA_VERSION=21.0.11_10
 
 RUN New-Item -ItemType Directory -Path C:\temp | Out-Null ; `
     $javaMajorVersion = $env:JAVA_VERSION.substring(0,2) ; `
@@ -30,7 +30,6 @@ RUN $version = (jlink --version) ; `
     } else { `
         $options = '--compress=2' ; `
         switch ($version.Substring(0,3)) { `
-            '17.' { $options = '--compress=2' } `
             '21.' { $options = '--compress=zip-6' } `
             Default { `
                 Write-Error 'ERROR: unmanaged jlink version pattern' ; `
@@ -54,7 +53,7 @@ RUN New-Item -ItemType Directory -Path C:/temp | Out-Null ; `
     Remove-Item -Path C:\temp -Recurse | Out-Null
 
 # Jenkins version being bundled in this docker image
-ARG JENKINS_VERSION=2.554
+ARG JENKINS_VERSION=2.565
 # Can be used to customize where jenkins.war get downloaded from
 ARG WAR_URL=https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war
 ENV WAR_URL=${WAR_URL}
@@ -74,7 +73,7 @@ RUN & 'C:/Program Files/GnuPG/bin/gpg.exe' --version ; `
 
 FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS controller
 
-ARG JAVA_HOME="C:/openjdk-17"
+ARG JAVA_HOME="C:/openjdk-21"
 ENV JAVA_HOME=${JAVA_HOME}
 
 COPY --from=jre-and-war /javaruntime $JAVA_HOME
@@ -127,7 +126,7 @@ ENV JENKINS_UC=https://updates.jenkins.io
 ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
 ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 
-ARG PLUGIN_CLI_VERSION=2.14.0
+ARG PLUGIN_CLI_VERSION=2.15.0
 ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
 RUN $sha256sum = [System.Text.Encoding]::UTF8.GetString((Invoke-WebRequest -Uri ($env:PLUGIN_CLI_URL + '.sha256') -UseBasicParsing).Content); `
     Invoke-WebRequest -Uri "$env:PLUGIN_CLI_URL" -OutFile C:/ProgramData/Jenkins/jenkins-plugin-manager.jar; `
@@ -146,7 +145,7 @@ COPY jenkins.ps1 C:/ProgramData/Jenkins
 # See https://github.com/jenkinsci/plugin-installation-manager-tool#cli-options for information on parameters for jenkins-plugin-cli.ps1 for installing plugins into the docker image
 COPY jenkins-plugin-cli.ps1 C:/ProgramData/Jenkins
 
-ARG JENKINS_VERSION=2.554
+ARG JENKINS_VERSION=2.565
 ENV JENKINS_VERSION=${JENKINS_VERSION}
 
 ENTRYPOINT ["powershell.exe", "-f", "C:/ProgramData/Jenkins/jenkins.ps1"]

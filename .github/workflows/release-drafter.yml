@@ -13,7 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'jenkinsci'
     steps:
-      # Drafts your next Release notes as Pull Requests are merged into the default branch
-      - uses: release-drafter/release-drafter@v6
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # https://github.com/release-drafter/release-drafter/issues/871#issuecomment-3686135188
+      - name: Wait for 15 seconds to ensure GraphQL consistency
+        shell: bash
+        run: sleep 15s
+      # Drafts your next Release notes as Pull Requests are merged into "master"
+      - name: Release Drafter
+        uses: release-drafter/release-drafter@c2e2804cc59f45f57076a99af580d0fedb697927 # v7.3.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}

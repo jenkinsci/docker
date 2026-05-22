@@ -1,5 +1,6 @@
 # https://github.com/jenkinsci/.github/blob/master/.github/release-drafter.adoc
-_extends: .github
+
+_extends: github:jenkinsci/.github:/.github/release-drafter.yml
 # We are using 2-digit weekly versioning here
 version-template: $MAJOR.$MINOR
 tag-template: $NEXT_MINOR_VERSION

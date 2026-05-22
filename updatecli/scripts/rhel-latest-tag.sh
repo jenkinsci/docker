@@ -33,7 +33,7 @@ URL="https://catalog.redhat.com/api/containers/v1/repositories/registry/registry
 # Check if jq and curl are installed
 # If they are not installed, exit the script with an error message
 if ! command -v jq >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1; then
-    >&2 echo "jq and curl are required but not installed. Exiting with status 1." >&2
+    echo "jq and curl are required but not installed. Exiting with status 1." >&2
     exit 1
 fi
 
@@ -42,7 +42,7 @@ response=$(curl --silent --fail --location --connect-timeout 10 --retry 3 --retr
 
 # Check if the response is empty or null
 if [ -z "$response" ] || [ "$response" == "null" ]; then
-  >&2 echo "Error: Failed to fetch tags from the Red Hat Container Catalog API."
+  echo "Error: Failed to fetch tags from the Red Hat Container Catalog API." >&2
   exit 1
 fi
 
@@ -50,14 +50,11 @@ fi
 # - The response is expected to be a JSON object containing repository data.
 # - The script uses `jq` to:
 #   1. Iterate over all repositories in the `data` array.
-#   2. Select repositories where at least one tag has the name "latest".
-#   3. From those repositories, select tags that:
-#      - Do not have the name "latest".
-#      - Contain a hyphen in their name (indicating a long-form tag).
-#   4. Extract the `name` of the matching tags.
-#   5. Sort the tag names uniquely (`sort -u`).
-#   6. Take the last tag in the sorted list (`tail -n 1`), which is assumed to be the most recent valid tag.
-latest_tag=$(echo "$response" | jq -r '.data[].repositories[] | select(.tags[].name == "latest") | .tags[] | select(.name != "latest" and (.name | contains("-"))) | .name' | sort -u | tail -n 1)
+#   2. Extract the `name` of all tags
+#   3. Filter on those containing a hyphen in their name (indicating a long-form tag).
+#   4. Sort the tag names uniquely (`sort -u`).
+#   5. Take the last tag in the sorted list (`tail -n 1`), which is assumed to be the most recent valid tag.
+latest_tag=$(echo "$response" | jq -r '.data[].repositories[].tags[].name' | grep '-' | sort -u | tail -n 1)
 
 
 # Check if the latest_tag is empty
