@@ -70,7 +70,7 @@ RUN apk add --no-cache \
     ttf-dejavu \
     tzdata \
     unzip \
-  && git lfs install
+  && git lfs install --skip-repo --system
 
 ENV LANG=C.UTF-8
 
