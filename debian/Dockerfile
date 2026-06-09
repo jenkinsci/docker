@@ -1,11 +1,11 @@
 ARG TRIXIE_TAG=20251103
 
 ARG DEBIAN_RELEASE_LINE=trixie
-ARG DEBIAN_VERSION=20260505
+ARG DEBIAN_VERSION=20260518
 ARG DEBIAN_VARIANT="-slim"
 FROM debian:"${DEBIAN_RELEASE_LINE}-${DEBIAN_VERSION}${DEBIAN_VARIANT}" AS jre-and-war
 
-ARG JAVA_VERSION=17.0.18_8
+ARG JAVA_VERSION=21.0.11_10
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -83,6 +83,7 @@ RUN arch=$(uname -m | sed -e 's/x86_64/amd64/g' -e 's/aarch64/arm64/g') \
   && curl -L -s -o git-lfs.tgz "https://github.com/git-lfs/git-lfs/releases/download/v${GIT_LFS_VERSION}/git-lfs-linux-${arch}-v${GIT_LFS_VERSION}.tar.gz" \
   && tar xzf git-lfs.tgz \
   && bash git-lfs-*/install.sh \
+  && git lfs install --skip-repo --system \
   && rm -rf git-lfs*
 
 ENV LANG=C.UTF-8
@@ -125,7 +126,7 @@ ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
 ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 RUN chown -R ${user} "$JENKINS_HOME" "$REF"
 
-ARG PLUGIN_CLI_VERSION=2.14.0
+ARG PLUGIN_CLI_VERSION=2.15.0
 ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
 RUN curl -fsSL ${PLUGIN_CLI_URL} -o /opt/jenkins-plugin-manager.jar \
   && echo "$(curl -fsSL "${PLUGIN_CLI_URL}.sha256")  /opt/jenkins-plugin-manager.jar" >/tmp/jpm_sha \

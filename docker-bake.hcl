@@ -36,7 +36,7 @@ variable "LATEST_LTS" {
 }
 
 variable "PLUGIN_CLI_VERSION" {
-  default = "2.14.0"
+  default = "2.15.0"
 }
 
 variable "COMMIT_SHA" {
@@ -68,11 +68,11 @@ variable "DEBIAN_RELEASE_LINE" {
 }
 
 variable "DEBIAN_VERSION" {
-  default = 20260505
+  default = 20260518
 }
 
 variable "RHEL_TAG" {
-  default = "9.7-1778044007"
+  default = "9.8-1780376557"
 }
 
 variable "RHEL_RELEASE_LINE" {

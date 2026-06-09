@@ -146,6 +146,18 @@ runInScriptConsole() {
   assert 'Europe/Madrid' get-timezone-value
 }
 
+@test "[${SUT_DESCRIPTION}] git-lfs is configured system-wide for all users" {
+  # LFS filters must not be empty when running as the jenkins user (default)
+  run docker run --rm "${SUT_IMAGE}" sh -c 'git lfs env | grep "git config filter.lfs"'
+  assert_success
+  refute_output --regexp 'git config filter\.lfs\.\w+ = ""'
+
+  # /etc/gitconfig must contain the LFS filter section
+  run docker run --rm "${SUT_IMAGE}" cat /etc/gitconfig
+  assert_success
+  assert_output --partial '[filter "lfs"]'
+}
+
 @test "[${SUT_DESCRIPTION}] ensure that 'ps' command is available" {
   command -v ps # Check for binary presence in the current PATH
 }
