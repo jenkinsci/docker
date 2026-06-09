@@ -106,6 +106,28 @@ function Get-PluginVersion($archive) {
     return $version.Trim()
 }
 
+# Substitute environment variables in file content
+# Supports ${VAR} and ${VAR:-default} syntax
+# Enabled only when JENKINS_ENABLE_ENV_SUBST=true
+function Invoke-EnvVarSubstitution($file) {
+    $content = Get-Content -Raw $file
+    $pattern = '\$\{([A-Za-z_][A-Za-z0-9_]*)(:-([^}]*))?\}'
+    $content = [regex]::Replace($content, $pattern, {
+        param($match)
+        $varName = $match.Groups[1].Value
+        $defaultValue = $match.Groups[3].Value
+        $varValue = [System.Environment]::GetEnvironmentVariable($varName)
+        if ([string]::IsNullOrEmpty($varValue)) {
+            if (![string]::IsNullOrEmpty($defaultValue)) {
+                return $defaultValue
+            }
+            return ''
+        }
+        return $varValue
+    })
+    Set-Content -Path $file -Value $content -NoNewline
+}
+
 # Copy files from C:/ProgramData/Jenkins/Reference/ into $JENKINS_HOME
 # So the initial JENKINS-HOME is set with expected content.
 # Don't override, as this is just a reference setup, and use from UI
@@ -208,6 +230,15 @@ function Copy-ReferenceFile($file) {
                 New-Item -ItemType Directory (Join-Path $env:JENKINS_HOME (Split-Path -Parent $rel))
             }
             Copy-Item $file (Join-Path $env:JENKINS_HOME $rel)
+            # Perform environment variable substitution on config files (opt-in)
+            if ((Get-EnvOrDefault 'JENKINS_ENABLE_ENV_SUBST' 'false') -eq 'true') {
+                if ($rel -match '\.(xml|conf|properties|groovy)$') {
+                    $destFile = Join-Path $env:JENKINS_HOME $rel
+                    if (Test-Path $destFile) {
+                        Invoke-EnvVarSubstitution $destFile
+                    }
+                }
+            }
         } else {
             $action="SKIPPED"
         }
