@@ -95,6 +95,24 @@ Describe "[functions > $global:TEST_TAG] Copy-ReferenceFile" -Skip:(-not $global
     $stdout | Should -Match "test.override"
   }
 
+  It 'substitute_env_vars replaces variable with env value' {
+    $exitCode, $stdout, $stderr = Run-Program 'docker' "run --rm -e JENKINS_ENABLE_ENV_SUBST=true -e JENKINS_URL=http://prod.example.com $global:SUT_IMAGE powershell -C `"Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; `$tmp = New-TemporaryFile ; Set-Content -Path `$tmp -Value '<jenkinsUrl>`${JENKINS_URL:-http://localhost:8080/}</jenkinsUrl>' ; Invoke-EnvVarSubstitution `$tmp ; Get-Content `$tmp`""
+    $exitCode | Should -Be 0
+    $stdout | Should -Match 'http://prod.example.com'
+  }
+
+  It 'substitute_env_vars uses default when variable unset' {
+    $exitCode, $stdout, $stderr = Run-Program 'docker' "run --rm -e JENKINS_ENABLE_ENV_SUBST=true $global:SUT_IMAGE powershell -C `"Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; `$tmp = New-TemporaryFile ; Set-Content -Path `$tmp -Value '<jenkinsUrl>`${JENKINS_URL:-http://localhost:8080/}</jenkinsUrl>' ; Invoke-EnvVarSubstitution `$tmp ; Get-Content `$tmp`""
+    $exitCode | Should -Be 0
+    $stdout | Should -Match 'http://localhost:8080/'
+  }
+
+  It 'copy_reference_file skips substitution when JENKINS_ENABLE_ENV_SUBST is unset' {
+    $exitCode, $stdout, $stderr = Run-Program 'docker' "run --rm -e JENKINS_ENABLE_ENV_SUBST=false -e JENKINS_URL=http://prod.example.com $global:SUT_IMAGE powershell -C `"Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; `$tmp = New-TemporaryFile ; Set-Content -Path `$tmp -Value '<jenkinsUrl>`${JENKINS_URL:-http://localhost:8080/}</jenkinsUrl>' ; if((Get-EnvOrDefault 'JENKINS_ENABLE_ENV_SUBST' 'false') -eq 'true') { Invoke-EnvVarSubstitution `$tmp } ; Get-Content `$tmp`""
+    $exitCode | Should -Be 0
+    $stdout | Should -Match '\$\{JENKINS_URL:-http://localhost:8080/\}'
+  }
+
   It 'cleanup container' {
     Cleanup $global:SUT_CONTAINER | Out-Null
   }
