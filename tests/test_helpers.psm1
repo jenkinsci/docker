@@ -106,7 +106,7 @@ function Run-Program($cmd, $params, $verbose=$false) {
 }
 
 function Build-Docker($tag) {
-    $windowsVersion = '2019'
+    $windowsVersion = '2022'
     if ($tag -match 'ltsc(\d+)$') {
         $windowsVersion = $matches[1]
     }
