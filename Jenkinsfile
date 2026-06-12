@@ -49,7 +49,7 @@ stage('Build') {
 
         def windowsImageTypes = [
             'windowsservercore-ltsc2022',
-            'windowsservercore-ltsc2025'
+            'windowsservercore-ltsc2025',
         ]
         for (anImageType in windowsImageTypes) {
             def imageType = anImageType
