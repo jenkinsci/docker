@@ -9,13 +9,13 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 COPY jdk-download-url.sh /usr/bin/jdk-download-url.sh
 COPY jdk-download.sh /usr/bin/jdk-download.sh
 
-RUN apk add --no-cache \
-    ca-certificates \
-    gnupg \
-    jq \
-    curl \
-    && rm -fr /var/cache/apk/* \
-    && /usr/bin/jdk-download.sh alpine
+RUN set -eux; \
+    apk add --no-cache \
+        ca-certificates \
+        gnupg \
+        jq \
+        curl; \
+    /usr/bin/jdk-download.sh alpine
 
 ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
 
