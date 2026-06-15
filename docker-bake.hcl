@@ -4,7 +4,7 @@ variable "jdks_to_build" {
 }
 
 variable "windows_version_to_build" {
-  default = ["ltsc2019", "ltsc2022", "ltsc2025"]
+  default = ["ltsc2022", "ltsc2025"]
 }
 
 variable "default_jdk" {
