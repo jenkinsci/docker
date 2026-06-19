@@ -1,4 +1,4 @@
-ARG ALPINE_TAG=3.23.4
+ARG ALPINE_TAG=3.24.1
 
 FROM alpine:"${ALPINE_TAG}" AS jre-and-war
 
@@ -41,7 +41,7 @@ RUN java_major_version="$(jlink --version 2>&1 | cut -c1-2)"; \
     fi
 
 # Jenkins version being bundled in this docker image
-ARG JENKINS_VERSION=2.565
+ARG JENKINS_VERSION=2.569
 # Can be used to customize where jenkins.war get downloaded from
 ARG WAR_URL=https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war
 
@@ -69,7 +69,7 @@ RUN apk add --no-cache \
     ttf-dejavu \
     tzdata \
     unzip \
-  && git lfs install
+  && git lfs install --skip-repo --system
 
 ENV LANG=C.UTF-8
 
@@ -137,7 +137,7 @@ COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
 COPY jenkins-plugin-cli.sh /bin/jenkins-plugin-cli
 
-ARG JENKINS_VERSION=2.565
+ARG JENKINS_VERSION=2.569
 ENV JENKINS_VERSION=${JENKINS_VERSION}
 
 ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
