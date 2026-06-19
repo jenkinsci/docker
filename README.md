@@ -135,9 +135,7 @@ docker run -p 8080:8080 -p 50000:50000 --restart=on-failure --dns 1.1.1.1 --dns 
 
 ## Custom CA Certificates
 
-If your Jenkins instance needs to trust custom root CA certificates (for corporate proxies, internal services, or self-signed certificates), see the documentation on jenkins.io for detailed instructions on using init containers or building custom images.
-
-Full documentation will be available at: https://www.jenkins.io/doc/book/installing/docker/#custom-ca-certificates
+If your Jenkins instance needs to trust custom root CA certificates (for corporate proxies, internal services, or self-signed certificates), see the documentation on jenkins.io for detailed instructions on using init containers or building custom images at https://www.jenkins.io/doc/book/pipeline/docker/#custom-registry.
 
 ## Passing Jenkins launcher parameters
 
