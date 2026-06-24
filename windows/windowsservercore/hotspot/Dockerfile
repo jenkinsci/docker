@@ -15,7 +15,7 @@ RUN New-Item -ItemType Directory -Path C:\temp | Out-Null ; `
     $javaMajorVersion = $env:JAVA_VERSION.substring(0,2) ; `
     $javaHome = 'C:/openjdk-{0}' -f $javaMajorVersion ; `
     $zipUrl = 'https://api.adoptium.net/v3/binary/version/jdk-{0}/windows/x64/jdk/hotspot/normal/eclipse?project=jdk' -f $env:JAVA_VERSION.Replace('_', '%2B') ; `
-    Invoke-WebRequest $msiUrl -OutFile 'C:\temp\jdk.zip' ; `
+    Invoke-WebRequest $zipUrl -OutFile 'C:\temp\jdk.zip' ; `
     Expand-Archive -Path C:\temp\jdk.zip -DestinationPath $javaHome ; `
     $CurrentPath = (Get-Itemproperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path).Path ; `
     $NewPath = $CurrentPath + $(';{0}/bin' -f $javaHome) ; `
