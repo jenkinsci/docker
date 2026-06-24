@@ -12,14 +12,16 @@ SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPref
 ARG JAVA_VERSION=21.0.11_10
 
 RUN New-Item -ItemType Directory -Path C:\temp | Out-Null
-RUN $javaMajorVersion = $env:JAVA_VERSION.substring(0,2)
-RUN $javaHome = 'C:/openjdk-{0}' -f $javaMajorVersion
-RUN $zipUrl = 'https://api.adoptium.net/v3/binary/version/jdk-{0}/windows/x64/jdk/hotspot/normal/eclipse?project=jdk' -f $env:JAVA_VERSION.Replace('_', '%2B')
-RUN Invoke-WebRequest $zipUrl -OutFile 'C:\temp\jdk.zip'
-RUN Expand-Archive -Path C:\temp\jdk.zip -DestinationPath $javaHome
-RUN $CurrentPath = (Get-Itemproperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path).Path
-RUN $NewPath = $CurrentPath + $(';{0}/bin' -f $javaHome)
-RUN Set-ItemProperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path -Value $NewPath
+RUN $zipUrl = 'https://api.adoptium.net/v3/binary/version/jdk-{0}/windows/x64/jdk/hotspot/normal/eclipse?project=jdk' -f $env:JAVA_VERSION.Replace('_', '%2B') ; `
+    Invoke-WebRequest $zipUrl -OutFile 'C:\temp\jdk.zip'
+RUN $javaMajorVersion = $env:JAVA_VERSION.substring(0,2) ; `
+    $javaHome = 'C:/openjdk-{0}' -f $javaMajorVersion ; `
+    Expand-Archive -Path C:\temp\jdk.zip -DestinationPath $javaHome
+RUN $javaMajorVersion = $env:JAVA_VERSION.substring(0,2) ; `
+    $javaHome = 'C:/openjdk-{0}' -f $javaMajorVersion ; `
+    $CurrentPath = (Get-Itemproperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path).Path ; `
+    $NewPath = $CurrentPath + $(';{0}/bin' -f $javaHome) ; `
+    Set-ItemProperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path -Value $NewPath ; `
 RUN Remove-Item -Path C:\temp -Recurse | Out-Null
 
 RUN Write-Host 'javac --version' ; javac --version ; `
