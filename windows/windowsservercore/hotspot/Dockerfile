@@ -13,10 +13,13 @@ ARG JAVA_VERSION=21.0.11_10
 
 RUN New-Item -ItemType Directory -Path C:\temp | Out-Null ; `
     $javaMajorVersion = $env:JAVA_VERSION.substring(0,2) ; `
-    $msiUrl = 'https://api.adoptium.net/v3/installer/version/jdk-{0}/windows/x64/jdk/hotspot/normal/eclipse?project=jdk' -f $env:JAVA_VERSION.Replace('_', '%2B') ; `
-    Invoke-WebRequest $msiUrl -OutFile 'C:\temp\jdk.msi' ; `
-    $proc = Start-Process -FilePath 'msiexec.exe' -ArgumentList '/i', 'C:\temp\jdk.msi', '/L*V', 'C:\temp\OpenJDK.log', '/quiet', 'ADDLOCAL=FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome',  "INSTALLDIR=C:\openjdk-${javaMajorVersion}" -Wait -Passthru ; `
-    $proc.WaitForExit() ; `
+    $javaHome = 'C:/openjdk-${javaMajorVersion}' -f $javaMajorVersion ; `
+    $zipUrl = 'https://api.adoptium.net/v3/binary/version/jdk-{0}/windows/x64/jdk/hotspot/normal/eclipse?project=jdk' -f $env:JAVA_VERSION.Replace('_', '%2B') ; `
+    Invoke-WebRequest $msiUrl -OutFile 'C:\temp\jdk.zip' ; `
+    Expand-Archive -Path C:\temp\jdk.zip -DestinationPath $javaHome ; `
+    $CurrentPath = (Get-Itemproperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path).Path ; `
+    $NewPath = $CurrentPath + $(';{0}/bin' -f $javaHome) ; `
+    Set-ItemProperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path -Value $NewPath ; `
     Remove-Item -Path C:\temp -Recurse | Out-Null
 
 RUN Write-Host 'javac --version' ; javac --version ; `
