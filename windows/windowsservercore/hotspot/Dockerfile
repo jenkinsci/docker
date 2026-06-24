@@ -13,7 +13,7 @@ ARG JAVA_VERSION=21.0.11_10
 
 RUN New-Item -ItemType Directory -Path C:\temp | Out-Null ; `
     $javaMajorVersion = $env:JAVA_VERSION.substring(0,2) ; `
-    $javaHome = 'C:/openjdk-${javaMajorVersion}' -f $javaMajorVersion ; `
+    $javaHome = 'C:/openjdk-{0}' -f $javaMajorVersion ; `
     $zipUrl = 'https://api.adoptium.net/v3/binary/version/jdk-{0}/windows/x64/jdk/hotspot/normal/eclipse?project=jdk' -f $env:JAVA_VERSION.Replace('_', '%2B') ; `
     Invoke-WebRequest $msiUrl -OutFile 'C:\temp\jdk.zip' ; `
     Expand-Archive -Path C:\temp\jdk.zip -DestinationPath $javaHome ; `
