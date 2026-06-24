@@ -21,7 +21,7 @@ RUN $javaMajorVersion = $env:JAVA_VERSION.substring(0,2) ; `
     $javaHome = 'C:/openjdk-{0}' -f $javaMajorVersion ; `
     $CurrentPath = (Get-Itemproperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path).Path ; `
     $NewPath = $CurrentPath + $(';{0}/bin' -f $javaHome) ; `
-    Set-ItemProperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path -Value $NewPath ; `
+    Set-ItemProperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path -Value $NewPath
 RUN Remove-Item -Path C:\temp -Recurse | Out-Null
 
 RUN Write-Host 'javac --version' ; javac --version ; `
