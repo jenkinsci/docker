@@ -24,6 +24,9 @@ RUN $javaMajorVersion = $env:JAVA_VERSION.substring(0,2) ; `
     Set-ItemProperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path -Value $NewPath
 RUN Remove-Item -Path C:\temp -Recurse | Out-Null
 
+ARG JAVA_HOME="C:/openjdk-21"
+ENV PATH="${JAVA_HOME}/bin;${PATH}"
+
 RUN Write-Host 'javac --version' ; javac --version ; `
     Write-Host 'java --version' ; java --version
 
