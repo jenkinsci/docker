@@ -14,15 +14,15 @@ ARG JAVA_HOME="C:/openjdk-21"
 ENV JAVA_HOME=${JAVA_HOME}
 ENV PATH="${JAVA_HOME}/bin;${PATH}"
 
-RUN New-Item -ItemType Directory -Path C:\temp | Out-Null
+RUN New-Item -ItemType Directory -Path C:/work | Out-Null
 RUN $zipUrl = 'https://api.adoptium.net/v3/binary/version/jdk-{0}/windows/x64/jdk/hotspot/normal/eclipse?project=jdk' -f $env:JAVA_VERSION.Replace('_', '%2B') ; `
-    Invoke-WebRequest $zipUrl -OutFile 'C:\temp\jdk.zip' ; `
-    Expand-Archive -Path C:\temp\jdk.zip -DestinationPath $env:JAVA_HOME ; `
+    Invoke-WebRequest $zipUrl -OutFile C:/work/jdk.zip ; `
+    Expand-Archive -Path C:/work/jdk.zip -DestinationPath $env:JAVA_HOME ; `
     Move-Item -Path $('{0}/jdk-{1}/*' -f $env:JAVA_HOME, $env:JAVA_VERSION.Replace('_', '+')) -Destination $env:JAVA_HOME ; `
     $CurrentPath = (Get-Itemproperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path).Path ; `
     $NewPath = $CurrentPath + $(';{0}/bin' -f $env:JAVA_HOME) ; `
     Set-ItemProperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path -Value $NewPath ; `
-    Remove-Item -Path C:\temp -Recurse | Out-Null
+    Remove-Item -Path C:/work -Recurse | Out-Null
 
 RUN Write-Host 'javac --version' ; javac --version ; `
     Write-Host 'java --version' ; java --version
