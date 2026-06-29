@@ -16,12 +16,12 @@ def envVars = ['PUBLISH=true']
 
 // List of architectures and corresponding ci.jenkins.io agent labels
 def architecturesAndCiJioAgentLabels = [
-    'amd64': 'docker && amd64',
-    'arm64': 'arm64docker',
-    // Using qemu
-    'ppc64le': 'docker && amd64',
-    'riscv64': 'docker && amd64',
-    's390x': 'docker && amd64',
+    // 'amd64': 'docker && amd64',
+    // 'arm64': 'arm64docker',
+    // // Using qemu
+    // 'ppc64le': 'docker && amd64',
+    // 'riscv64': 'docker && amd64',
+    // 's390x': 'docker && amd64',
 ]
 
 // Set to true in a replay to simulate a LTS build on ci.jenkins.io
@@ -120,14 +120,14 @@ stage('Build') {
         if (!infra.isTrusted()) {
             // An up to date list can be obtained with make list-linux
             def images = [
-                'alpine_jdk21',
-                'alpine_jdk25',
-                'debian_jdk21',
-                'debian_jdk25',
-                'debian-slim_jdk21',
-                'debian-slim_jdk25',
-                'rhel_jdk21',
-                'rhel_jdk25',
+                // 'alpine_jdk21',
+                // 'alpine_jdk25',
+                // 'debian_jdk21',
+                // 'debian_jdk25',
+                // 'debian-slim_jdk21',
+                // 'debian-slim_jdk25',
+                // 'rhel_jdk21',
+                // 'rhel_jdk25',
             ]
             for (i in images) {
                 def imageToBuild = i
