@@ -94,7 +94,7 @@ function Test-Image {
 
     $TestResults = Invoke-Pester -Configuration $configuration
     $failed = $false
-    if ($TestResults.FailedCount -gt 0) {
+    if (($TestResults.FailedCount + $TestResults.FailedBlocksCount + $TestResults.FailedContainersCount) -gt 0) {
         Write-Host "There were $($TestResults.FailedCount) failed tests in $tag"
         $failed = $true
     } else {
