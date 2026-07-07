@@ -4,7 +4,7 @@ variable "jdks_to_build" {
 }
 
 variable "windows_version_to_build" {
-  default = ["ltsc2019", "ltsc2022", "ltsc2025"]
+  default = ["ltsc2022", "ltsc2025"]
 }
 
 variable "default_jdk" {
@@ -44,7 +44,7 @@ variable "COMMIT_SHA" {
 }
 
 variable "ALPINE_FULL_TAG" {
-  default = "3.24.0"
+  default = "3.24.1"
 }
 
 variable "ALPINE_SHORT_TAG" {
@@ -64,11 +64,11 @@ variable "DEBIAN_RELEASE_LINE" {
 }
 
 variable "DEBIAN_VERSION" {
-  default = 20260518
+  default = 20260623
 }
 
 variable "RHEL_TAG" {
-  default = "9.8-1780900431"
+  default = "9.8-1782841664"
 }
 
 variable "RHEL_RELEASE_LINE" {
