@@ -11,7 +11,7 @@ H 6,21 * * 3''')])
 
 properties(listOfProperties)
 
-// Default environment variable set to allow images publication
+// Default environment variable set to allow images publication from trusted.ci.jenkins.io
 def envVars = ['PUBLISH=true']
 
 // List of architectures and corresponding ci.jenkins.io agent labels
@@ -79,18 +79,6 @@ stage('Build') {
                                     error('Windows test stage failed.')
                                 }
                             }
-
-                        // disable until we get the parallel changes merged in
-                        // def branchName = "${env.BRANCH_NAME}"
-                        // if (branchName ==~ 'master'){
-                        //    stage('Publish Experimental') {
-                        //        infra.withDockerCredentials {
-                        //            withEnv(['DOCKERHUB_ORGANISATION=jenkins4eval','DOCKERHUB_REPO=jenkins']) {
-                        //                powershell './make.ps1 publish'
-                        //            }
-                        //        }
-                        //    }
-                        // }
                         } else {
                             // Only publish when a tag triggered the build & the publication is enabled (ie not simulating a LTS)
                             if (env.TAG_NAME && (env.PUBLISH == 'true')) {
