@@ -1,5 +1,5 @@
 ## Variables
-variable "jdks_to_build" {
+variable "jdks" {
   default = [21, 25]
 }
 
@@ -80,6 +80,11 @@ variable "WINDOWS_VERSION_OVERRIDE" {
   default = ""
 }
 
+# Set this value to a specific JDK to override JDKs to build returned by jdks_to_build function
+variable "JDK_OVERRIDE" {
+  default = ""
+}
+
 ## Internal variables
 variable "jdk_versions" {
   default = {
@@ -99,7 +104,7 @@ variable "current_rhel" {
 ## Targets
 target "alpine" {
   matrix = {
-    jdk = jdks_to_build
+    jdk = jdks_to_build()
   }
   name       = "alpine_jdk${jdk}"
   dockerfile = "alpine/hotspot/Dockerfile"
@@ -118,7 +123,7 @@ target "alpine" {
 
 target "debian" {
   matrix = {
-    jdk     = jdks_to_build
+    jdk     = jdks_to_build()
     variant = debian_variants
   }
   name       = "${variant}_jdk${jdk}"
@@ -140,7 +145,7 @@ target "debian" {
 
 target "rhel" {
   matrix = {
-    jdk = jdks_to_build
+    jdk = jdks_to_build()
   }
   name       = "rhel_jdk${jdk}"
   dockerfile = "rhel/Dockerfile"
@@ -160,7 +165,7 @@ target "rhel" {
 
 target "windowsservercore" {
   matrix = {
-    jdk             = jdks_to_build
+    jdk             = jdks_to_build()
     windows_version = windowsversions()
   }
   name       = "windowsservercore-${windows_version}_jdk${jdk}"
@@ -394,4 +399,12 @@ function "debian_tags" {
 function "windowsversions" {
   params = []
   result = notequal(WINDOWS_VERSION_OVERRIDE, "") ? [WINDOWS_VERSION_OVERRIDE] : windows_version_to_build
+}
+
+# Return array of JDKs to build
+# Can be overridden by setting JDK_OVERRIDE to a specific JDK
+# Ex: JDK_OVERRIDE=jdk25 docker buildx bake windows
+function "jdks_to_build" {
+  params = []
+  result = notequal(JDK_OVERRIDE, "") ? [JDK_OVERRIDE] : jdks
 }
