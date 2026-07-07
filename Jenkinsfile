@@ -32,7 +32,7 @@ def windowsImageTypes = [
 // List of Linux targets to build on ci.jenkins.io
 // An up to date list can be obtained with make list-linux
 // Note: on trusted.ci.jenkins.io, the 'linux' target is used instead
-def images = [
+def linuxTargets = [
     'alpine_jdk21',
     'alpine_jdk25',
     'debian_jdk21',
@@ -132,10 +132,10 @@ stage('Build') {
         }
 
         if (!infra.isTrusted()) {
-            for (i in images) {
-                def imageToBuild = t
+            for (t in linuxTargets) {
+                def targetToBuild = t
 
-                builds[imageToBuild] = {
+                builds[targetToBuild] = {
                     nodeWithTimeout(architecturesAndCiJioAgentLabels["amd64"]) {
                         deleteDir()
 
@@ -150,15 +150,15 @@ stage('Build') {
                         /* Outside of the trusted.ci environment, we're building and testing
                         * the Dockerfile in this repository, but not publishing to docker hub
                         */
-                        stage("Build linux-${imageToBuild}") {
-                            sh "make build-${imageToBuild}"
+                        stage("Build linux-${targetToBuild}") {
+                            sh "make build-${targetToBuild}"
                             archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
                         }
 
-                        stage("Test linux-${imageToBuild}") {
+                        stage("Test linux-${targetToBuild}") {
                             sh 'make prepare-test'
                             try {
-                                sh "make test-${imageToBuild}"
+                                sh "make test-${targetToBuild}"
                             } catch (err) {
                                 error("${err.toString()}")
                             } finally {
