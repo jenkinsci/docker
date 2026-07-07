@@ -67,21 +67,27 @@ stage('Build') {
                             * the Dockerfile in this repository, but not publishing to docker hub
                             */
                             stage("Build ${imageType}") {
+                                // JDK21 only
                                 powershell '''
-                                $env:JDK_OVERRIDE=21
-                                ./make.ps1 build -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
-                                $env:JDK_OVERRIDE=25
+                                (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
                                 ./make.ps1 build -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
                                 '''
+
+                                // JDK25 only
+                                powershell '''
+                                (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
+                                ./make.ps1 build -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
+                                '''
+
                                 archiveArtifacts artifacts: 'build-windows_*.yaml', allowEmptyArchive: true
                             }
 
                             stage("Test ${imageType}") {
                                 def windowsTestStatus = powershell(
                                     script: '''
-                                        $env:JDK_OVERRIDE=21
+                                        (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
                                         ./make.ps1 test -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
-                                        $env:JDK_OVERRIDE=25
+                                        (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
                                         ./make.ps1 test -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
                                     ''',
                                     returnStatus: true
@@ -117,18 +123,19 @@ stage('Build') {
                                     stage('Publish') {
                                         infra.withDockerCredentials {
                                             withEnv(['DOCKERHUB_ORGANISATION=jenkins', 'DOCKERHUB_REPO=jenkins']) {
+                                                // JDK21 only
                                                 powershell '''
-                                                $env:JDK_OVERRIDE=21
-                                                ./make.ps1 build -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
-                                                $env:JDK_OVERRIDE=25
-                                                ./make.ps1 build -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
+                                                (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
                                                 '''
+                                                powershell './make.ps1 build -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile'
+                                                powershell './make.ps1 publish -ImageType ${env:IMAGE_TYPE}'
+
+                                                // JDK25 only
                                                 powershell '''
-                                                $env:JDK_OVERRIDE=21
-                                                ./make.ps1 publish -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
-                                                $env:JDK_OVERRIDE=25
-                                                ./make.ps1 publish -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
+                                                (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
                                                 '''
+                                                powershell './make.ps1 build -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile'
+                                                powershell './make.ps1 publish -ImageType ${env:IMAGE_TYPE}'
                                             }
                                         }
                                     }
