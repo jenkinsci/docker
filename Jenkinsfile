@@ -24,23 +24,6 @@ def architecturesAndCiJioAgentLabels = [
     's390x': 'docker && amd64',
 ]
 
-// Set to true in a replay to simulate a LTS build on ci.jenkins.io
-// It will set the environment variables needed for a LTS
-// and disable images publication out of caution
-def SIMULATE_LTS_BUILD = false
-
-if (SIMULATE_LTS_BUILD) {
-    envVars = [
-        'PUBLISH=false',
-        'TAG_NAME=2.504.3',
-        // TODO: replace by the first LTS based on 2.534+ when available
-        'JENKINS_VERSION=2.555.1',
-        // Filter out golden file based testing
-        // To filter out all tests, set BATS_FLAGS="--filter-tags none"
-        'BATS_FLAGS=--filter-tags "\\!test-type:golden-file"'
-    ]
-}
-
 stage('Build') {
     def builds = [:]
 
