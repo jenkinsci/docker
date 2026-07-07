@@ -28,8 +28,6 @@ stage('Build') {
     def builds = [:]
 
     withEnv(envVars) {
-        echo '= bake target: linux'
-
         def windowsImageTypes = [
             'windowsservercore-ltsc2022',
             'windowsservercore-ltsc2025',
