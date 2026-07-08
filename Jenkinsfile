@@ -11,10 +11,11 @@ H 6,21 * * 3''')])
 
 properties(listOfProperties)
 
-// Default environment variable set to allow images publication
+// Default environment variable set to allow images publication from trusted.ci.jenkins.io
 def envVars = ['PUBLISH=true']
 
-// List of architectures and corresponding ci.jenkins.io agent labels
+// List of dedicated architecture Linux builds and corresponding ci.jenkins.io agent labels
+// Note: not taken in account on trusted.ci.jenkins.io as Linux builds are multiarch there
 def architecturesAndCiJioAgentLabels = [
     'amd64': 'docker && amd64',
     'arm64': 'arm64docker',
@@ -23,34 +24,29 @@ def architecturesAndCiJioAgentLabels = [
     'riscv64': 'docker && amd64',
     's390x': 'docker && amd64',
 ]
-
-// Set to true in a replay to simulate a LTS build on ci.jenkins.io
-// It will set the environment variables needed for a LTS
-// and disable images publication out of caution
-def SIMULATE_LTS_BUILD = false
-
-if (SIMULATE_LTS_BUILD) {
-    envVars = [
-        'PUBLISH=false',
-        'TAG_NAME=2.504.3',
-        // TODO: replace by the first LTS based on 2.534+ when available
-        'JENKINS_VERSION=2.555.1',
-        // Filter out golden file based testing
-        // To filter out all tests, set BATS_FLAGS="--filter-tags none"
-        'BATS_FLAGS=--filter-tags "\\!test-type:golden-file"'
-    ]
-}
+// List of Windows image types to build on ci.jenkins.io and trusted.ci.jenkins.io
+def windowsImageTypes = [
+    'windowsservercore-ltsc2022',
+    'windowsservercore-ltsc2025',
+]
+// List of Linux targets to build on ci.jenkins.io
+// An up to date list can be obtained with make list-linux
+// Note: on trusted.ci.jenkins.io, the 'linux' target is used instead
+def linuxTargets = [
+    'alpine_jdk21',
+    'alpine_jdk25',
+    'debian_jdk21',
+    'debian_jdk25',
+    'debian-slim_jdk21',
+    'debian-slim_jdk25',
+    'rhel_jdk21',
+    'rhel_jdk25',
+]
 
 stage('Build') {
     def builds = [:]
 
     withEnv(envVars) {
-        echo '= bake target: linux'
-
-        def windowsImageTypes = [
-            'windowsservercore-ltsc2022',
-            'windowsservercore-ltsc2025',
-        ]
         for (anImageType in windowsImageTypes) {
             def imageType = anImageType
             builds[imageType] = {
@@ -98,18 +94,6 @@ stage('Build') {
                                     error('Windows test stage failed.')
                                 }
                             }
-
-                        // disable until we get the parallel changes merged in
-                        // def branchName = "${env.BRANCH_NAME}"
-                        // if (branchName ==~ 'master'){
-                        //    stage('Publish Experimental') {
-                        //        infra.withDockerCredentials {
-                        //            withEnv(['DOCKERHUB_ORGANISATION=jenkins4eval','DOCKERHUB_REPO=jenkins']) {
-                        //                powershell './make.ps1 publish'
-                        //            }
-                        //        }
-                        //    }
-                        // }
                         } else {
                             // Only publish when a tag triggered the build & the publication is enabled (ie not simulating a LTS)
                             if (env.TAG_NAME && (env.PUBLISH == 'true')) {
@@ -148,21 +132,10 @@ stage('Build') {
         }
 
         if (!infra.isTrusted()) {
-            // An up to date list can be obtained with make list-linux
-            def images = [
-                'alpine_jdk21',
-                'alpine_jdk25',
-                'debian_jdk21',
-                'debian_jdk25',
-                'debian-slim_jdk21',
-                'debian-slim_jdk25',
-                'rhel_jdk21',
-                'rhel_jdk25',
-            ]
-            for (i in images) {
-                def imageToBuild = i
+            for (t in linuxTargets) {
+                def targetToBuild = t
 
-                builds[imageToBuild] = {
+                builds[targetToBuild] = {
                     nodeWithTimeout(architecturesAndCiJioAgentLabels["amd64"]) {
                         deleteDir()
 
@@ -177,15 +150,15 @@ stage('Build') {
                         /* Outside of the trusted.ci environment, we're building and testing
                         * the Dockerfile in this repository, but not publishing to docker hub
                         */
-                        stage("Build linux-${imageToBuild}") {
-                            sh "make build-${imageToBuild}"
+                        stage("Build linux-${targetToBuild}") {
+                            sh "make build-${targetToBuild}"
                             archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
                         }
 
-                        stage("Test linux-${imageToBuild}") {
+                        stage("Test linux-${targetToBuild}") {
                             sh 'make prepare-test'
                             try {
-                                sh "make test-${imageToBuild}"
+                                sh "make test-${targetToBuild}"
                             } catch (err) {
                                 error("${err.toString()}")
                             } finally {
