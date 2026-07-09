@@ -17,12 +17,12 @@ def envVars = ['PUBLISH=true']
 // List of dedicated architecture Linux builds and corresponding ci.jenkins.io agent labels
 // Note: not taken in account on trusted.ci.jenkins.io as Linux builds are multiarch there
 def architecturesAndCiJioAgentLabels = [
-    'amd64': 'docker && amd64',
+    'amd64': 'docker-highmem',
     'arm64': 'arm64docker',
     // Using qemu
-    'ppc64le': 'docker && amd64',
-    'riscv64': 'docker && amd64',
-    's390x': 'docker && amd64',
+    'ppc64le': 'docker-highmem',
+    'riscv64': 'docker-highmem',
+    's390x': 'docker-highmem',
 ]
 // List of Windows image types to build on ci.jenkins.io and trusted.ci.jenkins.io
 def windowsImageTypes = [
@@ -221,9 +221,24 @@ stage('Build') {
 }
 
 void nodeWithTimeout(String label, def body) {
-    node(label) {
-        timeout(time: 60, unit: 'MINUTES') {
-            body.call()
+    int retryCounter = 0
+    retry(count: 2, conditions: [agent(), nonresumable()]) {
+        String resolvedAgentLabel = label
+        
+        // Only use getBuildAgentLabel for supported platforms to avoid upstream warnings
+        if (label == 'docker-highmem' || label.startsWith('windows-')) {
+            resolvedAgentLabel = infra.getBuildAgentLabel([
+                useContainerAgent: false,
+                platform: label,
+                spotRetryCounter: retryCounter
+            ])
+        }
+        
+        retryCounter++
+        node(resolvedAgentLabel) {
+            timeout(time: 60, unit: 'MINUTES') {
+                body.call()
+            }
         }
     }
 }
