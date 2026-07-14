@@ -66,7 +66,6 @@ function Retry-Command {
 }
 
 function Get-SutImage {
-    # TODO: don't hardcode Windows flavor
     $DOCKERFILE = 'windows/windowsservercore/hotspot/Dockerfile'
     $IMAGETAG = Get-EnvOrDefault 'CONTROLLER_TAG' ''
 
