@@ -14,25 +14,24 @@ properties(listOfProperties)
 // Default environment variable set to allow images publication from trusted.ci.jenkins.io
 def envVars = ['PUBLISH=true']
 
-// List of dedicated architecture Linux builds and corresponding ci.jenkins.io agent labels
+// List of dedicated architecture Linux builds
 // Note: not taken in account on trusted.ci.jenkins.io as Linux builds are multiarch there
-def architecturesAndCiJioAgentLabels = [
-    'amd64': 'docker && amd64',
-    'arm64': 'arm64docker',
+def architecturesOnCiJioAgentLabels = [
+    'amd64',
+    'arm64',
     // Using qemu
-    'ppc64le': 'docker && amd64',
-    'riscv64': 'docker && amd64',
-    's390x': 'docker && amd64',
+    'ppc64le',
+    'riscv64',
+    's390x',
 ]
-// List of Windows image types to build on ci.jenkins.io and trusted.ci.jenkins.io
+// List of Windows image types to build on both ci.jenkins.io and trusted.ci.jenkins.io
 def windowsImageTypes = [
     'windowsservercore-ltsc2022',
     'windowsservercore-ltsc2025',
 ]
 // List of Linux targets to build on ci.jenkins.io
 // An up to date list can be obtained with make list-linux
-// Note: on trusted.ci.jenkins.io, the 'linux' target is used instead
-def linuxTargets = [
+def linuxTargetsOnCiJenkinsIo = [
     'alpine_jdk21',
     'alpine_jdk25',
     'debian_jdk21',
@@ -43,6 +42,11 @@ def linuxTargets = [
     'rhel_jdk25',
 ]
 
+// List of Linux targets to build on trusted.ci.jenkins.io
+def linuxTargetsOnTrustedCiJenkinsIo = [
+    'linux',
+]
+
 stage('Build') {
     def builds = [:]
 
@@ -50,9 +54,7 @@ stage('Build') {
         for (anImageType in windowsImageTypes) {
             def imageType = anImageType
             builds[imageType] = {
-                def windowsVersionNumber = imageType.split('-')[1].replace('ltsc', '')
-                def windowsLabel = "windows-${windowsVersionNumber}"
-                nodeWithTimeout(windowsLabel) {
+                nodeWithRetry(image: imageType) {
                     stage('Checkout') {
                         checkout scm
                     }
@@ -132,11 +134,11 @@ stage('Build') {
         }
 
         if (!infra.isTrusted()) {
-            for (t in linuxTargets) {
+            for (t in linuxTargetsOnCiJenkinsIo) {
                 def targetToBuild = t
 
                 builds[targetToBuild] = {
-                    nodeWithTimeout(architecturesAndCiJioAgentLabels["amd64"]) {
+                    nodeWithRetry(image: targetToBuild) {
                         deleteDir()
 
                         stage('Checkout') {
@@ -169,9 +171,9 @@ stage('Build') {
                 }
             }
             // Building every other architectures than amd64 on agents with the corresponding labels if available
-            architecturesAndCiJioAgentLabels.findAll { arch, _ -> arch != 'amd64' }.each { architecture, labels ->
+            architecturesOnCiJioAgentLabels.findAll { architecture -> architecture != 'amd64' }.each { architecture ->
                 builds[architecture] = {
-                    nodeWithTimeout(labels) {
+                    nodeWithRetry(image: targetToBuild) {
                         stage('Checkout') {
                             deleteDir()
                             checkout scm
@@ -189,24 +191,28 @@ stage('Build') {
             if (env.TAG_NAME) {
                 // Split to ensure any suffix is not taken in account (but allow suffix tags to trigger rebuilds)
                 String jenkins_version = env.TAG_NAME.split('-')[0]
-                builds['linux'] = {
-                    // Setting WAR_URL to download war from Artifactory instead of mirrors on publication from trusted.ci.jenkins.io
-                    withEnv([
-                        "JENKINS_VERSION=${jenkins_version}",
-                        "WAR_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${jenkins_version}/jenkins-war-${jenkins_version}.war"
-                    ]) {
-                        nodeWithTimeout('docker') {
-                            stage('Checkout') {
-                                checkout scm
-                            }
+                for (t in linuxTargetsOnTrustedCiJenkinsIo) {
+                    def targetToBuild = t
 
-                            stage('Publish') {
-                                // Publication is enabled by default, disabled when simulating a LTS
-                                if (env.PUBLISH == 'true') {
-                                    infra.withDockerCredentials {
-                                        sh 'make docker-init'
-                                        sh 'make publish'
-                                        archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
+                    builds[targetToBuild] = {
+                        // Setting WAR_URL to download war from Artifactory instead of mirrors on publication from trusted.ci.jenkins.io
+                        withEnv([
+                            "JENKINS_VERSION=${jenkins_version}",
+                            "WAR_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${jenkins_version}/jenkins-war-${jenkins_version}.war"
+                        ]) {
+                            nodeWithRetry(image: targetToBuild) {
+                                stage('Checkout') {
+                                    checkout scm
+                                }
+
+                                stage('Publish') {
+                                    // Publication is enabled by default, disabled when simulating a LTS
+                                    if (env.PUBLISH == 'true') {
+                                        infra.withDockerCredentials {
+                                            sh 'make docker-init'
+                                            sh 'make publish'
+                                            archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
+                                        }
                                     }
                                 }
                             }
@@ -220,10 +226,49 @@ stage('Build') {
     }
 }
 
-void nodeWithTimeout(String label, def body) {
-    node(label) {
-        timeout(time: 60, unit: 'MINUTES') {
-            body.call()
+void nodeWithRetry(params = [:]) {
+    def image
+    def platform
+    if (params.containsKey('image')) {
+        image = params['image']
+    }
+    switch (image) {
+        case ~/.*2022/:
+            platform = 'windows-2022'
+            break
+
+        case ~/.*2025/:
+            platform = 'windows-2025'
+            break
+
+        case 'arm64':
+            platform = 'arm64docker'
+            break
+
+        default:
+            // Building everything else than windows or arm64 images from an amd64 agent
+            platform = 'docker && amd64'
+            break
+    }
+
+    int retryCounter = 0
+    int maxRetries = 2
+    if (params.containsKey('maxRetries')) {
+        maxRetries = params['maxRetries']
+    }
+
+    retry(count: maxRetries, conditions: [agent(), nonresumable()]) {
+        // Use local variable to manage concurrency and increment BEFORE spinning up any agent
+        final String label = infra.getBuildAgentLabel([
+            useContainerAgent: false,
+            platform: platform,
+            spotRetryCounter: retryCounter
+        ])
+        retryCounter++
+        node(label) {
+            timeout(time: 60, unit: 'MINUTES') {
+                body.call()
+            }
         }
     }
 }
