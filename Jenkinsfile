@@ -221,9 +221,21 @@ stage('Build') {
 }
 
 void nodeWithTimeout(String label, def body) {
-    node(label) {
-        timeout(time: 60, unit: 'MINUTES') {
-            body.call()
+    int retryCounter = 0
+    retry(count: 2, conditions: [agent(), nonresumable()]) {
+        String resolvedAgentLabel = label
+        
+        resolvedAgentLabel = infra.getBuildAgentLabel([
+            useContainerAgent: false,
+            platform: label,
+            spotRetryCounter: retryCounter
+        ])
+        
+        retryCounter++
+        node(resolvedAgentLabel) {
+            timeout(time: 60, unit: 'MINUTES') {
+                body.call()
+            }
         }
     }
 }
