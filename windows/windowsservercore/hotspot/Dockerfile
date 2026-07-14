@@ -68,8 +68,8 @@ RUN New-Item -ItemType Directory -Path C:/war | Out-Null ; `
 COPY jenkins.io-2026.key /war/jenkins-key.pub
 
 RUN & 'C:/Program Files/GnuPG/bin/gpg.exe' --version ; `
-    & 'C:/Program Files/GnuPG/bin/gpg.exe' --import C:/war/jenkins-key.pub ; `
-    & 'C:/Program Files/GnuPG/bin/gpg.exe' --verify --trust-model direct C:/war/jenkins.war.asc C:/war/jenkins.war
+    & 'C:/Program Files/GnuPG/bin/gpg.exe' --dearmor --output C:/war/jenkins-key.pgp C:/war/jenkins-key.pub ; `
+    & 'C:/Program Files/GnuPG/bin/gpgv.exe' --keyring C:/war/jenkins-key.pgp C:/war/jenkins.war.asc C:/war/jenkins.war
 
 FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS controller
 
