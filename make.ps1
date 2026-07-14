@@ -264,7 +264,7 @@ if ($target -eq 'test') {
         $mod = Get-InstalledModule -Name Pester -MinimumVersion $PesterVersion -MaximumVersion $PesterVersion -ErrorAction SilentlyContinue
         if ($null -eq $mod) {
             Write-Host "= TEST: Pester $PesterVersion not found: installing..."
-            Install-Module -Force -Name Pester -MaximumVersion $PesterVersion -Scope CurrentUser -AllowPrerelease
+            Install-Module -Force -Name Pester -RequiredVersion $PesterVersion -AllowPrerelease -Scope CurrentUser
         }
 
         Import-Module Pester
