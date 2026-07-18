@@ -49,6 +49,18 @@ SUT_DESCRIPTION="${IMAGE}-functions"
   # role-strategy-plugin, reverse-direction
   run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 587.588.v850a_20a_30162 587.v2872c41fa_e51"
   assert_failure
+  ## https://github.com/jenkinsci/docker/issues/2361
+  ## Semver-prefix + Jenkins CD release suffix cases: compare the numeric upstream prefix before the suffix.
+  # apache-httpcomponents-client-5-api-plugin
+  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 5.6.1-195.v65ffe15189a_d 5.6-191.vb_47e2b_41c698"
+  assert_failure
+  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 5.6-191.vb_47e2b_41c698 5.6.1-195.v65ffe15189a_d"
+  assert_success
+  # asm-api-plugin
+  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 9.10.1-216.va_9256d3b_844b_ 9.10-211.v7d13903b_a_d89"
+  assert_failure
+  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 9.10-211.v7d13903b_a_d89 9.10.1-216.va_9256d3b_844b_"
+  assert_success
 }
 
 @test "[${SUT_DESCRIPTION}] permissions are propagated from override file" {
