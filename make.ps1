@@ -62,7 +62,7 @@ Function Test-CommandExists {
         }
     }
     Catch {
-        "$command does not exist"
+        Write-Error "$command does not exist"
     }
     Finally {
         $ErrorActionPreference = $oldPreference
@@ -85,27 +85,29 @@ function Test-Image {
     $env:DOCKERHUB_ORG_REPO = $orgRepo
     $env:CONTROLLER_TAG = $tag
 
-    $targetPath = '.\target\{0}' -f $tag
-    if (Test-Path $targetPath) {
-        Remove-Item -Recurse -Force $targetPath
-    }
-    New-Item -Path $targetPath -Type Directory | Out-Null
-    $configuration.TestResult.OutputPath = '{0}\junit-results.xml' -f $targetPath
+    try {
+        $targetPath = '.\target\{0}' -f $tag
+        if (Test-Path $targetPath) {
+            Remove-Item -Recurse -Force $targetPath
+        }
+        New-Item -Path $targetPath -Type Directory | Out-Null
+        $configuration.TestResult.OutputPath = '{0}\junit-results.xml' -f $targetPath
 
-    $TestResults = Invoke-Pester -Configuration $configuration
-    $failed = $false
-    if (($TestResults.FailedCount + $TestResults.FailedBlocksCount + $TestResults.FailedContainersCount) -gt 0) {
-        Write-Host "Failure(s) in ${tag}:"
-        Write-Host "- $TestResults.FailedCount failed test(s)"
-        Write-Host "- $TestResults.FailedBlocksCount failed BeforeAll/AfterAll block(s)"
-        Write-Host "- $TestResults.FailedContainersCount file(s) that errored during discovery or failed to load"
-        $failed = $true
-    } else {
-        Write-Host "There were $($TestResults.PassedCount) passed tests out of $($TestResults.TotalCount) in $tag"
+        $TestResults = Invoke-Pester -Configuration $configuration
+        $failed = $false
+        if (($TestResults.FailedCount + $TestResults.FailedBlocksCount + $TestResults.FailedContainersCount) -gt 0) {
+            Write-Host "Failure(s) in ${tag}:"
+            Write-Host "- $TestResults.FailedCount failed test(s)"
+            Write-Host "- $TestResults.FailedBlocksCount failed BeforeAll/AfterAll block(s)"
+            Write-Host "- $TestResults.FailedContainersCount file(s) that errored during discovery or failed to load"
+            $failed = $true
+        } else {
+            Write-Host "There were $($TestResults.PassedCount) passed tests out of $($TestResults.TotalCount) in $tag"
+        }
+    } finally {
+        Remove-Item env:\DOCKERHUB_ORG_REPO -ErrorAction SilentlyContinue
+        Remove-Item env:\CONTROLLER_TAG -ErrorAction SilentlyContinue
     }
-
-    Remove-Item env:\DOCKERHUB_ORG_REPO
-    Remove-Item env:\CONTROLLER_TAG
 
     return $failed
 }
@@ -169,6 +171,7 @@ function Initialize-DockerComposeFile {
     $windowsVersion = $items[1]
 
     # Override the list of Windows versions taken defined in docker-bake.hcl by the version from image type
+    if (Test-Path env:\WINDOWS_VERSION_OVERRIDE) { $oldOverride = $env:WINDOWS_VERSION_OVERRIDE } else { $oldOverride = $null }
     $env:WINDOWS_VERSION_OVERRIDE = $windowsVersion
 
     # Retrieve the targets from docker buildx bake --print output
@@ -185,16 +188,22 @@ function Initialize-DockerComposeFile {
         $yqServicesQuery = $yqServicesQuery -replace '"', '\"'
     }
 
-    # - Use docker buildx bake to output image definitions from the "<windowsFlavor>" bake target
-    # - Convert with yq to the format expected by docker compose
-    # - Store the result in the docker compose file
-    docker buildx bake --progress=quiet --file=docker-bake.hcl $windowsFlavor --print |
-        yq --prettyPrint $yqMainQuery |
-        yq $yqServicesQuery |
-        Out-File -FilePath $DockerComposeFile
-
-    # Remove override
-    Remove-Item env:\WINDOWS_VERSION_OVERRIDE
+    try {
+        # - Use docker buildx bake to output image definitions from the "<windowsFlavor>" bake target
+        # - Convert with yq to the format expected by docker compose
+        # - Store the result in the docker compose file
+        docker buildx bake --progress=quiet --file=docker-bake.hcl $windowsFlavor --print |
+            yq --prettyPrint $yqMainQuery |
+            yq $yqServicesQuery |
+            Out-File -FilePath $DockerComposeFile
+    } finally {
+        # Restore or remove override
+        if ($null -ne $oldOverride) {
+            $env:WINDOWS_VERSION_OVERRIDE = $oldOverride
+        } else {
+            Remove-Item env:\WINDOWS_VERSION_OVERRIDE -ErrorAction SilentlyContinue
+        }
+    }
 }
 
 Test-CommandExists 'docker'
@@ -214,8 +223,10 @@ $isJenkinsVersionLatest = Test-IsLatestJenkinsRelease -Version $JenkinsVersion
 if ($JenkinsVersion.Split('.').Count -eq 3) {
     $releaseLine = 'war-stable'
     $env:LATEST_LTS = If ($isJenkinsVersionLatest) { "true" } Else { "false" }
+    Remove-Item env:\LATEST_WEEKLY -ErrorAction SilentlyContinue
 } else {
     $env:LATEST_WEEKLY = If ($isJenkinsVersionLatest) { "true" } Else { "false" }
+    Remove-Item env:\LATEST_LTS -ErrorAction SilentlyContinue
 }
 
 # If there is no WAR_URL set, using get.jenkins.io URL depending on the release line
