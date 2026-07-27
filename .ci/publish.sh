@@ -107,7 +107,7 @@ $(printf '  %s\n' "${build_opts[@]}")
 EOF
 
 echo '* RESOLVED BAKE CONFIG:'
-docker buildx bake --file docker-bake.hcl --progress=quiet --print "${BAKE_TARGET}"
+docker buildx bake --file docker-bake.hcl --file docker-bake.override.json --file docker-bake.override.json --progress=quiet --print "${BAKE_TARGET}"
 
 if [[ "${CI:-false}" == "false" ]]; then
   read -rp "Confirm? [y/N] " answer

@@ -171,7 +171,7 @@ target "windowsservercore" {
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    JAVA_VERSION       = javaversion(jdk)
+    JAVA_ZIP_URL       = lookup(jdk_installer_urls["windows"]["amd64"], jdk, "Installer URL not found")
     JAVA_HOME          = "C:/openjdk-${jdk}"
     WINDOWS_VERSION    = windows_version
   }
