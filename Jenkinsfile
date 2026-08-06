@@ -50,9 +50,7 @@ stage('Build') {
         for (anImageType in windowsImageTypes) {
             def imageType = anImageType
             builds[imageType] = {
-                def windowsVersionNumber = imageType.split('-')[1].replace('ltsc', '')
-                def windowsLabel = "windows-${windowsVersionNumber}"
-                nodeWithTimeout(windowsLabel) {
+                nodeWithTimeout('windows-2025') {
                     stage('Checkout') {
                         checkout scm
                     }
