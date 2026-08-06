@@ -88,6 +88,7 @@ fi
 # Save build result metadata
 mkdir -p target
 BUILD_METADATA_PATH="target/build-result-metadata_${BAKE_TARGET}_${metadata_suffix}.json"
+bake_common_opts=("--file=docker-bake.hcl" "--file=docker-bake.override.json")
 build_opts+=("--metadata-file=${BUILD_METADATA_PATH}")
 
 COMMIT_SHA=$(git rev-parse HEAD)
@@ -103,11 +104,11 @@ Using the following settings:
 * BUILD_METADATA_PATH: ${BUILD_METADATA_PATH}
 * BAKE_TARGET: ${BAKE_TARGET}
 * BAKE OPTIONS:
-$(printf '  %s\n' "${build_opts[@]}")
+$(printf '  %s\n' "${build_opts[@]}" "${bake_common_opts[@]}")
 EOF
 
 echo '* RESOLVED BAKE CONFIG:'
-docker buildx bake --file docker-bake.hcl --progress=quiet --print "${BAKE_TARGET}"
+docker buildx bake "${bake_common_opts[@]}" --progress=quiet --print "${BAKE_TARGET}"
 
 if [[ "${CI:-false}" == "false" ]]; then
   read -rp "Confirm? [y/N] " answer
@@ -117,4 +118,4 @@ if [[ "${CI:-false}" == "false" ]]; then
   fi
 fi
 
-docker buildx bake --file docker-bake.hcl "${build_opts[@]}" "${BAKE_TARGET}"
+docker buildx bake "${bake_common_opts[@]}" "${build_opts[@]}" "${BAKE_TARGET}"

@@ -1,7 +1,6 @@
 # escape=`
 # hadolint shell=powershell
 
-ARG JAVA_VERSION=21.0.11_10
 ARG WINDOWS_VERSION=ltsc2022
 
 FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS jre-and-war
@@ -9,24 +8,26 @@ FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS jre-and-war
 # $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-ARG JAVA_VERSION=21.0.11_10
+ARG JAVA_ZIP_URL="Provided by docker-bake.hcl"
+ARG jdkTempHome='C:\openjdk'
+ARG jdkTemp='C:\jdktemp'
+ARG localArchive="${jdkTemp}\jdk.zip"
+RUN New-Item -ItemType Directory -Path $env:jdkTemp | Out-Null ; `
+    Invoke-WebRequest $env:JAVA_ZIP_URL -OutFile $env:localArchive ; `
+    Expand-Archive -Path $env:localArchive -DestinationPath $env:jdkTemp ; `
+    $expandedDir = Get-ChildItem -Path $env:jdkTemp -Directory | Where-Object { $_.Name -like 'jdk*' } ; `
+    Move-Item -Path $expandedDir.FullName -Destination $env:jdkTempHome -Force ; `
+    Remove-Item -Path $env:jdkTemp -Recurse | Out-Null  ; `
+    $CurrentPath = (Get-Itemproperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path).Path ; `
+    $NewPath = $CurrentPath + $(';{0}/bin' -f $env:jdkTempHome) ; `
+    Set-ItemProperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path -Value $NewPath
 
-RUN New-Item -ItemType Directory -Path C:\temp | Out-Null ; `
-    $javaMajorVersion = $env:JAVA_VERSION.substring(0,2) ; `
-    $msiUrl = 'https://api.adoptium.net/v3/installer/version/jdk-{0}/windows/x64/jdk/hotspot/normal/eclipse?project=jdk' -f $env:JAVA_VERSION.Replace('_', '%2B') ; `
-    Invoke-WebRequest $msiUrl -OutFile 'C:\temp\jdk.msi' ; `
-    $proc = Start-Process -FilePath 'msiexec.exe' -ArgumentList '/i', 'C:\temp\jdk.msi', '/L*V', 'C:\temp\OpenJDK.log', '/quiet', 'ADDLOCAL=FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome',  "INSTALLDIR=C:\openjdk-${javaMajorVersion}" -Wait -Passthru ; `
-    $proc.WaitForExit() ; `
-    Remove-Item -Path C:\temp -Recurse | Out-Null
-
-RUN Write-Host 'javac --version' ; javac --version ; `
-    Write-Host 'java --version' ; java --version
-
-RUN $version = (jlink --version) ; `
+RUN Write-Host 'java --version' ; java --version ; `
+    Write-Host 'javac --version' ; javac --version ; `
+    $version = (jlink --version) ; `
     $javaMajorVersion = $version.Substring(0,2) ; `
     if ($javaMajorVersion -eq '25') { `
-        $openjdkFolder = 'openjdk-{0}' -f $javaMajorVersion ; `
-        Copy-Item -Path $openjdkFolder -Destination C:\javaruntime -Recurse ; `
+        Move-Item -Path $env:jdkTempHome -Destination C:\javaruntime ; `
     } else { `
         $options = '--compress=2' ; `
         switch ($version.Substring(0,3)) { `
@@ -53,7 +54,7 @@ RUN New-Item -ItemType Directory -Path C:/temp | Out-Null ; `
     Remove-Item -Path C:\temp -Recurse | Out-Null
 
 # Jenkins version being bundled in this docker image
-ARG JENKINS_VERSION=2.573
+ARG JENKINS_VERSION=2.575
 # Can be used to customize where jenkins.war get downloaded from
 ARG WAR_URL=https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war
 ENV WAR_URL=${WAR_URL}
@@ -145,7 +146,7 @@ COPY jenkins.ps1 C:/ProgramData/Jenkins
 # See https://github.com/jenkinsci/plugin-installation-manager-tool#cli-options for information on parameters for jenkins-plugin-cli.ps1 for installing plugins into the docker image
 COPY jenkins-plugin-cli.ps1 C:/ProgramData/Jenkins
 
-ARG JENKINS_VERSION=2.573
+ARG JENKINS_VERSION=2.575
 ENV JENKINS_VERSION=${JENKINS_VERSION}
 
 ENTRYPOINT ["powershell.exe", "-f", "C:/ProgramData/Jenkins/jenkins.ps1"]

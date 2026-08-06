@@ -12,7 +12,7 @@ variable "default_jdk" {
 }
 
 variable "JENKINS_VERSION" {
-  default = "2.573"
+  default = "2.575"
 }
 
 variable "WAR_URL" {
@@ -68,7 +68,7 @@ variable "DEBIAN_VERSION" {
 }
 
 variable "RHEL_TAG" {
-  default = "9.8-1784004572"
+  default = "9.8-1785388874"
 }
 
 variable "RHEL_RELEASE_LINE" {
@@ -171,7 +171,7 @@ target "windowsservercore" {
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    JAVA_VERSION       = javaversion(jdk)
+    JAVA_ZIP_URL       = lookup(jdk_installer_urls["windows"]["amd64"], jdk, "Installer URL not found")
     JAVA_HOME          = "C:/openjdk-${jdk}"
     WINDOWS_VERSION    = windows_version
   }
