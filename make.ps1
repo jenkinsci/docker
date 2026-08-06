@@ -261,10 +261,10 @@ if ($target -eq 'test') {
     } else {
         Write-Host '= TEST: Starting test harness'
 
-        $mod = Get-InstalledModule -Name Pester -MinimumVersion $PesterVersion -MaximumVersion $PesterVersion -ErrorAction SilentlyContinue
+        $mod = Get-InstalledModule -Name Pester -RequiredVersion $PesterVersion -ErrorAction SilentlyContinue
         if ($null -eq $mod) {
             Write-Host "= TEST: Pester $PesterVersion not found: installing..."
-            Install-Module -Force -Name Pester -RequiredVersion $PesterVersion -AllowPrerelease -Scope CurrentUser
+            Install-Module -Force -Name Pester -RequiredVersion $PesterVersion -Scope CurrentUser
         }
 
         Import-Module Pester
