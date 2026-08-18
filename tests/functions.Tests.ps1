@@ -62,6 +62,23 @@ Describe "[functions > $global:TEST_TAG] Check-VersionLessThan" -Skip:(-not $glo
     docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '4106.4108.v841a_e1819d4d' '4151.v5406e29e3c90')) { exit 0 } else { exit -1 }"
     $LastExitCode | Should -Be 0
   }
+  ## Real world examples from https://github.com/jenkinsci/docker/issues/2361
+  It 'has left side greater (apache-httpcomponents-client-5-api-plugin, semver prefix with CD release suffix)' {
+    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '5.6.1-195.v65ffe15189a_d' '5.6-191.vb_47e2b_41c698')) { exit 0 } else { exit -1 }"
+    $LastExitCode | Should -Be -1
+  }
+  It 'has right side greater (apache-httpcomponents-client-5-api-plugin, semver prefix with CD release suffix)' {
+    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '5.6-191.vb_47e2b_41c698' '5.6.1-195.v65ffe15189a_d')) { exit 0 } else { exit -1 }"
+    $LastExitCode | Should -Be 0
+  }
+  It 'has left side greater (asm-api-plugin, semver prefix with CD release suffix)' {
+    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '9.10.1-216.va_9256d3b_844b_' '9.10-211.v7d13903b_a_d89')) { exit 0 } else { exit -1 }"
+    $LastExitCode | Should -Be -1
+  }
+  It 'has right side greater (asm-api-plugin, semver prefix with CD release suffix)' {
+    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '9.10-211.v7d13903b_a_d89' '9.10.1-216.va_9256d3b_844b_')) { exit 0 } else { exit -1 }"
+    $LastExitCode | Should -Be 0
+  }
 }
 
 # Only test on Java 21, one JDK is enough to test all versions
