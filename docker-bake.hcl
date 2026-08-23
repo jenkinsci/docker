@@ -12,7 +12,7 @@ variable "default_jdk" {
 }
 
 variable "JENKINS_VERSION" {
-  default = "2.577"
+  default = "2.578"
 }
 
 variable "WAR_URL" {
