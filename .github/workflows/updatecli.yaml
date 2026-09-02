@@ -11,6 +11,10 @@ on:
   pull_request:
     branches:
       - master
+
+# Only allow 1 updatecli build at a time to avoid orphaned updatecli branches
+concurrency: "updatecli"
+
 jobs:
   updatecli:
     runs-on: ubuntu-latest

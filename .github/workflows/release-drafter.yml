@@ -8,6 +8,9 @@ on:
       - "master"
   workflow_dispatch:
 
+# Only allow 1 release-drafter build at a time to avoid creating multiple "next" releases
+concurrency: "release-drafter"
+
 jobs:
   update_release_draft:
     runs-on: ubuntu-latest
