@@ -44,7 +44,7 @@ variable "COMMIT_SHA" {
 }
 
 variable "ALPINE_FULL_TAG" {
-  default = "3.24.1"
+  default = "3.24.2"
 }
 
 variable "ALPINE_SHORT_TAG" {
@@ -68,7 +68,7 @@ variable "DEBIAN_VERSION" {
 }
 
 variable "RHEL_TAG" {
-  default = "9.8-1787634763"
+  default = "9.8-1789646010"
 }
 
 variable "RHEL_RELEASE_LINE" {

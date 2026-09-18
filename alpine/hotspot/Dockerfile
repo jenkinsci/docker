@@ -1,4 +1,4 @@
-ARG ALPINE_TAG=3.24.1
+ARG ALPINE_TAG=3.24.2
 
 FROM alpine:"${ALPINE_TAG}" AS jre-and-war
 
