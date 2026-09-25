@@ -12,8 +12,14 @@ ARG JAVA_ZIP_URL="Provided by docker-bake.hcl"
 ARG jdkTempHome='C:\openjdk'
 ARG jdkTemp='C:\jdktemp'
 ARG localArchive="${jdkTemp}\jdk.zip"
+ARG checksumFile="${jdkTemp}\jdk.zip.sha256.txt"
 RUN New-Item -ItemType Directory -Path $env:jdkTemp | Out-Null ; `
     Invoke-WebRequest $env:JAVA_ZIP_URL -OutFile $env:localArchive ; `
+    Invoke-WebRequest ($env:JAVA_ZIP_URL + '.sha256.txt') -OutFile $env:checksumFile ; `
+    $expectedSha256 = ((Get-Content -Path $env:checksumFile -Raw) -split '\s+')[0].Trim() ; `
+    if ($expectedSha256 -notmatch '^[0-9a-fA-F]{64}$') { throw 'Invalid JDK archive SHA256 checksum' } ; `
+    $actualSha256 = (Get-FileHash -Path $env:localArchive -Algorithm SHA256).Hash ; `
+    if (-not [string]::Equals($actualSha256, $expectedSha256, [System.StringComparison]::OrdinalIgnoreCase)) { throw 'JDK archive SHA256 checksum verification failed' } ; `
     Expand-Archive -Path $env:localArchive -DestinationPath $env:jdkTemp ; `
     $expandedDir = Get-ChildItem -Path $env:jdkTemp -Directory | Where-Object { $_.Name -like 'jdk*' } ; `
     Move-Item -Path $expandedDir.FullName -Destination $env:jdkTempHome -Force ; `
@@ -129,9 +135,11 @@ ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 
 ARG PLUGIN_CLI_VERSION=2.15.0
 ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
-RUN $sha256sum = [System.Text.Encoding]::UTF8.GetString((Invoke-WebRequest -Uri ($env:PLUGIN_CLI_URL + '.sha256') -UseBasicParsing).Content); `
+RUN $sha256sum = (((Invoke-WebRequest -Uri ($env:PLUGIN_CLI_URL + '.sha256') -UseBasicParsing).Content -split '\s+')[0]).Trim(); `
+    if ($sha256sum -notmatch '^[0-9a-fA-F]{64}$') { throw 'Invalid SHA256 checksum response' }; `
     Invoke-WebRequest -Uri "$env:PLUGIN_CLI_URL" -OutFile C:/ProgramData/Jenkins/jenkins-plugin-manager.jar; `
-    if ((Get-FileHash -Path C:/ProgramData/Jenkins/jenkins-plugin-manager.jar -Algorithm SHA256).Hash -ne $sha256sum) {exit 1}
+    $actualSha256 = (Get-FileHash -Path C:/ProgramData/Jenkins/jenkins-plugin-manager.jar -Algorithm SHA256).Hash; `
+    if (-not [string]::Equals($actualSha256, $sha256sum, [System.StringComparison]::OrdinalIgnoreCase)) { throw 'SHA256 checksum verification failed' }
 
 # for main web interface:
 EXPOSE ${http_port}
