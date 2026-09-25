@@ -8,18 +8,23 @@ FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS jre-and-war
 # $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
+# GnuPG
+ARG GNUGPG_VERSION=2.5.16_20251230
+RUN New-Item -ItemType Directory -Path C:/temp | Out-Null ; `
+    Invoke-WebRequest -Uri https://www.gnupg.org/ftp/gcrypt/binary/gnupg-w32-${env:GNUGPG_VERSION}.exe -OutFile C:/temp/gnupg.exe ; `
+    Start-Process -FilePath C:/temp/gnupg.exe -ArgumentList '/S' -Wait ; `
+    Remove-Item -Path C:\temp -Recurse | Out-Null
+
 ARG JAVA_ZIP_URL="Provided by docker-bake.hcl"
 ARG jdkTempHome='C:\openjdk'
 ARG jdkTemp='C:\jdktemp'
 ARG localArchive="${jdkTemp}\jdk.zip"
-ARG checksumFile="${jdkTemp}\jdk.zip.sha256.txt"
+COPY adoptium.key C:/adoptium.key
 RUN New-Item -ItemType Directory -Path $env:jdkTemp | Out-Null ; `
     Invoke-WebRequest $env:JAVA_ZIP_URL -OutFile $env:localArchive ; `
-    Invoke-WebRequest ($env:JAVA_ZIP_URL + '.sha256.txt') -OutFile $env:checksumFile ; `
-    $expectedSha256 = ((Get-Content -Path $env:checksumFile -Raw) -split '\s+')[0].Trim() ; `
-    if ($expectedSha256 -notmatch '^[0-9a-fA-F]{64}$') { throw 'Invalid JDK archive SHA256 checksum' } ; `
-    $actualSha256 = (Get-FileHash -Path $env:localArchive -Algorithm SHA256).Hash ; `
-    if (-not [string]::Equals($actualSha256, $expectedSha256, [System.StringComparison]::OrdinalIgnoreCase)) { throw 'JDK archive SHA256 checksum verification failed' } ; `
+    Invoke-WebRequest ($env:JAVA_ZIP_URL + '.sig') -OutFile "$env:localArchive.sig" ; `
+    & 'C:/Program Files/GnuPG/bin/gpg.exe' --batch --import C:/adoptium.key ; `
+    & 'C:/Program Files/GnuPG/bin/gpg.exe' --batch --verify "$env:localArchive.sig" $env:localArchive ; `
     Expand-Archive -Path $env:localArchive -DestinationPath $env:jdkTemp ; `
     $expandedDir = Get-ChildItem -Path $env:jdkTemp -Directory | Where-Object { $_.Name -like 'jdk*' } ; `
     Move-Item -Path $expandedDir.FullName -Destination $env:jdkTempHome -Force ; `
@@ -51,13 +56,6 @@ RUN Write-Host 'java --version' ; java --version ; `
         --no-header-files `
         --output /javaruntime ; `
     }
-
-# GnuGPG
-ARG GNUGPG_VERSION=2.5.16_20251230
-RUN New-Item -ItemType Directory -Path C:/temp | Out-Null ; `
-    Invoke-WebRequest -Uri https://www.gnupg.org/ftp/gcrypt/binary/gnupg-w32-${env:GNUGPG_VERSION}.exe -OutFile C:/temp/gnupg.exe ; `
-    Start-Process -FilePath C:/temp/gnupg.exe -ArgumentList '/S' -Wait ; `
-    Remove-Item -Path C:\temp -Recurse | Out-Null
 
 # Jenkins version being bundled in this docker image
 ARG JENKINS_VERSION=2.583
