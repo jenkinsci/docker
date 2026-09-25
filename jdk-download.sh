@@ -1,8 +1,8 @@
 #!/bin/sh
 set -x
 # Check if curl and tar are installed
-if ! command -v curl >/dev/null 2>&1 || ! command -v tar >/dev/null 2>&1 ; then
-    echo "curl and tar are required but not installed. Exiting with status 1." >&2
+if ! command -v curl >/dev/null 2>&1 || ! command -v tar >/dev/null 2>&1 || ! command -v gpg >/dev/null 2>&1 ; then
+    echo "curl, tar, and gpg are required but not installed. Exiting with status 1." >&2
     exit 1
 fi
 
@@ -36,13 +36,15 @@ if ! curl --silent --location --output /tmp/jdk.tar.gz "${DOWNLOAD_URL}"; then
 fi
 
 # Verify the archive before extracting or executing it.
-if ! curl --silent --show-error --fail --location --output /tmp/jdk.tar.gz.sha256.txt "${DOWNLOAD_URL}.sha256.txt"; then
-    echo "Error: Failed to download the JDK archive checksum. Exiting with status 1." >&2
+if ! curl --silent --show-error --fail --location --output /tmp/jdk.tar.gz.sig "${DOWNLOAD_URL}.sig"; then
+    echo "Error: Failed to download the JDK archive signature. Exiting with status 1." >&2
     exit 1
 fi
-EXPECTED_SHA256=$(awk 'NR == 1 { print $1 }' /tmp/jdk.tar.gz.sha256.txt)
-if ! printf '%s  %s\n' "${EXPECTED_SHA256}" /tmp/jdk.tar.gz | sha256sum -c >/dev/null 2>&1; then
-    echo "Error: JDK archive checksum verification failed. Exiting with status 1." >&2
+GNUPGHOME=$(mktemp -d)
+trap 'rm -rf "${GNUPGHOME}" /tmp/jdk.tar.gz.sig' EXIT
+if ! gpg --batch --homedir "${GNUPGHOME}" --import /usr/local/share/adoptium.key >/dev/null 2>&1 || \
+   ! gpg --batch --homedir "${GNUPGHOME}" --verify /tmp/jdk.tar.gz.sig /tmp/jdk.tar.gz >/dev/null 2>&1; then
+    echo "Error: JDK archive signature verification failed. Exiting with status 1." >&2
     exit 1
 fi
 
@@ -64,9 +66,5 @@ fi
 # Remove the downloaded archive
 if ! rm -f /tmp/jdk.tar.gz; then
     echo "Error: Failed to remove the downloaded archive. Exiting with status 1." >&2
-    exit 1
-fi
-if ! rm -f /tmp/jdk.tar.gz.sha256.txt; then
-    echo "Error: Failed to remove the downloaded archive checksum. Exiting with status 1." >&2
     exit 1
 fi
