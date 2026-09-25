@@ -13,7 +13,7 @@ COPY adoptium.key /usr/local/share/adoptium.key
 RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs --allowerasing -y \
     ca-certificates \
     curl \
-    gnupg2 \
+    gnupg \
     jq \
     && dnf clean --disableplugin=subscription-manager all \
     && /usr/bin/jdk-download.sh
