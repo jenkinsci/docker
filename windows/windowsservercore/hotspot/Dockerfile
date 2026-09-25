@@ -8,12 +8,23 @@ FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS jre-and-war
 # $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
+# GnuPG
+ARG GNUGPG_VERSION=2.5.16_20251230
+RUN New-Item -ItemType Directory -Path C:/temp | Out-Null ; `
+    Invoke-WebRequest -Uri https://www.gnupg.org/ftp/gcrypt/binary/gnupg-w32-${env:GNUGPG_VERSION}.exe -OutFile C:/temp/gnupg.exe ; `
+    Start-Process -FilePath C:/temp/gnupg.exe -ArgumentList '/S' -Wait ; `
+    Remove-Item -Path C:\temp -Recurse | Out-Null
+
 ARG JAVA_ZIP_URL="Provided by docker-bake.hcl"
 ARG jdkTempHome='C:\openjdk'
 ARG jdkTemp='C:\jdktemp'
 ARG localArchive="${jdkTemp}\jdk.zip"
+COPY adoptium.key C:/adoptium.key
 RUN New-Item -ItemType Directory -Path $env:jdkTemp | Out-Null ; `
     Invoke-WebRequest $env:JAVA_ZIP_URL -OutFile $env:localArchive ; `
+    Invoke-WebRequest ($env:JAVA_ZIP_URL + '.sig') -OutFile "$env:localArchive.sig" ; `
+    & 'C:/Program Files/GnuPG/bin/gpg.exe' --batch --import C:/adoptium.key ; `
+    & 'C:/Program Files/GnuPG/bin/gpg.exe' --batch --verify "$env:localArchive.sig" $env:localArchive ; `
     Expand-Archive -Path $env:localArchive -DestinationPath $env:jdkTemp ; `
     $expandedDir = Get-ChildItem -Path $env:jdkTemp -Directory | Where-Object { $_.Name -like 'jdk*' } ; `
     Move-Item -Path $expandedDir.FullName -Destination $env:jdkTempHome -Force ; `
@@ -45,13 +56,6 @@ RUN Write-Host 'java --version' ; java --version ; `
         --no-header-files `
         --output /javaruntime ; `
     }
-
-# GnuGPG
-ARG GNUGPG_VERSION=2.5.16_20251230
-RUN New-Item -ItemType Directory -Path C:/temp | Out-Null ; `
-    Invoke-WebRequest -Uri https://www.gnupg.org/ftp/gcrypt/binary/gnupg-w32-${env:GNUGPG_VERSION}.exe -OutFile C:/temp/gnupg.exe ; `
-    Start-Process -FilePath C:/temp/gnupg.exe -ArgumentList '/S' -Wait ; `
-    Remove-Item -Path C:\temp -Recurse | Out-Null
 
 # Jenkins version being bundled in this docker image
 ARG JENKINS_VERSION=2.583
@@ -129,9 +133,11 @@ ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 
 ARG PLUGIN_CLI_VERSION=2.15.0
 ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
-RUN $sha256sum = [System.Text.Encoding]::UTF8.GetString((Invoke-WebRequest -Uri ($env:PLUGIN_CLI_URL + '.sha256') -UseBasicParsing).Content); `
+RUN $sha256sum = (((Invoke-WebRequest -Uri ($env:PLUGIN_CLI_URL + '.sha256') -UseBasicParsing).Content -split '\s+')[0]).Trim(); `
+    if ($sha256sum -notmatch '^[0-9a-fA-F]{64}$') { throw 'Invalid SHA256 checksum response' }; `
     Invoke-WebRequest -Uri "$env:PLUGIN_CLI_URL" -OutFile C:/ProgramData/Jenkins/jenkins-plugin-manager.jar; `
-    if ((Get-FileHash -Path C:/ProgramData/Jenkins/jenkins-plugin-manager.jar -Algorithm SHA256).Hash -ne $sha256sum) {exit 1}
+    $actualSha256 = (Get-FileHash -Path C:/ProgramData/Jenkins/jenkins-plugin-manager.jar -Algorithm SHA256).Hash; `
+    if (-not [string]::Equals($actualSha256, $sha256sum, [System.StringComparison]::OrdinalIgnoreCase)) { throw 'SHA256 checksum verification failed' }
 
 # for main web interface:
 EXPOSE ${http_port}
