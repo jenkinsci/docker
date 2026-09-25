@@ -12,8 +12,14 @@ ARG JAVA_ZIP_URL="Provided by docker-bake.hcl"
 ARG jdkTempHome='C:\openjdk'
 ARG jdkTemp='C:\jdktemp'
 ARG localArchive="${jdkTemp}\jdk.zip"
+ARG checksumFile="${jdkTemp}\jdk.zip.sha256.txt"
 RUN New-Item -ItemType Directory -Path $env:jdkTemp | Out-Null ; `
     Invoke-WebRequest $env:JAVA_ZIP_URL -OutFile $env:localArchive ; `
+    Invoke-WebRequest ($env:JAVA_ZIP_URL + '.sha256.txt') -OutFile $env:checksumFile ; `
+    $expectedSha256 = ((Get-Content -Path $env:checksumFile -Raw) -split '\s+')[0].Trim() ; `
+    if ($expectedSha256 -notmatch '^[0-9a-fA-F]{64}$') { throw 'Invalid JDK archive SHA256 checksum' } ; `
+    $actualSha256 = (Get-FileHash -Path $env:localArchive -Algorithm SHA256).Hash ; `
+    if (-not [string]::Equals($actualSha256, $expectedSha256, [System.StringComparison]::OrdinalIgnoreCase)) { throw 'JDK archive SHA256 checksum verification failed' } ; `
     Expand-Archive -Path $env:localArchive -DestinationPath $env:jdkTemp ; `
     $expandedDir = Get-ChildItem -Path $env:jdkTemp -Directory | Where-Object { $_.Name -like 'jdk*' } ; `
     Move-Item -Path $expandedDir.FullName -Destination $env:jdkTempHome -Force ; `
