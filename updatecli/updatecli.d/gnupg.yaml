@@ -1,0 +1,44 @@
+---
+name: Bump `gnupg` version
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "{{ .github.branch }}"
+
+sources:
+  lastReleaseVersion:
+    kind: file
+    name: Get the latest `gnupg` release version
+    spec:
+      file: https://www.gnupg.org/
+      matchpattern: 'The current version of GnuPG is (\d+\.\d+\.\d+)'
+
+targets:
+  updateVersion:
+    name: Update `gnupg` version in Windows dockerfile
+    sourceid: lastReleaseVersion
+    kind: dockerfile
+    spec:
+      file: windows/windowsservercore/hotspot/Dockerfile
+      instruction:
+        keyword: "ARG"
+        matcher: "GNUGPG_VERSION"
+    scmid: default
+
+actions:
+  default:
+    kind: github/pullrequest
+    title: Bump `gnupg` version to {{ source "lastReleaseVersion" }}
+    scmid: default
+    spec:
+      labels:
+        - dependencies
+        - gnupg
