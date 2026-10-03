@@ -1,8 +1,8 @@
 #!/bin/sh
 set -x
 # Check if curl and tar are installed
-if ! command -v curl >/dev/null 2>&1 || ! command -v tar >/dev/null 2>&1 ; then
-    echo "curl and tar are required but not installed. Exiting with status 1." >&2
+if ! command -v curl >/dev/null 2>&1 || ! command -v tar >/dev/null 2>&1 || ! command -v gpg >/dev/null 2>&1 ; then
+    echo "curl, tar, and gpg are required but not installed. Exiting with status 1." >&2
     exit 1
 fi
 
@@ -32,6 +32,19 @@ fi
 # Use curl to download the JDK archive from the URL
 if ! curl --silent --location --output /tmp/jdk.tar.gz "${DOWNLOAD_URL}"; then
     echo "Error: Failed to download the JDK archive. Exiting with status 1." >&2
+    exit 1
+fi
+
+# Verify the archive before extracting or executing it.
+if ! curl --silent --show-error --fail --location --output /tmp/jdk.tar.gz.sig "${DOWNLOAD_URL}.sig"; then
+    echo "Error: Failed to download the JDK archive signature. Exiting with status 1." >&2
+    exit 1
+fi
+GNUPGHOME=$(mktemp -d)
+trap 'rm -rf "${GNUPGHOME}" /tmp/jdk.tar.gz.sig' EXIT
+if ! gpg --batch --homedir "${GNUPGHOME}" --import /usr/local/share/adoptium.key >/dev/null 2>&1 || \
+   ! gpg --batch --homedir "${GNUPGHOME}" --verify /tmp/jdk.tar.gz.sig /tmp/jdk.tar.gz >/dev/null 2>&1; then
+    echo "Error: JDK archive signature verification failed. Exiting with status 1." >&2
     exit 1
 fi
 
