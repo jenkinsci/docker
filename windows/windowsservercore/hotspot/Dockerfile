@@ -47,7 +47,7 @@ RUN Write-Host 'java --version' ; java --version ; `
     }
 
 # GnuGPG
-ARG GNUGPG_VERSION=2.5.16_20251230
+ARG GNUGPG_VERSION=2.5.24_20260923
 RUN New-Item -ItemType Directory -Path C:/temp | Out-Null ; `
     Invoke-WebRequest -Uri https://www.gnupg.org/ftp/gcrypt/binary/gnupg-w32-${env:GNUGPG_VERSION}.exe -OutFile C:/temp/gnupg.exe ; `
     Start-Process -FilePath C:/temp/gnupg.exe -ArgumentList '/S' -Wait ; `
