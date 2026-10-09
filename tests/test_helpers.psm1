@@ -69,7 +69,7 @@ function Get-SutImage {
     $DOCKERFILE = 'windows/windowsservercore/hotspot/Dockerfile'
     $IMAGETAG = Get-EnvOrDefault 'CONTROLLER_TAG' ''
 
-    $REAL_DOCKERFILE=Resolve-Path -Path "$PSScriptRoot/../${DOCKERFILE}"
+    $REAL_DOCKERFILE = Join-Path -Path $PSScriptRoot -ChildPath "../$DOCKERFILE"
 
     if(!($DOCKERFILE -match '^(?<os>.+)[\\/](?<flavor>.+)[\\/](?<jvm>.+)[\\/]Dockerfile$') -or !(Test-Path $REAL_DOCKERFILE)) {
         Write-Error "Wrong Dockerfile path format or file does not exist: $DOCKERFILE"
@@ -118,8 +118,12 @@ function Build-Docker($tag) {
 }
 
 function Build-DockerChild($tag, $dir) {
-    Get-Content "$dir/Dockerfile-windows" | ForEach-Object{$_ -replace "FROM bats-jenkins","FROM $(Get-SutImage)" } | Out-File -FilePath "$dir/Dockerfile-windows.tmp" -Encoding ASCII
-    return (Run-Program 'docker.exe' "build -t `"$tag`" $args -f `"$dir/Dockerfile-windows.tmp`" `"$dir`"")
+    try {
+        Get-Content "$dir/Dockerfile-windows" | ForEach-Object{$_ -replace "FROM bats-jenkins","FROM $(Get-SutImage)" } | Out-File -FilePath "$dir/Dockerfile-windows.tmp" -Encoding ASCII
+        return (Run-Program 'docker.exe' "build -t `"$tag`" $args -f `"$dir/Dockerfile-windows.tmp`" `"$dir`"")
+    } finally {
+        if (Test-Path "$dir/Dockerfile-windows.tmp") { Remove-Item "$dir/Dockerfile-windows.tmp" -ErrorAction SilentlyContinue }
+    }
 }
 
 function Get-JenkinsUrl($Container) {
@@ -129,9 +133,13 @@ function Get-JenkinsUrl($Container) {
 }
 
 function Get-JenkinsPassword($Container) {
-    $res = docker exec $Container powershell.exe -c 'if(Test-Path "C:\ProgramData\Jenkins\JenkinsHome\secrets\initialAdminPassword") { Get-Content "C:\ProgramData\Jenkins\JenkinsHome\secrets\initialAdminPassword" ; exit 0 } else { exit -1 }'
-    if($lastExitCode -eq 0) {
-        return $res
+    try {
+        $res = docker exec $Container powershell.exe -c 'if(Test-Path "C:\ProgramData\Jenkins\JenkinsHome\secrets\initialAdminPassword") { Get-Content "C:\ProgramData\Jenkins\JenkinsHome\secrets\initialAdminPassword" ; exit 0 } else { exit -1 }'
+        if($LASTEXITCODE -eq 0) {
+            return $res
+        }
+    } catch {
+        # Catch terminating errors thrown by native commands in strict mode
     }
     return $null
 }
