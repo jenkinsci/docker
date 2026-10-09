@@ -22,6 +22,6 @@ jobs:
         run: sleep 15s
       # Drafts your next Release notes as Pull Requests are merged into "master"
       - name: Release Drafter
-        uses: release-drafter/release-drafter@c345907820e0396f6f44bcfd9ac4763325f8feb0 # v7.8.0
+        uses: release-drafter/release-drafter@72967cdc98ddd3160f1fc3dff619de365e137dd0 # v7.9.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
