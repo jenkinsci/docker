@@ -1,3 +1,23 @@
+# compare if numeric dotted version1 < numeric dotted version2
+function Compare-NumericVersionLessThan([string] $version1 = '', [string] $version2 = '') {
+    $version1Parts = $version1.Split('.')
+    $version2Parts = $version2.Split('.')
+    $maxLength = [Math]::Max($version1Parts.Length, $version2Parts.Length)
+
+    for ($i = 0; $i -lt $maxLength; $i++) {
+        $version1part = if ($i -lt $version1Parts.Length) { [int64]$version1Parts[$i] } else { 0 }
+        $version2part = if ($i -lt $version2Parts.Length) { [int64]$version2Parts[$i] } else { 0 }
+
+        if ($version1part -lt $version2part) {
+            return $true
+        }
+        if ($version1part -gt $version2part) {
+            return $false
+        }
+    }
+
+    return $false
+}
 
 # compare if version1 < version2
 function Compare-VersionLessThan([string] $version1 = '', [string] $version2 = '') {
@@ -12,6 +32,27 @@ function Compare-VersionLessThan([string] $version1 = '', [string] $version2 = '
 
     $version1Parts = $normalizedVersion1.Split('.')
     $version2Parts = $normalizedVersion2.Split('.')
+
+    # Semver-prefix + Jenkins CD release suffix special case.
+    # Ex: 9.10-211.v7d13903b_a_d89 < 9.10.1-216.va_9256d3b_844b_
+    # The generic "-" -> "." normalization compares 9.10.211 with 9.10.1.216,
+    # so it treats the older upstream 9.10 line as newer than 9.10.1.
+    # Keep non-CD suffixes on the existing path.
+    # Tracked at https://github.com/jenkinsci/docker/issues/2361
+    if (($version1 -like '*-*') -and ($version2 -like '*-*')) {
+        $numericPrefix1 = ($version1 -split '-', 2)[0]
+        $numericPrefix2 = ($version2 -split '-', 2)[0]
+        $jenkinsSuffix1 = ($version1 -split '-', 2)[1]
+        $jenkinsSuffix2 = ($version2 -split '-', 2)[1]
+        if (($numericPrefix1 -match '^[0-9]+(\.[0-9]+)*$') -and ($numericPrefix2 -match '^[0-9]+(\.[0-9]+)*$') -and ($jenkinsSuffix1 -match '^[0-9]+\.v.+$') -and ($jenkinsSuffix2 -match '^[0-9]+\.v.+$')) {
+            if (Compare-NumericVersionLessThan $numericPrefix1 $numericPrefix2) {
+                return $true
+            }
+            if (Compare-NumericVersionLessThan $numericPrefix2 $numericPrefix1) {
+                return $false
+            }
+        }
+    }
 
     # Compare major versions
     if ($version1Parts[0] -lt $version2parts[0]) {
