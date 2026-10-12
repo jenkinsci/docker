@@ -35,6 +35,17 @@ if ! curl --silent --location --output /tmp/jdk.tar.gz "${DOWNLOAD_URL}"; then
     exit 1
 fi
 
+# Verify the archive before extracting or executing it.
+if ! curl --silent --show-error --fail --location --output /tmp/jdk.tar.gz.sha256.txt "${DOWNLOAD_URL}.sha256.txt"; then
+    echo "Error: Failed to download the JDK archive checksum. Exiting with status 1." >&2
+    exit 1
+fi
+EXPECTED_SHA256=$(awk 'NR == 1 { print $1 }' /tmp/jdk.tar.gz.sha256.txt)
+if ! printf '%s  %s\n' "${EXPECTED_SHA256}" /tmp/jdk.tar.gz | sha256sum -c >/dev/null 2>&1; then
+    echo "Error: JDK archive checksum verification failed. Exiting with status 1." >&2
+    exit 1
+fi
+
 # Extract the archive to the /opt/ directory
 if ! tar -xzf /tmp/jdk.tar.gz -C /opt/; then
     echo "Error: Failed to extract the JDK archive. Exiting with status 1." >&2
@@ -53,5 +64,9 @@ fi
 # Remove the downloaded archive
 if ! rm -f /tmp/jdk.tar.gz; then
     echo "Error: Failed to remove the downloaded archive. Exiting with status 1." >&2
+    exit 1
+fi
+if ! rm -f /tmp/jdk.tar.gz.sha256.txt; then
+    echo "Error: Failed to remove the downloaded archive checksum. Exiting with status 1." >&2
     exit 1
 fi
