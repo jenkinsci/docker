@@ -62,6 +62,42 @@ Describe "[functions > $global:TEST_TAG] Check-VersionLessThan" -Skip:(-not $glo
     docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '4106.4108.v841a_e1819d4d' '4151.v5406e29e3c90')) { exit 0 } else { exit -1 }"
     $LastExitCode | Should -Be 0
   }
+  ## Major version transitions
+  It 'has right side greater (major version 2 vs 10)' {
+    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '2.0' '10.0')) { exit 0 } else { exit -1 }"
+    $LastExitCode | Should -Be 0
+  }
+  It 'has left side greater (major version 10 vs 2)' {
+    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '10.0' '2.0')) { exit 0 } else { exit -1 }"
+    $LastExitCode | Should -Be -1
+  }
+  It 'has right side greater (major version 9 vs 10)' {
+    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '9.0' '10.0')) { exit 0 } else { exit -1 }"
+    $LastExitCode | Should -Be 0
+  }
+  It 'has left side greater (major version 10 vs 9)' {
+    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '10.0' '9.0')) { exit 0 } else { exit -1 }"
+    $LastExitCode | Should -Be -1
+  }
+  ## https://github.com/jenkinsci/docker/issues/2328
+  ## Reverse-direction cases: image is the 4-part backport / maintenance release, installed is the 3-part normal release.
+  ## Copy-ReferenceFile calls Compare-VersionLessThan(image, container) at this site, so the workaround has to handle both argument orders.
+  It 'has left side greater (workflow-cps-plugin, reverse-direction)' {
+    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '3894.3896.vca_2c931e7935' '3894.vd0f0248b_a_fc4')) { exit 0 } else { exit -1 }"
+    $LastExitCode | Should -Be -1
+  }
+  It 'has left side greater (github-branch-source-plugin, 1967.x security maintenance branch)' {
+    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '1967.1969.v205fd594c821' '1967.vdea_d580c1a_b_a_')) { exit 0 } else { exit -1 }"
+    $LastExitCode | Should -Be -1
+  }
+  It 'has left side greater (workflow-job-plugin, same shape)' {
+    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '1571.1580.v18e46842c125' '1571.vb_423c255d6d9')) { exit 0 } else { exit -1 }"
+    $LastExitCode | Should -Be -1
+  }
+  It 'has left side greater (role-strategy-plugin, reverse-direction)' {
+    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '587.588.v850a_20a_30162' '587.v2872c41fa_e51')) { exit 0 } else { exit -1 }"
+    $LastExitCode | Should -Be -1
+  }
 }
 
 # Only test on Java 21, one JDK is enough to test all versions
