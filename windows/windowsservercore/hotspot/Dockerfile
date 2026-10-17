@@ -57,13 +57,6 @@ RUN Write-Host 'java --version' ; java --version ; `
         --output /javaruntime ; `
     }
 
-# GnuGPG
-ARG GNUGPG_VERSION=2.5.24_20260923
-RUN New-Item -ItemType Directory -Path C:/temp | Out-Null ; `
-    Invoke-WebRequest -Uri https://www.gnupg.org/ftp/gcrypt/binary/gnupg-w32-${env:GNUGPG_VERSION}.exe -OutFile C:/temp/gnupg.exe ; `
-    Start-Process -FilePath C:/temp/gnupg.exe -ArgumentList '/S' -Wait ; `
-    Remove-Item -Path C:\temp -Recurse | Out-Null
-
 # Jenkins version being bundled in this docker image
 ARG JENKINS_VERSION=2.585
 # Can be used to customize where jenkins.war get downloaded from
