@@ -1,7 +1,7 @@
 ARG TRIXIE_TAG=20251103
 
 ARG DEBIAN_RELEASE_LINE=trixie
-ARG DEBIAN_VERSION=20261005
+ARG DEBIAN_VERSION=20261020
 ARG DEBIAN_VARIANT="-slim"
 FROM debian:"${DEBIAN_RELEASE_LINE}-${DEBIAN_VERSION}${DEBIAN_VARIANT}" AS jre-and-war
 
@@ -45,7 +45,7 @@ RUN java_major_version="$(jlink --version 2>&1 | cut -c1-2)"; \
     fi
 
 # Jenkins version being bundled in this docker image
-ARG JENKINS_VERSION=2.585
+ARG JENKINS_VERSION=2.587
 # Can be used to customize where jenkins.war get downloaded from
 ARG WAR_URL=https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war
 
@@ -76,7 +76,7 @@ RUN apt-get update \
 
 # Git LFS is not available from a package manager on all the platforms we support
 # Download and unpack the tar.gz distribution
-ARG GIT_LFS_VERSION=3.8.0
+ARG GIT_LFS_VERSION=3.8.1
 # hadolint ignore=DL4006
 RUN arch=$(uname -m | sed -e 's/x86_64/amd64/g' -e 's/aarch64/arm64/g') \
   && curl -L -s -o git-lfs.tgz "https://github.com/git-lfs/git-lfs/releases/download/v${GIT_LFS_VERSION}/git-lfs-linux-${arch}-v${GIT_LFS_VERSION}.tar.gz" \
@@ -151,7 +151,7 @@ COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
 COPY jenkins-plugin-cli.sh /bin/jenkins-plugin-cli
 
-ARG JENKINS_VERSION=2.585
+ARG JENKINS_VERSION=2.587
 ENV JENKINS_VERSION=${JENKINS_VERSION}
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
