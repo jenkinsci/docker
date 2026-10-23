@@ -28,9 +28,37 @@ substitute_env_vars() {
     echo "${content}" > "${file}"
 }
 
+# compare if numeric dotted version1 < numeric dotted version2
+numericVersionLT() {
+    local version1 version2 i part1 part2 max
+    local -a parts1 parts2
+    version1=$1
+    version2=$2
+
+    IFS=. read -r -a parts1 <<< "$version1"
+    IFS=. read -r -a parts2 <<< "$version2"
+    max=${#parts1[@]}
+    if (( ${#parts2[@]} > max )); then
+        max=${#parts2[@]}
+    fi
+
+    for (( i = 0; i < max; i++ )); do
+        part1=${parts1[i]:-0}
+        part2=${parts2[i]:-0}
+        if (( 10#$part1 < 10#$part2 )); then
+            return 0
+        fi
+        if (( 10#$part1 > 10#$part2 )); then
+            return 1
+        fi
+    done
+
+    return 1
+}
+
 # compare if version1 < version2
 versionLT() {
-    local normalized_version1 normalized_version2 first_part_of_1 other_part_of_1 first_char_other_part_of_1 first_part_of_2 other_part_of_2 first_char_other_part_of_2
+    local normalized_version1 normalized_version2 first_part_of_1 other_part_of_1 first_char_other_part_of_1 first_part_of_2 other_part_of_2 first_char_other_part_of_2 numeric_prefix_1 numeric_prefix_2 jenkins_suffix_1 jenkins_suffix_2
 
     # Quick check for equality
     if [ "$1" = "$2" ]; then
@@ -72,6 +100,30 @@ versionLT() {
         fi
         if [[ "$first_char_other_part_of_2" == "v" && "$first_char_other_part_of_1" != "v" ]]; then
             return 1
+        fi
+    fi
+
+    # Semver-prefix + Jenkins CD release suffix special case.
+    # Ex: 9.10-211.v7d13903b_a_d89 < 9.10.1-216.va_9256d3b_844b_
+    # `sort --version-sort` compares 9.10.211 with 9.10.1.216 after the
+    # generic "-" -> "." normalization below, so it treats the older upstream
+    # 9.10 line as newer than 9.10.1. When both sides have a numeric wrapped
+    # component version prefix before the Jenkins CD release suffix, compare
+    # that prefix first and fall back to the existing behavior only when the
+    # prefixes are equal. Keep non-CD suffixes on the existing path.
+    # Tracked at https://github.com/jenkinsci/docker/issues/2361
+    if [[ "$1" == *-* && "$2" == *-* ]]; then
+        numeric_prefix_1=${1%%-*}
+        numeric_prefix_2=${2%%-*}
+        jenkins_suffix_1=${1#*-}
+        jenkins_suffix_2=${2#*-}
+        if [[ "$numeric_prefix_1" =~ ^[0-9]+(\.[0-9]+)*$ && "$numeric_prefix_2" =~ ^[0-9]+(\.[0-9]+)*$ && "$jenkins_suffix_1" =~ ^[0-9]+\.v.+$ && "$jenkins_suffix_2" =~ ^[0-9]+\.v.+$ ]]; then
+            if numericVersionLT "$numeric_prefix_1" "$numeric_prefix_2"; then
+                return 0
+            fi
+            if numericVersionLT "$numeric_prefix_2" "$numeric_prefix_1"; then
+                return 1
+            fi
         fi
     fi
 
