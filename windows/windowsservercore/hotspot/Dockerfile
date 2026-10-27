@@ -58,7 +58,7 @@ RUN Write-Host 'java --version' ; java --version ; `
     }
 
 # Jenkins version being bundled in this docker image
-ARG JENKINS_VERSION=2.585
+ARG JENKINS_VERSION=2.587
 # Can be used to customize where jenkins.war get downloaded from
 ARG WAR_URL=https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war
 ENV WAR_URL=${WAR_URL}
@@ -150,7 +150,7 @@ COPY jenkins.ps1 C:/ProgramData/Jenkins
 # See https://github.com/jenkinsci/plugin-installation-manager-tool#cli-options for information on parameters for jenkins-plugin-cli.ps1 for installing plugins into the docker image
 COPY jenkins-plugin-cli.ps1 C:/ProgramData/Jenkins
 
-ARG JENKINS_VERSION=2.585
+ARG JENKINS_VERSION=2.587
 ENV JENKINS_VERSION=${JENKINS_VERSION}
 
 ENTRYPOINT ["powershell.exe", "-f", "C:/ProgramData/Jenkins/jenkins.ps1"]

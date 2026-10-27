@@ -14,11 +14,25 @@ function Compare-VersionLessThan([string] $version1 = '', [string] $version2 = '
     $version2Parts = $normalizedVersion2.Split('.')
 
     # Compare major versions
-    if ($version1Parts[0] -lt $version2parts[0]) {
-        return $true
-    }
-    if ($version1Parts[0] -gt $version2parts[0]) {
-        return $false
+    $maj1 = 0
+    $maj2 = 0
+    $isMaj1 = [int64]::TryParse($version1Parts[0], [ref]$maj1)
+    $isMaj2 = [int64]::TryParse($version2Parts[0], [ref]$maj2)
+
+    if ($isMaj1 -and $isMaj2) {
+        if ($maj1 -lt $maj2) {
+            return $true
+        }
+        if ($maj1 -gt $maj2) {
+            return $false
+        }
+    } else {
+        if ($version1Parts[0] -lt $version2parts[0]) {
+            return $true
+        }
+        if ($version1Parts[0] -gt $version2parts[0]) {
+            return $false
+        }
     }
 
     $maxLength = [Math]::Max($version1Parts.Length, $version2parts.Length)
@@ -31,22 +45,28 @@ function Compare-VersionLessThan([string] $version1 = '', [string] $version2 = '
             continue
         }
 
-        # Security fix backport special case
+        # Security fix backport / maintenance-branch special case.
         # Ex: 3894.vd0f0248b_a_fc4 < 3894.3896.vca_2c931e7935
         # -> normal incrementals version includes a "v" as first char of second part
         # -> security fix backport adds the backport source first part as second part
         # https://github.com/jenkinsci/workflow-cps-plugin/releases/tag/3894.vd0f0248b_a_fc4
         # https://github.com/jenkinsci/workflow-cps-plugin/releases/tag/3894.3896.vca_2c931e7935
-        # If only the nth part of $version1 starts with a "v", then $version1 is older
+        #
+        # Whenever the first parts match and exactly one of the two parts starts
+        # with "v", that side is the older one regardless of argument order.
+        # Tracked at https://github.com/jenkinsci/docker/issues/2328
         if ($version1part.Substring(0,1) -eq 'v' -and $version2part.Substring(0,1) -ne 'v') {
             return $true
+        }
+        if ($version2part.Substring(0,1) -eq 'v' -and $version1part.Substring(0,1) -ne 'v') {
+            return $false
         }
 
         # Try numeric comparison first, fall back to string comparison
         $num1 = 0
         $num2 = 0
-        $isNum1 = [int]::TryParse($version1part, [ref]$num1)
-        $isNum2 = [int]::TryParse($version2part, [ref]$num2)
+        $isNum1 = [int64]::TryParse($version1part, [ref]$num1)
+        $isNum2 = [int64]::TryParse($version2part, [ref]$num2)
 
         if ($isNum1 -and $isNum2) {
             # Both are numeric, compare as integers
