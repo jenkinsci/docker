@@ -173,21 +173,23 @@ Note that you can set `BAKE_TARGET` to test the publication of a single target i
 
 [source,bash]
 --
+$ export JENKINS_VERSION=2.528.3
 $ export BAKE_TARGET=debian_jdk25
 $ ./.ci/publish.sh -n
+Dry run, will not publish images
 Using the following settings:
 * JENKINS_REPO: jenkins/jenkins
 * JENKINS_VERSION: 2.528.3
-* COMMIT_SHA: aaf4e7faf887b7ac4879c3bf540ede48220cca9f
+* COMMIT_SHA: 81e2249cf8491fb4af3b29bfa5ebdf685d0b9f1a
 * LATEST_WEEKLY: false
-* LATEST_LTS: true
+* LATEST_LTS: false
 * BUILD_METADATA_PATH: target/build-result-metadata_debian_jdk25_dry-run.json
-* BAKE TARGET: debian_jdk25
-* BUILDX OPTIONS:
+* BAKE_TARGET: debian_jdk25
+* BAKE OPTIONS:
   --pull
   --set=*.output=type=cacheonly
   --metadata-file=target/build-result-metadata_debian_jdk25_dry-run.json
-
+  --file=docker-bake.hcl
 * RESOLVED BAKE CONFIG:
 {
   "group": {
@@ -202,30 +204,29 @@ Using the following settings:
       "context": ".",
       "dockerfile": "debian/Dockerfile",
       "args": {
-        "COMMIT_SHA": "aaf4e7faf887b7ac4879c3bf540ede48220cca9f",
+        "COMMIT_SHA": "81e2249cf8491fb4af3b29bfa5ebdf685d0b9f1a",
         "DEBIAN_RELEASE_LINE": "trixie",
         "DEBIAN_VARIANT": "",
-        "DEBIAN_VERSION": "20260316",
-        "JAVA_VERSION": "25.0.1_8",
+        "DEBIAN_VERSION": "20261020",
+        "JAVA_RELEASE": "25",
         "JENKINS_VERSION": "2.528.3",
-        "PLUGIN_CLI_VERSION": "2.14.0",
+        "PLUGIN_CLI_VERSION": "2.15.0",
         "WAR_URL": "https://get.jenkins.io/war-stable/2.528.3/jenkins.war"
       },
       "tags": [
-        "docker.io/jenkins/jenkins:2.528.3-jdk25",
-        "docker.io/jenkins/jenkins:lts-jdk25",
-        "docker.io/jenkins/jenkins:2.528.3-lts-jdk25"
+        "docker.io/jenkins/jenkins:2.528.3-jdk25"
       ],
       "platforms": [
         "linux/amd64",
         "linux/arm64",
         "linux/s390x",
-        "linux/ppc64le"
+        "linux/ppc64le",
+        "linux/riscv64"
       ]
     }
   }
 }
-[+] Building 104.6s (59/73)
+Confirm? [y/N]
 ...
 --
 

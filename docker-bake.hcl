@@ -1,5 +1,5 @@
 ## Variables
-variable "jdks_to_build" {
+variable "java_releases_to_build" {
   default = [21, 25]
 }
 
@@ -7,7 +7,7 @@ variable "windows_version_to_build" {
   default = ["ltsc2022", "ltsc2025"]
 }
 
-variable "default_jdk" {
+variable "default_java_release" {
   default = 21
 }
 
@@ -51,14 +51,6 @@ variable "ALPINE_SHORT_TAG" {
   default = regex_replace(ALPINE_FULL_TAG, "\\.\\d+$", "")
 }
 
-variable "JAVA21_VERSION" {
-  default = "21.0.12.1_1"
-}
-
-variable "JAVA25_VERSION" {
-  default = "25.0.4.1_1"
-}
-
 variable "DEBIAN_RELEASE_LINE" {
   default = "trixie"
 }
@@ -80,12 +72,9 @@ variable "WINDOWS_VERSION_OVERRIDE" {
   default = ""
 }
 
-## Internal variables
-variable "jdk_versions" {
-  default = {
-    21 = JAVA21_VERSION
-    25 = JAVA25_VERSION
-  }
+# Set this value to a specific version to override java release to build
+variable "JAVA_RELEASE_OVERRIDE" {
+  default = ""
 }
 
 variable "debian_variants" {
@@ -99,9 +88,9 @@ variable "current_rhel" {
 ## Targets
 target "alpine" {
   matrix = {
-    jdk = jdks_to_build
+    java_release = java_releases(JAVA_RELEASE_OVERRIDE)
   }
-  name       = "alpine_jdk${jdk}"
+  name       = "alpine_jdk${java_release}"
   dockerfile = "alpine/hotspot/Dockerfile"
   context    = "."
   args = {
@@ -109,19 +98,19 @@ target "alpine" {
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    JAVA_VERSION       = javaversion(jdk)
     ALPINE_TAG         = ALPINE_FULL_TAG
+    JAVA_RELEASE       = java_release
   }
-  tags      = linux_tags("alpine", jdk)
-  platforms = platforms("alpine", jdk)
+  tags      = linux_tags("alpine", java_release)
+  platforms = platforms("alpine", java_release)
 }
 
 target "debian" {
   matrix = {
-    jdk     = jdks_to_build
-    variant = debian_variants
+    java_release = java_releases(JAVA_RELEASE_OVERRIDE)
+    variant      = debian_variants
   }
-  name       = "${variant}_jdk${jdk}"
+  name       = "${variant}_jdk${java_release}"
   dockerfile = "debian/Dockerfile"
   context    = "."
   args = {
@@ -129,20 +118,20 @@ target "debian" {
     WAR_URL             = war_url()
     COMMIT_SHA          = COMMIT_SHA
     PLUGIN_CLI_VERSION  = PLUGIN_CLI_VERSION
-    JAVA_VERSION        = javaversion(jdk)
     DEBIAN_RELEASE_LINE = DEBIAN_RELEASE_LINE
     DEBIAN_VERSION      = DEBIAN_VERSION
     DEBIAN_VARIANT      = is_debian_slim(variant) ? "-slim" : ""
+    JAVA_RELEASE        = java_release
   }
-  tags      = linux_tags(variant, jdk)
-  platforms = platforms(variant, jdk)
+  tags      = linux_tags(variant, java_release)
+  platforms = platforms(variant, java_release)
 }
 
 target "rhel" {
   matrix = {
-    jdk = jdks_to_build
+    java_release    = java_releases(JAVA_RELEASE_OVERRIDE)
   }
-  name       = "rhel_jdk${jdk}"
+  name       = "rhel_jdk${java_release}"
   dockerfile = "rhel/Dockerfile"
   context    = "."
   args = {
@@ -150,20 +139,20 @@ target "rhel" {
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    JAVA_VERSION       = javaversion(jdk)
     RHEL_TAG           = RHEL_TAG
     RHEL_RELEASE_LINE  = RHEL_RELEASE_LINE
+    JAVA_RELEASE       = java_release
   }
-  tags      = linux_tags(current_rhel, jdk)
-  platforms = platforms(current_rhel, jdk)
+  tags      = linux_tags(current_rhel, java_release)
+  platforms = platforms(current_rhel, java_release)
 }
 
 target "windowsservercore" {
   matrix = {
-    jdk             = jdks_to_build
+    java_release    = java_releases_to_build
     windows_version = windowsversions()
   }
-  name       = "windowsservercore-${windows_version}_jdk${jdk}"
+  name       = "windowsservercore-${windows_version}_jdk${java_release}"
   dockerfile = "windows/windowsservercore/hotspot/Dockerfile"
   context    = "."
   args = {
@@ -171,11 +160,11 @@ target "windowsservercore" {
     WAR_URL            = war_url()
     COMMIT_SHA         = COMMIT_SHA
     PLUGIN_CLI_VERSION = PLUGIN_CLI_VERSION
-    JAVA_ZIP_URL       = lookup(jdk_installer_urls["windows"]["amd64"], jdk, "Installer URL not found")
-    JAVA_HOME          = "C:/openjdk-${jdk}"
+    JAVA_HOME          = "C:/openjdk-${java_release}"
     WINDOWS_VERSION    = windows_version
+    JAVA_RELEASE       = java_release
   }
-  tags      = windows_tags("windowsservercore-${windows_version}", jdk)
+  tags      = windows_tags("windowsservercore-${windows_version}", java_release)
   platforms = ["windows/amd64"]
 }
 
@@ -246,15 +235,18 @@ function "war_url" {
 }
 
 # Return "true" if the jdk passed as parameter is the same as the default jdk, "false" otherwise
-function "is_default_jdk" {
-  params = [jdk]
-  result = equal(default_jdk, jdk) ? true : false
+function "is_default_java_release" {
+  params = [java_release]
+  result = equal(default_java_release, java_release) ? true : false
 }
 
-# Return the complete Java version corresponding to the jdk passed as parameter
-function "javaversion" {
-  params = [jdk]
-  result = lookup(jdk_versions, jdk, "Unsupported JDK version")
+# Return array of java releases to build
+# Can be overriden to a specific version
+function "java_releases" {
+  params = [override]
+  result = (notequal(override, "")
+    ? [parseint(override, 10)]
+  : java_releases_to_build)
 }
 
 # Return an array of platforms depending on the distribution and the jdk
@@ -299,10 +291,10 @@ function "linux_tags" {
       is_rhel(distribution) ? tag_lts(true, "lts-${distribution}-jdk${jdk}") : "",
 
       ## Default JDK extra short tags (except for current rhel)
-      is_default_jdk(jdk) && !is_rhel(distribution) ? tag(true, distribution) : "",
-      is_default_jdk(jdk) && !is_rhel(distribution) ? tag_weekly(false, distribution) : "",
-      is_default_jdk(jdk) && !is_rhel(distribution) ? tag_lts(false, "lts-${distribution}") : "",
-      is_default_jdk(jdk) && !is_rhel(distribution) ? tag_lts(true, "lts-${distribution}") : "",
+      is_default_java_release(jdk) && !is_rhel(distribution) ? tag(true, distribution) : "",
+      is_default_java_release(jdk) && !is_rhel(distribution) ? tag_weekly(false, distribution) : "",
+      is_default_java_release(jdk) && !is_rhel(distribution) ? tag_lts(false, "lts-${distribution}") : "",
+      is_default_java_release(jdk) && !is_rhel(distribution) ? tag_lts(true, "lts-${distribution}") : "",
     ]
   )
 }
@@ -318,11 +310,11 @@ function "windows_tags" {
     tag_lts(false, "lts-jdk${jdk}-hotspot-${distribution}"),
 
     ## Default JDK extra short tags
-    is_default_jdk(jdk) ? tag(true, "hotspot-${distribution}") : "",
-    is_default_jdk(jdk) ? tag_weekly(false, distribution) : "",
-    is_default_jdk(jdk) ? tag_weekly(true, distribution) : "",
-    is_default_jdk(jdk) ? tag_lts(false, "lts-${distribution}") : "",
-    is_default_jdk(jdk) ? tag_lts(true, distribution) : "",
+    is_default_java_release(jdk) ? tag(true, "hotspot-${distribution}") : "",
+    is_default_java_release(jdk) ? tag_weekly(false, distribution) : "",
+    is_default_java_release(jdk) ? tag_weekly(true, distribution) : "",
+    is_default_java_release(jdk) ? tag_lts(false, "lts-${distribution}") : "",
+    is_default_java_release(jdk) ? tag_lts(true, distribution) : "",
   ]
 }
 
@@ -381,10 +373,10 @@ function "debian_tags" {
     is_debian_slim(variant) ? "" : tag_lts(true, "${slim_suffix(variant, "lts")}-jdk${jdk}"),
 
     ## If default jdk, short tags
-    is_default_jdk(jdk) ? tag(true, slim_prefix(variant, "")) : "",
-    is_default_jdk(jdk) ? tag_weekly(false, slim_prefix(variant, "latest")) : "",
-    is_default_jdk(jdk) ? tag_lts(false, slim_suffix(variant, "lts")) : "",
-    is_default_jdk(jdk) ? tag_lts(true, slim_suffix(variant, "lts")) : "",
+    is_default_java_release(jdk) ? tag(true, slim_prefix(variant, "")) : "",
+    is_default_java_release(jdk) ? tag_weekly(false, slim_prefix(variant, "latest")) : "",
+    is_default_java_release(jdk) ? tag_lts(false, slim_suffix(variant, "lts")) : "",
+    is_default_java_release(jdk) ? tag_lts(true, slim_suffix(variant, "lts")) : "",
   ]
 }
 
