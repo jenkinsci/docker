@@ -8,12 +8,23 @@ FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS jre-and-war
 # $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
+# GnuPG
+ARG GNUGPG_VERSION=2.5.24_20260923
+RUN New-Item -ItemType Directory -Path C:/temp | Out-Null ; `
+    Invoke-WebRequest -Uri https://www.gnupg.org/ftp/gcrypt/binary/gnupg-w32-${env:GNUGPG_VERSION}.exe -OutFile C:/temp/gnupg.exe ; `
+    Start-Process -FilePath C:/temp/gnupg.exe -ArgumentList '/S' -Wait ; `
+    Remove-Item -Path C:\temp -Recurse | Out-Null
+
 ARG JAVA_ZIP_URL="Provided by docker-bake.hcl"
 ARG jdkTempHome='C:\openjdk'
 ARG jdkTemp='C:\jdktemp'
 ARG localArchive="${jdkTemp}\jdk.zip"
+COPY adoptium.key C:/adoptium.key
 RUN New-Item -ItemType Directory -Path $env:jdkTemp | Out-Null ; `
     Invoke-WebRequest $env:JAVA_ZIP_URL -OutFile $env:localArchive ; `
+    Invoke-WebRequest ($env:JAVA_ZIP_URL + '.sig') -UseBasicParsing -OutFile "$env:localArchive.sig" ; `
+    & 'C:/Program Files/GnuPG/bin/gpg.exe' --batch --import C:/adoptium.key ; `
+    & 'C:/Program Files/GnuPG/bin/gpg.exe' --batch --verify "$env:localArchive.sig" $env:localArchive ; `
     Expand-Archive -Path $env:localArchive -DestinationPath $env:jdkTemp ; `
     $expandedDir = Get-ChildItem -Path $env:jdkTemp -Directory | Where-Object { $_.Name -like 'jdk*' } ; `
     Move-Item -Path $expandedDir.FullName -Destination $env:jdkTempHome -Force ; `
@@ -46,13 +57,6 @@ RUN Write-Host 'java --version' ; java --version ; `
         --output /javaruntime ; `
     }
 
-# GnuGPG
-ARG GNUGPG_VERSION=2.5.24_20260923
-RUN New-Item -ItemType Directory -Path C:/temp | Out-Null ; `
-    Invoke-WebRequest -Uri https://www.gnupg.org/ftp/gcrypt/binary/gnupg-w32-${env:GNUGPG_VERSION}.exe -OutFile C:/temp/gnupg.exe ; `
-    Start-Process -FilePath C:/temp/gnupg.exe -ArgumentList '/S' -Wait ; `
-    Remove-Item -Path C:\temp -Recurse | Out-Null
-
 # Jenkins version being bundled in this docker image
 ARG JENKINS_VERSION=2.587
 # Can be used to customize where jenkins.war get downloaded from
@@ -64,7 +68,7 @@ ENV WAR_ASC_URL=${WAR_URL}.asc
 # # see https://github.com/docker/docker/issues/8331
 RUN New-Item -ItemType Directory -Path C:/war | Out-Null ; `
     Write-Host $env:WAR_URL; Invoke-WebRequest -Uri "$env:WAR_URL" -OutFile C:/war/jenkins.war ; `
-    Write-Host $env:WAR_ASC_URL; Invoke-WebRequest -Uri "$env:WAR_ASC_URL" -OutFile C:/war/jenkins.war.asc
+    Write-Host $env:WAR_ASC_URL; Invoke-WebRequest -Uri "$env:WAR_ASC_URL" -UseBasicParsing -OutFile C:/war/jenkins.war.asc
 
 COPY jenkins.io-2026.key /war/jenkins-key.pub
 
