@@ -35,7 +35,7 @@ if ! curl --silent --location --output /tmp/jdk.tar.gz "${DOWNLOAD_URL}"; then
     exit 1
 fi
 
-# Verify the archive before extracting or executing it.
+# Verify the archive before extracting it.
 if ! curl --silent --show-error --fail --location --output /tmp/jdk.tar.gz.sig "${DOWNLOAD_URL}.sig"; then
     echo "Error: Failed to download the JDK archive signature. Exiting with status 1." >&2
     exit 1
