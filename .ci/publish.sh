@@ -88,7 +88,7 @@ fi
 # Save build result metadata
 mkdir -p target
 BUILD_METADATA_PATH="target/build-result-metadata_${BAKE_TARGET}_${metadata_suffix}.json"
-bake_common_opts=("--file=docker-bake.hcl" "--file=docker-bake.override.json")
+bake_common_opts=("--file=docker-bake.hcl")
 build_opts+=("--metadata-file=${BUILD_METADATA_PATH}")
 
 COMMIT_SHA=$(git rev-parse HEAD)

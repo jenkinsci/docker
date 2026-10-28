@@ -1,44 +1,57 @@
-ARG ALPINE_TAG=3.24.2
+ARG ALPINE_TAG=3.24.3
 
 FROM alpine:"${ALPINE_TAG}" AS jre-and-war
 
-ARG JAVA_VERSION=21.0.12.1_1
+SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 
-SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+# This Build ARG is populated by Docker
+# Ref. https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
+ARG TARGETPLATFORM
 
-COPY jdk-download-url.sh /usr/bin/jdk-download-url.sh
-COPY jdk-download.sh /usr/bin/jdk-download.sh
-
+ARG JAVA_RELEASE
+COPY ./adoptium/jdk_installers.txt /tmp/jdk_installers.txt
+COPY adoptium.key /usr/local/share/adoptium.key
+ARG TEMP_JAVA_HOME=/opt/jdk
+ENV PATH="${TEMP_JAVA_HOME}/bin:${PATH}"
+# hadolint ignore=DL3018
 RUN apk add --no-cache \
     ca-certificates \
-    gnupg \
-    jq \
     curl \
-    && rm -fr /var/cache/apk/* \
-    && /usr/bin/jdk-download.sh alpine
+    gnupg \
+    tar \
+  && java_zip_url="$(grep "jdk${JAVA_RELEASE}/${TARGETPLATFORM}/musl" /tmp/jdk_installers.txt | cut -d' ' -f2)" \
+  && mkdir -p "${TEMP_JAVA_HOME}" \
+  && jdk_archive="/opt/jdk.zip" \
+  && curl --silent --show-error --fail --location --output "${jdk_archive}" "${java_zip_url}" \
+  && curl --silent --show-error --fail --location --output "${jdk_archive}.sig" "${java_zip_url}.sig" \
+  && GNUPGHOME=$(mktemp -d) \
+  && gpg --batch --homedir "${GNUPGHOME}" --import /usr/local/share/adoptium.key \
+  && gpg --batch --homedir "${GNUPGHOME}" --verify "${jdk_archive}.sig" "${jdk_archive}" \
+  && tar xzf "${jdk_archive}" --strip-components=1 -C "${TEMP_JAVA_HOME}" \
+  && java --version \
+  && jlink --version
 
-ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
-
-# Generate smaller java runtime without unneeded files
+# Generate smaller java runtime for JDK21 without unneeded files
 # for now we include the full module path to maintain compatibility
 # while still saving space (approx 200mb from the full distribution)
-# hadolint ignore=SC2086
-RUN java_major_version="$(jlink --version 2>&1 | cut -c1-2)"; \
-    if [ "$java_major_version" = "25" ]; then \
-      cp -r "/opt/jdk-${JAVA_VERSION}" /javaruntime; \
-    else \
-      case "$java_major_version" in \
-        "21") options="--compress=zip-6" ;; \
-        *) echo "ERROR: unmanaged jlink version pattern" && exit 1 ;; \
-      esac; \
-      jlink \
-        --strip-java-debug-attributes \
-        ${options} \
-        --add-modules ALL-MODULE-PATH \
-        --no-man-pages \
-        --no-header-files \
-        --output /javaruntime; \
-    fi
+RUN case "$(jlink --version 2>&1)" in \
+    "21."*) jlink \
+              --strip-java-debug-attributes \
+              --compress=zip-6 \
+              --add-modules ALL-MODULE-PATH \
+              --no-man-pages \
+              --no-header-files \
+              --output /javaruntime;; \
+    # JDK 25 switches to a minimal module set for smaller images.
+    # Modules on top of the base set, required by code that Jenkins core and plugins run on the agent:
+    # - java.sql: hudson.util.Secret (credentials masking, e.g. withCredentials) via Stapler and commons-beanutils
+    # - java.desktop: java.beans, used by commons-beanutils/commons-digester (e.g. warnings-ng XML report parsers)
+    # - jdk.net: Apache HttpClient 5 (e.g. http_request plugin)
+    # - java.naming: logback, used by tools started with the agent JVM (e.g. SonarScanner CLI)
+    # - jdk.unsupported: sun.misc.Unsafe (e.g. Groovy in the agent script console)
+    "25"*)  cp -r "${TEMP_JAVA_HOME}" /javaruntime;; \
+    *) echo "ERROR: unmanaged jlink version pattern" && exit 1 ;; \
+  esac;
 
 # Jenkins version being bundled in this docker image
 ARG JENKINS_VERSION=2.580

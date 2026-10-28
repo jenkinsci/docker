@@ -12,7 +12,7 @@ Param(
     # Print the build and publish command instead of executing them if set
     [switch] $DryRun = $false,
     # Pester version to install and use for tests
-    [String] $PesterVersion = '6.1.0',
+    [String] $PesterVersion = '6.2.0',
     # Output debug info for tests: 'empty' (no additional test output), 'debug' (test cmd & stderr output), 'verbose' (test cmd, stderr, stdout output)
     [String] $TestsDebug = ''
 )
@@ -190,7 +190,7 @@ function Initialize-DockerComposeFile {
     # - Use docker buildx bake to output image definitions from the "<windowsFlavor>" bake target
     # - Convert with yq to the format expected by docker compose
     # - Store the result in the docker compose file
-    docker buildx bake --progress=quiet --file=docker-bake.hcl --file docker-bake.override.json $windowsFlavor --print |
+    docker buildx bake --progress=quiet --file=docker-bake.hcl $windowsFlavor --print |
         yq --prettyPrint $yqMainQuery |
         yq $yqServicesQuery |
         Out-File -FilePath $DockerComposeFile
