@@ -2,44 +2,56 @@ ARG RHEL_TAG=9.8-1793179168
 ARG RHEL_RELEASE_LINE=ubi9
 FROM registry.access.redhat.com/${RHEL_RELEASE_LINE}/ubi:${RHEL_TAG} AS jre-and-war
 
-ARG JAVA_VERSION=21.0.12.1_1
+SHELL ["/bin/bash", "-e", "-u", "-o", "pipefail", "-c"]
 
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+# This Build ARG is populated by Docker
+# Ref. https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
+ARG TARGETPLATFORM
 
-COPY jdk-download-url.sh /usr/bin/jdk-download-url.sh
-COPY jdk-download.sh /usr/bin/jdk-download.sh
+ARG JAVA_RELEASE
+COPY ./adoptium/jdk_installers.txt /tmp/jdk_installers.txt
 COPY adoptium.key /usr/local/share/adoptium.key
-
+ARG TEMP_JAVA_HOME=/opt/jdk
+ENV PATH="${TEMP_JAVA_HOME}/bin:${PATH}"
 RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=0 --setopt=tsflags=nodocs --allowerasing -y \
     ca-certificates \
     curl \
     gnupg \
-    jq \
-    && dnf clean --disableplugin=subscription-manager all \
-    && /usr/bin/jdk-download.sh
+    tar \
+  && dnf clean --disableplugin=subscription-manager all \
+  && java_zip_url="$(grep "jdk${JAVA_RELEASE}/${TARGETPLATFORM}/glibc" /tmp/jdk_installers.txt | cut -d' ' -f2)" \
+  && mkdir -p "${TEMP_JAVA_HOME}" \
+  && jdk_archive="/opt/jdk.zip" \
+  && curl --silent --show-error --fail --location --output "${jdk_archive}" "${java_zip_url}" \
+  && curl --silent --show-error --fail --location --output "${jdk_archive}.sig" "${java_zip_url}.sig" \
+  && GNUPGHOME=$(mktemp -d) \
+  && gpg --batch --homedir "${GNUPGHOME}" --import /usr/local/share/adoptium.key \
+  && gpg --batch --homedir "${GNUPGHOME}" --verify "${jdk_archive}.sig" "${jdk_archive}" \
+  && tar xzf "${jdk_archive}" --strip-components=1 -C "${TEMP_JAVA_HOME}" \
+  && java --version \
+  && jlink --version
 
-ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
-
-# Generate smaller java runtime without unneeded files
+# Generate smaller java runtime for JDK21 without unneeded files
 # for now we include the full module path to maintain compatibility
 # while still saving space (approx 200mb from the full distribution)
-# hadolint ignore=SC2086
-RUN java_major_version="$(jlink --version 2>&1 | cut -c1-2)"; \
-    if [ "$java_major_version" = "25" ]; then \
-      cp -r "/opt/jdk-${JAVA_VERSION}" /javaruntime; \
-    else \
-      case "$java_major_version" in \
-        "21") options="--compress=zip-6" ;; \
-        *) echo "ERROR: unmanaged jlink version pattern" && exit 1 ;; \
-      esac; \
-      jlink \
-        --strip-java-debug-attributes \
-        ${options} \
-        --add-modules ALL-MODULE-PATH \
-        --no-man-pages \
-        --no-header-files \
-        --output /javaruntime; \
-    fi
+RUN case "$(jlink --version 2>&1)" in \
+    "21."*) jlink \
+              --strip-java-debug-attributes \
+              --compress=zip-6 \
+              --add-modules ALL-MODULE-PATH \
+              --no-man-pages \
+              --no-header-files \
+              --output /javaruntime;; \
+    # JDK 25 switches to a minimal module set for smaller images.
+    # Modules on top of the base set, required by code that Jenkins core and plugins run on the agent:
+    # - java.sql: hudson.util.Secret (credentials masking, e.g. withCredentials) via Stapler and commons-beanutils
+    # - java.desktop: java.beans, used by commons-beanutils/commons-digester (e.g. warnings-ng XML report parsers)
+    # - jdk.net: Apache HttpClient 5 (e.g. http_request plugin)
+    # - java.naming: logback, used by tools started with the agent JVM (e.g. SonarScanner CLI)
+    # - jdk.unsupported: sun.misc.Unsafe (e.g. Groovy in the agent script console)
+    "25"*)  cp -r "${TEMP_JAVA_HOME}" /javaruntime;; \
+    *) echo "ERROR: unmanaged jlink version pattern" && exit 1 ;; \
+  esac;
 
 # Jenkins version being bundled in this docker image
 ARG JENKINS_VERSION=2.587
@@ -47,9 +59,6 @@ ARG JENKINS_VERSION=2.587
 ARG WAR_URL=https://get.jenkins.io/war/${JENKINS_VERSION}/jenkins.war
 
 COPY jenkins.io-2026.key /war/jenkins-key.pub
-
-# Not using ADD as it does not check Last-Modified header
-# see https://github.com/docker/docker/issues/8331
 RUN curl -fsSL "${WAR_URL}" -o /war/jenkins.war \
   && curl -fsSL "${WAR_URL}.asc" -o /war/jenkins.war.asc \
   && gpg --import /war/jenkins-key.pub \
