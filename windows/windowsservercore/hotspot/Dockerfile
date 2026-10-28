@@ -8,54 +8,23 @@ FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS jre-and-war
 # $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-# GnuPG
 ARG GNUGPG_VERSION=2.5.24_20260923
-RUN New-Item -ItemType Directory -Path C:/temp | Out-Null ; `
-    Invoke-WebRequest -Uri https://www.gnupg.org/ftp/gcrypt/binary/gnupg-w32-${env:GNUGPG_VERSION}.exe -OutFile C:/temp/gnupg.exe ; `
-    Start-Process -FilePath C:/temp/gnupg.exe -ArgumentList '/S' -Wait ; `
-    Remove-Item -Path C:\temp -Recurse | Out-Null
+RUN $gpgTemp = 'C:\gpgtemp' ; `
+    New-Item -ItemType Directory -Path $gpgTemp | Out-Null ; `
+    Invoke-WebRequest -Uri https://www.gnupg.org/ftp/gcrypt/binary/gnupg-w32-${env:GNUGPG_VERSION}.exe -OutFile $gpgTemp/gnupg.exe ; `
+    Start-Process -FilePath $gpgTemp/gnupg.exe -ArgumentList '/S' -Wait ;
 
-ARG JAVA_ZIP_URL="Provided by docker-bake.hcl"
-ARG jdkTempHome='C:\openjdk'
-ARG jdkTemp='C:\jdktemp'
-ARG localArchive="${jdkTemp}\jdk.zip"
-COPY adoptium.key C:/adoptium.key
-RUN New-Item -ItemType Directory -Path $env:jdkTemp | Out-Null ; `
-    Invoke-WebRequest $env:JAVA_ZIP_URL -OutFile $env:localArchive ; `
-    Invoke-WebRequest ($env:JAVA_ZIP_URL + '.sig') -UseBasicParsing -OutFile "$env:localArchive.sig" ; `
-    & 'C:/Program Files/GnuPG/bin/gpg.exe' --batch --import C:/adoptium.key ; `
-    & 'C:/Program Files/GnuPG/bin/gpg.exe' --batch --verify "$env:localArchive.sig" $env:localArchive ; `
-    Expand-Archive -Path $env:localArchive -DestinationPath $env:jdkTemp ; `
-    $expandedDir = Get-ChildItem -Path $env:jdkTemp -Directory | Where-Object { $_.Name -like 'jdk*' } ; `
-    Move-Item -Path $expandedDir.FullName -Destination $env:jdkTempHome -Force ; `
-    Remove-Item -Path $env:jdkTemp -Recurse | Out-Null  ; `
-    $CurrentPath = (Get-Itemproperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path).Path ; `
-    $NewPath = $CurrentPath + $(';{0}/bin' -f $env:jdkTempHome) ; `
-    Set-ItemProperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path -Value $NewPath
-
-RUN Write-Host 'java --version' ; java --version ; `
-    Write-Host 'javac --version' ; javac --version ; `
-    $version = (jlink --version) ; `
-    $javaMajorVersion = $version.Substring(0,2) ; `
-    if ($javaMajorVersion -eq '25') { `
-        Move-Item -Path $env:jdkTempHome -Destination C:\javaruntime ; `
-    } else { `
-        $options = '--compress=2' ; `
-        switch ($version.Substring(0,3)) { `
-            '21.' { $options = '--compress=zip-6' } `
-            Default { `
-                Write-Error 'ERROR: unmanaged jlink version pattern' ; `
-                exit 1 ; `
-            } `
-        } `
-        & jlink `
-        --strip-java-debug-attributes `
-        $options `
-        --add-modules ALL-MODULE-PATH `
-        --no-man-pages `
-        --no-header-files `
-        --output /javaruntime ; `
-    }
+ARG JAVA_RELEASE
+ENV JAVA_HOME="C:/openjdk-${JAVA_RELEASE}"
+COPY ./adoptium/jdk_installers.txt "C:\jdk_installers.txt"
+RUN $jdkTemp = 'C:\jdktemp' ; `
+    $zip = Join-Path $jdkTemp 'jdk.zip' ; `
+    New-Item -ItemType Directory -Path $jdkTemp | Out-Null ; `
+    $url = (Get-Content .\jdk_installers.txt | Where-Object { $_ -match ('jdk{0}/windows/amd64' -f $env:JAVA_RELEASE) } | Select-Object -First 1).Split(' ')[1] ;  `
+    Invoke-WebRequest $url -OutFile $zip ; `
+    Expand-Archive -Path $zip -DestinationPath $jdkTemp ; `
+    $expandedDir = Get-ChildItem -Path $jdkTemp -Directory | Where-Object { $_.Name -like 'jdk*' } ; `
+    Move-Item -Path $expandedDir.FullName -Destination $env:JAVA_HOME -Force
 
 # Jenkins version being bundled in this docker image
 ARG JENKINS_VERSION=2.580
@@ -78,10 +47,10 @@ RUN & 'C:/Program Files/GnuPG/bin/gpg.exe' --version ; `
 
 FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION}" AS controller
 
-ARG JAVA_HOME="C:/openjdk-21"
-ENV JAVA_HOME=${JAVA_HOME}
+ARG JAVA_RELEASE
+ENV JAVA_HOME="C:/openjdk-${JAVA_RELEASE}"
 
-COPY --from=jre-and-war /javaruntime $JAVA_HOME
+COPY --from=jre-and-war $JAVA_HOME $JAVA_HOME
 COPY --from=jre-and-war /war/jenkins.war C:/ProgramData/Jenkins/jenkins.war
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]

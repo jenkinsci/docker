@@ -63,13 +63,13 @@ stage('Build') {
                             stage("Build ${imageType}") {
                                 // JDK21 only
                                 powershell '''
-                                (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
+                                (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
                                 ./make.ps1 build -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
                                 '''
 
                                 // JDK25 only
                                 powershell '''
-                                (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
+                                (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
                                 ./make.ps1 build -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
                                 '''
 
@@ -79,9 +79,9 @@ stage('Build') {
                             stage("Test ${imageType}") {
                                 def windowsTestStatus = powershell(
                                     script: '''
-                                        (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
+                                        (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
                                         ./make.ps1 test -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
-                                        (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
+                                        (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
                                         ./make.ps1 test -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
                                     ''',
                                     returnStatus: true
@@ -107,14 +107,14 @@ stage('Build') {
                                             withEnv(['DOCKERHUB_ORGANISATION=jenkins', 'DOCKERHUB_REPO=jenkins']) {
                                                 // JDK21 only
                                                 powershell '''
-                                                (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
+                                                (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
                                                 '''
                                                 powershell './make.ps1 build -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile'
                                                 powershell './make.ps1 publish -ImageType ${env:IMAGE_TYPE}'
 
                                                 // JDK25 only
                                                 powershell '''
-                                                (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
+                                                (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
                                                 '''
                                                 powershell './make.ps1 build -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile'
                                                 powershell './make.ps1 publish -ImageType ${env:IMAGE_TYPE}'
@@ -222,13 +222,13 @@ void nodeWithTimeout(String label, def body) {
     int retryCounter = 0
     retry(count: 2, conditions: [agent(), nonresumable()]) {
         String resolvedAgentLabel = label
-        
+
         resolvedAgentLabel = infra.getBuildAgentLabel([
             useContainerAgent: false,
             platform: label,
             spotRetryCounter: retryCounter
         ])
-        
+
         retryCounter++
         node(resolvedAgentLabel) {
             timeout(time: 60, unit: 'MINUTES') {
