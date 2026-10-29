@@ -37,6 +37,19 @@ versionLT() {
         return 1
     fi
 
+    # "<release>-<build>.v<sha>" versions where the release gains a segment.
+    # Ex: 5.6-191.vb_47e2b_41c698 < 5.6.4-207.vd5b_a_c15e4de5
+    # -> converting '-' to '.' below would compare the build number (191)
+    #    with the third release segment (4) and rank the older version higher,
+    #    so the entrypoint would silently skip the upgrade.
+    # When both versions have a '-', compare the release parts first.
+    # Versions without a '-' keep the comparison below, so the switch from the
+    # old format (3.12.0.0 < 3.12.0-36.vd97de6465d5b_) still works.
+    if [[ "$1" == *-* && "$2" == *-* && "${1%%-*}" != "${2%%-*}" ]]; then
+        versionLT "${1%%-*}" "${2%%-*}"
+        return
+    fi
+
     # Convert '-' to '.' to ease comparison
     normalized_version1=$(echo "$1" | tr '-' '.')
     normalized_version2=$(echo "$2" | tr '-' '.')
