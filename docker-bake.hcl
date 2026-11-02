@@ -56,7 +56,7 @@ variable "DEBIAN_RELEASE_LINE" {
 }
 
 variable "DEBIAN_VERSION" {
-  default = 20261020
+  default = 20261027
 }
 
 variable "RHEL_TAG" {
@@ -129,7 +129,7 @@ target "debian" {
 
 target "rhel" {
   matrix = {
-    java_release    = java_releases(JAVA_RELEASE_OVERRIDE)
+    java_release = java_releases(JAVA_RELEASE_OVERRIDE)
   }
   name       = "rhel_jdk${java_release}"
   dockerfile = "rhel/Dockerfile"
