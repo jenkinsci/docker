@@ -12,7 +12,7 @@ variable "default_java_release" {
 }
 
 variable "JENKINS_VERSION" {
-  default = "2.587"
+  default = "2.588"
 }
 
 variable "WAR_URL" {
@@ -129,7 +129,7 @@ target "debian" {
 
 target "rhel" {
   matrix = {
-    java_release    = java_releases(JAVA_RELEASE_OVERRIDE)
+    java_release = java_releases(JAVA_RELEASE_OVERRIDE)
   }
   name       = "rhel_jdk${java_release}"
   dockerfile = "rhel/Dockerfile"
