@@ -21,8 +21,9 @@ substitute_env_vars() {
             var_value="${default_value}"
         fi
         
-        # Replace all occurrences
-        content="${content//${full_match}/${var_value}}"
+        # Replace the first occurrence literally; Bash 5.2 treats '&' in a
+        # replacement string as the matched text.
+        content="${content%%"$full_match"*}${var_value}${content#*"$full_match"}"
     done
     
     echo "${content}" > "${file}"
