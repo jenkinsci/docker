@@ -5,7 +5,7 @@ ARG DEBIAN_VERSION=20261027
 ARG DEBIAN_VARIANT="-slim"
 FROM debian:"${DEBIAN_RELEASE_LINE}-${DEBIAN_VERSION}${DEBIAN_VARIANT}" AS jre-and-war
 
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+SHELL ["/bin/bash", "-e", "-o", "pipefail", "-c"]
 
 # This Build ARG is populated by Docker
 # Ref. https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
@@ -24,6 +24,7 @@ RUN apt-get update \
     tar \
   && rm -rf /var/lib/apt/lists/* \
   && java_zip_url="$(grep "jdk${JAVA_RELEASE}/${TARGETPLATFORM}/glibc" /tmp/jdk_installers.txt | cut -d' ' -f2)" \
+  && if [ -z "${java_zip_url}" ]; then echo "ERROR: Failed to find JDK installer URL for JAVA_RELEASE=${JAVA_RELEASE}, TARGETPLATFORM=${TARGETPLATFORM}" >&2; exit 1; fi \
   && mkdir -p "${TEMP_JAVA_HOME}" \
   && jdk_archive="/opt/jdk.zip" \
   && curl --silent --show-error --fail --location --output "${jdk_archive}" "${java_zip_url}" \
