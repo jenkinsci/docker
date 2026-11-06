@@ -89,6 +89,26 @@ SUT_DESCRIPTION="${IMAGE}-functions"
   run docker volume rm "${volume_name}"
 }
 
+@test "[${SUT_DESCRIPTION}] substitute_env_vars preserves ampersands in env values" {
+  local volume_name
+  volume_name="subst_ampersand_${BATS_TEST_NUMBER}"
+  run bash -c "docker volume rm -f ${volume_name}; docker volume create ${volume_name}"
+  run docker run --rm \
+    -e JENKINS_ENABLE_ENV_SUBST=true \
+    -e 'JENKINS_URL=https://prod.example.com/?a=1&amp;b=2' \
+    --volume "${volume_name}:/var/jenkins_home" \
+    "${SUT_IMAGE}" bash -c "
+      mkdir -p /usr/share/jenkins/ref
+      echo '<jenkinsUrl>\${JENKINS_URL}</jenkinsUrl>' > /usr/share/jenkins/ref/test.xml
+      source /usr/local/bin/jenkins-support
+      copy_reference_file /usr/share/jenkins/ref/test.xml
+      cat /var/jenkins_home/test.xml
+    "
+  assert_success
+  assert_output '<jenkinsUrl>https://prod.example.com/?a=1&amp;b=2</jenkinsUrl>'
+  run docker volume rm "${volume_name}"
+}
+
 @test "[${SUT_DESCRIPTION}] substitute_env_vars uses default when variable unset" {
   local volume_name
   volume_name="subst_default_${BATS_TEST_NUMBER}"
