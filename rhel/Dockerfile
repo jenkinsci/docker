@@ -20,6 +20,7 @@ RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=
     tar \
   && dnf clean --disableplugin=subscription-manager all \
   && java_zip_url="$(grep "jdk${JAVA_RELEASE}/${TARGETPLATFORM}/glibc" /tmp/jdk_installers.txt | cut -d' ' -f2)" \
+  && if [ -z "${java_zip_url}" ]; then echo "ERROR: Failed to find JDK installer URL for JAVA_RELEASE=${JAVA_RELEASE}, TARGETPLATFORM=${TARGETPLATFORM}" >&2; exit 1; fi \
   && mkdir -p "${TEMP_JAVA_HOME}" \
   && jdk_archive="/opt/jdk.zip" \
   && curl --silent --show-error --fail --location --output "${jdk_archive}" "${java_zip_url}" \
