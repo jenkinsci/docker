@@ -90,6 +90,19 @@ Describe "[functions > $global:TEST_TAG] Check-VersionLessThan" -Skip:(-not $glo
     docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '587.588.v850a_20a_30162' '587.v2872c41fa_e51')) { exit 0 } else { exit -1 }"
     $LastExitCode | Should -Be -1
   }
+  ## Release part gains a segment: '-' must not be compared as '.' when both versions have one
+  It 'has right side greater (apache-httpcomponents-client-5-api-plugin, 5.6 -> 5.6.4)' {
+    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '5.6-191.vb_47e2b_41c698' '5.6.4-207.vd5b_a_c15e4de5')) { exit 0 } else { exit -1 }"
+    $LastExitCode | Should -Be 0
+  }
+  It 'has left side greater (apache-httpcomponents-client-5-api-plugin, 5.6.4 -> 5.6)' {
+    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '5.6.4-207.vd5b_a_c15e4de5' '5.6-191.vb_47e2b_41c698')) { exit 0 } else { exit -1 }"
+    $LastExitCode | Should -Be -1
+  }
+  It 'has right side greater (apache-httpcomponents-client-5-api-plugin, same release, newer build)' {
+    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '5.6.4-204.vfa_29df89ffcf' '5.6.4-207.vd5b_a_c15e4de5')) { exit 0 } else { exit -1 }"
+    $LastExitCode | Should -Be 0
+  }
 }
 
 # Only test on Java 21, one JDK is enough to test all versions
