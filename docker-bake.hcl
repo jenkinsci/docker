@@ -60,7 +60,7 @@ variable "DEBIAN_VERSION" {
 }
 
 variable "RHEL_TAG" {
-  default = "9.8-1793580630"
+  default = "9.8-1793861509"
 }
 
 variable "RHEL_RELEASE_LINE" {
