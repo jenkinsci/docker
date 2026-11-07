@@ -56,7 +56,7 @@ variable "DEBIAN_RELEASE_LINE" {
 }
 
 variable "DEBIAN_VERSION" {
-  default = 20261027
+  default = 20261104
 }
 
 variable "RHEL_TAG" {
