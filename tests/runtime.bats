@@ -135,6 +135,34 @@ runInScriptConsole() {
   assert 'Europe/Madrid' get-timezone-value
 }
 
+@test "[${SUT_DESCRIPTION}] respects hudson.lifecycle in JENKINS_JAVA_OPTS" {
+  local fake_bin
+  fake_bin="${BATS_TEST_TMPDIR}/fake-bin"
+  mkdir -p "${fake_bin}"
+  mkdir -p "${BATS_TEST_TMPDIR}/ref" "${BATS_TEST_TMPDIR}/home"
+  cat > "${fake_bin}/java" <<'EOF'
+#!/bin/bash
+printf '<%s>\n' "$@"
+EOF
+  chmod +x "${fake_bin}/java"
+
+  run env \
+    PATH="${fake_bin}:${PATH}" \
+    REF="${BATS_TEST_TMPDIR}/ref" \
+    JENKINS_HOME="${BATS_TEST_TMPDIR}/home" \
+    COPY_REFERENCE_FILE_LOG="${BATS_TEST_TMPDIR}/copy_reference_file.log" \
+    JENKINS_WAR="${BATS_TEST_TMPDIR}/jenkins.war" \
+    JAVA_OPTS= \
+    JENKINS_JAVA_OPTS=-Dhudson.lifecycle=custom.Lifecycle \
+    JENKINS_OPTS= \
+    DEBUG= \
+    bash "${BATS_TEST_DIRNAME}/../jenkins.sh"
+
+  assert_success
+  assert_line '<-Dhudson.lifecycle=custom.Lifecycle>'
+  refute_line '<-Dhudson.lifecycle=hudson.lifecycle.ExitLifecycle>'
+}
+
 # bats test_tags=use:start-jenkins-with-jvm-opts
 @test "[${SUT_DESCRIPTION}] JENKINS_JAVA_OPTS overrides JAVA_OPTS" {
   start-jenkins-with-jvm-opts \
