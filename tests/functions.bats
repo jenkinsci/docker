@@ -319,10 +319,11 @@ SUT_DESCRIPTION="${IMAGE}-functions"
       copy_reference_file /usr/share/jenkins/ref/onenewline.properties
       copy_reference_file /usr/share/jenkins/ref/twonewlines.properties
 
-      cmp /tmp/expected/empty.xml /var/jenkins_home/empty.xml
-      cmp /tmp/expected/nonewline.properties /var/jenkins_home/nonewline.properties
-      cmp /tmp/expected/onenewline.properties /var/jenkins_home/onenewline.properties
-      cmp /tmp/expected/twonewlines.properties /var/jenkins_home/twonewlines.properties
+      [ -f /var/jenkins_home/empty.xml ] && \
+      [ \"\$(od -v -An -tx1 /tmp/expected/empty.xml)\" = \"\$(od -v -An -tx1 /var/jenkins_home/empty.xml)\" ] && \
+      [ \"\$(od -v -An -tx1 /tmp/expected/nonewline.properties)\" = \"\$(od -v -An -tx1 /var/jenkins_home/nonewline.properties)\" ] && \
+      [ \"\$(od -v -An -tx1 /tmp/expected/onenewline.properties)\" = \"\$(od -v -An -tx1 /var/jenkins_home/onenewline.properties)\" ] && \
+      [ \"\$(od -v -An -tx1 /tmp/expected/twonewlines.properties)\" = \"\$(od -v -An -tx1 /var/jenkins_home/twonewlines.properties)\" ]
     "
   assert_success
   run docker volume rm "${volume_name}"
