@@ -147,3 +147,183 @@ SUT_DESCRIPTION="${IMAGE}-functions"
   assert_output '<jenkinsUrl>${JENKINS_URL:-http://localhost:8080/}</jenkinsUrl>'
   run docker volume rm "${volume_name}"
 }
+
+@test "[${SUT_DESCRIPTION}] substitute_env_vars handles self-referencing env values without hanging" {
+  local volume_name
+  volume_name="subst_recursive_${BATS_TEST_NUMBER}"
+  run bash -c "docker volume rm -f ${volume_name}; docker volume create ${volume_name}"
+  run docker run --rm \
+    --stop-timeout 5 \
+    -e JENKINS_ENABLE_ENV_SUBST=true \
+    -e 'RECURSIVE_URL=${RECURSIVE_URL}' \
+    --volume "${volume_name}:/var/jenkins_home" \
+    "${SUT_IMAGE}" timeout 5 bash -c "
+      mkdir -p /usr/share/jenkins/ref
+      echo '<jenkinsUrl>\${RECURSIVE_URL}</jenkinsUrl>' > /usr/share/jenkins/ref/test.xml
+      source /usr/local/bin/jenkins-support
+      copy_reference_file /usr/share/jenkins/ref/test.xml
+      cat /var/jenkins_home/test.xml
+    "
+  assert_success
+  assert_output '<jenkinsUrl>${RECURSIVE_URL}</jenkinsUrl>'
+  run docker volume rm "${volume_name}"
+}
+
+@test "[${SUT_DESCRIPTION}] substitute_env_vars handles mutually referencing env values without hanging" {
+  local volume_name
+  volume_name="subst_mutual_${BATS_TEST_NUMBER}"
+  run bash -c "docker volume rm -f ${volume_name}; docker volume create ${volume_name}"
+  run docker run --rm \
+    --stop-timeout 5 \
+    -e JENKINS_ENABLE_ENV_SUBST=true \
+    -e 'VAR_A=${VAR_B}' \
+    -e 'VAR_B=${VAR_A}' \
+    --volume "${volume_name}:/var/jenkins_home" \
+    "${SUT_IMAGE}" timeout 5 bash -c "
+      mkdir -p /usr/share/jenkins/ref
+      echo '<props a=\"\${VAR_A}\" b=\"\${VAR_B}\"/>' > /usr/share/jenkins/ref/test.xml
+      source /usr/local/bin/jenkins-support
+      copy_reference_file /usr/share/jenkins/ref/test.xml
+      cat /var/jenkins_home/test.xml
+    "
+  assert_success
+  assert_output '<props a="${VAR_B}" b="${VAR_A}"/>'
+  run docker volume rm "${volume_name}"
+}
+
+@test "[${SUT_DESCRIPTION}] substitute_env_vars preserves literal nested placeholders in env values" {
+  local volume_name
+  volume_name="subst_nested_${BATS_TEST_NUMBER}"
+  run bash -c "docker volume rm -f ${volume_name}; docker volume create ${volume_name}"
+  run docker run --rm \
+    -e JENKINS_ENABLE_ENV_SUBST=true \
+    -e 'API_ENDPOINT=https://api.example.com/${path}?id=${id}' \
+    --volume "${volume_name}:/var/jenkins_home" \
+    "${SUT_IMAGE}" bash -c "
+      mkdir -p /usr/share/jenkins/ref
+      echo '<apiEndpoint>\${API_ENDPOINT}</apiEndpoint>' > /usr/share/jenkins/ref/test.xml
+      source /usr/local/bin/jenkins-support
+      copy_reference_file /usr/share/jenkins/ref/test.xml
+      cat /var/jenkins_home/test.xml
+    "
+  assert_success
+  assert_output '<apiEndpoint>https://api.example.com/${path}?id=${id}</apiEndpoint>'
+  run docker volume rm "${volume_name}"
+}
+
+@test "[${SUT_DESCRIPTION}] substitute_env_vars uses default when variable is empty" {
+  local volume_name
+  volume_name="subst_empty_def_${BATS_TEST_NUMBER}"
+  run bash -c "docker volume rm -f ${volume_name}; docker volume create ${volume_name}"
+  run docker run --rm \
+    -e JENKINS_ENABLE_ENV_SUBST=true \
+    -e JENKINS_URL= \
+    --volume "${volume_name}:/var/jenkins_home" \
+    "${SUT_IMAGE}" bash -c "
+      mkdir -p /usr/share/jenkins/ref
+      echo '<jenkinsUrl>\${JENKINS_URL:-http://localhost:8080/}</jenkinsUrl>' > /usr/share/jenkins/ref/test.xml
+      source /usr/local/bin/jenkins-support
+      copy_reference_file /usr/share/jenkins/ref/test.xml
+      cat /var/jenkins_home/test.xml
+    "
+  assert_success
+  assert_output '<jenkinsUrl>http://localhost:8080/</jenkinsUrl>'
+  run docker volume rm "${volume_name}"
+}
+
+@test "[${SUT_DESCRIPTION}] substitute_env_vars handles empty default syntax" {
+  local volume_name
+  volume_name="subst_empty_default_syntax_${BATS_TEST_NUMBER}"
+  run bash -c "docker volume rm -f ${volume_name}; docker volume create ${volume_name}"
+  run docker run --rm \
+    -e JENKINS_ENABLE_ENV_SUBST=true \
+    -e FOO_SET=configured \
+    --volume "${volume_name}:/var/jenkins_home" \
+    "${SUT_IMAGE}" bash -c "
+      mkdir -p /usr/share/jenkins/ref
+      echo '<props unset=\"\${FOO_UNSET:-}\" set=\"\${FOO_SET:-}\"/>' > /usr/share/jenkins/ref/test.xml
+      source /usr/local/bin/jenkins-support
+      copy_reference_file /usr/share/jenkins/ref/test.xml
+      cat /var/jenkins_home/test.xml
+    "
+  assert_success
+  assert_output '<props unset="" set="configured"/>'
+  run docker volume rm "${volume_name}"
+}
+
+@test "[${SUT_DESCRIPTION}] substitute_env_vars handles multiple, adjacent, and repeated variables" {
+  local volume_name
+  volume_name="subst_multi_${BATS_TEST_NUMBER}"
+  run bash -c "docker volume rm -f ${volume_name}; docker volume create ${volume_name}"
+  run docker run --rm \
+    -e JENKINS_ENABLE_ENV_SUBST=true \
+    -e FOO=alpha \
+    -e BAR=beta \
+    --volume "${volume_name}:/var/jenkins_home" \
+    "${SUT_IMAGE}" bash -c "
+      mkdir -p /usr/share/jenkins/ref
+      echo '<props>\${FOO}\${BAR}_\${FOO}</props>' > /usr/share/jenkins/ref/test.xml
+      source /usr/local/bin/jenkins-support
+      copy_reference_file /usr/share/jenkins/ref/test.xml
+      cat /var/jenkins_home/test.xml
+    "
+  assert_success
+  assert_output '<props>alphabeta_alpha</props>'
+  run docker volume rm "${volume_name}"
+}
+
+@test "[${SUT_DESCRIPTION}] substitute_env_vars handles defaults containing glob metacharacters" {
+  local volume_name
+  volume_name="subst_glob_def_${BATS_TEST_NUMBER}"
+  run bash -c "docker volume rm -f ${volume_name}; docker volume create ${volume_name}"
+  run docker run --rm \
+    -e JENKINS_ENABLE_ENV_SUBST=true \
+    --volume "${volume_name}:/var/jenkins_home" \
+    "${SUT_IMAGE}" bash -c "
+      mkdir -p /usr/share/jenkins/ref
+      echo '<network host=\"\${HOST:-[::1]}\" filter=\"\${FILTER:-*.log}\" match=\"\${MATCH:-file?.txt}\"/>' > /usr/share/jenkins/ref/test.xml
+      source /usr/local/bin/jenkins-support
+      copy_reference_file /usr/share/jenkins/ref/test.xml
+      cat /var/jenkins_home/test.xml
+    "
+  assert_success
+  assert_output '<network host="[::1]" filter="*.log" match="file?.txt"/>'
+  run docker volume rm "${volume_name}"
+}
+
+@test "[${SUT_DESCRIPTION}] substitute_env_vars preserves trailing newline behavior and empty files" {
+  local volume_name
+  volume_name="subst_nl_${BATS_TEST_NUMBER}"
+  run bash -c "docker volume rm -f ${volume_name}; docker volume create ${volume_name}"
+  run docker run --rm \
+    -e JENKINS_ENABLE_ENV_SUBST=true \
+    -e FOO=bar \
+    --volume "${volume_name}:/var/jenkins_home" \
+    "${SUT_IMAGE}" bash -c "
+      mkdir -p /usr/share/jenkins/ref /tmp/expected
+      touch /usr/share/jenkins/ref/empty.xml
+      touch /tmp/expected/empty.xml
+
+      printf 'no_newline=\${FOO}' > /usr/share/jenkins/ref/nonewline.properties
+      printf 'no_newline=bar' > /tmp/expected/nonewline.properties
+
+      printf 'one_newline=\${FOO}\n' > /usr/share/jenkins/ref/onenewline.properties
+      printf 'one_newline=bar\n' > /tmp/expected/onenewline.properties
+
+      printf 'two_newlines=\${FOO}\n\n' > /usr/share/jenkins/ref/twonewlines.properties
+      printf 'two_newlines=bar\n\n' > /tmp/expected/twonewlines.properties
+
+      source /usr/local/bin/jenkins-support
+      copy_reference_file /usr/share/jenkins/ref/empty.xml
+      copy_reference_file /usr/share/jenkins/ref/nonewline.properties
+      copy_reference_file /usr/share/jenkins/ref/onenewline.properties
+      copy_reference_file /usr/share/jenkins/ref/twonewlines.properties
+
+      cmp /tmp/expected/empty.xml /var/jenkins_home/empty.xml
+      cmp /tmp/expected/nonewline.properties /var/jenkins_home/nonewline.properties
+      cmp /tmp/expected/onenewline.properties /var/jenkins_home/onenewline.properties
+      cmp /tmp/expected/twonewlines.properties /var/jenkins_home/twonewlines.properties
+    "
+  assert_success
+  run docker volume rm "${volume_name}"
+}
