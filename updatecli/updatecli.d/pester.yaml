@@ -1,0 +1,50 @@
+name: Bump `pester` version
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "{{ .github.branch }}"
+
+sources:
+  lastVersion:
+    kind: githubrelease
+    name: Get latest `pester` version
+    spec:
+      owner: pester
+      repository: pester
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      versionfilter:
+        kind: semver
+    transformers:
+      - trimprefix: "v"
+
+targets:
+  updateVersion:
+    name: Update `pester` version in make.ps1
+    kind: file
+    spec:
+      file: make.ps1
+      matchpattern: >
+        PesterVersion = (.*)
+      replacepattern: >
+        PesterVersion = '{{ source "lastVersion" }}',
+    scmid: default
+
+actions:
+  default:
+    kind: github/pullrequest
+    title: Bump `pester` version to {{ source "lastVersion" }}
+    scmid: default
+    spec:
+      labels:
+        - dependencies
+        - pester
+        - windows

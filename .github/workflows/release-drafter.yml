@@ -8,6 +8,9 @@ on:
       - "master"
   workflow_dispatch:
 
+# Only allow 1 release-drafter build at a time to avoid creating multiple "next" releases
+concurrency: "release-drafter"
+
 jobs:
   update_release_draft:
     runs-on: ubuntu-latest
@@ -19,6 +22,6 @@ jobs:
         run: sleep 15s
       # Drafts your next Release notes as Pull Requests are merged into "master"
       - name: Release Drafter
-        uses: release-drafter/release-drafter@4d75298e00d9e34c483e5ff8c68d0ea1c1940c1e # v7.5.1
+        uses: release-drafter/release-drafter@978bb0b30c5ee8cdd332ced253758157150d43f0 # v7.10.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

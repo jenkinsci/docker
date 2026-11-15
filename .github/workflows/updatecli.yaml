@@ -11,6 +11,10 @@ on:
   pull_request:
     branches:
       - master
+
+# Only allow 1 updatecli build at a time to avoid orphaned updatecli branches
+concurrency: "updatecli"
+
 jobs:
   updatecli:
     runs-on: ubuntu-latest
@@ -20,9 +24,10 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Install Updatecli in the runner
-        uses: updatecli/updatecli-action@v3.3.0
+        uses: updatecli/updatecli-action@v3.10.0
 
       - name: Run Updatecli in Dry Run mode
+        if: github.ref != 'refs/heads/master'
         run: updatecli pipeline diff --config ./updatecli/updatecli.d --values ./updatecli/values.github-action.yaml
         env:
           UPDATECLI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

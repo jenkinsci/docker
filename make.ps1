@@ -4,13 +4,15 @@ Param(
     # Default script target
     [String] $Target = 'build',
     # Jenkins version to include
-    [String] $JenkinsVersion = '2.573',
+    [String] $JenkinsVersion = '2.590',
     # Windows flavor and windows version to build
     [String] $ImageType = 'windowsservercore-ltsc2022',
     # Generate a docker compose file even if it already exists
     [switch] $OverwriteDockerComposeFile = $false,
     # Print the build and publish command instead of executing them if set
     [switch] $DryRun = $false,
+    # Pester version to install and use for tests
+    [String] $PesterVersion = '6.2.0',
     # Output debug info for tests: 'empty' (no additional test output), 'debug' (test cmd & stderr output), 'verbose' (test cmd, stderr, stdout output)
     [String] $TestsDebug = ''
 )
@@ -208,7 +210,7 @@ yq --version
 # Add 'lts-' prefix to LTS tags not including Jenkins version
 # Compared to weekly releases, LTS releases include an additional build number in their version
 $releaseLine = 'war'
-# Determine if the current JENKINS_VERSION corresponds to the latest Weekly or LTS version from Artifactory 
+# Determine if the current JENKINS_VERSION corresponds to the latest Weekly or LTS version from Artifactory
 $isJenkinsVersionLatest = Test-IsLatestJenkinsRelease -Version $JenkinsVersion
 
 if ($JenkinsVersion.Split('.').Count -eq 3) {
@@ -259,10 +261,10 @@ if ($target -eq 'test') {
     } else {
         Write-Host '= TEST: Starting test harness'
 
-        $mod = Get-InstalledModule -Name Pester -MinimumVersion 5.3.0 -MaximumVersion 5.3.3 -ErrorAction SilentlyContinue
+        $mod = Get-InstalledModule -Name Pester -RequiredVersion $PesterVersion -ErrorAction SilentlyContinue
         if ($null -eq $mod) {
-            Write-Host '= TEST: Pester 5.3.x not found: installing...'
-            Install-Module -Force -Name Pester -MaximumVersion 5.3.3 -Scope CurrentUser
+            Write-Host "= TEST: Pester $PesterVersion not found: installing..."
+            Install-Module -Force -Name Pester -RequiredVersion $PesterVersion -Scope CurrentUser
         }
 
         Import-Module Pester
