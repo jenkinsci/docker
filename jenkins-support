@@ -7,26 +7,30 @@
 substitute_env_vars() {
     local file="$1"
     local content
-    content=$(cat "${file}")
-    
-    # Loop until no more substitutions found
-    while [[ "${content}" =~ \$\{([A-Za-z_][A-Za-z0-9_]*)(:-([^}]*))?\} ]]; do
+    content=$(cat "${file}" && printf 'x') || return 1
+    content="${content%x}"
+
+    local result=""
+    local remaining="${content}"
+
+    # Single pass: consume from remaining into result to avoid re-evaluating substituted values
+    while [[ "${remaining}" =~ \$\{([A-Za-z_][A-Za-z0-9_]*)(:-([^}]*))?\} ]]; do
         local var_name="${BASH_REMATCH[1]}"
-        local default_value="${BASH_REMATCH[3]}"
+        local default_value="${BASH_REMATCH[3]:-}"
         local full_match="${BASH_REMATCH[0]}"
-        
+
         # Get variable value using indirect expansion, or use default if empty
         local var_value="${!var_name:-}"
         if [[ -z "${var_value}" && -n "${default_value}" ]]; then
             var_value="${default_value}"
         fi
-        
-        # Replace the first occurrence literally; Bash 5.2 treats '&' in a
-        # replacement string as the matched text.
-        content="${content%%"$full_match"*}${var_value}${content#*"$full_match"}"
+
+        result+="${remaining%%"$full_match"*}${var_value}"
+        remaining="${remaining#*"$full_match"}"
     done
-    
-    echo "${content}" > "${file}"
+    result+="${remaining}"
+
+    printf '%s' "${result}" > "${file}" || return 1
 }
 
 # compare if version1 < version2
