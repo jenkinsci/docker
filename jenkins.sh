@@ -36,7 +36,7 @@ if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
   fi
 
   readonly lifecycle_property='hudson.lifecycle'
-  if [[ "${JAVA_OPTS:-}" != *"${lifecycle_property}"* ]]; then
+  if [[ "${effective_java_opts:-}" != *"${lifecycle_property}"* ]]; then
     java_opts_array+=( "-D${lifecycle_property}=hudson.lifecycle.ExitLifecycle" )
   fi
 
