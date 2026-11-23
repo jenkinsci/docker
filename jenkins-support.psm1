@@ -1,81 +1,110 @@
 
+# Splits a Jenkins plugin version string into its comparable "primary" dotted
+# version and an optional trailing incremental-build qualifier, stopping
+# before any opaque ".v<hash>" content-hash marker (e.g. ".vd97de6465d5b_").
+# A literal '-' before the marker separates the primary version from the
+# qualifier (e.g. "5.6.5-209.v..." -> primary "5.6.5", qualifier "209");
+# without a '-', there is no qualifier and the whole pre-marker string is the
+# primary (e.g. "587.588.v..." -> primary "587.588", no qualifier).
+function Split-PluginVersion([string] $version) {
+    $preMarker = $version
+    if ($version -match '^(.*)\.v[0-9A-Za-z_]') {
+        $preMarker = $matches[1]
+    }
+    $dashIndex = $preMarker.IndexOf('-')
+    if ($dashIndex -ge 0) {
+        return @($preMarker.Substring(0, $dashIndex), $preMarker.Substring($dashIndex + 1))
+    }
+    return @($preMarker, '')
+}
+
+# Compares two dotted-numeric primary versions, zero-padding the shorter one
+# so e.g. "3.12.0" == "3.12.0.0" but "5.6" < "5.6.5". Returns -1, 0 or 1.
+function Compare-PluginVersionPrimary([string] $a, [string] $b) {
+    $partsA = $a.Split('.')
+    $partsB = $b.Split('.')
+    $maxLength = [Math]::Max($partsA.Length, $partsB.Length)
+    for ($i = 0; $i -lt $maxLength; $i++) {
+        $partA = if ($i -lt $partsA.Length) { $partsA[$i] } else { '0' }
+        $partB = if ($i -lt $partsB.Length) { $partsB[$i] } else { '0' }
+        $numA = 0
+        $numB = 0
+        $isNumA = [int64]::TryParse($partA, [ref]$numA)
+        $isNumB = [int64]::TryParse($partB, [ref]$numB)
+        if ($isNumA -and $isNumB) {
+            if ($numA -lt $numB) { return -1 }
+            if ($numA -gt $numB) { return 1 }
+        } else {
+            if ($partA -lt $partB) { return -1 }
+            if ($partA -gt $partB) { return 1 }
+        }
+    }
+    return 0
+}
+
 # compare if version1 < version2
+#
+# Jenkins plugin versions routinely mix two independent kinds of version
+# strings for the *same* plugin across releases: a longer, more specific
+# dotted version (e.g. "5.6.5-209.v<hash>") and a shorter one from before the
+# plugin adopted that extra component (e.g. "5.6-191.v<hash>"). Naively
+# flattening both into one dot-separated sequence (as `-replace '-', '.'`
+# does) and comparing them position-by-position silently misaligns the two:
+# the shorter version's incremental-build number ends up compared directly
+# against the longer version's *real* third version component, since it
+# slides into the same position. For "5.6-191.v..." vs "5.6.5-209.v...",
+# that comparison is "191" against "5" at the third position -- 191 > 5, so
+# the 4-part version is (wrongly) considered the older one, which is exactly
+# backwards (5.6.5 is a newer release than 5.6). This is what the entrypoint
+# hit for apache-httpcomponents-client-5-api 5.6.5-209.v... vs the installed
+# 5.6-191.v..., causing jenkins-support to skip a real plugin upgrade and
+# leave an incompatible, stale version installed.
+#
+# A prior fix (https://github.com/jenkinsci/docker/issues/2328) special-cased
+# one specific depth of this same shape mismatch (a 2-part vs. 3-part
+# version split right after the first segment, as in
+# "3894.vd0f0248b_a_fc4" vs "3894.3896.vca_2c931e7935" -- a security-fix
+# backport). It doesn't generalize: it only inspects the segment
+# immediately after the first one, so it doesn't catch a mismatch one level
+# deeper, like the httpcomponents-client-5-api case above.
+#
+# This splits each version into its real, comparable "primary" dotted
+# version and an optional trailing incremental-build qualifier (see
+# Split-PluginVersion), compares the primaries first (with zero-padding, so
+# depth differences compare correctly instead of misaligning), and only
+# falls back to comparing qualifiers when the primaries are equal -- which
+# also subsumes the 2328 special case, so it's removed rather than kept
+# alongside this.
 function Compare-VersionLessThan([string] $version1 = '', [string] $version2 = '') {
     # Quick check for equality
     if($version1 -eq $version2) {
         return $false
     }
 
-    # Convert '-' to '.' to ease comparison
-    $normalizedVersion1 = $version1 -replace '-', '.'
-    $normalizedVersion2 = $version2 -replace '-', '.'
+    $split1 = Split-PluginVersion $version1
+    $split2 = Split-PluginVersion $version2
+    $primary1 = $split1[0]
+    $qualifier1 = $split1[1]
+    $primary2 = $split2[0]
+    $qualifier2 = $split2[1]
 
-    $version1Parts = $normalizedVersion1.Split('.')
-    $version2Parts = $normalizedVersion2.Split('.')
+    $primaryCmp = Compare-PluginVersionPrimary $primary1 $primary2
+    if ($primaryCmp -lt 0) { return $true }
+    if ($primaryCmp -gt 0) { return $false }
 
-    # Compare major versions
-    $maj1 = 0
-    $maj2 = 0
-    $isMaj1 = [int64]::TryParse($version1Parts[0], [ref]$maj1)
-    $isMaj2 = [int64]::TryParse($version2Parts[0], [ref]$maj2)
-
-    if ($isMaj1 -and $isMaj2) {
-        if ($maj1 -lt $maj2) {
-            return $true
-        }
-        if ($maj1 -gt $maj2) {
-            return $false
-        }
-    } else {
-        if ($version1Parts[0] -lt $version2parts[0]) {
-            return $true
-        }
-        if ($version1Parts[0] -gt $version2parts[0]) {
-            return $false
-        }
+    # Primaries are equal: a present qualifier is a later incremental build
+    # on top of the same base version, so "no qualifier" is older than "has
+    # a qualifier", and otherwise compare the qualifiers as plain integers.
+    if ([string]::IsNullOrEmpty($qualifier1) -and -not [string]::IsNullOrEmpty($qualifier2)) {
+        return $true
     }
-
-    $maxLength = [Math]::Max($version1Parts.Length, $version2parts.Length)
-    # First parts are equal, compare subsequent parts
-    for ($i = 1; $i -lt $maxLength; $i++) {
-        $version1part = if ($i -lt $version1Parts.Length) { $version1Parts[$i] } else { '0' }
-        $version2part = if ($i -lt $version2Parts.Length) { $version2Parts[$i] } else { '0' }
-
-        if ($version1part -eq $version2part) {
-            continue
-        }
-
-        # Security fix backport / maintenance-branch special case.
-        # Ex: 3894.vd0f0248b_a_fc4 < 3894.3896.vca_2c931e7935
-        # -> normal incrementals version includes a "v" as first char of second part
-        # -> security fix backport adds the backport source first part as second part
-        # https://github.com/jenkinsci/workflow-cps-plugin/releases/tag/3894.vd0f0248b_a_fc4
-        # https://github.com/jenkinsci/workflow-cps-plugin/releases/tag/3894.3896.vca_2c931e7935
-        #
-        # Whenever the first parts match and exactly one of the two parts starts
-        # with "v", that side is the older one regardless of argument order.
-        # Tracked at https://github.com/jenkinsci/docker/issues/2328
-        if ($version1part.Substring(0,1) -eq 'v' -and $version2part.Substring(0,1) -ne 'v') {
-            return $true
-        }
-        if ($version2part.Substring(0,1) -eq 'v' -and $version1part.Substring(0,1) -ne 'v') {
-            return $false
-        }
-
-        # Try numeric comparison first, fall back to string comparison
-        $num1 = 0
-        $num2 = 0
-        $isNum1 = [int64]::TryParse($version1part, [ref]$num1)
-        $isNum2 = [int64]::TryParse($version2part, [ref]$num2)
-
-        if ($isNum1 -and $isNum2) {
-            # Both are numeric, compare as integers
-            return ($num1 -lt $num2)
-        } else {
-            # At least one is not numeric, use string comparison
-            return ($version1part -lt $version2part)
-        }
+    if (-not [string]::IsNullOrEmpty($qualifier1) -and [string]::IsNullOrEmpty($qualifier2)) {
+        return $false
     }
+    if ([string]::IsNullOrEmpty($qualifier1) -and [string]::IsNullOrEmpty($qualifier2)) {
+        return $false
+    }
+    return ([int64]$qualifier1 -lt [int64]$qualifier2)
 }
 
 function Get-EnvOrDefault($name, $def) {

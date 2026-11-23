@@ -90,6 +90,21 @@ Describe "[functions > $global:TEST_TAG] Check-VersionLessThan" -Skip:(-not $glo
     docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '587.588.v850a_20a_30162' '587.v2872c41fa_e51')) { exit 0 } else { exit -1 }"
     $LastExitCode | Should -Be -1
   }
+  ## A mismatch one level deeper than #2328's special case: the two sides'
+  ## dotted version has a different number of real components (5.6 vs
+  ## 5.6.5), not just a difference right after the first segment, so #2328's
+  ## narrower check doesn't catch it. Confirmed live: this caused
+  ## apache-httpcomponents-client-5-api's upgrade to be skipped during a real
+  ## Jenkins controller upgrade, leaving a stale plugin installed that was
+  ## incompatible with the newly-installed cloudbees-bitbucket-branch-source.
+  It 'has left side greater (apache-httpcomponents-client-5-api-plugin)' {
+    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '5.6-191.vb_47e2b_41c698' '5.6.5-209.vd1010d57ee17')) { exit 0 } else { exit -1 }"
+    $LastExitCode | Should -Be 0
+  }
+  It 'has left side greater (apache-httpcomponents-client-5-api-plugin, reverse-direction)' {
+    docker run --rm $global:SUT_IMAGE "Import-Module -DisableNameChecking -Force C:/ProgramData/Jenkins/jenkins-support.psm1 ; if(`$(Compare-VersionLessThan '5.6.5-209.vd1010d57ee17' '5.6-191.vb_47e2b_41c698')) { exit 0 } else { exit -1 }"
+    $LastExitCode | Should -Be -1
+  }
 }
 
 # Only test on Java 21, one JDK is enough to test all versions

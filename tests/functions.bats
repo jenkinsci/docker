@@ -49,6 +49,19 @@ SUT_DESCRIPTION="${IMAGE}-functions"
   # role-strategy-plugin, reverse-direction
   run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 587.588.v850a_20a_30162 587.v2872c41fa_e51"
   assert_failure
+  ## A mismatch one level deeper than #2328's special case: the two sides'
+  ## dotted version has a different number of *real* components (5.6 vs
+  ## 5.6.5), not just a difference right after the first segment, so #2328's
+  ## narrower check doesn't catch it. Confirmed live: this caused
+  ## apache-httpcomponents-client-5-api's upgrade to be skipped during a real
+  ## Jenkins controller upgrade, leaving a stale plugin installed that was
+  ## incompatible with the newly-installed cloudbees-bitbucket-branch-source.
+  # apache-httpcomponents-client-5-api-plugin/releases
+  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 5.6-191.vb_47e2b_41c698 5.6.5-209.vd1010d57ee17"
+  assert_success
+  # apache-httpcomponents-client-5-api-plugin, reverse-direction
+  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 5.6.5-209.vd1010d57ee17 5.6-191.vb_47e2b_41c698"
+  assert_failure
 }
 
 @test "[${SUT_DESCRIPTION}] permissions are propagated from override file" {
