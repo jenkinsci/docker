@@ -45,11 +45,13 @@ targets:
       {{- $adoptiumCPU := index (splitList "/" $platform) 1 }}
       {{- $dockerCPU := ( eq $adoptiumCPU "x64" | ternary "amd64" ( eq $adoptiumCPU "aarch64" | ternary "arm64" $adoptiumCPU )) }}
       {{- $prefix := printf "jdk%d/%s/%s" $jdkRelease "windows" "amd64" }}
+      {{- $archTitle := printf "%s/%s" "windows" "amd64" }}
       {{- if ne $adoptiumOS "windows" }}
-        {{- $prefix = printf "jdk%d/linux/%s/%s" $jdkRelease $dockerCPU (eq $adoptiumOS "alpine-linux" | ternary "musl" "glibc" )}}
+        {{- $prefix = printf "jdk%d/linux/%s/%s" $jdkRelease $dockerCPU (eq $adoptiumOS "alpine-linux" | ternary "musl" "glibc") }}
+        {{- $archTitle = printf "linux/%s/%s" (eq $adoptiumOS "alpine-linux" | ternary "musl" "glibc") $dockerCPU }}
       {{- end }}
   set_{{ $adoptiumOS }}_{{ $adoptiumCPU }}:
-    name: Bump JDK{{ $jdkRelease }} Installer URL for {{ title $adoptiumOS }} {{ $adoptiumCPU }}
+    name: Bump JDK{{ $jdkRelease }} Installer URL for {{ $archTitle }}
     kind: file
     sourceid: get_{{ $adoptiumOS }}_{{ $adoptiumCPU }}_installer_url
     transformers:
