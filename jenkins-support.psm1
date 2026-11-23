@@ -104,7 +104,16 @@ function Compare-VersionLessThan([string] $version1 = '', [string] $version2 = '
     if ([string]::IsNullOrEmpty($qualifier1) -and [string]::IsNullOrEmpty($qualifier2)) {
         return $false
     }
-    return ([int64]$qualifier1 -lt [int64]$qualifier2)
+    # Numerically when both are plain integers (as in every known real-world
+    # case), falling back to a string comparison otherwise -- qualifiers
+    # aren't guaranteed to be numeric, and this must never throw the way a
+    # bare [int64] cast on a non-numeric value would.
+    $numQ1 = 0
+    $numQ2 = 0
+    if ([int64]::TryParse($qualifier1, [ref]$numQ1) -and [int64]::TryParse($qualifier2, [ref]$numQ2)) {
+        return ($numQ1 -lt $numQ2)
+    }
+    return ($qualifier1 -lt $qualifier2)
 }
 
 function Get-EnvOrDefault($name, $def) {

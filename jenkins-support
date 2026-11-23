@@ -53,6 +53,24 @@ _versionLT_split() {
 
 # Compares two dotted-numeric primary versions, zero-padding the shorter one
 # so e.g. "3.12.0" == "3.12.0.0" but "5.6" < "5.6.5". Echoes "lt", "gt" or "eq".
+# Compares two individual dot-separated segments, numerically if both are
+# plain non-negative integers (so "9" < "10"), falling back to a plain
+# string comparison otherwise -- segments aren't guaranteed to be numeric
+# (e.g. a plugin using a non-numeric version scheme), and this must never
+# fail the way bare arithmetic on a non-numeric value would. Echoes "lt",
+# "gt" or "eq".
+_versionLT_compare_segment() {
+    local a="$1" b="$2"
+    if [[ "$a" =~ ^[0-9]+$ && "$b" =~ ^[0-9]+$ ]]; then
+        if (( 10#$a < 10#$b )); then echo lt; return; fi
+        if (( 10#$a > 10#$b )); then echo gt; return; fi
+        echo eq; return
+    fi
+    if [[ "$a" < "$b" ]]; then echo lt; return; fi
+    if [[ "$a" > "$b" ]]; then echo gt; return; fi
+    echo eq
+}
+
 _versionLT_compare_primary() {
     local a="$1" b="$2"
     local -a pa pb
@@ -60,11 +78,11 @@ _versionLT_compare_primary() {
     IFS='.' read -r -a pb <<< "$b"
     local n=${#pa[@]}
     (( ${#pb[@]} > n )) && n=${#pb[@]}
-    local i sa sb
+    local i sa sb cmp
     for (( i=0; i<n; i++ )); do
         sa=${pa[i]:-0}; sb=${pb[i]:-0}
-        if (( 10#$sa < 10#$sb )); then echo lt; return; fi
-        if (( 10#$sa > 10#$sb )); then echo gt; return; fi
+        cmp=$(_versionLT_compare_segment "$sa" "$sb")
+        if [ "$cmp" != "eq" ]; then echo "$cmp"; return; fi
     done
     echo eq
 }
@@ -120,11 +138,12 @@ versionLT() {
 
     # Primaries are equal: a present qualifier is a later incremental build
     # on top of the same base version, so "no qualifier" is older than "has
-    # a qualifier", and otherwise compare the qualifiers as plain integers.
+    # a qualifier", and otherwise compare the qualifiers (numerically when
+    # both are plain integers, as they are in every known real-world case).
     if [ -z "$q1" ] && [ -n "$q2" ]; then return 0; fi
     if [ -n "$q1" ] && [ -z "$q2" ]; then return 1; fi
     if [ -z "$q1" ] && [ -z "$q2" ]; then return 1; fi
-    if (( 10#$q1 < 10#$q2 )); then return 0; else return 1; fi
+    if [ "$(_versionLT_compare_segment "$q1" "$q2")" = "lt" ]; then return 0; else return 1; fi
 }
 
 # returns a plugin version from a plugin archive
