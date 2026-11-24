@@ -36,7 +36,7 @@ variable "LATEST_LTS" {
 }
 
 variable "PLUGIN_CLI_VERSION" {
-  default = "2.15.0"
+  default = "2.16.0"
 }
 
 variable "COMMIT_SHA" {
@@ -44,7 +44,7 @@ variable "COMMIT_SHA" {
 }
 
 variable "ALPINE_FULL_TAG" {
-  default = "3.24.3"
+  default = "3.24.4"
 }
 
 variable "ALPINE_SHORT_TAG" {
@@ -56,11 +56,11 @@ variable "DEBIAN_RELEASE_LINE" {
 }
 
 variable "DEBIAN_VERSION" {
-  default = 20261020
+  default = 20261104
 }
 
 variable "RHEL_TAG" {
-  default = "9.8-1793179168"
+  default = "9.9-1795197514"
 }
 
 variable "RHEL_RELEASE_LINE" {
@@ -129,7 +129,7 @@ target "debian" {
 
 target "rhel" {
   matrix = {
-    java_release    = java_releases(JAVA_RELEASE_OVERRIDE)
+    java_release = java_releases(JAVA_RELEASE_OVERRIDE)
   }
   name       = "rhel_jdk${java_release}"
   dockerfile = "rhel/Dockerfile"

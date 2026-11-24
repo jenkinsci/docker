@@ -1,11 +1,11 @@
 ARG TRIXIE_TAG=20251103
 
 ARG DEBIAN_RELEASE_LINE=trixie
-ARG DEBIAN_VERSION=20261020
+ARG DEBIAN_VERSION=20261104
 ARG DEBIAN_VARIANT="-slim"
 FROM debian:"${DEBIAN_RELEASE_LINE}-${DEBIAN_VERSION}${DEBIAN_VARIANT}" AS jre-and-war
 
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+SHELL ["/bin/bash", "-e", "-o", "pipefail", "-c"]
 
 # This Build ARG is populated by Docker
 # Ref. https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
@@ -24,6 +24,7 @@ RUN apt-get update \
     tar \
   && rm -rf /var/lib/apt/lists/* \
   && java_zip_url="$(grep "jdk${JAVA_RELEASE}/${TARGETPLATFORM}/glibc" /tmp/jdk_installers.txt | cut -d' ' -f2)" \
+  && if [ -z "${java_zip_url}" ]; then echo "ERROR: Failed to find JDK installer URL for JAVA_RELEASE=${JAVA_RELEASE}, TARGETPLATFORM=${TARGETPLATFORM}" >&2; exit 1; fi \
   && mkdir -p "${TEMP_JAVA_HOME}" \
   && jdk_archive="/opt/jdk.zip" \
   && curl --silent --show-error --fail --location --output "${jdk_archive}" "${java_zip_url}" \
@@ -138,7 +139,7 @@ ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
 ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 RUN chown -R ${user} "$JENKINS_HOME" "$REF"
 
-ARG PLUGIN_CLI_VERSION=2.15.0
+ARG PLUGIN_CLI_VERSION=2.16.0
 ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
 RUN curl -fsSL ${PLUGIN_CLI_URL} -o /opt/jenkins-plugin-manager.jar \
   && echo "$(curl -fsSL "${PLUGIN_CLI_URL}.sha256")  /opt/jenkins-plugin-manager.jar" >/tmp/jpm_sha \

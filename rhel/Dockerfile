@@ -1,4 +1,4 @@
-ARG RHEL_TAG=9.8-1793179168
+ARG RHEL_TAG=9.9-1795197514
 ARG RHEL_RELEASE_LINE=ubi9
 FROM registry.access.redhat.com/${RHEL_RELEASE_LINE}/ubi:${RHEL_TAG} AS jre-and-war
 
@@ -20,6 +20,7 @@ RUN dnf install --disableplugin=subscription-manager --setopt=install_weak_deps=
     tar \
   && dnf clean --disableplugin=subscription-manager all \
   && java_zip_url="$(grep "jdk${JAVA_RELEASE}/${TARGETPLATFORM}/glibc" /tmp/jdk_installers.txt | cut -d' ' -f2)" \
+  && if [ -z "${java_zip_url}" ]; then echo "ERROR: Failed to find JDK installer URL for JAVA_RELEASE=${JAVA_RELEASE}, TARGETPLATFORM=${TARGETPLATFORM}" >&2; exit 1; fi \
   && mkdir -p "${TEMP_JAVA_HOME}" \
   && jdk_archive="/opt/jdk.zip" \
   && curl --silent --show-error --fail --location --output "${jdk_archive}" "${java_zip_url}" \
@@ -126,7 +127,7 @@ ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
 ENV JENKINS_INCREMENTALS_REPO_MIRROR=https://repo.jenkins-ci.org/incrementals
 RUN chown -R ${user} "$JENKINS_HOME" "$REF"
 
-ARG PLUGIN_CLI_VERSION=2.15.0
+ARG PLUGIN_CLI_VERSION=2.16.0
 ARG PLUGIN_CLI_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PLUGIN_CLI_VERSION}/jenkins-plugin-manager-${PLUGIN_CLI_VERSION}.jar
 RUN curl -fsSL ${PLUGIN_CLI_URL} -o /opt/jenkins-plugin-manager.jar \
   && echo "$(curl -fsSL "${PLUGIN_CLI_URL}.sha256")  /opt/jenkins-plugin-manager.jar" >/tmp/jpm_sha \
