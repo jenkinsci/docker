@@ -29,58 +29,121 @@ substitute_env_vars() {
     echo "${content}" > "${file}"
 }
 
+# Splits a Jenkins plugin version string into its comparable "primary" dotted
+# version and an optional trailing incremental-build "qualifier", stopping
+# before any opaque ".v<hash>" content-hash marker (e.g. ".vd97de6465d5b_").
+# A literal '-' before the marker separates the primary version from the
+# qualifier (e.g. "5.6.5-209.v..." -> primary "5.6.5", qualifier "209");
+# without a '-', there is no qualifier and the whole pre-marker string is the
+# primary (e.g. "587.588.v..." -> primary "587.588", no qualifier). Echoes
+# "<primary>|<qualifier>" (qualifier may be empty).
+_versionLT_split() {
+    local v="$1" pre_marker
+    if [[ "$v" =~ ^(.*)\.v[0-9A-Za-z_] ]]; then
+        pre_marker="${BASH_REMATCH[1]}"
+    else
+        pre_marker="$v"
+    fi
+    if [[ "$pre_marker" == *-* ]]; then
+        echo "${pre_marker%%-*}|${pre_marker#*-}"
+    else
+        echo "${pre_marker}|"
+    fi
+}
+
+# Compares two dotted-numeric primary versions, zero-padding the shorter one
+# so e.g. "3.12.0" == "3.12.0.0" but "5.6" < "5.6.5". Echoes "lt", "gt" or "eq".
+# Compares two individual dot-separated segments, numerically if both are
+# plain non-negative integers (so "9" < "10"), falling back to a plain
+# string comparison otherwise -- segments aren't guaranteed to be numeric
+# (e.g. a plugin using a non-numeric version scheme), and this must never
+# fail the way bare arithmetic on a non-numeric value would. Echoes "lt",
+# "gt" or "eq".
+_versionLT_compare_segment() {
+    local a="$1" b="$2"
+    if [[ "$a" =~ ^[0-9]+$ && "$b" =~ ^[0-9]+$ ]]; then
+        if (( 10#$a < 10#$b )); then echo lt; return; fi
+        if (( 10#$a > 10#$b )); then echo gt; return; fi
+        echo eq; return
+    fi
+    if [[ "$a" < "$b" ]]; then echo lt; return; fi
+    if [[ "$a" > "$b" ]]; then echo gt; return; fi
+    echo eq
+}
+
+_versionLT_compare_primary() {
+    local a="$1" b="$2"
+    local -a pa pb
+    IFS='.' read -r -a pa <<< "$a"
+    IFS='.' read -r -a pb <<< "$b"
+    local n=${#pa[@]}
+    (( ${#pb[@]} > n )) && n=${#pb[@]}
+    local i sa sb cmp
+    for (( i=0; i<n; i++ )); do
+        sa=${pa[i]:-0}; sb=${pb[i]:-0}
+        cmp=$(_versionLT_compare_segment "$sa" "$sb")
+        if [ "$cmp" != "eq" ]; then echo "$cmp"; return; fi
+    done
+    echo eq
+}
+
 # compare if version1 < version2
+#
+# Jenkins plugin versions routinely mix two independent kinds of version
+# strings for the *same* plugin across releases: a longer, more specific
+# dotted version (e.g. "5.6.5-209.v<hash>") and a shorter one from before the
+# plugin adopted that extra component (e.g. "5.6-191.v<hash>"). Naively
+# flattening both into one dot-separated sequence (as `tr '-' '.'` does) and
+# comparing them position-by-position silently misaligns the two: the
+# shorter version's incremental-build number ends up compared directly
+# against the longer version's *real* third version component, since it
+# slides into the same position. For "5.6-191.v..." vs "5.6.5-209.v...",
+# that comparison is "191" against "5" at the third position -- 191 > 5, so
+# the 4-part version is (wrongly) considered the older one, which is exactly
+# backwards (5.6.5 is a newer release than 5.6). This is what the entrypoint
+# hit for apache-httpcomponents-client-5-api 5.6.5-209.v... vs the installed
+# 5.6-191.v..., causing jenkins-support to skip a real plugin upgrade and
+# leave an incompatible, stale version installed.
+#
+# A prior fix (https://github.com/jenkinsci/docker/issues/2328) special-cased
+# one specific depth of this same shape mismatch (a 2-part vs. 3-part
+# version split right after the first segment, as in
+# "3894.vd0f0248b_a_fc4" vs "3894.3896.vca_2c931e7935" -- a security-fix
+# backport). It doesn't generalize: it only inspects the segment
+# immediately after the first one, so it doesn't catch a mismatch one level
+# deeper, like the httpcomponents-client-5-api case above.
+#
+# This splits each version into its real, comparable "primary" dotted
+# version and an optional trailing incremental-build qualifier (see
+# _versionLT_split), compares the primaries first (with zero-padding, so
+# depth differences compare correctly instead of misaligning), and only
+# falls back to comparing qualifiers when the primaries are equal -- which
+# also subsumes the 2328 special case, so it's removed rather than kept
+# alongside this.
 versionLT() {
-    local normalized_version1 normalized_version2 first_part_of_1 other_part_of_1 first_char_other_part_of_1 first_part_of_2 other_part_of_2 first_char_other_part_of_2
+    local v1="$1" v2="$2"
 
     # Quick check for equality
-    if [ "$1" = "$2" ]; then
+    if [ "$v1" = "$v2" ]; then
         return 1
     fi
 
-    # Convert '-' to '.' to ease comparison
-    normalized_version1=$(echo "$1" | tr '-' '.')
-    normalized_version2=$(echo "$2" | tr '-' '.')
-    first_part_of_1=${normalized_version1%%.*}
-    other_part_of_1=${normalized_version1#*.}
-    first_char_other_part_of_1=${other_part_of_1:0:1}
-    first_part_of_2=${normalized_version2%%.*}
-    other_part_of_2=${normalized_version2#*.}
-    first_char_other_part_of_2=${other_part_of_2:0:1}
+    local s1 s2 p1 q1 p2 q2 cmp
+    s1=$(_versionLT_split "$v1"); p1="${s1%%|*}"; q1="${s1#*|}"
+    s2=$(_versionLT_split "$v2"); p2="${s2%%|*}"; q2="${s2#*|}"
 
+    cmp=$(_versionLT_compare_primary "$p1" "$p2")
+    if [ "$cmp" = "lt" ]; then return 0; fi
+    if [ "$cmp" = "gt" ]; then return 1; fi
 
-    # Security fix backport / maintenance-branch special case.
-    # Ex: 3894.vd0f0248b_a_fc4 < 3894.3896.vca_2c931e7935
-    # -> normal incrementals version includes a "v" as first char of second part
-    # -> security fix backport adds the backport source first part as second part
-    # https://github.com/jenkinsci/workflow-cps-plugin/releases/tag/3894.vd0f0248b_a_fc4
-    # https://github.com/jenkinsci/workflow-cps-plugin/releases/tag/3894.3896.vca_2c931e7935
-    #
-    # Whenever the first parts match and exactly one of the two "second parts"
-    # starts with "v", that side is the older one regardless of argument order.
-    # The check has to be symmetric: copy_reference_file() calls versionLT()
-    # with the image version as $1 and the installed version as $2, so the
-    # original one-sided check missed the "image is the 4-part backport,
-    # installed is the 3-part normal release" direction. In that direction the
-    # function would otherwise fall through to `sort --version-sort`, which
-    # ranks the older "<base>.v<sha>" form *after* the newer
-    # "<base>.<buildnum>.v<sha>" form (because "v" sorts after digits in
-    # ASCII), and the entrypoint would silently skip the upgrade.
-    # Tracked at https://github.com/jenkinsci/docker/issues/2328
-    if [[ "$first_part_of_1" = "$first_part_of_2" ]]; then
-        if [[ "$first_char_other_part_of_1" == "v" && "$first_char_other_part_of_2" != "v" ]]; then
-            return 0
-        fi
-        if [[ "$first_char_other_part_of_2" == "v" && "$first_char_other_part_of_1" != "v" ]]; then
-            return 1
-        fi
-    fi
-
-    if [ "$normalized_version1" = "$(printf '%s\n%s\n' "$normalized_version1" "$normalized_version2" | sort --version-sort | head -n1)" ]; then
-        return 0
-    else
-        return 1
-    fi
+    # Primaries are equal: a present qualifier is a later incremental build
+    # on top of the same base version, so "no qualifier" is older than "has
+    # a qualifier", and otherwise compare the qualifiers (numerically when
+    # both are plain integers, as they are in every known real-world case).
+    if [ -z "$q1" ] && [ -n "$q2" ]; then return 0; fi
+    if [ -n "$q1" ] && [ -z "$q2" ]; then return 1; fi
+    if [ -z "$q1" ] && [ -z "$q2" ]; then return 1; fi
+    if [ "$(_versionLT_compare_segment "$q1" "$q2")" = "lt" ]; then return 0; else return 1; fi
 }
 
 # returns a plugin version from a plugin archive
