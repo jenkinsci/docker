@@ -46,17 +46,22 @@ if (onTrustedCi) {
 def builds = [:]
 allImagesTypes.each { imageType, imageParams ->
     def buildTarget = 'build-' + imageType
+    // Default unique architecture to build for each Linux image type
+    def architecture = 'amd64'
     def multiarchBuild = imageType.startsWith('multiarch_')
     if (multiarchBuild) {
-        // Sanity check that proves all images build on declared platforms not already built in other stages
-        buildTarget = 'buildarch-' + imageType.replace('multiarch_', '')
+        architecture = imageType.replace('multiarch_', '')
+        // Sanity check that proves all Linux images build on declared platforms not already built in other stages
+        buildTarget = 'buildarch-' + architecture
         skipTests = 'No tests on multiarch builds'
     }
     builds[imageType] = {
         nodeWithTimeout(imageParams.agent) {
-            withEnv(envVars + [
+            withEnv([
                 "IMAGE_TYPE=${imageType}",
                 "BUILD_TARGET=${buildTarget}",
+                // Windows is built only for amd64
+                "ARCHITECTURE_OVERRIDE=linux/${architecture}",
             ]) {
                 stage('Checkout') {
                     checkout scm
