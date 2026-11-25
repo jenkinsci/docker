@@ -49,6 +49,15 @@ SUT_DESCRIPTION="${IMAGE}-functions"
   # role-strategy-plugin, reverse-direction
   run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 587.588.v850a_20a_30162 587.v2872c41fa_e51"
   assert_failure
+  ## Release part gains a segment: '-' must not be compared as '.' when both versions have one
+  # apache-httpcomponents-client-5-api-plugin, 5.6 -> 5.6.4
+  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 5.6-191.vb_47e2b_41c698 5.6.4-207.vd5b_a_c15e4de5"
+  assert_success
+  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 5.6.4-207.vd5b_a_c15e4de5 5.6-191.vb_47e2b_41c698"
+  assert_failure
+  # apache-httpcomponents-client-5-api-plugin, same release, newer build
+  run docker run --rm $SUT_IMAGE bash -c "source /usr/local/bin/jenkins-support && versionLT 5.6.4-204.vfa_29df89ffcf 5.6.4-207.vd5b_a_c15e4de5"
+  assert_success
 }
 
 @test "[${SUT_DESCRIPTION}] permissions are propagated from override file" {
