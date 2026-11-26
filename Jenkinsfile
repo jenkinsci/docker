@@ -57,7 +57,7 @@ allImagesTypes.each { imageType, imageParams ->
     }
     builds[imageType] = {
         nodeWithTimeout(imageParams.agent) {
-            withEnv(envVars + [
+            withEnv([
                 "IMAGE_TYPE=${imageType}",
                 "BUILD_TARGET=${buildTarget}",
             ]) {
