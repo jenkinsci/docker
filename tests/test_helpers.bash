@@ -115,17 +115,6 @@ function get_jenkins_password {
     docker exec "$(get_sut_container_name)" cat /var/jenkins_home/secrets/initialAdminPassword
 }
 
-function get_targets_from_jenkinsfile {
-    sed -n '/def linuxTargets = \[/,/]/p' Jenkinsfile `# retrieve linuxTargets array from Jenkinsfile` \
-     | grep "'" `# keep only its items` \
-     | tr -d "', " `# cleanup output` \
-     | sort `# ensure constant output sort`
-}
-
-function get_default_docker_bake_linux_targets {
-    make --silent show-linux | jq -r '.target | keys[]' | sort
-}
-
 function test_url {
     run curl --user "admin:$(get_jenkins_password)" --output /dev/null --silent --head --fail --connect-timeout 30 --max-time 60 "$(get_jenkins_url)$1"
     if [ "$status" -eq 0 ]; then
