@@ -103,30 +103,29 @@ allImagesTypes.each { imageType, imageParams ->
                         return
                     }
 
-                    if (isUnix()) {
-                        sh 'make prepare-test'
-                        try {
+                    try {
+                        if (isUnix()) {
+                            sh 'make prepare-test'
                             sh 'make "test-${IMAGE_TYPE}"'
-                        } catch (err) {
-                            error("${err.toString()}")
-                        } finally {
-                            junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/*.xml')
+                        } else {
+                            def windowsTestStatus = powershell(
+                                script: '''
+                                (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
+                                ./make.ps1 test -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
+                                (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
+                                ./make.ps1 test -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
+                                ''',
+                                returnStatus: true
+                            )
+                            if (windowsTestStatus > 0) {
+                                // If something bad happened let's clean up the docker images
+                                error('Windows test stage failed.')
+                            }
                         }
-                    } else {
-                        def windowsTestStatus = powershell(
-                            script: '''
-                            (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
-                            ./make.ps1 test -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
-                            (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
-                            ./make.ps1 test -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
-                            ''',
-                            returnStatus: true
-                        )
-                        junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
-                        if (windowsTestStatus > 0) {
-                            // If something bad happened let's clean up the docker images
-                            error('Windows test stage failed.')
-                        }
+                    } catch (err) {
+                        error("${err.toString()}")
+                    } finally {
+                        junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/*.xml')
                     }
                 }
 
