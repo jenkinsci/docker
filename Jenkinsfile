@@ -150,7 +150,6 @@ allImagesTypes.each { imageType, imageParams ->
                                     ]) {
                                         if (isUnix()) {
                                             sh 'make publish'
-                                            archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
                                         } else {
                                             // JDK21 only
                                             powershell '''
