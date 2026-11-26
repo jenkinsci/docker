@@ -154,16 +154,14 @@ allImagesTypes.each { imageType, imageParams ->
                                             // JDK21 only
                                             powershell '''
                                             (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
+                                            ./make.ps1 publish -ImageType ${env:IMAGE_TYPE}
                                             '''
-                                            powershell './make.ps1 build -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile'
-                                            powershell './make.ps1 publish -ImageType ${env:IMAGE_TYPE}'
 
                                             // JDK25 only
                                             powershell '''
                                             (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
+                                            ./make.ps1 publish -ImageType ${env:IMAGE_TYPE}
                                             '''
-                                            powershell './make.ps1 build -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile'
-                                            powershell './make.ps1 publish -ImageType ${env:IMAGE_TYPE}'
                                         }
                                     }
                                 }
