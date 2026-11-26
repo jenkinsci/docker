@@ -145,8 +145,6 @@ allImagesTypes.each { imageType, imageParams ->
                                     withEnv([
                                         'DOCKERHUB_ORGANISATION=jenkins',
                                         'DOCKERHUB_REPO=jenkins',
-                                        // Multiarch builds on trusted.ci.jenkins.io
-                                        'ARCHITECTURE_OVERRIDE=',
                                     ]) {
                                         if (isUnix()) {
                                             sh 'make publish'
