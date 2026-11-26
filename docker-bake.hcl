@@ -72,8 +72,13 @@ variable "WINDOWS_VERSION_OVERRIDE" {
   default = ""
 }
 
-# Set this value to a specific version to override java release to build
+# Set this value to a specific version to override java releases to build
 variable "JAVA_RELEASE_OVERRIDE" {
+  default = ""
+}
+
+# Set this value to a specific architecture to override Linux architectures to build
+variable "ARCHITECTURE_OVERRIDE" {
   default = ""
 }
 
@@ -252,7 +257,7 @@ function "java_releases" {
 # Return an array of platforms depending on the distribution and the jdk
 function "platforms" {
   params = [distribution, jdk]
-  result = (
+  result = ((notequal(ARCHITECTURE_OVERRIDE, "") ? [ARCHITECTURE_OVERRIDE] :
     # Alpine
     is_alpine(distribution)
     ? ["linux/amd64", "linux/arm64"]
@@ -267,7 +272,7 @@ function "platforms" {
 
     # Default (Debian)
     : ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le", "linux/riscv64"]
-  )
+  ))
 }
 
 # Return an array of tags for linux images depending on the distribution and the jdk
