@@ -145,3 +145,57 @@ Describe "[functions > $global:TEST_TAG] Copy-ReferenceFile" -Skip:(-not $global
     Cleanup $global:SUT_CONTAINER | Out-Null
   }
 }
+
+# Copy-ReferenceFile runs at every start, so a plugin has to be upgraded each time the image has a newer one
+Describe "[functions > $global:TEST_TAG] Copy-ReferenceFile plugin upgrades" -Skip:(-not $global:TEST_TAG.Contains('jdk21-')) {
+  BeforeAll {
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+    function New-FakePlugin($path, $version) {
+      New-Item -ItemType Directory -Force -Path (Split-Path -Parent $path) | Out-Null
+      Remove-Item -Force -ErrorAction SilentlyContinue -Path $path
+      $zip = [System.IO.Compression.ZipFile]::Open($path, 'Create')
+      $writer = New-Object System.IO.StreamWriter($zip.CreateEntry('META-INF/MANIFEST.MF').Open())
+      $writer.Write("Plugin-Version: $version`n")
+      $writer.Dispose()
+      $zip.Dispose()
+    }
+  }
+
+  BeforeEach {
+    $script:previousRef = $env:REF
+    $script:previousHome = $env:JENKINS_HOME
+    $root = Join-Path $TestDrive ([Guid]::NewGuid())
+    $env:REF = Join-Path $root 'ref'
+    $env:JENKINS_HOME = Join-Path $root 'home'
+    New-Item -ItemType Directory -Force -Path $env:REF, $env:JENKINS_HOME | Out-Null
+    $global:COPY_REFERENCE_FILE_LOG = Join-Path $env:JENKINS_HOME 'copy_reference_file.log'
+    $imagePlugin = Join-Path $env:REF 'plugins/git.jpi'
+    $installedPlugin = Join-Path $env:JENKINS_HOME 'plugins/git.jpi'
+  }
+
+  AfterEach {
+    $env:REF = $script:previousRef
+    $env:JENKINS_HOME = $script:previousHome
+    Remove-Variable -Scope Global -Name COPY_REFERENCE_FILE_LOG
+  }
+
+  It 'upgrades a plugin again after an earlier upgrade' {
+    foreach ($version in '5.2.0', '5.3.0', '5.4.0') {
+      New-FakePlugin $imagePlugin $version
+      Copy-ReferenceFile $imagePlugin | Out-Null
+    }
+    Get-PluginVersion $installedPlugin | Should -Be '5.4.0'
+  }
+
+  It 'upgrades a plugin whose version marker was appended to' {
+    New-FakePlugin $imagePlugin '5.2.0'
+    Copy-ReferenceFile $imagePlugin | Out-Null
+    # what an earlier image left behind after upgrading 5.2.0 to 5.3.0
+    New-FakePlugin $installedPlugin '5.3.0'
+    Add-Content -Path "$installedPlugin.version_from_image" -Value '5.3.0'
+    New-FakePlugin $imagePlugin '5.4.0'
+    Copy-ReferenceFile $imagePlugin | Out-Null
+    Get-PluginVersion $installedPlugin | Should -Be '5.4.0'
+  }
+}

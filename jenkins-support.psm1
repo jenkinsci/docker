@@ -173,7 +173,8 @@ function Copy-ReferenceFile($file) {
         $containerVersion = Get-PluginVersion (Join-Path $env:JENKINS_HOME $rel)
         $imageVersion = Get-PluginVersion $file
         if(Test-Path $versionMarker) {
-            $markerVersion = (Get-Content -Raw $versionMarker).Trim()
+            # the marker used to be appended to, so the version last copied from the image is on its last line
+            $markerVersion = (Get-Content $versionMarker | Select-Object -Last 1).Trim()
             if(Compare-VersionLessThan $markerVersion $containerVersion) {
                 if((Compare-VersionLessThan $containerVersion $imageVersion) -and ![System.String]::IsNullOrWhiteSpace($env:PLUGINS_FORCE_UPGRADE)) {
                     $action = "UPGRADED"
@@ -206,7 +207,7 @@ function Copy-ReferenceFile($file) {
                     $action = "SKIPPED"
                     $reason = "Version from image is the same as the installed version $imageVersion (no marker found)"
                     # Add marker for next time
-                    Add-Content -Path $versionMarker -Value $imageVersion
+                    Set-Content -Path $versionMarker -Value $imageVersion
                 } else {
                     if(Compare-VersionLessThan $imageVersion $containerVersion) {
                         $action = "SKIPPED"
@@ -233,7 +234,7 @@ function Copy-ReferenceFile($file) {
             Copy-Item $file (Join-Path $env:JENKINS_HOME $rel)
             # pin plugins on initial copy
             Write-Output $null >> (Join-Path $env:JENKINS_HOME "${rel}.pinned")
-            Add-Content -Path $versionMarker -Value $imageVersion
+            Set-Content -Path $versionMarker -Value $imageVersion
             if([System.String]::IsNullOrWhiteSpace($reason)) {
                 $reason = $imageVersion
             }
