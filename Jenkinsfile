@@ -11,9 +11,6 @@ H 6,21 * * 3''')])
 
 properties(listOfProperties)
 
-// Default environment variable set to allow images publication from trusted.ci.jenkins.io
-def envVars = ['PUBLISH=true']
-
 // List of targets to build on ci.jenkins.io and the agent they should use
 def allImagesTypes = [
     'alpine_jdk21': [agent: 'linux'],
@@ -36,18 +33,30 @@ def allImagesTypes = [
 ]
 
 def onTrustedCi = infra.isTrustedCiController()
-def skipTests
 if (onTrustedCi) {
-    skipTests = 'No tests on trusted.ci.jenkins.io'
-
     // No multiarch builds on trusted.ci.jenkins.io
     allImagesTypes = allImagesTypes.findAll { imageType, config ->
         !imageType.startsWith('multiarch_')
     }
 }
 
+// Default environment variables
+def envVars = []
+if (env.TAG_NAME) {
+    // Split to ensure any suffix is not taken in account (but allow suffix tags to trigger rebuilds)
+    def jenkinsVersion = env.TAG_NAME.split('-')[0]
+    envVars += ["JENKINS_VERSION=${jenkinsVersion}"]
+    if (onTrustedCi) {
+        // Setting WAR_URL to download war from Artifactory instead of mirrors on publication
+        envVars += ["WAR_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${jenkinsVersion}/jenkins-war-${jenkinsVersion}.war"]
+        // PUBLISH set to allow images publication
+        envVars += 'PUBLISH=true'
+    }
+}
+
 def builds = [:]
 allImagesTypes.each { imageType, imageParams ->
+    def skipTests
     def buildTarget = 'build-' + imageType
     def multiarchBuild = imageType.startsWith('multiarch_')
     if (multiarchBuild) {
@@ -55,9 +64,12 @@ allImagesTypes.each { imageType, imageParams ->
         buildTarget = 'buildarch-' + imageType.replace('multiarch_', '')
         skipTests = 'No tests on multiarch builds'
     }
+    if (onTrustedCi) {
+        skipTests = 'No tests on trusted.ci.jenkins.io'
+    }
     builds[imageType] = {
         nodeWithTimeout(imageParams.agent) {
-            withEnv([
+            withEnv(envVars + [
                 "IMAGE_TYPE=${imageType}",
                 "BUILD_TARGET=${buildTarget}",
             ]) {
@@ -131,36 +143,30 @@ allImagesTypes.each { imageType, imageParams ->
 
                 if (onTrustedCi) {
                     stage('Publish') {
-                        // Only publish when a tag triggered the build & the publication is enabled (ie not simulating a LTS)
-                        if (env.TAG_NAME && (env.PUBLISH == 'true')) {
-                            // Split to ensure any suffix is not taken in account (but allow suffix tags to trigger rebuilds)
-                            String jenkinsVersion = env.TAG_NAME.split('-')[0]
-                            // Setting WAR_URL to download war from Artifactory instead of mirrors on publication from trusted.ci.jenkins.io
+                        // Only publish when a tag triggered the build
+                        if (!env.TAG_NAME) {
+                            echo 'No tag: no publication'
+                            return
+                        }
+                        infra.withDockerCredentials {
                             withEnv([
-                                "JENKINS_VERSION=${jenkinsVersion}",
-                                "WAR_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${jenkinsVersion}/jenkins-war-${jenkinsVersion}.war"
+                                'DOCKERHUB_ORGANISATION=jenkins',
+                                'DOCKERHUB_REPO=jenkins',
                             ]) {
-                                infra.withDockerCredentials {
-                                    withEnv([
-                                        'DOCKERHUB_ORGANISATION=jenkins',
-                                        'DOCKERHUB_REPO=jenkins',
-                                    ]) {
-                                        if (isUnix()) {
-                                            sh 'make publish'
-                                        } else {
-                                            // JDK21 only
-                                            powershell '''
-                                            (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
-                                            ./make.ps1 publish -ImageType ${env:IMAGE_TYPE}
-                                            '''
+                                if (isUnix()) {
+                                    sh 'make publish'
+                                } else {
+                                    // JDK21 only
+                                    powershell '''
+                                    (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
+                                    ./make.ps1 publish -ImageType ${env:IMAGE_TYPE}
+                                    '''
 
-                                            // JDK25 only
-                                            powershell '''
-                                            (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
-                                            ./make.ps1 publish -ImageType ${env:IMAGE_TYPE}
-                                            '''
-                                        }
-                                    }
+                                    // JDK25 only
+                                    powershell '''
+                                    (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
+                                    ./make.ps1 publish -ImageType ${env:IMAGE_TYPE}
+                                    '''
                                 }
                             }
                         }
