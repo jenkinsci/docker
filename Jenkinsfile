@@ -25,18 +25,18 @@ def allImagesTypes = [
     'windowsservercore-ltsc2025': [agent: 'windows-2025'],
     // List of other dedicated architecture Linux builds and corresponding ci.jenkins.io agent labels
     // Note: skipped for tests, and for publication on trusted.ci.jenkins.io (Linux builds are multiarch there)
-    'multiarch_arm64': [agent: 'arm64docker'],
+    'arch_arm64': [agent: 'arm64docker'],
     // Using qemu
-    'multiarch_ppc64le': [agent: 'docker && amd64'],
-    'multiarch_riscv64': [agent: 'docker && amd64'],
-    'multiarch_s390x': [agent: 'docker && amd64'],
+    'arch_ppc64le': [agent: 'docker && amd64'],
+    'arch_riscv64': [agent: 'docker && amd64'],
+    'arch_s390x': [agent: 'docker && amd64'],
 ]
 
 def onTrustedCi = infra.isTrustedCiController()
 if (onTrustedCi) {
     // No multiarch builds on trusted.ci.jenkins.io
     allImagesTypes = allImagesTypes.findAll { imageType, config ->
-        !imageType.startsWith('multiarch_')
+        !imageType.startsWith('arch_')
     }
 }
 
@@ -58,10 +58,10 @@ def builds = [:]
 allImagesTypes.each { imageType, imageParams ->
     def skipTests
     def buildTarget = 'build-' + imageType
-    def multiarchBuild = imageType.startsWith('multiarch_')
-    if (multiarchBuild) {
+    def archBuild = imageType.startsWith('arch_')
+    if (archBuild) {
         // Sanity check that proves all images build on declared platforms not already built in other stages
-        buildTarget = 'buildarch-' + imageType.replace('multiarch_', '')
+        buildTarget = 'buildarch-' + imageType.replace('arch_', '')
         skipTests = 'No tests on multiarch builds'
     }
     if (onTrustedCi) {
@@ -87,7 +87,7 @@ allImagesTypes.each { imageType, imageParams ->
 
                 stage('Build') {
                     if (isUnix()) {
-                        if (multiarchBuild || onTrustedCi) {
+                        if (archBuild || onTrustedCi) {
                             sh 'make docker-init'
                         }
                         sh 'make "${BUILD_TARGET}"'
