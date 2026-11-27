@@ -152,6 +152,7 @@ allImagesTypes.each { imageType, imageParams ->
                             withEnv([
                                 'DOCKERHUB_ORGANISATION=jenkins',
                                 'DOCKERHUB_REPO=jenkins',
+                                "BAKE_TARGET=${imageType}",
                             ]) {
                                 if (isUnix()) {
                                     sh 'make publish'
