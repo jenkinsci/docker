@@ -11,28 +11,8 @@ H 6,21 * * 3''')])
 
 properties(listOfProperties)
 
-// Default environment variable set to allow images publication from trusted.ci.jenkins.io
-def envVars = ['PUBLISH=true']
-
-// List of dedicated architecture Linux builds and corresponding ci.jenkins.io agent labels
-// Note: not taken in account on trusted.ci.jenkins.io as Linux builds are multiarch there
-def architecturesAndCiJioAgentLabels = [
-    'amd64': 'docker && amd64',
-    'arm64': 'arm64docker',
-    // Using qemu
-    'ppc64le': 'docker && amd64',
-    'riscv64': 'docker && amd64',
-    's390x': 'docker && amd64',
-]
-// List of Windows image types to build on ci.jenkins.io and trusted.ci.jenkins.io
-def windowsImageTypes = [
-    'windowsservercore-ltsc2022',
-    'windowsservercore-ltsc2025',
-]
-// List of Linux targets to build on ci.jenkins.io
-// An up to date list can be obtained with make list-linux
-// Note: on trusted.ci.jenkins.io, the 'linux' target is used instead
-def linuxTargets = [
+// List of targets to build
+def allImagesTypes = [
     'alpine_jdk21',
     'alpine_jdk25',
     'debian_jdk21',
@@ -41,86 +21,165 @@ def linuxTargets = [
     'debian-slim_jdk25',
     'rhel_jdk21',
     'rhel_jdk25',
+    'windowsservercore-ltsc2022',
+    'windowsservercore-ltsc2025',
+    // List of other dedicated architecture Linux builds
+    // Sanity check that proves all images build on declared platforms not already built above
+    // Note: skipped for tests, and for publication on trusted.ci.jenkins.io (Linux builds are multiarch there)
+    'archcheck_arm64',
+    'archcheck_ppc64le',
+    'archcheck_riscv64',
+    'archcheck_s390x',
 ]
 
-stage('Build') {
-    def builds = [:]
+// Set to an existing Weekly or LTS version via a replay to simulate a publication (won't push anything)
+def simulateTagPublication = ''
 
-    withEnv(envVars) {
-        for (anImageType in windowsImageTypes) {
-            def imageType = anImageType
-            builds[imageType] = {
-                nodeWithTimeout('windows-2025') {
-                    stage('Checkout') {
-                        checkout scm
+// Publication only when simulated or on trusted.ci.jenkins.io
+def doPublish = simulateTagPublication ?: infra.isTrustedCiController()
+if (doPublish) {
+    // No architecture checks on trusted.ci.jenkins.io
+    allImagesTypes = allImagesTypes.findAll { imageType, config ->
+        !imageType.startsWith('archcheck_')
+    }
+}
+
+def tag = simulateTagPublication ?: env.TAG_NAME
+
+// Default environment variables
+def envVars = []
+if (tag) {
+    // Split to ensure any suffix is not taken in account (but allow suffix tags to trigger rebuilds)
+    def jenkinsVersion = tag.split('-')[0]
+    envVars += ["JENKINS_VERSION=${jenkinsVersion}"]
+    if (doPublish) {
+        // Setting WAR_URL to download war from Artifactory instead of mirrors on publication
+        envVars += ["WAR_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${jenkinsVersion}/jenkins-war-${jenkinsVersion}.war"]
+        // PUBLISH set to allow images publication on Docker Hub, false in case of simulation
+        envVars += "PUBLISH=${simulateTagPublication ? 'false' : 'true' }"
+    }
+}
+
+def builds = [:]
+allImagesTypes.each { imageType ->
+    def label
+    def buildTarget = 'build-' + imageType
+    def skip = doPublish ? 'on publication' : ''
+    def architecture
+    switch (imageType) {
+        case ~/windows.*/:
+            label = 'windows-2025'
+            break
+        case ~/archcheck_.*/:
+            architecture = imageType.replace('archcheck_', '')
+            // arm64 agents available on ci.jenkins.io and trusted.ci, or qemu emulation from amd64 agents
+            label = (architecture == 'arm64') ? 'arm64docker' : 'docker && amd64'
+            buildTarget = 'buildarch-' + architecture
+            skip = skip ?: 'on architecture checks' // if not already skipped with doPublish
+            break
+        default:
+            label = 'linux'
+    }
+    builds[imageType] = {
+        nodeWithTimeout(label) {
+            withEnv(envVars + [
+                "IMAGE_TYPE=${imageType}",
+                "BUILD_TARGET=${buildTarget}",
+            ]) {
+                stage('Checkout') {
+                    checkout scm
+                }
+
+                if (skip || !isUnix()) {
+                    echo "Skipping static analysis ${skip ? skip : 'on Windows'}"
+                } else {
+                    stage('Static analysis') {
+                        sh 'make hadolint shellcheck'
                     }
+                }
 
-                    withEnv(["IMAGE_TYPE=${imageType}"]) {
-                        if (!infra.isTrusted()) {
-                            /* Outside of the trusted.ci environment, we're building and testing
-                            * the Dockerfile in this repository, but not publishing to docker hub
-                            */
-                            stage("Build ${imageType}") {
-                                // JDK21 only
-                                powershell '''
-                                (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
-                                ./make.ps1 build -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
-                                '''
+                stage('Build') {
+                    if (isUnix()) {
+                        if (architecture || doPublish) {
+                            sh 'make docker-init'
+                        }
+                        sh 'make "${BUILD_TARGET}"'
+                        archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
+                    } else {
+                        // JDK21 only
+                        powershell '''
+                        (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
+                        ./make.ps1 build -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
+                        '''
 
-                                // JDK25 only
-                                powershell '''
-                                (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
-                                ./make.ps1 build -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
-                                '''
+                        // JDK25 only
+                        powershell '''
+                        (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
+                        ./make.ps1 build -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
+                        '''
 
-                                archiveArtifacts artifacts: 'build-windows_*.yaml', allowEmptyArchive: true
-                            }
+                        archiveArtifacts artifacts: 'build-windows_*.yaml', allowEmptyArchive: true
+                    }
+                }
 
-                            stage("Test ${imageType}") {
+                if (skip) {
+                    echo "Skipping tests ${skip}"
+                } else {
+                    stage('Test') {
+                        try {
+                            if (isUnix()) {
+                                sh 'make prepare-test'
+                                sh 'make "test-${IMAGE_TYPE}"'
+                            } else {
                                 def windowsTestStatus = powershell(
                                     script: '''
-                                        (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
-                                        ./make.ps1 test -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
-                                        (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
-                                        ./make.ps1 test -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
+                                    (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
+                                    ./make.ps1 test -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
+                                    (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
+                                    ./make.ps1 test -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
                                     ''',
                                     returnStatus: true
                                 )
-                                junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
                                 if (windowsTestStatus > 0) {
                                     // If something bad happened let's clean up the docker images
                                     error('Windows test stage failed.')
                                 }
                             }
-                        } else {
-                            // Only publish when a tag triggered the build & the publication is enabled (ie not simulating a LTS)
-                            if (env.TAG_NAME && (env.PUBLISH == 'true')) {
-                                // Split to ensure any suffix is not taken in account (but allow suffix tags to trigger rebuilds)
-                                String jenkins_version = env.TAG_NAME.split('-')[0]
-                                // Setting WAR_URL to download war from Artifactory instead of mirrors on publication from trusted.ci.jenkins.io
-                                withEnv([
-                                    "JENKINS_VERSION=${jenkins_version}",
-                                    "WAR_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${jenkins_version}/jenkins-war-${jenkins_version}.war"
-                                ]) {
-                                    stage('Publish') {
-                                        infra.withContainerRegistry {
-                                            withEnv(['DOCKERHUB_ORGANISATION=jenkins', 'DOCKERHUB_REPO=jenkins']) {
-                                                // JDK21 only
-                                                powershell '''
-                                                (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
-                                                '''
-                                                powershell './make.ps1 build -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile'
-                                                powershell './make.ps1 publish -ImageType ${env:IMAGE_TYPE}'
+                        } catch (err) {
+                            error("${err.toString()}")
+                        } finally {
+                            junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/*.xml')
+                        }
+                    }
+                }
 
-                                                // JDK25 only
-                                                powershell '''
-                                                (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
-                                                '''
-                                                powershell './make.ps1 build -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile'
-                                                powershell './make.ps1 publish -ImageType ${env:IMAGE_TYPE}'
-                                            }
-                                        }
-                                    }
+                if (doPublish) {
+                    stage('Publish') {
+                        // Only publish when a tag triggered the build
+                        if (!tag) {
+                            echo 'No tag: no publication'
+                            return
+                        }
+                        infra.withContainerRegistry {
+                            withEnv([
+                                'DOCKERHUB_ORGANISATION=jenkins',
+                                'DOCKERHUB_REPO=jenkins',
+                                "BAKE_TARGET=${imageType}",
+                            ]) {
+                                if (isUnix()) {
+                                    sh 'make publish'
+                                } else {
+                                    // JDK21 only
+                                    powershell '''
+                                    (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
+                                    ./make.ps1 publish -ImageType ${env:IMAGE_TYPE}
+                                    '''
+
+                                    // JDK25 only
+                                    powershell '''
+                                    (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
+                                    ./make.ps1 publish -ImageType ${env:IMAGE_TYPE}
+                                    '''
                                 }
                             }
                         }
@@ -128,95 +187,10 @@ stage('Build') {
                 }
             }
         }
-
-        if (!infra.isTrusted()) {
-            for (t in linuxTargets) {
-                def targetToBuild = t
-
-                builds[targetToBuild] = {
-                    nodeWithTimeout(architecturesAndCiJioAgentLabels["amd64"]) {
-                        deleteDir()
-
-                        stage('Checkout') {
-                            checkout scm
-                        }
-
-                        stage('Static analysis') {
-                            sh 'make hadolint shellcheck'
-                        }
-
-                        /* Outside of the trusted.ci environment, we're building and testing
-                        * the Dockerfile in this repository, but not publishing to docker hub
-                        */
-                        stage("Build linux-${targetToBuild}") {
-                            sh "make build-${targetToBuild}"
-                            archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
-                        }
-
-                        stage("Test linux-${targetToBuild}") {
-                            sh 'make prepare-test'
-                            try {
-                                sh "make test-${targetToBuild}"
-                            } catch (err) {
-                                error("${err.toString()}")
-                            } finally {
-                                junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/*.xml')
-                            }
-                        }
-                    }
-                }
-            }
-            // Building every other architectures than amd64 on agents with the corresponding labels if available
-            architecturesAndCiJioAgentLabels.findAll { arch, _ -> arch != 'amd64' }.each { architecture, labels ->
-                builds[architecture] = {
-                    nodeWithTimeout(labels) {
-                        stage('Checkout') {
-                            deleteDir()
-                            checkout scm
-                        }
-                        // sanity check that proves all images build on declared platforms not already built in other stages
-                        stage("Multi arch build - ${architecture}") {
-                            sh "make docker-init buildarch-${architecture}"
-                            archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
-                        }
-                    }
-                }
-            }
-        } else {
-            // Only publish when a tag triggered the build
-            if (env.TAG_NAME) {
-                // Split to ensure any suffix is not taken in account (but allow suffix tags to trigger rebuilds)
-                String jenkins_version = env.TAG_NAME.split('-')[0]
-                builds['linux'] = {
-                    // Setting WAR_URL to download war from Artifactory instead of mirrors on publication from trusted.ci.jenkins.io
-                    withEnv([
-                        "JENKINS_VERSION=${jenkins_version}",
-                        "WAR_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${jenkins_version}/jenkins-war-${jenkins_version}.war"
-                    ]) {
-                        nodeWithTimeout('docker') {
-                            stage('Checkout') {
-                                checkout scm
-                            }
-
-                            stage('Publish') {
-                                // Publication is enabled by default, disabled when simulating a LTS
-                                if (env.PUBLISH == 'true') {
-                                    infra.withContainerRegistry {
-                                        sh 'make docker-init'
-                                        sh 'make publish'
-                                        archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        parallel builds
     }
 }
+
+parallel builds
 
 void nodeWithTimeout(String label, def body) {
     int retryCounter = 0

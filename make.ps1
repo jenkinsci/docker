@@ -11,6 +11,8 @@ Param(
     [switch] $OverwriteDockerComposeFile = $false,
     # Print the build and publish command instead of executing them if set
     [switch] $DryRun = $false,
+    # Print the publish command instead of executing it if set
+    [switch] $DryRunPublication = $false,
     # Pester version to install and use for tests
     [String] $PesterVersion = '6.2.0',
     # Output debug info for tests: 'empty' (no additional test output), 'debug' (test cmd & stderr output), 'verbose' (test cmd, stderr, stdout output)
@@ -37,6 +39,10 @@ if(![String]::IsNullOrWhiteSpace($env:JENKINS_VERSION)) {
 
 if(![String]::IsNullOrWhiteSpace($env:IMAGE_TYPE)) {
     $ImageType = $env:IMAGE_TYPE
+}
+
+if(![String]::IsNullOrWhiteSpace($env:PUBLISH)) {
+    $DryRunPublication = $env:PUBLISH -eq $false
 }
 
 $env:DOCKERHUB_ORGANISATION = "$Organisation"
@@ -298,9 +304,10 @@ if ($target -eq 'test') {
 
 if ($target -eq 'publish') {
     Write-Host '= PUBLISH: push all images and tags'
-    switch($DryRun) {
-        $true { Write-Host "(dry-run) $baseDockerCmd push" }
-        $false { Invoke-Expression "$baseDockerCmd push" }
+    if (!$DryRun -and !$DryRunPublication) {
+        Invoke-Expression "$baseDockerCmd push"
+    } else {
+        Write-Host "(dry-run) $baseDockerCmd push"
     }
 
     # Fail if any issues when publishing the docker images
