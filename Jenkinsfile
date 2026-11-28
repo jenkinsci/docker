@@ -11,33 +11,33 @@ H 6,21 * * 3''')])
 
 properties(listOfProperties)
 
-// List of targets to build on ci.jenkins.io and the agent they should use
+// List of targets to build
 def allImagesTypes = [
-    'alpine_jdk21': [agent: 'linux'],
-    'alpine_jdk25': [agent: 'linux'],
-    'debian_jdk21': [agent: 'linux'],
-    'debian_jdk25': [agent: 'linux'],
-    'debian-slim_jdk21': [agent: 'linux'],
-    'debian-slim_jdk25': [agent: 'linux'],
-    'rhel_jdk21': [agent: 'linux'],
-    'rhel_jdk25': [agent: 'linux'],
-    'windowsservercore-ltsc2022': [agent: 'windows-2025'],
-    'windowsservercore-ltsc2025': [agent: 'windows-2025'],
-    // List of other dedicated architecture Linux builds and corresponding ci.jenkins.io agent labels
+    'alpine_jdk21',
+    'alpine_jdk25',
+    'debian_jdk21',
+    'debian_jdk25',
+    'debian-slim_jdk21',
+    'debian-slim_jdk25',
+    'rhel_jdk21',
+    'rhel_jdk25',
+    'windowsservercore-ltsc2022',
+    'windowsservercore-ltsc2025',
+    // List of other dedicated architecture Linux builds
+    // Sanity check that proves all images build on declared platforms not already built above
     // Note: skipped for tests, and for publication on trusted.ci.jenkins.io (Linux builds are multiarch there)
-    'arch_arm64': [agent: 'arm64docker'],
-    // Using qemu
-    'arch_ppc64le': [agent: 'docker && amd64'],
-    'arch_riscv64': [agent: 'docker && amd64'],
-    'arch_s390x': [agent: 'docker && amd64'],
+    'archcheck_arm64',
+    'archcheck_ppc64le',
+    'archcheck_riscv64',
+    'archcheck_s390x',
 ]
 
 // Publication only on trusted.ci.jenkins.io
 def doPublish = infra.isTrustedCiController()
 if (doPublish) {
-    // No multiarch builds on trusted.ci.jenkins.io
+    // No architecture checks on trusted.ci.jenkins.io
     allImagesTypes = allImagesTypes.findAll { imageType, config ->
-        !imageType.startsWith('arch_')
+        !imageType.startsWith('archcheck_')
     }
 }
 
@@ -50,26 +50,33 @@ if (env.TAG_NAME) {
     if (doPublish) {
         // Setting WAR_URL to download war from Artifactory instead of mirrors on publication
         envVars += ["WAR_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${jenkinsVersion}/jenkins-war-${jenkinsVersion}.war"]
-        // PUBLISH set to allow images publication
+        // PUBLISH set to allow images publication on Docker Hub
         envVars += 'PUBLISH=true'
     }
 }
 
 def builds = [:]
-allImagesTypes.each { imageType, imageParams ->
-    def skip
+allImagesTypes.each { imageType ->
+    def label
     def buildTarget = 'build-' + imageType
-    def archBuild = imageType.startsWith('arch_')
-    if (archBuild) {
-        // Sanity check that proves all images build on declared platforms not already built in other stages
-        buildTarget = 'buildarch-' + imageType.replace('arch_', '')
-        skip = 'specific architecture builds'
-    }
-    if (doPublish) {
-        skip = 'publication'
+    def skip = doPublish ? 'on publication' : ''
+    def architecture
+    switch (imageType) {
+        case ~/windows.*/:
+            label = 'windows-2025'
+            break
+        case ~/archcheck_.*/:
+            architecture = imageType.replace('archcheck_', '')
+            // arm64 agents available on ci.jenkins.io and trusted.ci, or qemu emulation from amd64 agents
+            label = (architecture == 'arm64') ? 'arm64docker' : 'docker && amd64'
+            buildTarget = 'buildarch-' + architecture
+            skip = skip ?: 'on architecture checks' // if not already skipped with doPublish
+            break
+        default:
+            label = 'linux'
     }
     builds[imageType] = {
-        nodeWithTimeout(imageParams.agent) {
+        nodeWithTimeout(label) {
             withEnv(envVars + [
                 "IMAGE_TYPE=${imageType}",
                 "BUILD_TARGET=${buildTarget}",
@@ -79,7 +86,7 @@ allImagesTypes.each { imageType, imageParams ->
                 }
 
                 if (skip || !isUnix()) {
-                    echo "Skipping static analysis on ${skip ? skip : 'Windows'}"
+                    echo "Skipping static analysis ${skip ? skip : 'on Windows'}"
                 } else {
                     stage('Static analysis') {
                         sh 'make hadolint shellcheck'
@@ -88,7 +95,7 @@ allImagesTypes.each { imageType, imageParams ->
 
                 stage('Build') {
                     if (isUnix()) {
-                        if (archBuild || doPublish) {
+                        if (architecture || doPublish) {
                             sh 'make docker-init'
                         }
                         sh 'make "${BUILD_TARGET}"'
@@ -111,7 +118,7 @@ allImagesTypes.each { imageType, imageParams ->
                 }
 
                 if (skip) {
-                    echo "Skipping tests on ${skip}"
+                    echo "Skipping tests ${skip}"
                 } else {
                     stage('Test') {
                         try {
