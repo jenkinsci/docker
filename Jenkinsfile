@@ -103,7 +103,7 @@ stage('Build') {
                                     "WAR_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${jenkins_version}/jenkins-war-${jenkins_version}.war"
                                 ]) {
                                     stage('Publish') {
-                                        infra.withDockerCredentials {
+                                        infra.withContainerRegistry {
                                             withEnv(['DOCKERHUB_ORGANISATION=jenkins', 'DOCKERHUB_REPO=jenkins']) {
                                                 // JDK21 only
                                                 powershell '''
@@ -201,7 +201,7 @@ stage('Build') {
                             stage('Publish') {
                                 // Publication is enabled by default, disabled when simulating a LTS
                                 if (env.PUBLISH == 'true') {
-                                    infra.withDockerCredentials {
+                                    infra.withContainerRegistry {
                                         sh 'make docker-init'
                                         sh 'make publish'
                                         archiveArtifacts artifacts: 'target/build-result-metadata_*.json', allowEmptyArchive: true
