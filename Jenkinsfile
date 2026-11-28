@@ -32,8 +32,9 @@ def allImagesTypes = [
     'arch_s390x': [agent: 'docker && amd64'],
 ]
 
-def onTrustedCi = infra.isTrustedCiController()
-if (onTrustedCi) {
+// Publication only on trusted.ci.jenkins.io
+def doPublish = infra.isTrustedCiController()
+if (doPublish) {
     // No multiarch builds on trusted.ci.jenkins.io
     allImagesTypes = allImagesTypes.findAll { imageType, config ->
         !imageType.startsWith('arch_')
@@ -46,7 +47,7 @@ if (env.TAG_NAME) {
     // Split to ensure any suffix is not taken in account (but allow suffix tags to trigger rebuilds)
     def jenkinsVersion = env.TAG_NAME.split('-')[0]
     envVars += ["JENKINS_VERSION=${jenkinsVersion}"]
-    if (onTrustedCi) {
+    if (doPublish) {
         // Setting WAR_URL to download war from Artifactory instead of mirrors on publication
         envVars += ["WAR_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${jenkinsVersion}/jenkins-war-${jenkinsVersion}.war"]
         // PUBLISH set to allow images publication
@@ -64,8 +65,8 @@ allImagesTypes.each { imageType, imageParams ->
         buildTarget = 'buildarch-' + imageType.replace('arch_', '')
         skip = 'specific architecture builds'
     }
-    if (onTrustedCi) {
-        skip = 'trusted.ci.jenkins.io'
+    if (doPublish) {
+        skip = 'publication'
     }
     builds[imageType] = {
         nodeWithTimeout(imageParams.agent) {
@@ -87,7 +88,7 @@ allImagesTypes.each { imageType, imageParams ->
 
                 stage('Build') {
                     if (isUnix()) {
-                        if (archBuild || onTrustedCi) {
+                        if (archBuild || doPublish) {
                             sh 'make docker-init'
                         }
                         sh 'make "${BUILD_TARGET}"'
@@ -140,7 +141,7 @@ allImagesTypes.each { imageType, imageParams ->
                     }
                 }
 
-                if (onTrustedCi) {
+                if (doPublish) {
                     stage('Publish') {
                         // Only publish when a tag triggered the build
                         if (!env.TAG_NAME) {
