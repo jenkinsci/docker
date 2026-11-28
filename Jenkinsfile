@@ -32,8 +32,11 @@ def allImagesTypes = [
     'archcheck_s390x',
 ]
 
-// Publication only on trusted.ci.jenkins.io
-def doPublish = infra.isTrustedCiController()
+// Set to an existing Weekly or LTS version via a replay to simulate a publication (won't push anything)
+def simulateTagPublication = ''
+
+// Publication only when simulated or on trusted.ci.jenkins.io
+def doPublish = simulateTagPublication ?: infra.isTrustedCiController()
 if (doPublish) {
     // No architecture checks on trusted.ci.jenkins.io
     allImagesTypes = allImagesTypes.findAll { imageType, config ->
@@ -41,17 +44,19 @@ if (doPublish) {
     }
 }
 
+def tag = simulateTagPublication ?: env.TAG_NAME
+
 // Default environment variables
 def envVars = []
-if (env.TAG_NAME) {
+if (tag) {
     // Split to ensure any suffix is not taken in account (but allow suffix tags to trigger rebuilds)
-    def jenkinsVersion = env.TAG_NAME.split('-')[0]
+    def jenkinsVersion = tag.split('-')[0]
     envVars += ["JENKINS_VERSION=${jenkinsVersion}"]
     if (doPublish) {
         // Setting WAR_URL to download war from Artifactory instead of mirrors on publication
         envVars += ["WAR_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${jenkinsVersion}/jenkins-war-${jenkinsVersion}.war"]
-        // PUBLISH set to allow images publication on Docker Hub
-        envVars += 'PUBLISH=true'
+        // PUBLISH set to allow images publication on Docker Hub, false in case of simulation
+        envVars += "PUBLISH=${simulateTagPublication ? 'false' : 'true' }"
     }
 }
 
@@ -151,7 +156,7 @@ allImagesTypes.each { imageType ->
                 if (doPublish) {
                     stage('Publish') {
                         // Only publish when a tag triggered the build
-                        if (!env.TAG_NAME) {
+                        if (!tag) {
                             echo 'No tag: no publication'
                             return
                         }
