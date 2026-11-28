@@ -155,7 +155,7 @@ allImagesTypes.each { imageType ->
                             echo 'No tag: no publication'
                             return
                         }
-                        infra.withDockerCredentials {
+                        infra.withContainerRegistry {
                             withEnv([
                                 'DOCKERHUB_ORGANISATION=jenkins',
                                 'DOCKERHUB_REPO=jenkins',
