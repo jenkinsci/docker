@@ -56,16 +56,16 @@ if (env.TAG_NAME) {
 
 def builds = [:]
 allImagesTypes.each { imageType, imageParams ->
-    def skipTests
+    def skip
     def buildTarget = 'build-' + imageType
     def archBuild = imageType.startsWith('arch_')
     if (archBuild) {
         // Sanity check that proves all images build on declared platforms not already built in other stages
         buildTarget = 'buildarch-' + imageType.replace('arch_', '')
-        skipTests = 'No tests on multiarch builds'
+        skip = 'specific architecture builds'
     }
     if (onTrustedCi) {
-        skipTests = 'No tests on trusted.ci.jenkins.io'
+        skip = 'trusted.ci.jenkins.io'
     }
     builds[imageType] = {
         nodeWithTimeout(imageParams.agent) {
@@ -77,11 +77,11 @@ allImagesTypes.each { imageType, imageParams ->
                     checkout scm
                 }
 
-                stage('Static analysis') {
-                    if (isUnix()) {
+                if (skip || !isUnix()) {
+                    echo "Skipping static analysis on ${skip ? skip : 'Windows'}"
+                } else {
+                    stage('Static analysis') {
                         sh 'make hadolint shellcheck'
-                    } else {
-                        echo 'hadolint executed only from Linux'
                     }
                 }
 
@@ -109,35 +109,34 @@ allImagesTypes.each { imageType, imageParams ->
                     }
                 }
 
-                stage('Test') {
-                    if (skipTests) {
-                        echo skipTests
-                        return
-                    }
-
-                    try {
-                        if (isUnix()) {
-                            sh 'make prepare-test'
-                            sh 'make "test-${IMAGE_TYPE}"'
-                        } else {
-                            def windowsTestStatus = powershell(
-                                script: '''
-                                (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
-                                ./make.ps1 test -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
-                                (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
-                                ./make.ps1 test -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
-                                ''',
-                                returnStatus: true
-                            )
-                            if (windowsTestStatus > 0) {
-                                // If something bad happened let's clean up the docker images
-                                error('Windows test stage failed.')
+                if (skip) {
+                    echo "Skipping tests on ${skip}"
+                } else {
+                    stage('Test') {
+                        try {
+                            if (isUnix()) {
+                                sh 'make prepare-test'
+                                sh 'make "test-${IMAGE_TYPE}"'
+                            } else {
+                                def windowsTestStatus = powershell(
+                                    script: '''
+                                    (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
+                                    ./make.ps1 test -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
+                                    (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"java_releases_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
+                                    ./make.ps1 test -ImageType ${env:IMAGE_TYPE} -OverwriteDockerComposeFile
+                                    ''',
+                                    returnStatus: true
+                                )
+                                if (windowsTestStatus > 0) {
+                                    // If something bad happened let's clean up the docker images
+                                    error('Windows test stage failed.')
+                                }
                             }
+                        } catch (err) {
+                            error("${err.toString()}")
+                        } finally {
+                            junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/*.xml')
                         }
-                    } catch (err) {
-                        error("${err.toString()}")
-                    } finally {
-                        junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/*.xml')
                     }
                 }
 
